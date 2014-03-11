@@ -113,17 +113,13 @@ class BuildEnvironment:
         print(" ==> Exitting with status UNSTABLE")
         sys.exit(2)
 
-    def publish(self, expr):
-        if "WORKSPACE" not in os.environ:
-            return
-
+    def publish(self, expr, target):
         rootfs = self.container.get_config_item("lxc.rootfs")
         match = glob.glob("%s/%s" % (rootfs, expr))
-        dest = os.path.join(os.environ.get("WORKSPACE"), "artifacts")
 
-        if not os.path.exists(dest):
-            os.makedirs(dest)
+        if not os.path.exists(target):
+            os.makedirs(target)
 
         for entry in match:
             print(" ==> Publishing: %s" % entry)
-            shutil.copy(entry, dest)
+            shutil.copy(entry, target)
