@@ -1,0 +1,88 @@
+#!/usr/bin/python3
+# Copyright 2014 - Stéphane Graber <stgraber@ubuntu.com>
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2, as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+import sys
+sys.path.insert(0, '.')
+
+import argparse
+import lxc_ci
+import traceback
+
+parser = argparse.ArgumentParser(description="tarballs generator")
+parser.add_argument("repository", metavar="REPOSITORY")
+parser.add_argument("branch", metavar="BRANCH")
+parser.add_argument("commit", metavar="COMMIT", default="HEAD")
+args = parser.parse_args()
+
+try:
+    build_env = lxc_ci.BuildEnvironment("ubuntu", "trusty")
+    build_env.setup()
+
+    build_env.install(["autoconf", "automake", "docbook2x", "doxygen", "gcc",
+                       "git", "graphviz", "make", "man2html-base",
+                       "pkg-config"])
+
+    if build_env.execute(["git",
+                          "clone", args.repository,
+                          "-b", args.branch,
+                          "/build/git"]) != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["git", "reset", "--hard", args.commit],
+                         "/build/git") != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["./autogen.sh"], "/build/git/") != 0:
+        build_env.exit_fail()
+
+    if build_env.execute(["./configure", "--enable-doc", "--enable-apidoc"],
+                         "/build/git/") != 0:
+        build_env.exit_fail()
+
+    # Build dist tarball
+    if build_env.execute(["make", "dist"], "/build/git/") != 0:
+        build_env.exit_fail()
+
+    build_env.publish("/build/git/*.tar.gz")
+
+    # Build documentation
+    if build_env.execute(["make", "-C", "doc"], "/build/git/") != 0:
+        build_env.exit_fail()
+
+    if build_env.execute(["tar", "-zcf", "/build/apidoc.tar.gz",
+                          "-C", "/build/git/doc/api/html/", "."]) != 0:
+        build_env.exit_fail()
+
+    build_env.publish("/build/apidoc.tar.gz")
+
+    # Build manpage
+    if build_env.execute("""#!/bin/sh
+set -ex
+find . | grep \\\\.[0-9]$ | while read line; do
+    dst_file="/build/man/${line}.html"
+    mkdir -p $(dirname $dst_file)
+    man2html $line > $dst_file
+done
+tar -zcf /build/manpages.tar.gz -C /build/man/ .""", "/build/git/doc/") != 0:
+        build_env.exit_fail()
+
+    build_env.publish("/build/manpages.tar.gz")
+
+    build_env.exit_pass()
+
+except Exception or KeyboardInterrupt:
+    traceback.print_exc()
+    build_env.exit_unstable()
