@@ -1,0 +1,72 @@
+#!/usr/bin/python3
+# Copyright 2014 - Stéphane Graber <stgraber@ubuntu.com>
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2, as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+import sys
+sys.path.insert(0, '.')
+
+import argparse
+import lxc_ci
+import traceback
+
+parser = argparse.ArgumentParser(description="coverity build")
+parser.add_argument("tarball", metavar="TARBALL")
+parser.add_argument("coverity", metavar="COVERITY")
+parser.add_argument("target", metavar="TARGET")
+args = parser.parse_args()
+
+try:
+    build_env = lxc_ci.BuildEnvironment("ubuntu", "trusty")
+    build_env.setup()
+
+    if build_env.install(list(lxc_ci.LXC_DEPENDENCIES)) != 0:
+        build_env.exit_unstable()
+
+    build_env.upload(args.tarball, "/tmp/upstream.tar.gz")
+    build_env.upload(args.coverity, "/tmp/coverity.tar.gz")
+
+    build_env.execute(["mkdir", "-p", "/build/source"])
+    build_env.execute(["mkdir", "-p", "/build/coverity"])
+
+    if build_env.execute(["tar", "zxf", "/tmp/upstream.tar.gz",
+                          "--strip", "1"], "/build/source/") != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["tar", "zxf", "/tmp/coverity.tar.gz",
+                          "--strip", "1"], "/build/coverity/") != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["./autogen.sh"], "/build/source/") != 0:
+        build_env.exit_fail()
+
+    if build_env.execute(["./configure"], "/build/source/") != 0:
+        build_env.exit_fail()
+
+    # Coverity build
+    if build_env.execute(["/build/coverity/bin/cov-build", "--dir",
+                          "/build/cov-build", "make"], "/build/source/") != 0:
+        build_env.exit_fail()
+
+    if build_env.execute(["tar", "-zcf", "/build/coverity.tar.gz",
+                          "-C", "/build/cov-build/", "."]) != 0:
+        build_env.exit_fail()
+
+    build_env.download("/build/coverity.tar.gz", args.target)
+
+    build_env.exit_pass()
+
+except Exception or KeyboardInterrupt:
+    traceback.print_exc()
+    build_env.exit_unstable()
