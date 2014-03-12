@@ -11,7 +11,7 @@ LXC_DEPENDENCIES = set(["automake", "autoconf", "docbook2x", "doxygen",
                         "libcap-dev", "libcgmanager-dev",
                         "libgnutls-dev", "liblua5.2-dev",
                         "libseccomp-dev", "libselinux1-dev",
-                        "linux-libc-dev", "make", "pkg-config",
+                        "linux-libc-dev", "lsb-release", "make", "pkg-config",
                         "python3-all-dev"])
 
 
@@ -92,7 +92,7 @@ class BuildEnvironment:
             with open(cmdpath, "w+") as fd:
                 fd.write(cmd)
             os.chmod(cmdpath, 0o755)
-            cmd = "/tmp/exec_script"
+            cmd = ["/tmp/exec_script"]
 
         print(" ==> Executing: \"%s\" in %s" % (" ".join(cmd), cwd))
         return self.container.attach_wait(run_command,

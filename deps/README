@@ -1,3 +1,5 @@
 External dependencies:
+ - android-ndk-linux-x86_64.tar.bz2 (from Google)
  - coverity-linux64.tar.gz (from coverity)
+ - genetlink.h (from a recent linux-libc-dev armhf build)
  - jenkins-cli.jar (from $SERVER/cli)
