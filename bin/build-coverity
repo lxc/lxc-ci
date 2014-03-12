@@ -23,7 +23,6 @@ import traceback
 
 parser = argparse.ArgumentParser(description="coverity build")
 parser.add_argument("tarball", metavar="TARBALL")
-parser.add_argument("coverity", metavar="COVERITY")
 parser.add_argument("target", metavar="TARGET")
 args = parser.parse_args()
 
@@ -35,7 +34,7 @@ try:
         build_env.exit_unstable()
 
     build_env.upload(args.tarball, "/tmp/upstream.tar.gz")
-    build_env.upload(args.coverity, "/tmp/coverity.tar.gz")
+    build_env.upload("deps/coverity-linux64.tar.gz", "/tmp/coverity.tar.gz")
 
     build_env.execute(["mkdir", "-p", "/build/source"])
     build_env.execute(["mkdir", "-p", "/build/coverity"])
