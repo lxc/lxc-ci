@@ -6,6 +6,14 @@ import subprocess
 import sys
 import uuid
 
+LXC_DEPENDENCIES = set(["automake", "autoconf", "docbook2x", "doxygen",
+                        "gcc", "graphviz", "libapparmor-dev",
+                        "libcap-dev", "libcgmanager-dev",
+                        "libgnutls-dev", "liblua5.2-dev",
+                        "libseccomp-dev", "libselinux1-dev",
+                        "linux-libc-dev", "make", "pkg-config",
+                        "python3-all-dev"])
+
 
 class BuildEnvironment:
     architecture = None

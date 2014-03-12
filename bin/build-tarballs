@@ -32,9 +32,9 @@ try:
     build_env = lxc_ci.BuildEnvironment("ubuntu", "trusty")
     build_env.setup()
 
-    build_env.install(["autoconf", "automake", "docbook2x", "doxygen", "gcc",
-                       "git", "graphviz", "make", "man2html-base",
-                       "pkg-config"])
+    if build_env.install(list(lxc_ci.LXC_DEPENDENCIES) +
+                         ["git", "man2html-base"]) != 0:
+        build_env.exit_unstable()
 
     if build_env.execute(["git",
                           "clone", args.repository,
