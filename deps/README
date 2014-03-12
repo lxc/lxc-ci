@@ -1,0 +1,3 @@
+External dependencies:
+ - coverity-linux64.tar.gz (from coverity)
+ - jenkins-cli.jar (from $SERVER/cli)
