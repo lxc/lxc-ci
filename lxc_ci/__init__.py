@@ -121,13 +121,20 @@ class BuildEnvironment:
         print(" ==> Exitting with status UNSTABLE")
         sys.exit(2)
 
-    def publish(self, expr, target):
+    def download(self, expr, target):
         rootfs = self.container.get_config_item("lxc.rootfs")
         match = glob.glob("%s/%s" % (rootfs, expr))
 
-        if not os.path.exists(target):
-            os.makedirs(target)
+        for entry in match:
+            print(" ==> Downloading: %s" % entry)
+            shutil.copy(entry, target)
+
+    def upload(self, expr, target):
+        rootfs = self.container.get_config_item("lxc.rootfs")
+        match = glob.glob(expr)
+
+        target = "%s/%s" % (rootfs, target)
 
         for entry in match:
-            print(" ==> Publishing: %s" % entry)
+            print(" ==> Uploading: %s" % entry)
             shutil.copy(entry, target)

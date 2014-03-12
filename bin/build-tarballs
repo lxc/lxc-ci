@@ -57,7 +57,7 @@ try:
     if build_env.execute(["make", "dist"], "/build/git/") != 0:
         build_env.exit_fail()
 
-    build_env.publish("/build/git/*.tar.gz", args.target)
+    build_env.download("/build/git/*.tar.gz", args.target)
 
     # Build documentation
     if build_env.execute(["make", "-C", "doc"], "/build/git/") != 0:
@@ -67,7 +67,7 @@ try:
                           "-C", "/build/git/doc/api/html/", "."]) != 0:
         build_env.exit_fail()
 
-    build_env.publish("/build/apidoc.tar.gz", args.target)
+    build_env.download("/build/apidoc.tar.gz", args.target)
 
     # Build manpage
     if build_env.execute("""#!/bin/sh
@@ -80,7 +80,7 @@ done
 tar -zcf /build/manpages.tar.gz -C /build/man/ .""", "/build/git/doc/") != 0:
         build_env.exit_fail()
 
-    build_env.publish("/build/manpages.tar.gz", args.target)
+    build_env.download("/build/manpages.tar.gz", args.target)
 
     build_env.exit_pass()
 
