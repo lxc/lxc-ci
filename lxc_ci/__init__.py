@@ -132,6 +132,8 @@ class BuildEnvironment:
 
     def exit_unstable(self):
         self.cleanup()
+        subprocess.call(["java", "-jar", "deps/jenkins-cli.jar",
+                         "set-build-result", "unstable"])
         print(" ==> Exitting with status UNSTABLE")
         sys.exit(2)
 
