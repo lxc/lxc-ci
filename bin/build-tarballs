@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python3 -u
 # Copyright 2014 - Stéphane Graber <stgraber@ubuntu.com>
 
 # This program is free software; you can redistribute it and/or modify
