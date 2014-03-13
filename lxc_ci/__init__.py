@@ -6,13 +6,18 @@ import subprocess
 import sys
 import uuid
 
-LXC_DEPENDENCIES = set(["automake", "autoconf", "docbook2x", "doxygen",
-                        "gcc", "graphviz", "libapparmor-dev",
-                        "libcap-dev", "libcgmanager-dev",
-                        "libgnutls-dev", "liblua5.2-dev",
-                        "libseccomp-dev", "libselinux1-dev",
-                        "linux-libc-dev", "lsb-release", "make", "pkg-config",
-                        "python3-all-dev"])
+LXC_BUILD_DEPENDENCIES = set(["automake", "autoconf", "docbook2x", "doxygen",
+                              "gcc", "graphviz", "libapparmor-dev",
+                              "libcap-dev", "libcgmanager-dev",
+                              "libgnutls-dev", "liblua5.2-dev",
+                              "libseccomp-dev", "libselinux1-dev",
+                              "linux-libc-dev", "lsb-release", "make",
+                              "pkg-config", "python3-all-dev"])
+
+LXC_RUN_DEPENDENCIES = set(["bridge-utils", "busybox-static", "cgmanager",
+                            "cloud-image-utils", "debootstrap", "dnsmasq-base",
+                            "iptables", "openssl", "rsync", "uuid-runtime",
+                            "xz-utils"])
 
 
 class BuildEnvironment:
@@ -49,6 +54,13 @@ class BuildEnvironment:
                                       'release': self.release,
                                       'arch': self.architecture}):
             raise Exception("Failed to create the rootfs")
+
+        self.container.set_config_item("lxc.aa_profile", "unconfined")
+
+        # FIXME: Very ugly workaround
+        import _lxc
+        _lxc.Container.set_config_item(self.container, "lxc.mount.auto",
+                                       "cgroup:mixed")
 
         print(" ==> Starting the container")
         if not self.container.start():

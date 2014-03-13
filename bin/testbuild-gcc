@@ -29,10 +29,14 @@ try:
     build_env = lxc_ci.BuildEnvironment("ubuntu", "trusty")
     build_env.setup()
 
-    if build_env.install(list(lxc_ci.LXC_DEPENDENCIES)) != 0:
+    if build_env.install(list(lxc_ci.LXC_BUILD_DEPENDENCIES)) != 0:
+        build_env.exit_unstable()
+
+    if build_env.install(list(lxc_ci.LXC_RUN_DEPENDENCIES)) != 0:
         build_env.exit_unstable()
 
     build_env.upload(args.tarball, "/tmp/upstream.tar.gz")
+    build_env.upload("deps/exercise", "/tmp/exercise")
 
     if build_env.execute(["tar", "zxf", "/tmp/upstream.tar.gz",
                           "--strip", "1"], "/build/") != 0:
@@ -41,13 +45,48 @@ try:
     if build_env.execute(["./autogen.sh"], "/build/") != 0:
         build_env.exit_fail()
 
-    if build_env.execute(["./configure"], "/build/") != 0:
+    if build_env.execute(["./configure", "--enable-tests",
+                          "--prefix=/usr/", "--sysconfdir=/etc/",
+                          "--localstatedir=/var/"], "/build/") != 0:
         build_env.exit_fail()
 
     # Test build
     if build_env.execute(["make"], "/build/") != 0:
         build_env.exit_fail()
 
+    # Testsuite run
+    if build_env.execute(["make", "install"], "/build/") != 0:
+        build_env.exit_fail()
+
+    if build_env.execute(["sed", "-i", "s/10\\.0\\.3\\./10.12.34./g",
+                          "/etc/init/lxc-net.conf"]) != 0:
+        build_env.exit_fail()
+
+    if build_env.execute(["useradd", "--system", "lxc-dnsmasq"]) != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["start", "lxc-net"]) != 0:
+        build_env.exit_fail()
+
+    if build_env.execute(["mkdir", "-p",
+                          "/usr/share/doc/python3-lxc/examples/"]) != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["cp", "-p",
+                          "/build/src/python-lxc/examples/api_test.py",
+                          "/usr/share/doc/python3-lxc/examples/"
+                          "api_test.py"]) != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["gzip", "-9",
+                          "/usr/share/doc/python3-lxc/examples/"
+                          "api_test.py"]) != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["/tmp/exercise"]) != 0:
+        build_env.exit_fail()
+
+    # Test run
     build_env.exit_pass()
 
 except Exception or KeyboardInterrupt:
