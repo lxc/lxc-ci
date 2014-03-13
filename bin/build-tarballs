@@ -57,7 +57,7 @@ try:
     if build_env.execute(["make", "dist"], "/build/git/") != 0:
         build_env.exit_fail()
 
-    build_env.download("/build/git/*.tar.gz", args.target)
+    build_env.download("/build/git/*.tar.gz", "%s/lxc.tar.gz" % args.target)
 
     # Build documentation
     if build_env.execute(["make", "-C", "doc"], "/build/git/") != 0:
