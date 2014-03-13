@@ -141,7 +141,15 @@ class BuildEnvironment:
 
         for entry in match:
             print(" ==> Downloading: %s" % entry)
-            shutil.copy(entry, target)
+            path = target
+            if os.path.isdir(target):
+                path = "%s/%s" % (target, os.path.basename(entry))
+
+            shutil.copy(entry, path)
+
+            os.chown(path,
+                     int(os.environ.get("SUDO_UID", os.geteuid())),
+                     int(os.environ.get("SUDO_GID", os.getegid())))
 
     def upload(self, expr, target):
         rootfs = self.container.get_config_item("lxc.rootfs")
