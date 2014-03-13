@@ -15,9 +15,10 @@ LXC_BUILD_DEPENDENCIES = set(["automake", "autoconf", "docbook2x", "doxygen",
                               "pkg-config", "python3-all-dev"])
 
 LXC_RUN_DEPENDENCIES = set(["bridge-utils", "busybox-static", "cgmanager",
-                            "cloud-image-utils", "debootstrap", "dnsmasq-base",
-                            "iptables", "openssl", "rsync", "uuid-runtime",
-                            "xz-utils"])
+                            "cloud-image-utils", "dbus",
+                            "debootstrap", "dnsmasq-base",
+                            "iptables", "openssl", "rsync", "uidmap",
+                            "uuid-runtime", "xz-utils"])
 
 
 class BuildEnvironment:
@@ -95,6 +96,7 @@ class BuildEnvironment:
             cmd, cwd = args
 
             os.environ['PATH'] = '/usr/sbin:/usr/bin:/sbin:/bin'
+            os.environ['HOME'] = '/root'
 
             return subprocess.call(cmd, cwd=cwd)
 
