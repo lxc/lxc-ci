@@ -1,0 +1,150 @@
+#!/usr/bin/python3 -u
+# Copyright 2014 - Stéphane Graber <stgraber@ubuntu.com>
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2, as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+import sys
+sys.path.insert(0, '.')
+
+import argparse
+import lxc_ci
+import os
+import traceback
+
+parser = argparse.ArgumentParser(description="tarballs generator")
+parser.add_argument("repository", metavar="REPOSITORY")
+parser.add_argument("branch", metavar="BRANCH")
+parser.add_argument("commit", metavar="COMMIT", default="HEAD")
+parser.add_argument("template", metavar="TEMPLATE")
+parser.add_argument("release", metavar="RELEASE")
+parser.add_argument("arch", metavar="ARCH")
+parser.add_argument("variant", metavar="VARIANT")
+parser.add_argument("target", metavar="TARGET")
+args = parser.parse_args()
+
+if os.geteuid():
+    parser.error("Image building requires root privileges.")
+
+try:
+    build_env = lxc_ci.BuildEnvironment("ubuntu", "trusty")
+    build_env.setup()
+
+    config = lxc_ci.load_config(args.template, args.release,
+                                args.arch, args.variant)
+
+    # Setup LXC
+    if build_env.install(list(lxc_ci.LXC_BUILD_DEPENDENCIES) + ["git"]) != 0:
+        build_env.exit_unstable()
+
+    if build_env.install(list(lxc_ci.LXC_RUN_DEPENDENCIES)) != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["git",
+                          "clone", args.repository,
+                          "-b", args.branch,
+                          "/build/git"]) != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["git", "reset", "--hard", args.commit],
+                         "/build/git") != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["./autogen.sh"], "/build/git/") != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["./configure", "--disable-doc", "--disable-apidoc",
+                          "--disable-examples", "--disable-lua",
+                          "--disable-python",
+                          "--prefix=/usr/", "--sysconfdir=/etc/",
+                          "--localstatedir=/var/"], "/build/git/") != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["make"], "/build/git/") != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["make", "install"], "/build/git/") != 0:
+        build_env.exit_unstable()
+
+    # Create the image
+    if build_env.execute(["mkdir", "-p",
+                          "/build/containers/LXC_NAME/rootfs"]) != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["touch", "/build/containers/LXC_NAME/config"]) != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["/usr/share/lxc/templates/lxc-%s" % args.template,
+                          "--path", "/build/containers/LXC_NAME",
+                          "--rootfs", "/build/containers/LXC_NAME/rootfs",
+                          "--name", "LXC_NAME"]
+                         + config['template_args']) != 0:
+        build_env.exit_fail()
+
+    # Template specific code
+    if args.template == "ubuntu":
+        if build_env.execute("""#!/bin/sh
+(
+cat << EOF
+start on starting mountall
+
+script
+    set +e
+
+    # Re-generate ssh host keys
+    rm -f /etc/ssh/ssh_host_*key*
+    if [ -x "/var/lib/dpkg/info/openssh-server.postinst" ]; then
+        DPKG_MAINTSCRIPT_PACKAGE=openssh DPKG_MAINTSCRIPT_NAME=postinst \
+            /var/lib/dpkg/info/openssh-server.postinst configure
+    fi
+
+    # Self-destruct
+    rm /etc/init/lxc-post-create.conf
+end script
+EOF
+) > /build/containers/LXC_NAME/rootfs/etc/init/lxc-post-create.conf
+
+rm -f /build/containers/LXC_NAME/rootfs/etc/resolvconf/resolv.conf.d/original
+rm -f /build/containers/LXC_NAME/rootfs/etc/resolvconf/resolv.conf.d/tail
+""") != 0:
+            build_env.exit_unstable()
+
+    # Generate the config
+    if build_env.execute("""#!/bin/sh
+cd /build/containers/LXC_NAME/rootfs/
+find . -type b > /build/exclude-user
+find . -type c >> /build/exclude-user
+""") != 0:
+        build_env.exit_unstable()
+
+    build_env.download("/build/exclude-user", args.target)
+    with open("%s/exclude-user" % args.target, "r") as fd:
+        config['exclude_user'] = fd.read().strip().split("\n")
+    os.remove("%s/exclude-user" % args.target)
+
+    lxc_ci.generate_image_metadata(args.template, args.arch, config,
+                                   args.target)
+
+    # Compress and grab the result
+    if build_env.execute(["tar", "-Jcf", "/build/rootfs.tar.xz",
+                          "-C", "/build/containers/LXC_NAME/rootfs",
+                          "."]) != 0:
+        build_env.exit_unstable()
+
+    build_env.download("/build/rootfs.tar.xz", args.target)
+
+    build_env.exit_pass()
+
+except Exception or KeyboardInterrupt:
+    traceback.print_exc()
+    build_env.exit_unstable()

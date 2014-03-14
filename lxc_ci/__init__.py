@@ -1,9 +1,13 @@
+from io import BytesIO
 import glob
+import json
 import lxc
 import os
 import shutil
 import subprocess
 import sys
+import tarfile
+import time
 import uuid
 
 LXC_BUILD_DEPENDENCIES = set(["automake", "autoconf", "docbook2x", "doxygen",
@@ -160,3 +164,109 @@ class BuildEnvironment:
         for entry in match:
             print(" ==> Uploading: %s" % entry)
             shutil.copy(entry, target)
+
+
+def load_config(template, release, arch, variant):
+    config = {}
+
+    json_path = "templates/%s.json" % template
+    if os.path.exists(json_path):
+        with open(json_path, "r") as fd:
+            config.update(json.loads(fd.read()))
+
+    json_path = "templates/%s.%s.json" % (template, release)
+    if os.path.exists(json_path):
+        with open(json_path, "r") as fd:
+            config.update(json.loads(fd.read()))
+
+    template_args = config['template_args']
+    config['template_args'] = []
+    for arg in template_args:
+        arg = arg.replace("RELEASE", release)
+        arg = arg.replace("ARCH", config['template_arch'][arch])
+        config['template_args'].append(arg)
+
+    if isinstance(config['create_message'], list):
+        config['create_message'] = "".join(config['create_message'])
+
+    config['create_message'] = \
+        config['create_message'].replace("RELEASE", release)
+
+    config['create_message'] = \
+        config['create_message'].replace("ARCH", arch)
+
+    config['create_message'] = \
+        config['create_message'].replace("VARIANT", variant)
+
+    config['expiry'] = int(time.time()) + int(config['expiry']) * 86400
+
+    return config
+
+
+def generate_image_metadata(template, arch, config, target):
+    tarball = tarfile.open("%s/meta.tar" % target, "w:")
+
+    content = "%s\n" % config['expiry']
+    expiry_file = tarfile.TarInfo()
+    expiry_file.size = len(content)
+    expiry_file.mtime = int(time.strftime("%s", time.localtime()))
+    expiry_file.name = "expiry"
+    tarball.addfile(expiry_file, BytesIO(content.encode('utf-8')))
+
+    content = "%s\n" % config['create_message']
+    create_message_file = tarfile.TarInfo()
+    create_message_file.size = len(content)
+    create_message_file.mtime = int(time.strftime("%s", time.localtime()))
+    create_message_file.name = "create-message"
+    tarball.addfile(create_message_file, BytesIO(content.encode('utf-8')))
+
+    content = "%s\n" % "\n".join(sorted(config['templates']))
+    templates_file = tarfile.TarInfo()
+    templates_file.size = len(content)
+    templates_file.mtime = int(time.strftime("%s", time.localtime()))
+    templates_file.name = "templates"
+    tarball.addfile(templates_file, BytesIO(content.encode('utf-8')))
+
+    content = ""
+    for conf in config['config_user']:
+        content += "lxc.include = LXC_TEMPLATE_CONFIG/%s.%s.conf\n" \
+            % (template, conf)
+    if arch == "amd64":
+        content += "lxc.arch = x86_64\n"
+    elif arch == "i386":
+        content += "lxc.arch = x86\n"
+    config_user_file = tarfile.TarInfo()
+    config_user_file.size = len(content)
+    config_user_file.mtime = int(time.strftime("%s", time.localtime()))
+    config_user_file.name = "config-user"
+    tarball.addfile(config_user_file, BytesIO(content.encode('utf-8')))
+
+    content = ""
+    for conf in config['config_system']:
+        content += "lxc.include = LXC_TEMPLATE_CONFIG/%s.%s.conf\n" \
+            % (template, conf)
+    if arch == "amd64":
+        content += "lxc.arch = x86_64\n"
+    elif arch == "i386":
+        content += "lxc.arch = x86\n"
+    config_system_file = tarfile.TarInfo()
+    config_system_file.size = len(content)
+    config_system_file.mtime = int(time.strftime("%s", time.localtime()))
+    config_system_file.name = "config"
+    tarball.addfile(config_system_file, BytesIO(content.encode('utf-8')))
+
+    content = "\n".join(sorted(config['exclude_user']))
+    exclude_user_file = tarfile.TarInfo()
+    exclude_user_file.size = len(content)
+    exclude_user_file.mtime = int(time.strftime("%s", time.localtime()))
+    exclude_user_file.name = "excludes-user"
+    tarball.addfile(exclude_user_file, BytesIO(content.encode('utf-8')))
+
+    tarball.close()
+    if os.path.exists("%s/meta.tar.xz" % target):
+        os.remove("%s/meta.tar.xz" % target)
+    subprocess.call(["xz", "-9", "%s/meta.tar" % target])
+
+    os.chown("%s/meta.tar.xz" % target,
+             int(os.environ.get("SUDO_UID", os.geteuid())),
+             int(os.environ.get("SUDO_GID", os.getegid())))
