@@ -70,12 +70,12 @@ try:
     if build_env.execute(["start", "lxc-net"]) != 0:
         build_env.exit_fail()
 
-    if build_env.execute(["iptables", "-I", "FORWARD",
+    if build_env.execute(["iptables", "-I", "OUTPUT",
                           "-d", "images.linuxcontainers.org",
                           "-p", "tcp", "--dport", "443", "-j", "REJECT"]) != 0:
         build_env.exit_unstable()
 
-    if build_env.execute(["ip6tables", "-I", "FORWARD",
+    if build_env.execute(["ip6tables", "-I", "OUTPUT",
                           "-d", "images.linuxcontainers.org",
                           "-p", "tcp", "--dport", "443", "-j", "REJECT"]) != 0:
         build_env.exit_unstable()
