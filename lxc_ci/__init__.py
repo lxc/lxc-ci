@@ -71,7 +71,7 @@ class BuildEnvironment:
         if not self.container.start():
             raise Exception("Failed to start the container")
 
-        if not self.container.get_ips(family="inet", timeout=30):
+        if not self.container.get_ips(family="inet", timeout=90):
             raise Exception("Failed to connect to the container")
 
         self.execute(["mkdir", "-p", "/build"])
