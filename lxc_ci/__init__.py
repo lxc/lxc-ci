@@ -255,7 +255,7 @@ def generate_image_metadata(template, arch, config, target):
     config_system_file.name = "config"
     tarball.addfile(config_system_file, BytesIO(content.encode('utf-8')))
 
-    content = "\n".join(sorted(config['exclude_user']))
+    content = "%s\n" % "\n".join(sorted(config['exclude_user']))
     exclude_user_file = tarfile.TarInfo()
     exclude_user_file.size = len(content)
     exclude_user_file.mtime = int(time.strftime("%s", time.localtime()))
