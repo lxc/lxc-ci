@@ -1,0 +1,13 @@
+{
+    "create_message": ["You just created a CentOS container ",
+                       "(release=RELEASE, arch=ARCH, variant=VARIANT)\n",
+                       "The default root password is: root\n"],
+    "expiry": 30,
+    "templates": ["/etc/sysconfig/network-scripts/ifcfg-eth0",
+                  "/etc/sysconfig/network", "/etc/hostname", "/etc/hosts"],
+    "config_user": ["common", "userns"],
+    "config_system": ["common"],
+    "template_arch": {"amd64": "x86_64",
+                      "i386": "i686"},
+    "template_args": ["-R", "RELEASE", "-a", "ARCH"]
+}
