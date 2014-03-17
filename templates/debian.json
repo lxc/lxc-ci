@@ -1,0 +1,14 @@
+{
+    "create_message": ["You just created a Debian container ",
+                       "(release=RELEASE, arch=ARCH, variant=VARIANT)\n",
+                       "The default root password is: root\n"],
+    "expiry": 30,
+    "templates": ["/etc/hostname", "/etc/hosts"],
+    "config_user": ["common", "userns"],
+    "config_system": ["common"],
+    "template_arch": {"amd64": "amd64",
+                      "i386": "i386",
+                      "armel": "armel",
+                      "armhf": "armhf"},
+    "template_args": ["-r", "RELEASE", "-a", "ARCH"]
+}
