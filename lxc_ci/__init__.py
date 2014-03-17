@@ -185,6 +185,8 @@ def load_config(template, release, arch, variant):
     config['template_args'] = []
     for arg in template_args:
         arg = arg.replace("RELEASE", release)
+        if "template_sub_arch" in config:
+            arg = arg.replace("SUB_ARCH", config['template_sub_arch'][arch])
         arg = arg.replace("ARCH", config['template_arch'][arch])
         config['template_args'].append(arg)
 

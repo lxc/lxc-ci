@@ -1,0 +1,17 @@
+{
+    "create_message": ["You just created a Gentoo container ",
+                       "(release=RELEASE, arch=ARCH, variant=VARIANT)\n",
+                       "The default root password is: toor\n"],
+    "expiry": 30,
+    "templates": ["/etc/conf.d/hostname", "/etc/hostname", "/etc/hosts"],
+    "config_user": ["common", "userns"],
+    "config_system": ["common"],
+    "template_arch": {"amd64": "amd64",
+                      "armhf": "armp",
+                      "i386": "x86"},
+    "template_sub_arch": {"amd64": "amd64",
+                          "armhf": "armv7a_hardfp",
+                          "i386": "i686"},
+    "template_args": ["-a", "ARCH", "-v", "SUB_ARCH"],
+    "template_env": {"root_password": "root"}
+}
