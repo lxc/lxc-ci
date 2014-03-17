@@ -84,7 +84,13 @@ try:
     if build_env.execute(["touch", "/build/containers/LXC_NAME/config"]) != 0:
         build_env.exit_unstable()
 
-    if build_env.execute(["/usr/share/lxc/templates/lxc-%s" % args.template,
+    env = []
+    if "template_env" in config:
+        for key, value in config['template_env'].items():
+            env.append("%s=%s" % (key, value))
+
+    if build_env.execute(["env"] + env +
+                         ["/usr/share/lxc/templates/lxc-%s" % args.template,
                           "--path", "/build/containers/LXC_NAME",
                           "--rootfs", "/build/containers/LXC_NAME/rootfs",
                           "--name", "LXC_NAME"]

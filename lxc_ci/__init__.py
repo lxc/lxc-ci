@@ -19,7 +19,7 @@ LXC_BUILD_DEPENDENCIES = set(["automake", "autoconf", "docbook2x", "doxygen",
                               "pkg-config", "python3-all-dev"])
 
 LXC_RUN_DEPENDENCIES = set(["bridge-utils", "busybox-static", "cgmanager",
-                            "cloud-image-utils", "dbus",
+                            "cloud-image-utils", "curl", "dbus",
                             "debootstrap", "dnsmasq-base", "file",
                             "iptables", "openssl", "rpm", "rsync", "uidmap",
                             "uuid-runtime", "yum", "wget", "xz-utils"])
@@ -73,6 +73,8 @@ class BuildEnvironment:
 
         if not self.container.get_ips(family="inet", timeout=90):
             raise Exception("Failed to connect to the container")
+
+        self.container.set_cgroup_item("devices.allow", "b 7:* rwm")
 
         self.execute(["mkdir", "-p", "/build"])
         self.update()
