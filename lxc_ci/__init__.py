@@ -20,9 +20,9 @@ LXC_BUILD_DEPENDENCIES = set(["automake", "autoconf", "docbook2x", "doxygen",
 
 LXC_RUN_DEPENDENCIES = set(["bridge-utils", "busybox-static", "cgmanager",
                             "cloud-image-utils", "dbus",
-                            "debootstrap", "dnsmasq-base",
-                            "iptables", "openssl", "rsync", "uidmap",
-                            "uuid-runtime", "xz-utils"])
+                            "debootstrap", "dnsmasq-base", "file",
+                            "iptables", "openssl", "rpm", "rsync", "uidmap",
+                            "uuid-runtime", "yum", "wget", "xz-utils"])
 
 
 class BuildEnvironment:
