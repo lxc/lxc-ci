@@ -99,7 +99,7 @@ try:
 
     # Template specific code
     if args.template == "ubuntu":
-        if build_env.execute("""#!/bin/sh
+        if build_env.execute("""#!/bin/sh -ex
 (
 cat << EOF
 start on starting mountall
@@ -125,7 +125,7 @@ rm -f /build/containers/LXC_NAME/rootfs/etc/resolvconf/resolv.conf.d/tail
 """) != 0:
             build_env.exit_unstable()
     elif args.template == "debian":
-        if build_env.execute("""#!/bin/sh
+        if build_env.execute("""#!/bin/sh -ex
 (
 cat << EOF
 #!/bin/sh
@@ -158,7 +158,7 @@ chroot /build/containers/LXC_NAME/rootfs/ \
             build_env.exit_unstable()
 
     # Generate the config
-    if build_env.execute("""#!/bin/sh
+    if build_env.execute("""#!/bin/sh -ex
 cd /build/containers/LXC_NAME/rootfs/
 find . -type b > /build/exclude-user
 find . -type c >> /build/exclude-user

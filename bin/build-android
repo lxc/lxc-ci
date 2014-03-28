@@ -75,8 +75,7 @@ try:
         build_env.execute(["/bin/bash"])
         build_env.exit_unstable()
 
-    if build_env.execute("""#!/bin/sh
-set -ex
+    if build_env.execute("""#!/bin/sh -ex
 
 cp -P /build/libcap/libcap/libcap.so* \\
     /build/ndk/platforms/android-9/arch-arm/usr/lib/

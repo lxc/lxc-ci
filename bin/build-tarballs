@@ -70,8 +70,7 @@ try:
     build_env.download("/build/apidoc.tar.gz", args.target)
 
     # Build manpage
-    if build_env.execute("""#!/bin/sh
-set -ex
+    if build_env.execute("""#!/bin/sh -ex
 find . | grep \\\\.[0-9]$ | while read line; do
     dst_file="/build/man/${line}.html"
     mkdir -p $(dirname $dst_file)
