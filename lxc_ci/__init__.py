@@ -139,7 +139,7 @@ class BuildEnvironment:
     def exit_unstable(self):
         self.cleanup()
         print(" ==> Exitting with status UNSTABLE")
-        sys.exit(0)
+        sys.exit(2)
 
     def download(self, expr, target):
         rootfs = self.container.get_config_item("lxc.rootfs")
