@@ -1,0 +1,83 @@
+#!/usr/bin/python3 -u
+# Copyright 2014 - Stéphane Graber <stgraber@ubuntu.com>
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2, as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+import sys
+sys.path.insert(0, '.')
+
+import argparse
+import lxc_ci
+import traceback
+
+parser = argparse.ArgumentParser(description="deb source package build")
+parser.add_argument("tarball", metavar="TARBALL")
+parser.add_argument("packaging", metavar="PACKAGING")
+parser.add_argument("dist", metavar="DIST")
+parser.add_argument("release", metavar="RELEASE")
+parser.add_argument("suffix", metavar="SUFFIX")
+parser.add_argument("target", metavar="TARGET")
+args = parser.parse_args()
+
+try:
+    build_env = lxc_ci.BuildEnvironment("ubuntu", "trusty")
+    build_env.setup()
+
+    if build_env.install(list(lxc_ci.LXC_BUILD_DEPENDENCIES)) != 0:
+        build_env.exit_unstable()
+
+    if build_env.install(list(lxc_ci.LXC_DEB_DEPENDENCIES)) != 0:
+        build_env.exit_unstable()
+
+    build_env.upload(args.tarball, "/tmp/upstream.tar.gz")
+
+    build_env.execute(["mkdir", "-p", "/build/source/"])
+
+    if build_env.execute(["tar", "zxf", "/tmp/upstream.tar.gz",
+                          "--strip", "1"], "/build/source/") != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["bzr", "branch", args.packaging,
+                          "/tmp/packaging"]) != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute("""#!/bin/sh -ex
+export DEBEMAIL="lxc-devel@lists.linuxcontainers.org"
+export DEBFULLNAME="LXC snapshot packages"
+
+bzr export /build/source/debian/ /tmp/packaging/debian/
+
+version=$(grep ' LXC_VERSION ' /build/source/src/lxc/version.h \
+    | cut -d' ' -f3 | sed 's/"//g')
+version="${version}+%s~$(date +%%Y%%m%%d-%%H%%M)"
+
+cd /build/source/
+
+mv /tmp/upstream.tar.gz /build/lxc_${version}.orig.tar.gz
+
+rm -f debian/changelog
+dch --create --package lxc -v ${version}-0%s1~%s --distribution %s \
+    "Automated snapshot build."
+
+debuild -S -sa -us -uc
+""" % (args.suffix, args.release, args.dist, args.release)) != 0:
+        build_env.exit_fail()
+
+    build_env.download("/build/lxc_*", args.target)
+
+    build_env.exit_pass()
+
+except Exception or KeyboardInterrupt:
+    traceback.print_exc()
+    build_env.exit_unstable()

@@ -40,6 +40,10 @@ LXC_RUN_DEPENDENCIES = set(["bridge-utils", "busybox-static", "cgmanager",
                             "iptables", "openssl", "rpm", "rsync", "uidmap",
                             "uuid-runtime", "yum", "wget", "xz-utils"])
 
+LXC_DEB_DEPENDENCIES = set(["bzr", "debhelper", "devscripts",
+                            "dh-apparmor", "dh-autoreconf",
+                            "hardening-wrapper"])
+
 config = {}
 
 
