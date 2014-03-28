@@ -1,0 +1,5 @@
+{
+    "template_env": {"CATEGORIES": "00_base 01_minimum 02_x11 03_xclassics",
+                     "IGNOREPKGS": "",
+                     "ADDONPKGS": "plamo/04_xapps/dbus plamo/04_xapps/print.txz/openslp plamo/05_ext/AV.txz/libao plamo/05_ext/AV.txz/flac plamo/05_ext/AV.txz/jack_audio_connection_kit plamo/05_ext/AV.txz/libvorbis plamo/05_ext/AV.txz/libogg plamo/05_ext/AV.txz/speex plamo/05_ext/ftgl"}
+}

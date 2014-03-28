@@ -40,8 +40,8 @@ try:
     build_env = lxc_ci.BuildEnvironment("ubuntu", "trusty")
     build_env.setup()
 
-    config = lxc_ci.load_config(args.template, args.release,
-                                args.arch, args.variant)
+    config = lxc_ci.load_template_config(args.template, args.release,
+                                         args.arch, args.variant)
 
     # Setup LXC
     if build_env.install(list(lxc_ci.LXC_BUILD_DEPENDENCIES) + ["git"]) != 0:

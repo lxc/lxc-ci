@@ -1,0 +1,2 @@
+[env]
+proxy = http://proxy.server.com:3128

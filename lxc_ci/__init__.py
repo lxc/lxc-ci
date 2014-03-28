@@ -1,4 +1,20 @@
+# Copyright 2014 - Stéphane Graber <stgraber@ubuntu.com>
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2, as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
 from io import BytesIO
+import configparser
 import glob
 import json
 import lxc
@@ -24,6 +40,8 @@ LXC_RUN_DEPENDENCIES = set(["bridge-utils", "busybox-static", "cgmanager",
                             "iptables", "openssl", "rpm", "rsync", "uidmap",
                             "uuid-runtime", "yum", "wget", "xz-utils"])
 
+config = {}
+
 
 class BuildEnvironment:
     architecture = None
@@ -32,6 +50,9 @@ class BuildEnvironment:
     release = None
 
     def __init__(self, distribution, release, architecture=None):
+        if not config:
+            load_config()
+
         if not architecture:
             dpkg = subprocess.Popen(['dpkg', '--print-architecture'],
                                     stdout=subprocess.PIPE,
@@ -103,6 +124,9 @@ class BuildEnvironment:
 
             os.environ['PATH'] = '/usr/sbin:/usr/bin:/sbin:/bin'
             os.environ['HOME'] = '/root'
+            if "env" in config and "proxy" in config['env']:
+                os.environ['http_proxy'] = config['env']['proxy']
+                os.environ['https_proxy'] = config['env']['proxy']
 
             return subprocess.call(cmd, cwd=cwd)
 
@@ -168,10 +192,30 @@ class BuildEnvironment:
             shutil.copy(entry, target)
 
 
-def load_config(template, release, arch, variant):
+def load_config():
+    if not os.path.exists("etc/config"):
+        return
+
+    configp = configparser.ConfigParser()
+    configp.read("etc/config")
+
+    for section in configp.sections():
+        config_section = {}
+        for option in configp.options(section):
+            value = configp.get(section, option)
+            config_section[option] = value.strip('"')
+        config[section] = config_section
+
+
+def load_template_config(template, release, arch, variant):
     config = {}
 
     json_path = "templates/%s.json" % template
+    if os.path.exists(json_path):
+        with open(json_path, "r") as fd:
+            config.update(json.loads(fd.read()))
+
+    json_path = "templates/%s.%s.json" % (template, variant)
     if os.path.exists(json_path):
         with open(json_path, "r") as fd:
             config.update(json.loads(fd.read()))
