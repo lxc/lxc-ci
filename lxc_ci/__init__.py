@@ -102,6 +102,12 @@ class BuildEnvironment:
         self.container.set_cgroup_item("devices.allow", "b 7:* rwm")
 
         self.execute(["mkdir", "-p", "/build"])
+
+        if self.distribution in ("ubuntu", "debian"):
+            self.execute("""#!/bin/sh -ex
+echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
+""")
+
         self.update()
 
     def update(self):
