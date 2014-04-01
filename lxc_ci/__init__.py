@@ -113,9 +113,12 @@ echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
     def update(self):
         print(" ==> Updating the container")
         if self.distribution == "ubuntu":
-            if self.execute(["apt-get", "update"]) != 0 or \
-               self.execute(["apt-get", "dist-upgrade",
-                             "-y", "--force-yes"]) != 0:
+            for i in range(3):
+                if self.execute(["apt-get", "update"]) != 0 or \
+                   self.execute(["apt-get", "dist-upgrade",
+                                 "-y", "--force-yes"]) == 0:
+                    break
+            else:
                 raise Exception("Failed to update the container")
 
     def cleanup(self):
