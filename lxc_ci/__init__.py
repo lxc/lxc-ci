@@ -114,7 +114,7 @@ echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
         print(" ==> Updating the container")
         if self.distribution == "ubuntu":
             for i in range(3):
-                if self.execute(["apt-get", "update"]) != 0 or \
+                if self.execute(["apt-get", "update"]) == 0 and \
                    self.execute(["apt-get", "dist-upgrade",
                                  "-y", "--force-yes"]) == 0:
                     break
