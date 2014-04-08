@@ -26,7 +26,7 @@ parser.add_argument("tarball", metavar="TARBALL")
 parser.add_argument("packaging", metavar="PACKAGING")
 parser.add_argument("dist", metavar="DIST")
 parser.add_argument("release", metavar="RELEASE")
-parser.add_argument("suffix", metavar="SUFFIX")
+parser.add_argument("pkg_version", metavar="PKG_VERSION")
 parser.add_argument("target", metavar="TARGET")
 args = parser.parse_args()
 
@@ -55,9 +55,7 @@ export DEBFULLNAME="LXC snapshot packages"
 
 bzr export /build/source/debian/ /tmp/packaging/debian/
 
-version=$(grep ' LXC_VERSION ' /build/source/src/lxc/version.h \
-    | cut -d' ' -f3 | sed 's/"//g')
-version="${version}+%s~$(date +%%Y%%m%%d-%%H%%M)"
+version="%s~$(date +%%Y%%m%%d-%%H%%M)"
 
 cd /build/source/
 
@@ -68,7 +66,7 @@ dch --create --package lxc -v ${version}-0%s1~%s --distribution %s \
     "Automated snapshot build."
 
 debuild -S -sa -us -uc
-""" % (args.suffix, args.release, args.dist, args.release)) != 0:
+""" % (args.pkg_version, args.dist, args.release, args.release)) != 0:
         build_env.exit_fail()
 
     build_env.download("/build/lxc_*", args.target)
