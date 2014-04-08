@@ -55,11 +55,11 @@ try:
 
     # Coverity build
     if build_env.execute(["/build/coverity/bin/cov-build", "--dir",
-                          "/build/cov-build", "make"], "/build/source/") != 0:
+                          "/build/cov-int", "make"], "/build/source/") != 0:
         build_env.exit_fail()
 
     if build_env.execute(["tar", "-zcf", "/build/coverity.tar.gz",
-                          "-C", "/build/cov-build/", "."]) != 0:
+                          "-C", "/build/", "cov-int"]) != 0:
         build_env.exit_fail()
 
     build_env.download("/build/coverity.tar.gz", args.target)
