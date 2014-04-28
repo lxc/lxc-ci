@@ -9,5 +9,6 @@
     "config_system": ["common"],
     "template_arch": {"amd64": "x86_64",
                       "i386": "i686"},
-    "template_args": ["-R", "RELEASE", "-a", "ARCH"]
+    "template_args": ["-R", "RELEASE", "-a", "ARCH"],
+    "template_env": {"root_password": "root"}
 }
