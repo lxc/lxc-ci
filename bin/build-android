@@ -72,12 +72,14 @@ try:
     # Build libcap
     if build_env.execute(["env"] + env + ["make", "-e", "CFLAGS=-DBIONIC"],
                          "/build/libcap/libcap/") != 0:
-        build_env.execute(["/bin/bash"])
         build_env.exit_unstable()
 
     if build_env.execute("""#!/bin/sh -ex
 
 cp -P /build/libcap/libcap/libcap.so* \\
+    /build/ndk/platforms/android-9/arch-arm/usr/lib/
+
+cp -P /build/libcap/libcap/libcap.a \\
     /build/ndk/platforms/android-9/arch-arm/usr/lib/
 
 mkdir -p /build/android/data/lxc/lxc/lib/
@@ -88,7 +90,8 @@ cp -P /build/libcap/libcap/include/sys/capability.h \\
     /build/ndk/platforms/android-9/arch-arm/usr/include/sys/
 
 cp -P /build/libcap/libcap/include/linux/capability.h \\
-    /build/ndk/platforms/android-9/arch-arm/usr/include/linux/""") != 0:
+    /build/ndk/platforms/android-9/arch-arm/usr/include/linux/
+""") != 0:
         build_env.exit_unstable()
 
     # Build LXC
