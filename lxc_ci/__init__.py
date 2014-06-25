@@ -116,7 +116,7 @@ class BuildEnvironment:
         # FIXME: Very ugly workaround
         if self.distribution == "ubuntu":
             import _lxc
-            _lxc.Container.append_config_item(self.container, "lxc.mount.auto",
+            _lxc.Container.set_config_item(self.container, "lxc.mount.auto",
                                            "cgroup:mixed")
 
         print(" ==> Starting the container")
