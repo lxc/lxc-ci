@@ -31,23 +31,30 @@ parser.add_argument("release", metavar="RELEASE")
 parser.add_argument("arch", metavar="ARCH")
 parser.add_argument("variant", metavar="VARIANT")
 parser.add_argument("target", metavar="TARGET")
+parser.add_argument("--builder-dist", metavar="DIST", default="ubuntu")
+parser.add_argument("--builder-release", metavar="RELEASE", default="trusty")
+parser.add_argument("--builder-arch", metavar="RELEASE", default=None)
 args = parser.parse_args()
 
 if os.geteuid():
     parser.error("Image building requires root privileges.")
 
 try:
-    build_env = lxc_ci.BuildEnvironment("ubuntu", "trusty")
+    build_env = lxc_ci.BuildEnvironment(args.builder_dist,
+                                        args.builder_release,
+                                        args.builder_arch)
     build_env.setup()
 
     config = lxc_ci.load_template_config(args.template, args.release,
                                          args.arch, args.variant)
 
     # Setup LXC
-    if build_env.install(list(lxc_ci.LXC_BUILD_DEPENDENCIES) + ["git"]) != 0:
+    if build_env.install(
+            list(lxc_ci.LXC_BUILD_DEPENDENCIES[args.builder_dist])) != 0:
         build_env.exit_unstable()
 
-    if build_env.install(list(lxc_ci.LXC_RUN_DEPENDENCIES)) != 0:
+    if build_env.install(
+            list(lxc_ci.LXC_RUN_DEPENDENCIES[args.builder_dist])) != 0:
         build_env.exit_unstable()
 
     if build_env.execute(["git",

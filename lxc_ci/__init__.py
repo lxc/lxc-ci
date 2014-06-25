@@ -26,23 +26,48 @@ import tarfile
 import time
 import uuid
 
-LXC_BUILD_DEPENDENCIES = set(["automake", "autoconf", "docbook2x", "doxygen",
-                              "gcc", "graphviz", "libapparmor-dev",
-                              "libcap-dev", "libcgmanager-dev",
-                              "libgnutls-dev", "liblua5.2-dev",
-                              "libseccomp-dev", "libselinux1-dev",
-                              "linux-libc-dev", "lsb-release", "make",
-                              "pkg-config", "python3-all-dev"])
+LXC_BUILD_DEPENDENCIES = {}
+LXC_BUILD_DEPENDENCIES['opensuse'] = set(["automake", "autoconf", "llvm-clang",
+                                          "docbook2x", "doxygen",
+                                          "gcc", "graphviz", "git",
+                                          "libapparmor-devel", "libcap-devel",
+                                          "libgnutls-devel",
+                                          "lua-devel",
+                                          "libseccomp-devel",
+                                          "libselinux-devel",
+                                          "lsb-release",
+                                          "make",
+                                          "pkg-config",
+                                          "python3-devel"])
+LXC_BUILD_DEPENDENCIES['ubuntu'] = set(["automake", "autoconf", "clang-3.3",
+                                        "docbook2x", "doxygen",
+                                        "gcc", "graphviz", "git",
+                                        "libapparmor-dev", "libcap-dev",
+                                        "libcgmanager-dev",
+                                        "libgnutls-dev",
+                                        "liblua5.2-dev",
+                                        "libseccomp-dev",
+                                        "libselinux1-dev",
+                                        "linux-libc-dev", "lsb-release",
+                                        "make", "man2html-base", "pkg-config",
+                                        "python3-all-dev"])
 
-LXC_RUN_DEPENDENCIES = set(["bridge-utils", "busybox-static", "cgmanager",
-                            "cloud-image-utils", "curl", "dbus",
-                            "debootstrap", "dnsmasq-base", "ed", "file",
-                            "iptables", "openssl", "rpm", "rsync", "uidmap",
-                            "uuid-runtime", "yum", "wget", "xz-utils"])
+LXC_RUN_DEPENDENCIES = {}
+LXC_RUN_DEPENDENCIES['opensuse'] = set(["build", "curl", "ed", "file",
+                                        "openssl", "rsync", "util-linux",
+                                        "wget", "xz"])
+LXC_RUN_DEPENDENCIES['ubuntu'] = set(["bridge-utils", "busybox-static",
+                                      "cgmanager", "cloud-image-utils",
+                                      "curl", "dbus", "debootstrap",
+                                      "dnsmasq-base", "ed", "file",
+                                      "iptables", "openssl", "rpm",
+                                      "rsync", "uidmap", "uuid-runtime",
+                                      "yum", "wget", "xz-utils"])
 
-LXC_DEB_DEPENDENCIES = set(["bzr", "debhelper", "devscripts",
-                            "dh-apparmor", "dh-autoreconf",
-                            "hardening-wrapper"])
+LXC_DEB_DEPENDENCIES = {}
+LXC_DEB_DEPENDENCIES['ubuntu'] = set(["bzr", "debhelper", "devscripts",
+                                      "dh-apparmor", "dh-autoreconf",
+                                      "hardening-wrapper"])
 
 config = {}
 
@@ -85,16 +110,21 @@ class BuildEnvironment:
                                       'arch': self.architecture}):
             raise Exception("Failed to create the rootfs")
 
-        self.container.set_config_item("lxc.aa_profile", "unconfined")
+        if self.distribution == "ubuntu":
+            self.container.set_config_item("lxc.aa_profile", "unconfined")
 
         # FIXME: Very ugly workaround
-        import _lxc
-        _lxc.Container.set_config_item(self.container, "lxc.mount.auto",
-                                       "cgroup:mixed")
+        if self.distribution == "ubuntu":
+            import _lxc
+            _lxc.Container.append_config_item(self.container, "lxc.mount.auto",
+                                           "cgroup:mixed")
 
         print(" ==> Starting the container")
         if not self.container.start():
             raise Exception("Failed to start the container")
+
+        if self.distribution == "opensuse":
+            self.execute(["dhcpcd", "eth0"])
 
         if not self.container.get_ips(family="inet", timeout=90):
             raise Exception("Failed to connect to the container")
@@ -117,6 +147,14 @@ echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
                 if self.execute(["apt-get", "update"]) == 0 and \
                    self.execute(["apt-get", "dist-upgrade",
                                  "-y", "--force-yes"]) == 0:
+                    break
+            else:
+                raise Exception("Failed to update the container")
+
+        if self.distribution == "opensuse":
+            for i in range(3):
+                if self.execute(["zypper", "--non-interactive",
+                                 "--no-gpg-checks", "update"]) == 0:
                     break
             else:
                 raise Exception("Failed to update the container")
@@ -158,10 +196,15 @@ echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
 
     def install(self, pkgs):
         print(" ==> Installing: %s" % (", ".join(pkgs)))
-        if self.distribution != "ubuntu":
+        if self.distribution == "ubuntu":
+            return self.execute(["apt-get", "install", "-y", "--force-yes"]
+                                + pkgs)
+        elif self.distribution == "opensuse":
+            return self.execute(["zypper", "--non-interactive",
+                                 "--no-gpg-checks", "install", "-l"] + pkgs)
+        else:
             raise Exception("Unsupported distribution for package installs")
 
-        return self.execute(["apt-get", "install", "-y", "--force-yes"] + pkgs)
 
     def exit_pass(self):
         self.cleanup()
