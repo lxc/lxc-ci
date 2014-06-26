@@ -10,6 +10,7 @@
     "template_arch": {"amd64": "amd64",
                       "i386": "i386",
                       "armel": "armel",
-                      "armhf": "armhf"},
+                      "armhf": "armhf",
+                      "arm64": "arm64"},
     "template_args": ["-r", "RELEASE", "-a", "ARCH"]
 }
