@@ -215,8 +215,10 @@ echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
     def install(self, pkgs):
         print(" ==> Installing: %s" % (", ".join(pkgs)))
         if self.distribution == "ubuntu":
-            return self.execute(["apt-get", "install", "-y", "--force-yes"]
-                                + pkgs)
+            retval = self.execute(["apt-get", "install", "-y", "--force-yes"]
+                                  + pkgs)
+            self.execute(["apt-get", "clean"])
+            return retval
         elif self.distribution == "opensuse":
             return self.execute(["zypper", "--non-interactive",
                                  "--no-gpg-checks", "install", "-l"] + pkgs)
