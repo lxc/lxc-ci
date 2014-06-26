@@ -11,6 +11,7 @@
                       "i386": "i386",
                       "armel": "armel",
                       "armhf": "armhf",
-                      "arm64": "arm64"},
+                      "arm64": "arm64",
+                      "ppc64el": "ppc64el"},
     "template_args": ["-r", "RELEASE", "-a", "ARCH"]
 }
