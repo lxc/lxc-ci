@@ -42,7 +42,6 @@ LXC_BUILD_DEPENDENCIES['opensuse'] = {'default': set(["automake", "autoconf",
                                                       "pkg-config",
                                                       "python3-devel"])}
 LXC_BUILD_DEPENDENCIES['ubuntu'] = {'default': set(["automake", "autoconf",
-                                                    "clang",
                                                     "docbook2x", "doxygen",
                                                     "gcc", "graphviz", "git",
                                                     "libapparmor-dev",
@@ -57,9 +56,9 @@ LXC_BUILD_DEPENDENCIES['ubuntu'] = {'default': set(["automake", "autoconf",
                                                     "man2html-base",
                                                     "pkg-config",
                                                     "python3-all-dev"]),
-                                    'amd64': set(["libseccomp-dev"]),
-                                    'i386': set(["libseccomp-dev"]),
-                                    'armhf': set(["libseccomp-dev"])}
+                                    'amd64': set(["clang", "libseccomp-dev"]),
+                                    'i386': set(["clang", "libseccomp-dev"]),
+                                    'armhf': set(["clang", "libseccomp-dev"])}
 
 LXC_RUN_DEPENDENCIES = {}
 LXC_RUN_DEPENDENCIES['opensuse'] = {'default': set(["build", "curl", "ed",
