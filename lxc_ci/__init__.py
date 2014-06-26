@@ -27,47 +27,66 @@ import time
 import uuid
 
 LXC_BUILD_DEPENDENCIES = {}
-LXC_BUILD_DEPENDENCIES['opensuse'] = set(["automake", "autoconf", "llvm-clang",
-                                          "docbook2x", "doxygen",
-                                          "gcc", "graphviz", "git",
-                                          "libapparmor-devel", "libcap-devel",
-                                          "libgnutls-devel",
-                                          "lua-devel",
-                                          "libseccomp-devel",
-                                          "libselinux-devel",
-                                          "lsb-release",
-                                          "make",
-                                          "pkg-config",
-                                          "python3-devel"])
-LXC_BUILD_DEPENDENCIES['ubuntu'] = set(["automake", "autoconf", "clang",
-                                        "docbook2x", "doxygen",
-                                        "gcc", "graphviz", "git",
-                                        "libapparmor-dev", "libcap-dev",
-                                        "libcgmanager-dev",
-                                        "libgnutls-dev",
-                                        "liblua5.2-dev",
-                                        "libseccomp-dev",
-                                        "libselinux1-dev",
-                                        "linux-libc-dev", "lsb-release",
-                                        "make", "man2html-base", "pkg-config",
-                                        "python3-all-dev"])
+LXC_BUILD_DEPENDENCIES['opensuse'] = {'default': set(["automake", "autoconf",
+                                                      "llvm-clang",
+                                                      "docbook2x", "doxygen",
+                                                      "gcc", "graphviz", "git",
+                                                      "libapparmor-devel",
+                                                      "libcap-devel",
+                                                      "libgnutls-devel",
+                                                      "lua-devel",
+                                                      "libseccomp-devel",
+                                                      "libselinux-devel",
+                                                      "lsb-release",
+                                                      "make",
+                                                      "pkg-config",
+                                                      "python3-devel"])}
+LXC_BUILD_DEPENDENCIES['ubuntu'] = {'default': set(["automake", "autoconf",
+                                                    "clang",
+                                                    "docbook2x", "doxygen",
+                                                    "gcc", "graphviz", "git",
+                                                    "libapparmor-dev",
+                                                    "libcap-dev",
+                                                    "libcgmanager-dev",
+                                                    "libgnutls-dev",
+                                                    "liblua5.2-dev",
+                                                    "libseccomp-dev",
+                                                    "libselinux1-dev",
+                                                    "linux-libc-dev",
+                                                    "lsb-release",
+                                                    "make",
+                                                    "man2html-base",
+                                                    "pkg-config",
+                                                    "python3-all-dev"]),
+                                    'amd64': set(["libseccomp-dev"]),
+                                    'i386': set(["libseccomp-dev"]),
+                                    'armhf': set(["libseccomp-dev"])}
 
 LXC_RUN_DEPENDENCIES = {}
-LXC_RUN_DEPENDENCIES['opensuse'] = set(["build", "curl", "ed", "file",
-                                        "openssl", "rsync", "util-linux",
-                                        "wget", "xz"])
-LXC_RUN_DEPENDENCIES['ubuntu'] = set(["bridge-utils", "busybox-static",
-                                      "cgmanager", "cloud-image-utils",
-                                      "curl", "dbus", "debootstrap",
-                                      "dnsmasq-base", "ed", "file",
-                                      "iptables", "openssl", "rpm",
-                                      "rsync", "uidmap", "uuid-runtime",
-                                      "yum", "wget", "xz-utils"])
+LXC_RUN_DEPENDENCIES['opensuse'] = {'default': set(["build", "curl", "ed",
+                                                    "file", "openssl",
+                                                    "rsync", "util-linux",
+                                                    "wget", "xz"])}
+LXC_RUN_DEPENDENCIES['ubuntu'] = {'default': set(["bridge-utils",
+                                                  "busybox-static",
+                                                  "cgmanager",
+                                                  "cloud-image-utils",
+                                                  "curl", "dbus",
+                                                  "debootstrap",
+                                                  "dnsmasq-base", "ed",
+                                                  "file", "iptables",
+                                                  "openssl", "rpm",
+                                                  "rsync", "uidmap",
+                                                  "uuid-runtime",
+                                                  "yum", "wget",
+                                                  "xz-utils"])}
 
 LXC_DEB_DEPENDENCIES = {}
-LXC_DEB_DEPENDENCIES['ubuntu'] = set(["bzr", "debhelper", "devscripts",
-                                      "dh-apparmor", "dh-autoreconf",
-                                      "hardening-wrapper"])
+LXC_DEB_DEPENDENCIES['ubuntu'] = {'default': set(["bzr", "debhelper",
+                                                  "devscripts",
+                                                  "dh-apparmor",
+                                                  "dh-autoreconf",
+                                                  "hardening-wrapper"])}
 
 config = {}
 
@@ -204,7 +223,6 @@ echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
                                  "--no-gpg-checks", "install", "-l"] + pkgs)
         else:
             raise Exception("Unsupported distribution for package installs")
-
 
     def exit_pass(self):
         self.cleanup()
