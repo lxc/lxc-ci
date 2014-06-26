@@ -39,7 +39,7 @@ LXC_BUILD_DEPENDENCIES['opensuse'] = set(["automake", "autoconf", "llvm-clang",
                                           "make",
                                           "pkg-config",
                                           "python3-devel"])
-LXC_BUILD_DEPENDENCIES['ubuntu'] = set(["automake", "autoconf", "clang-3.3",
+LXC_BUILD_DEPENDENCIES['ubuntu'] = set(["automake", "autoconf", "clang",
                                         "docbook2x", "doxygen",
                                         "gcc", "graphviz", "git",
                                         "libapparmor-dev", "libcap-dev",
