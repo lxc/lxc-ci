@@ -23,31 +23,38 @@ import traceback
 
 parser = argparse.ArgumentParser(description="gcc testbuild")
 parser.add_argument("tarball", metavar="TARBALL")
+parser.add_argument("--builder-dist", metavar="DIST", default="ubuntu")
+parser.add_argument("--builder-release", metavar="RELEASE", default="trusty")
+parser.add_argument("--builder-arch", metavar="RELEASE", default=None)
 args = parser.parse_args()
 
 try:
-    build_env = lxc_ci.BuildEnvironment("ubuntu", "trusty")
+    build_env = lxc_ci.BuildEnvironment(args.builder_dist,
+                                        args.builder_release,
+                                        args.builder_arch)
     build_env.setup()
 
     if build_env.install(
-            list(lxc_ci.LXC_BUILD_DEPENDENCIES['ubuntu']['default'])) != 0:
+            list(lxc_ci.LXC_BUILD_DEPENDENCIES[args.builder_dist]
+                 ['default'])) != 0:
         build_env.exit_unstable()
 
     if build_env.architecture in \
-            lxc_ci.LXC_BUILD_DEPENDENCIES['ubuntu']:
+            lxc_ci.LXC_BUILD_DEPENDENCIES[args.builder_dist]:
         if build_env.install(
-            list(lxc_ci.LXC_BUILD_DEPENDENCIES['ubuntu']
+            list(lxc_ci.LXC_BUILD_DEPENDENCIES[args.builder_dist]
                  [build_env.architecture])) != 0:
             build_env.exit_unstable()
 
     if build_env.install(
-            list(lxc_ci.LXC_RUN_DEPENDENCIES['ubuntu']['default'])) != 0:
+            list(lxc_ci.LXC_RUN_DEPENDENCIES[args.builder_dist]
+                 ['default'])) != 0:
         build_env.exit_unstable()
 
     if build_env.architecture in \
-            lxc_ci.LXC_RUN_DEPENDENCIES['ubuntu']:
+            lxc_ci.LXC_RUN_DEPENDENCIES[args.builder_dist]:
         if build_env.install(
-            list(lxc_ci.LXC_RUN_DEPENDENCIES['ubuntu']
+            list(lxc_ci.LXC_RUN_DEPENDENCIES[args.builder_dist]
                  [build_env.architecture])) != 0:
             build_env.exit_unstable()
 
