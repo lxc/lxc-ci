@@ -19,6 +19,7 @@ sys.path.insert(0, '.')
 
 import argparse
 import lxc_ci
+import os
 import traceback
 
 parser = argparse.ArgumentParser(description="clang testbuild")
