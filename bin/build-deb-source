@@ -23,7 +23,9 @@ import traceback
 
 parser = argparse.ArgumentParser(description="deb source package build")
 parser.add_argument("tarball", metavar="TARBALL")
-parser.add_argument("packaging", metavar="PACKAGING")
+parser.add_argument("pkg_repository", metavar="REPOSITORY")
+parser.add_argument("pkg_branch", metavar="BRANCH")
+parser.add_argument("pkg_commit", metavar="COMMIT", default="HEAD")
 parser.add_argument("dist", metavar="DIST")
 parser.add_argument("release", metavar="RELEASE")
 parser.add_argument("pkg_version", metavar="PKG_VERSION")
@@ -52,15 +54,21 @@ try:
                           "--strip", "1"], "/build/source/") != 0:
         build_env.exit_unstable()
 
-    if build_env.execute(["bzr", "branch", args.packaging,
+    if build_env.execute(["git",
+                          "clone", args.pkg_repository,
+                          "-b", args.pkg_branch,
                           "/tmp/packaging"]) != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["git", "reset", "--hard", args.pkg_commit],
+                         "/tmp/packaging") != 0:
         build_env.exit_unstable()
 
     if build_env.execute("""#!/bin/sh -ex
 export DEBEMAIL="lxc-devel@lists.linuxcontainers.org"
 export DEBFULLNAME="LXC snapshot packages"
 
-bzr export /build/source/debian/ /tmp/packaging/debian/
+cp -R /tmp/packaging/debian/ /build/source/debian/
 
 version="%s~$(date +%%Y%%m%%d-%%H%%M)"
 

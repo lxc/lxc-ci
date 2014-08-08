@@ -80,7 +80,7 @@ LXC_RUN_DEPENDENCIES['ubuntu'] = {'default': set(["bridge-utils",
                                                   "xz-utils"])}
 
 LXC_DEB_DEPENDENCIES = {}
-LXC_DEB_DEPENDENCIES['ubuntu'] = {'default': set(["bzr", "debhelper",
+LXC_DEB_DEPENDENCIES['ubuntu'] = {'default': set(["git", "debhelper",
                                                   "devscripts",
                                                   "dh-apparmor",
                                                   "dh-autoreconf",
