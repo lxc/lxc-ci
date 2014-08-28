@@ -8,5 +8,6 @@
     "config_system": ["common"],
     "template_arch": {"amd64": "x86_64",
                       "i386": "x86"},
-    "template_args": ["-r", "RELEASE", "-a", "ARCH"]
+    "template_args": ["-r", "RELEASE", "-a", "ARCH"],
+    "template_env": {"MIRRORSRV": "repository.plamolinux.org"}
 }
