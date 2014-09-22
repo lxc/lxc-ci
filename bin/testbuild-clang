@@ -27,6 +27,8 @@ parser.add_argument("tarball", metavar="TARBALL")
 parser.add_argument("--builder-dist", metavar="DIST", default="ubuntu")
 parser.add_argument("--builder-release", metavar="RELEASE", default="trusty")
 parser.add_argument("--builder-arch", metavar="RELEASE", default=None)
+parser.add_arguemnt("--use-daily", dest="daily", action="store_true",
+                    default=False)
 args = parser.parse_args()
 
 try:
@@ -34,6 +36,13 @@ try:
                                         args.builder_release,
                                         args.builder_arch)
     build_env.setup()
+
+    if args.daily:
+        build_env.install(["apt-get", "install",
+                           "software-properties-common", "-y"])
+        build_env.execute(["apt-add-repository",
+                           "ppa:ubuntu-lxc/daily", "-y"])
+        build_env.update()
 
     if build_env.install(
             list(lxc_ci.LXC_BUILD_DEPENDENCIES[args.builder_dist]
@@ -90,7 +99,7 @@ try:
             build_env.exit_fail()
 
     if os.path.exists(os.path.join(rootfs, "usr", "share",
-                                     "lxc", "lxc.net")):
+                                   "lxc", "lxc.net")):
         if build_env.execute(["sed", "-i", "s/10\\.0\\.3\\./10.12.34./g",
                               "/usr/share/lxc/lxc.net"]) != 0:
             build_env.exit_fail()
