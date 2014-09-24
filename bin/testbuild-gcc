@@ -27,7 +27,7 @@ parser.add_argument("tarball", metavar="TARBALL")
 parser.add_argument("--builder-dist", metavar="DIST", default="ubuntu")
 parser.add_argument("--builder-release", metavar="RELEASE", default="trusty")
 parser.add_argument("--builder-arch", metavar="RELEASE", default=None)
-parser.add_arguemnt("--use-daily", dest="daily", action="store_true",
+parser.add_argument("--use-daily", dest="daily", action="store_true",
                     default=False)
 args = parser.parse_args()
 
