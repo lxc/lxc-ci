@@ -30,14 +30,24 @@ parser.add_argument("dist", metavar="DIST")
 parser.add_argument("release", metavar="RELEASE")
 parser.add_argument("pkg_version", metavar="PKG_VERSION")
 parser.add_argument("target", metavar="TARGET")
+parser.add_argument("--use-daily", dest="daily", action="store_true",
+                    default=False)
 args = parser.parse_args()
 
 try:
     build_env = lxc_ci.BuildEnvironment("ubuntu", "trusty")
     build_env.setup()
 
+    if args.daily:
+        build_env.install(["apt-get", "install",
+                           "software-properties-common", "-y"])
+        build_env.execute(["apt-add-repository",
+                           "ppa:ubuntu-lxc/daily", "-y"])
+        build_env.update()
+
     if build_env.install(
-            list(lxc_ci.LXC_DEB_DEPENDENCIES['ubuntu']['default'])) != 0:
+            list(lxc_ci.LXC_DEB_DEPENDENCIES['ubuntu']['default']) +
+            ["dh-systemd"]) != 0:
         build_env.exit_unstable()
 
     if build_env.architecture in lxc_ci.LXC_BUILD_DEPENDENCIES['ubuntu']:
