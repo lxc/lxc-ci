@@ -1,0 +1,20 @@
+#!/usr/bin/python3
+
+import os
+import sys
+
+cmd = ["/usr/bin/wget"]
+
+for arg in sys.argv[1:]:
+    if "images.linuxcontainers.org" in arg:
+        arg = arg.replace("https://", "http://")
+    elif "cloud-images.ubuntu.com" in arg:
+        arg = arg.replace("https://", "http://")
+
+    cmd.append(arg)
+
+if not os.path.exists(cmd[0]):
+    print("wget not present on system")
+    sys.exit(1)
+
+os.execv(cmd[0], cmd)
