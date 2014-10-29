@@ -1,7 +1,6 @@
 {
     "create_message": ["You just created a Plamo container ",
-                       "(release=RELEASE, arch=ARCH, variant=VARIANT)\n",
-                       "The default root password is: root\n"],
+                       "(release=RELEASE, arch=ARCH, variant=VARIANT)\n"],
     "expiry": 2,
     "templates": ["/etc/HOSTNAME", "/etc/hostname", "/etc/hosts"],
     "config_user": ["common", "userns"],
@@ -9,5 +8,6 @@
     "template_arch": {"amd64": "x86_64",
                       "i386": "x86"},
     "template_args": ["-r", "RELEASE", "-a", "ARCH"],
-    "template_env": {"MIRRORSRV": "repository.plamolinux.org"}
+    "template_env": {"MIRRORSRV": "repository.plamolinux.org"},
+    "post_create": ["passwd -d root"]
 }

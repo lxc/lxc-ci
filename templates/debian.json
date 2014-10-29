@@ -1,7 +1,7 @@
 {
     "create_message": ["You just created a Debian container ",
-                       "(release=RELEASE, arch=ARCH, variant=VARIANT)\n",
-                       "The default root password is: root\n"],
+                       "(release=RELEASE, arch=ARCH, variant=VARIANT)\n\n"
+                       "To enable sshd, run: apt-get install openssh-server"],
     "expiry": 30,
     "templates": ["/etc/hostname", "/etc/hosts"],
     "config_user": ["common", "userns"],
@@ -10,5 +10,7 @@
                       "i386": "i386",
                       "armel": "armel",
                       "armhf": "armhf"},
-    "template_args": ["-r", "RELEASE", "-a", "ARCH"]
+    "template_args": ["-r", "RELEASE", "-a", "ARCH"],
+    "post_create": ["passwd -d root",
+                    "apt-get remove --purge openssh-server -y"]
 }

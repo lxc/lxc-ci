@@ -1,7 +1,7 @@
 {
     "create_message": ["You just created an OpenSUSE container ",
-                       "(release=RELEASE, arch=ARCH, variant=VARIANT)\n",
-                       "The default root password is: root\n"],
+                       "(release=RELEASE, arch=ARCH, variant=VARIANT)\n\n"
+                       "To enable sshd, run: systemctl enable sshd\n"],
     "expiry": 30,
     "templates": ["/etc/sysconfig/network-scripts/ifcfg-eth0",
                   "/etc/sysconfig/network", "/etc/hostname", "/etc/hosts"],
@@ -9,5 +9,7 @@
     "config_system": ["common"],
     "template_arch": {"amd64": "x86_64",
                       "i386": "i686"},
-    "template_args": []
+    "template_args": [],
+    "post_create": ["passwd -d root",
+                    "ln -s /dev/null /etc/systemd/system/sshd.service"]
 }

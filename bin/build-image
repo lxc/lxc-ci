@@ -120,65 +120,10 @@ try:
                          + config['template_args']) != 0:
         build_env.exit_fail()
 
-    # Template specific code
-    if args.template == "ubuntu":
-        if build_env.execute("""#!/bin/sh -ex
-(
-cat << EOF
-start on starting mountall
-
-script
-    set +e
-
-    # Re-generate ssh host keys
-    rm -f /etc/ssh/ssh_host_*key*
-    if [ -x "/var/lib/dpkg/info/openssh-server.postinst" ]; then
-        DPKG_MAINTSCRIPT_PACKAGE=openssh DPKG_MAINTSCRIPT_NAME=postinst \
-            /var/lib/dpkg/info/openssh-server.postinst configure
-    fi
-
-    # Self-destruct
-    rm /etc/init/lxc-post-create.conf
-end script
-EOF
-) > /build/containers/LXC_NAME/rootfs/etc/init/lxc-post-create.conf
-
-rm -f /build/containers/LXC_NAME/rootfs/etc/resolvconf/resolv.conf.d/original
-rm -f /build/containers/LXC_NAME/rootfs/etc/resolvconf/resolv.conf.d/tail
-""") != 0:
-            build_env.exit_unstable()
-    elif args.template == "debian":
-        if build_env.execute("""#!/bin/sh -ex
-(
-cat << EOF
-#!/bin/sh
-
-### BEGIN INIT INFO
-# Provides: lxc-post-create
-# Required-Start:
-# Required-Stop:
-# Default-Start: 2 3 4 5
-# Default-Stop:
-# Short-Description: LXC post-create script
-### END INIT INFO
-
-# Re-generate ssh host keys
-rm -f /etc/ssh/ssh_host_*key*
-if [ -x "/var/lib/dpkg/info/openssh-server.postinst" ]; then
-    DPKG_MAINTSCRIPT_PACKAGE=openssh DPKG_MAINTSCRIPT_NAME=postinst \
-        /var/lib/dpkg/info/openssh-server.postinst configure
-fi
-
-# Self-destruct
-update-rc.d lxc-post-create remove
-rm /etc/init.d/lxc-post-create
-EOF
-) > /build/containers/LXC_NAME/rootfs/etc/init.d/lxc-post-create
-chmod +x /build/containers/LXC_NAME/rootfs/etc/init.d/lxc-post-create
-chroot /build/containers/LXC_NAME/rootfs/ \
-    update-rc.d lxc-post-create start 00 2 3 4 5
-""") != 0:
-            build_env.exit_unstable()
+    # Run post-create hooks
+    for cmd in config.get("post_create", []):
+        build_env.execute(["chroot", "/build/containers/LXC_NAME/rootfs",
+                           "sh", "-c", cmd])
 
     # Generate the config
     if build_env.execute("""#!/bin/sh -ex

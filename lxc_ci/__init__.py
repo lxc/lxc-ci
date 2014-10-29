@@ -337,7 +337,16 @@ def generate_image_metadata(template, arch, config, target):
     expiry_file.name = "expiry"
     tarball.addfile(expiry_file, BytesIO(content.encode('utf-8')))
 
-    content = "%s\n" % config['create_message']
+    content = """%s
+
+For security reason, container images ship without user accounts
+and without a root password.
+
+Use lxc-attach or chroot directly into the rootfs to set a root password
+or create user accounts.
+""" % config['create_message']
+
+
     create_message_file = tarfile.TarInfo()
     create_message_file.size = len(content)
     create_message_file.mtime = int(time.strftime("%s", time.localtime()))
