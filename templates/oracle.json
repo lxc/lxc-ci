@@ -1,6 +1,6 @@
 {
     "create_message": ["You just created an Oracle container ",
-                       "(release=RELEASE, arch=ARCH, variant=VARIANT)\n\n"
+                       "(release=RELEASE, arch=ARCH, variant=VARIANT)\n\n",
                        "To enable sshd, run: yum install openssh-server"],
     "expiry": 30,
     "templates": ["/etc/sysconfig/network-scripts/ifcfg-eth0",

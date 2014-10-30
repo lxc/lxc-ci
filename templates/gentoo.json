@@ -1,6 +1,6 @@
 {
     "create_message": ["You just created a Gentoo container ",
-                       "(release=RELEASE, arch=ARCH, variant=VARIANT)\n\n"
+                       "(release=RELEASE, arch=ARCH, variant=VARIANT)\n\n",
                        "To enable sshd, run: rc-update add sshd"],
     "expiry": 30,
     "templates": ["/etc/conf.d/hostname", "/etc/hostname", "/etc/hosts"],
