@@ -11,8 +11,6 @@
                       "i386": "i386"},
     "template_args": ["-R", "RELEASE", "-a", "ARCH"],
     "post_create": ["passwd -d root",
-                    "userdel oracle",
-                    "groupdel oracle",
-                    "rm -Rf /home/oracle",
+                    "passwd -d oracle",
                     "yum -y remove openssh-server"]
 }
