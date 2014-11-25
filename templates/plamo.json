@@ -9,5 +9,5 @@
                       "i386": "x86"},
     "template_args": ["-r", "RELEASE", "-a", "ARCH"],
     "template_env": {"MIRRORSRV": "repository.plamolinux.org"},
-    "post_create": ["passwd -d root"]
+    "post_create": ["passwd -dl root"]
 }

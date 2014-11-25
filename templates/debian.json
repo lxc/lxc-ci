@@ -11,6 +11,6 @@
                       "armel": "armel",
                       "armhf": "armhf"},
     "template_args": ["-r", "RELEASE", "-a", "ARCH"],
-    "post_create": ["passwd -d root",
+    "post_create": ["passwd -dl root",
                     "apt-get remove --purge openssh-server -y"]
 }
