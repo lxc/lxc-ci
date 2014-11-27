@@ -79,9 +79,9 @@ try:
     # Build manpage
     if build_env.execute("""#!/bin/sh -ex
 find . | grep \\\\.[0-9]$ | while read line; do
-    dst_file="/build/man/${line}.html"
+    dst_file="/build/man/${line}"
     mkdir -p $(dirname $dst_file)
-    man2html $line > $dst_file
+    cp $line $dst_file
 done
 tar -zcf /build/manpages.tar.gz -C /build/man/ .""", "/build/git/doc/") != 0:
         build_env.exit_fail()
