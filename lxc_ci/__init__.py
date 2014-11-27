@@ -257,14 +257,23 @@ echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
                      int(os.environ.get("SUDO_GID", os.getegid())))
 
     def upload(self, expr, target):
-        rootfs = self.container.get_config_item("lxc.rootfs")
         match = glob.glob(expr)
-
-        target = "%s/%s" % (rootfs, target)
 
         for entry in match:
             print(" ==> Uploading: %s" % entry)
-            shutil.copy(entry, target)
+            with open(entry, "r") as source:
+                mode = os.stat(entry).st_mode
+
+                def write_file():
+                    with open(target, "w+") as dest:
+                        dest.write(source.read())
+                    os.chmod(target, mode)
+
+                    return 0
+
+                ret = self.container.attach_wait(write_file)
+                if ret != 0:
+                    raise Exception("Failed file transfer: %s" % ret)
 
 
 def load_config():
@@ -344,7 +353,6 @@ and without a root password.
 Use lxc-attach or chroot directly into the rootfs to set a root password
 or create user accounts.
 """ % config['create_message']
-
 
     create_message_file = tarfile.TarInfo()
     create_message_file.size = len(content)
