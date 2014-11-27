@@ -57,7 +57,8 @@ try:
         build_env.exit_fail()
 
     if build_env.execute(["./configure", "--enable-doc", "--enable-apidoc",
-                          "--enable-python"],
+                          "--enable-python", "--prefix=/usr/",
+                          "--sysconfdir=/etc/", "--localstatedir=/var/"],
                          "/build/git/") != 0:
         build_env.exit_fail()
 
