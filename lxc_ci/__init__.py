@@ -261,11 +261,11 @@ echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
 
         for entry in match:
             print(" ==> Uploading: %s" % entry)
-            with open(entry, "r") as source:
+            with open(entry, "rb") as source:
                 mode = os.stat(entry).st_mode
 
                 def write_file():
-                    with open(target, "w+") as dest:
+                    with open(target, "wb+") as dest:
                         dest.write(source.read())
                     os.chmod(target, mode)
 
