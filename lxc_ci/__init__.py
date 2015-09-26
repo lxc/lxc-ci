@@ -134,10 +134,12 @@ class BuildEnvironment:
             import _lxc
             _lxc.Container.set_config_item(self.container, "lxc.mount.auto",
                                            "cgroup:mixed")
-            _lxc.container.set_config_item(
+            _lxc.Container.set_config_item(
+                self.container,
                 "lxc.mount.entry",
                 "proc /mnt/proc proc create=dir")
-            _lxc.container.set_config_item(
+            _lxc.Container.set_config_item(
+                self.container,
                 "lxc.mount.entry",
                 "sysfs /mnt/sys sysfs create=dir")
 
