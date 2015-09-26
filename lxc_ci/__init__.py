@@ -137,11 +137,11 @@ class BuildEnvironment:
             _lxc.Container.set_config_item(
                 self.container,
                 "lxc.mount.entry",
-                "proc /mnt/proc proc create=dir")
+                "proc mnt/proc proc create=dir")
             _lxc.Container.set_config_item(
                 self.container,
                 "lxc.mount.entry",
-                "sysfs /mnt/sys sysfs create=dir")
+                "sysfs mnt/sys sysfs create=dir")
 
         print(" ==> Starting the container")
         if not self.container.start():
