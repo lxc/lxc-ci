@@ -128,18 +128,18 @@ class BuildEnvironment:
 
         if self.distribution == "ubuntu":
             self.container.set_config_item("lxc.aa_profile", "unconfined")
-            self.container.set_config_item(
-                "lxc.mount.entry",
-                "proc /mnt/proc proc create=dir")
-            self.container.set_config_item(
-                "lxc.mount.entry",
-                "sysfs /mnt/sys sysfs create=dir")
 
         # FIXME: Very ugly workaround
         if self.distribution == "ubuntu":
             import _lxc
             _lxc.Container.set_config_item(self.container, "lxc.mount.auto",
                                            "cgroup:mixed")
+            _lxc.container.set_config_item(
+                "lxc.mount.entry",
+                "proc /mnt/proc proc create=dir")
+            _lxc.container.set_config_item(
+                "lxc.mount.entry",
+                "sysfs /mnt/sys sysfs create=dir")
 
         print(" ==> Starting the container")
         if not self.container.start():
