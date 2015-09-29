@@ -1,0 +1,82 @@
+#!/usr/bin/python3 -u
+# Copyright 2014 - Stéphane Graber <stgraber@ubuntu.com>
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2, as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+import sys
+sys.path.insert(0, '.')
+
+import argparse
+import lxc_ci
+import traceback
+
+parser = argparse.ArgumentParser(description="snap build")
+parser.add_argument("pkg_ref", metavar="PKG_REF")
+parser.add_argument("lxd_ref", metavar="LXD_REF")
+parser.add_argument("cgmanager_ref", metavar="CGMANAGER_REF")
+parser.add_argument("lxc_ref", metavar="LXC_REF")
+parser.add_argument("lxcfs_ref", metavar="LXCFS_REF")
+parser.add_argument("version", metavar="VERSION")
+parser.add_argument("target", metavar="TARGET")
+args = parser.parse_args()
+
+try:
+    build_env = lxc_ci.BuildEnvironment("ubuntu", "wily")
+    build_env.setup()
+
+    build_env.install(["apt-get", "install",
+                       "software-properties-common", "-y"])
+    build_env.execute(["apt-add-repository",
+                       "ppa:snappy-dev/tools", "-y"])
+    build_env.update()
+
+    if build_env.install(list(["dpkg-dev", "git", "ubuntu-snappy-cli"])):
+        build_env.exit_unstable()
+
+    if build_env.execute(["git",
+                          "clone", "git://github.com/lxc/lxd-pkg-ubuntu",
+                          "-b", "snappy",
+                          "/build"]) != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["git", "reset", "--hard", args.pkg_ref],
+                         "/build") != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute("""#!/bin/sh -ex
+cd /build
+sed -i "s/^architecture:.*/architecture: %s/" meta/package.yaml
+sed -i "s/^version:.*/version: %s/" meta/package.yaml
+
+sed -i "s/^CGMANAGER_TAG:.*/CGMANAGER_TAG=\"%s\"/" build
+sed -i "s/^LXCFS_TAG:.*/LXCFS_TAG=\"%s\"/" build
+sed -i "s/^LXC_TAG:.*/LXC_TAG=\"%s\"/" build
+sed -i "s/^LXD_TAG:.*/LXD_TAG=\"%s\"/" build
+
+./build
+
+snappy build .
+""" % (build_env.architecture, args.version, args.cgmanager_ref,
+       args.lxcfs_ref, args.lxc_ref, args.lxd_ref)) != 0:
+        build_env.exit_fail()
+
+    build_env.download(
+        "/build/lxd_%s_%s.snap" % (args.version, build_env.architecture),
+        args.target)
+
+    build_env.exit_pass()
+
+except Exception or KeyboardInterrupt:
+    traceback.print_exc()
+    build_env.exit_unstable()
