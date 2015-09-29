@@ -35,8 +35,7 @@ try:
     build_env = lxc_ci.BuildEnvironment("ubuntu", "wily")
     build_env.setup()
 
-    build_env.install(["apt-get", "install",
-                       "software-properties-common", "-y"])
+    build_env.install(["software-properties-common"])
     build_env.execute(["apt-add-repository",
                        "ppa:snappy-dev/tools", "-y"])
     build_env.update()

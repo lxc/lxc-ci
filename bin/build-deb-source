@@ -39,8 +39,7 @@ try:
     build_env.setup()
 
     if args.daily:
-        build_env.install(["apt-get", "install",
-                           "software-properties-common", "-y"])
+        build_env.install(["software-properties-common"])
         build_env.execute(["apt-add-repository",
                            "ppa:ubuntu-lxc/daily", "-y"])
         build_env.update()
