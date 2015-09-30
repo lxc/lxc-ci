@@ -55,7 +55,7 @@ try:
 
     if build_env.execute("""#!/bin/sh -ex
 cd /build
-sed -i "s/^architectures:.*/architectures: %s/" meta/package.yaml
+sed -i "s/^architectures:.*/architectures: [%s]/" meta/package.yaml
 sed -i "s/^version:.*/version: %s/" meta/package.yaml
 
 sed -i "s/^CGMANAGER_TAG:.*/CGMANAGER_TAG=\"%s\"/" build
