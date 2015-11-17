@@ -2,6 +2,7 @@
 deps/android-ndk-linux-x86_64.tar.bz2
 deps/coverity-linux64.tar.gz
 deps/credentials
+deps/credentials.pub
 deps/exercise
 deps/genetlink.h
 deps/jenkins-cli.jar
