@@ -1,0 +1,16 @@
+#!/bin/sh -eu
+
+# Skip the test when not running from a git repository
+if ! git status; then
+  echo "This isn't a git repository."
+  exit 0
+fi
+
+for i in $(git cherry ${GIT_BRANCH:-master} | grep '^+' | cut -d' ' -f2); do
+  echo ""
+  git show "${i}" | grep -q 'Signed-off-by' || \
+      ( echo "==> Commit without sign-off:" ; git show "${i}" ; true )
+  echo ""
+done
+
+exit 0
