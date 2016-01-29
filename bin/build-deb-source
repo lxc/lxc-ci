@@ -22,7 +22,9 @@ import lxc_ci
 import traceback
 
 parser = argparse.ArgumentParser(description="deb source package build")
-parser.add_argument("tarball", metavar="TARBALL")
+parser.add_argument("repository", metavar="REPOSITORY")
+parser.add_argument("branch", metavar="BRANCH")
+parser.add_argument("commit", metavar="COMMIT")
 parser.add_argument("pkg_repository", metavar="REPOSITORY")
 parser.add_argument("pkg_branch", metavar="BRANCH")
 parser.add_argument("pkg_commit", metavar="COMMIT", default="HEAD")
@@ -55,12 +57,20 @@ try:
                  [build_env.architecture])) != 0:
             build_env.exit_unstable()
 
-    build_env.upload(args.tarball, "/tmp/upstream.tar.gz")
+    if build_env.execute(["git",
+                          "clone", args.repository,
+                          "-b", args.branch,
+                          "/build/source"]) != 0:
+        build_env.exit_unstable()
 
-    build_env.execute(["mkdir", "-p", "/build/source/"])
+    if build_env.execute(["git",
+                          "fetch", args.repository,
+                          "+refs/pull/*:refs/remotes/origin/pr/*"],
+                         "/build/source") != 0:
+        build_env.exit_unstable()
 
-    if build_env.execute(["tar", "zxf", "/tmp/upstream.tar.gz",
-                          "--strip", "1"], "/build/source/") != 0:
+    if build_env.execute(["git", "checkout", args.commit],
+                         "/build/source") != 0:
         build_env.exit_unstable()
 
     if build_env.execute(["git",
