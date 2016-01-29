@@ -23,7 +23,9 @@ import os
 import traceback
 
 parser = argparse.ArgumentParser(description="gcc testbuild")
-parser.add_argument("tarball", metavar="TARBALL")
+parser.add_argument("repository", metavar="REPOSITORY")
+parser.add_argument("branch", metavar="BRANCH")
+parser.add_argument("commit", metavar="COMMIT", default="HEAD")
 parser.add_argument("--builder-dist", metavar="DIST", default="ubuntu")
 parser.add_argument("--builder-release", metavar="RELEASE", default="trusty")
 parser.add_argument("--builder-arch", metavar="RELEASE", default=None)
@@ -67,11 +69,22 @@ try:
                  [build_env.architecture])) != 0:
             build_env.exit_unstable()
 
-    build_env.upload(args.tarball, "/tmp/upstream.tar.gz")
     build_env.upload("deps/exercise", "/tmp/exercise")
 
-    if build_env.execute(["tar", "zxf", "/tmp/upstream.tar.gz",
-                          "--strip", "1"], "/build/") != 0:
+    if build_env.execute(["git",
+                          "clone", args.repository,
+                          "-b", args.branch,
+                          "/build"]) != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["git",
+                          "fetch", args.repository,
+                          "+refs/pull/*:refs/remotes/origin/pr/*"],
+                         "/build") != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["git", "checkout", args.commit],
+                         "/build") != 0:
         build_env.exit_unstable()
 
     if build_env.execute(["./autogen.sh"], "/build/") != 0:
