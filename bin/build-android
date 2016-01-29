@@ -23,7 +23,9 @@ import os
 import traceback
 
 parser = argparse.ArgumentParser(description="coverity build")
-parser.add_argument("tarball", metavar="TARBALL")
+parser.add_argument("repository", metavar="REPOSITORY")
+parser.add_argument("branch", metavar="BRANCH")
+parser.add_argument("commit", metavar="COMMIT")
 parser.add_argument("target", metavar="TARGET")
 args = parser.parse_args()
 
@@ -41,7 +43,6 @@ try:
                  [build_env.architecture])) != 0:
             build_env.exit_unstable()
 
-    build_env.upload(args.tarball, "/tmp/upstream.tar.gz")
     build_env.upload("deps/android-ndk-linux-x86_64.tar.bz2",
                      "/tmp/ndk.tar.gz")
     build_env.upload("deps/genetlink.h", "/tmp/genetlink.h")
@@ -50,8 +51,20 @@ try:
     build_env.execute(["mkdir", "-p", "/build/ndk"])
     build_env.execute(["mkdir", "-p", "/build/android"])
 
-    if build_env.execute(["tar", "zxf", "/tmp/upstream.tar.gz",
-                          "--strip", "1"], "/build/source/") != 0:
+    if build_env.execute(["git",
+                          "clone", args.repository,
+                          "-b", args.branch,
+                          "/build/source"]) != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["git",
+                          "fetch", args.repository,
+                          "+refs/pull/*:refs/remotes/origin/pr/*"],
+                         "/build/source") != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["git", "checkout", args.commit],
+                         "/build/source") != 0:
         build_env.exit_unstable()
 
     if build_env.execute(["tar", "jxf", "/tmp/ndk.tar.gz",
