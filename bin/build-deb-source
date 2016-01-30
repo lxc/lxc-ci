@@ -87,15 +87,20 @@ try:
 export DEBEMAIL="lxc-devel@lists.linuxcontainers.org"
 export DEBFULLNAME="LXC snapshot packages"
 
-cp -R /tmp/packaging/debian/ /build/source/debian/
-
 version="%s~$(date +%%Y%%m%%d-%%H%%M)"
 
+cp -R /build/source /build/dist
+cd /build/dist/
+./autogen.sh
+./configure
+make dist
+mv *.tar.gz /build/lxc_${version}.orig.tar.gz
+rm -Rf /build/dist/
+
 cd /build/source/
-
-mv /tmp/upstream.tar.gz /build/lxc_${version}.orig.tar.gz
-
+cp -R /tmp/packaging/debian/ /build/source/debian/
 rm -f debian/changelog
+
 dch --create --package lxc -v ${version}-0%s1~%s --distribution %s \
     "Automated snapshot build."
 
