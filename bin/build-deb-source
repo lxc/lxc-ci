@@ -57,6 +57,18 @@ try:
                  [build_env.architecture])) != 0:
             build_env.exit_unstable()
 
+    if build_env.install(
+            list(lxc_ci.LXC_BUILD_DEPENDENCIES["ubuntu"]
+                 ['default'])) != 0:
+        build_env.exit_unstable()
+
+    if build_env.architecture in \
+            lxc_ci.LXC_BUILD_DEPENDENCIES["ubuntu"]:
+        if build_env.install(
+            list(lxc_ci.LXC_BUILD_DEPENDENCIES["ubuntu"]
+                 [build_env.architecture])) != 0:
+            build_env.exit_unstable()
+
     if build_env.execute(["git",
                           "clone", args.repository,
                           "-b", args.branch,
