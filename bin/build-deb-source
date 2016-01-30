@@ -101,15 +101,16 @@ export DEBFULLNAME="LXC snapshot packages"
 
 version="%s~$(date +%%Y%%m%%d-%%H%%M)"
 
-cp -R /build/source /build/dist
-cd /build/dist/
+cd /build/source/
 ./autogen.sh
 ./configure
 make dist
 mv *.tar.gz /build/lxc_${version}.orig.tar.gz
-rm -Rf /build/dist/
+rm -Rf /build/source/
 
-cd /build/source/
+mkdir /build/dist
+cd /build/dist
+tar zxf /build/lxc_${version}.orig.tar.gz --strip 1
 cp -R /tmp/packaging/debian/ /build/source/debian/
 rm -f debian/changelog
 
