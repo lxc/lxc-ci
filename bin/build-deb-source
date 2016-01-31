@@ -111,7 +111,7 @@ rm -Rf /build/source/
 mkdir /build/dist
 cd /build/dist
 tar zxf /build/lxc_${version}.orig.tar.gz --strip 1
-cp -R /tmp/packaging/debian/ /build/source/debian/
+cp -R /tmp/packaging/debian/ /build/dist/debian/
 rm -f debian/changelog
 
 dch --create --package lxc -v ${version}-0%s1~%s --distribution %s \
