@@ -82,6 +82,11 @@ try:
                           "/build/libcap"]) != 0:
         build_env.exit_unstable()
 
+    if build_env.execute(["git", "checkout",
+                          "0ee94211e95096750ede752acd13b163aa6d5046"],
+                          "/build/libcap") != 0:
+        build_env.exit_unstable()
+
     env = []
     env.append("PATH=/build/ndk/toolchains/arm-linux-androideabi-4.8/prebuilt/"
                "linux-x86_64/bin/:%s" % os.environ['PATH'])
