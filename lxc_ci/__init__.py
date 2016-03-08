@@ -66,7 +66,6 @@ LXC_RUN_DEPENDENCIES['opensuse'] = {'default': set(["build", "curl", "ed",
                                                     "wget", "xz"])}
 LXC_RUN_DEPENDENCIES['ubuntu'] = {'default': set(["bridge-utils",
                                                   "busybox-static",
-                                                  "cgmanager",
                                                   "cloud-image-utils",
                                                   "curl", "dbus",
                                                   "debootstrap",
