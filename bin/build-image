@@ -112,6 +112,10 @@ try:
         for key, value in config['template_env'].items():
             env.append("%s=%s" % (key, value))
 
+    if args.template == "debian":
+        build_env.execute(["ln", "-sf", "sid",
+                           "/usr/share/debootstrap/scripts/stretch"])
+
     if build_env.execute(["env"] + env +
                          ["/usr/share/lxc/templates/lxc-%s" % args.template,
                           "--path", "/build/containers/LXC_NAME",
