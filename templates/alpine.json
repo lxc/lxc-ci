@@ -1,0 +1,12 @@
+{
+    "create_message": ["You just created an Alpine Linux container ",
+                       "(release=RELEASE, arch=ARCH, variant=VARIANT)"],
+    "expiry": 30,
+    "templates": [],
+    "config_user": ["common", "userns"],
+    "config_system": ["common"],
+    "template_arch": {"amd64": "x86_64",
+                      "i386": "x86"},
+    "template_args": ["-r", "RELEASE", "-a", "ARCH"],
+    "post_create": []
+}
