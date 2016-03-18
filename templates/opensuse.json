@@ -9,7 +9,7 @@
     "config_system": ["common"],
     "template_arch": {"amd64": "x86_64",
                       "i386": "i686"},
-    "template_args": [],
+    "template_args": ["-r", "RELEASE"],
     "post_create": ["passwd -dl root",
                     "ln -s /dev/null /etc/systemd/system/sshd.service"]
 }
