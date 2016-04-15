@@ -169,7 +169,6 @@ echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
     def update(self):
         print(" ==> Updating the container")
         if self.distribution == "ubuntu":
-            os.environ["DEBIAN_FRONTEND"] = "=noninteractive"
             for i in range(3):
                 if self.execute(["apt-get", "update"]) == 0 and \
                    self.execute(["apt-get", "dist-upgrade",
@@ -203,6 +202,7 @@ echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
             os.environ['PATH'] = '/usr/sbin:/usr/bin:/sbin:/bin'
             os.environ['HOME'] = '/root'
             if "env" in config and "proxy" in config['env']:
+                os.environ["DEBIAN_FRONTEND"] = "noninteractive"
                 os.environ['http_proxy'] = config['env']['proxy']
                 os.environ['https_proxy'] = config['env']['proxy']
 
@@ -224,7 +224,6 @@ echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
     def install(self, pkgs):
         print(" ==> Installing: %s" % (", ".join(pkgs)))
         if self.distribution == "ubuntu":
-            os.environ["DEBIAN_FRONTEND"] = "=noninteractive"
             retval = self.execute(["apt-get", "install", "-y", "--force-yes"]
                                   + pkgs)
             self.execute(["apt-get", "clean"])
