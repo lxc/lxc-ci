@@ -12,6 +12,7 @@
                       "powerpc": "powerpc",
                       "ppc64el": "ppc64el",
                       "s390x": "s390x",
+                      "arm64": "arm64",
                       "armhf": "armhf"},
     "template_args": ["-r", "RELEASE", "-a", "ARCH"],
     "post_create": ["passwd -dl root",
