@@ -54,7 +54,8 @@ LXC_BUILD_DEPENDENCIES['ubuntu'] = {'default': set(["automake", "autoconf",
                                                     "lsb-release",
                                                     "make",
                                                     "pkg-config",
-                                                    "python3-all-dev"]),
+                                                    "python3-all-dev",
+                                                    "python3-setuptools"]),
                                     'amd64': set(["clang", "libseccomp-dev"]),
                                     'i386': set(["clang", "libseccomp-dev"]),
                                     'armhf': set(["clang", "libseccomp-dev"])}
@@ -224,8 +225,8 @@ echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
     def install(self, pkgs):
         print(" ==> Installing: %s" % (", ".join(pkgs)))
         if self.distribution == "ubuntu":
-            retval = self.execute(["apt-get", "install", "-y", "--force-yes"]
-                                  + pkgs)
+            retval = self.execute(["apt-get", "install", "-y", "--force-yes"] +
+                                  pkgs)
             self.execute(["apt-get", "clean"])
             return retval
         elif self.distribution == "opensuse":
