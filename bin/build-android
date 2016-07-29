@@ -43,8 +43,8 @@ try:
                  [build_env.architecture])) != 0:
             build_env.exit_unstable()
 
-    build_env.upload("deps/android-ndk-linux-x86_64.tar.bz2",
-                     "/tmp/ndk.tar.gz")
+    build_env.upload("deps/android-ndk-linux-x86_64.zip",
+                     "/tmp/ndk.zip")
     build_env.upload("deps/genetlink.h", "/tmp/genetlink.h")
 
     build_env.execute(["mkdir", "-p", "/build/source"])
@@ -67,13 +67,15 @@ try:
                          "/build/source") != 0:
         build_env.exit_unstable()
 
-    if build_env.execute(["tar", "jxf", "/tmp/ndk.tar.gz",
-                          "--no-same-owner", "--strip", "1"],
-                         "/build/ndk/") != 0:
+    if build_env.execute("""#!/bin/sh -ex
+unzip -q /tmp/ndk.zip
+mv android-ndk-*/* .
+rmdir android-ndk-*
+""", "/build/ndk/") != 0:
         build_env.exit_unstable()
 
     if build_env.execute(["cp", "/tmp/genetlink.h",
-                          "/build/ndk/platforms/android-9/arch-arm"
+                          "/build/ndk/platforms/android-21/arch-arm"
                           "/usr/include/linux/genetlink.h"]) != 0:
         build_env.exit_unstable()
 
@@ -88,10 +90,10 @@ try:
         build_env.exit_unstable()
 
     env = []
-    env.append("PATH=/build/ndk/toolchains/arm-linux-androideabi-4.8/prebuilt/"
+    env.append("PATH=/build/ndk/toolchains/arm-linux-androideabi-4.9/prebuilt/"
                "linux-x86_64/bin/:%s" % os.environ['PATH'])
     env.append("CC=arm-linux-androideabi-gcc "
-               "--sysroot=/build/ndk/platforms/android-9/arch-arm/")
+               "--sysroot=/build/ndk/platforms/android-21/arch-arm/")
     env.append("DESTDIR=/build/android")
     env.append("BUILD_CC=gcc")
 
@@ -103,20 +105,20 @@ try:
     if build_env.execute("""#!/bin/sh -ex
 
 cp -P /build/libcap/libcap/libcap.so* \\
-    /build/ndk/platforms/android-9/arch-arm/usr/lib/
+    /build/ndk/platforms/android-21/arch-arm/usr/lib/
 
 cp -P /build/libcap/libcap/libcap.a \\
-    /build/ndk/platforms/android-9/arch-arm/usr/lib/
+    /build/ndk/platforms/android-21/arch-arm/usr/lib/
 
 mkdir -p /build/android/data/lxc/lxc/lib/
 cp -P /build/libcap/libcap/libcap.so* \\
     /build/android/data/lxc/lxc/lib/
 
 cp -P /build/libcap/libcap/include/sys/capability.h \\
-    /build/ndk/platforms/android-9/arch-arm/usr/include/sys/
+    /build/ndk/platforms/android-21/arch-arm/usr/include/sys/
 
 cp -P /build/libcap/libcap/include/uapi/linux/capability.h \\
-    /build/ndk/platforms/android-9/arch-arm/usr/include/linux/
+    /build/ndk/platforms/android-21/arch-arm/usr/include/linux/
 """) != 0:
         build_env.exit_unstable()
 
