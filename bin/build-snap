@@ -44,7 +44,7 @@ try:
 
     if build_env.execute(["git",
                           "clone", "git://github.com/lxc/lxd-pkg-ubuntu",
-                          "-b", "snappy",
+                          "-b", "snappy-15",
                           "/build"]) != 0:
         build_env.exit_unstable()
 
