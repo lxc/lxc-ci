@@ -8,5 +8,6 @@
     "template_arch": {"amd64": "x86_64",
                       "i386": "i686"},
     "template_args": ["-a", "ARCH"],
-    "post_create": ["passwd -dl root"]
+    "post_create": ["passwd -dl root",
+                    "ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf"]
 }
