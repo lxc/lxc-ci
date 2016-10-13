@@ -27,6 +27,11 @@ import time
 import uuid
 
 LXC_BUILD_DEPENDENCIES = {}
+LXC_BUILD_DEPENDENCIES['archlinux'] = {'default': set(["automake", "autoconf",
+                                                       "gcc", "git",
+                                                       "lsb-release",
+                                                       "make",
+                                                       "pkg-config"])}
 LXC_BUILD_DEPENDENCIES['opensuse'] = {'default': set(["automake", "autoconf",
                                                       "llvm-clang",
                                                       "docbook2x", "doxygen",
@@ -62,6 +67,11 @@ LXC_BUILD_DEPENDENCIES['ubuntu'] = {'default': set(["automake", "autoconf",
                                     'armhf': set(["clang", "libseccomp-dev"])}
 
 LXC_RUN_DEPENDENCIES = {}
+LXC_RUN_DEPENDENCIES['archlinux'] = {'default': set(["arch-install-scripts",
+                                                     "curl", "ed",
+                                                     "file", "openssl",
+                                                     "rsync", "util-linux",
+                                                     "wget", "xz"])}
 LXC_RUN_DEPENDENCIES['opensuse'] = {'default': set(["build", "curl", "ed",
                                                     "file", "openssl",
                                                     "rsync", "util-linux",
@@ -128,7 +138,7 @@ class BuildEnvironment:
                                       'arch': self.architecture}):
             raise Exception("Failed to create the rootfs")
 
-        if self.distribution == "ubuntu":
+        if self.distribution in ("ubuntu", "archlinux"):
             self.container.set_config_item("lxc.aa_profile", "unconfined")
 
         # FIXME: Very ugly workaround
@@ -151,6 +161,9 @@ class BuildEnvironment:
 
         if self.distribution == "opensuse":
             self.execute(["dhcpcd", "eth0"])
+
+        if self.distribution == "archlinux":
+            self.execute(["mkdir", "-p", "/run/shm"])
 
         if not self.container.get_ips(family="inet", timeout=90):
             raise Exception("Failed to connect to the container")
@@ -175,6 +188,14 @@ echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
                 if self.execute(["apt-get", "update"]) == 0 and \
                    self.execute(["apt-get", "dist-upgrade",
                                  "-y", "--force-yes"]) == 0:
+                    break
+            else:
+                raise Exception("Failed to update the container")
+
+        if self.distribution == "archlinux":
+            for i in range(3):
+                if self.execute(["pacman", "-Syu", "--noconfirm",
+                                 "--force"]) == 0:
                     break
             else:
                 raise Exception("Failed to update the container")
@@ -211,8 +232,8 @@ echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
             return subprocess.call(cmd, cwd=cwd)
 
         if isinstance(cmd, str):
-            rootfs = self.container.get_config_item("lxc.rootfs")
-            cmdpath = "%s/tmp/exec_script" % rootfs
+            pid = self.container.init_pid
+            cmdpath = "/proc/%d/root/tmp/exec_script" % pid
             with open(cmdpath, "w+") as fd:
                 fd.write(cmd)
             os.chmod(cmdpath, 0o755)
@@ -233,6 +254,9 @@ echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
         elif self.distribution == "opensuse":
             return self.execute(["zypper", "--non-interactive",
                                  "--no-gpg-checks", "install", "-l"] + pkgs)
+        elif self.distribution == "archlinux":
+            return self.execute(["pacman", "-S", "--noconfirm",
+                                 "--force"] + pkgs)
         else:
             raise Exception("Unsupported distribution for package installs")
 
