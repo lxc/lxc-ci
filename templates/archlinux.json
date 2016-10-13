@@ -1,0 +1,12 @@
+{
+    "create_message": ["You just created an ArchLinux container ",
+                       "(release=RELEASE, arch=ARCH, variant=VARIANT)\n"],
+    "expiry": 30,
+    "templates": ["/etc/hostname", "/etc/hosts"],
+    "config_user": ["common", "userns"],
+    "config_system": ["common"],
+    "template_arch": {"amd64": "x86_64",
+                      "i386": "i686"},
+    "template_args": ["-a", "ARCH"],
+    "post_create": ["passwd -dl root"]
+}
