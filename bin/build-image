@@ -114,8 +114,12 @@ try:
             env.append("%s=%s" % (key, value))
 
     if args.template == "debian":
-        build_env.execute(["ln", "-sf", "sid",
+        build_env.execute(["ln", "-sf", args.release,
                            "/usr/share/debootstrap/scripts/stretch"])
+
+    if args.template == "ubuntu":
+        build_env.execute(["ln", "-sf", args.release,
+                           "/usr/share/debootstrap/scripts/gutsy"])
 
     if build_env.execute(["env"] + env +
                          ["/usr/share/lxc/templates/lxc-%s" % args.template,
