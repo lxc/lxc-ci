@@ -114,7 +114,7 @@ try:
             env.append("%s=%s" % (key, value))
 
     if args.template == "debian":
-        build_env.execute(["ln", "-sf", "stretch",
+        build_env.execute(["ln", "-sf", "sid",
                            "/usr/share/debootstrap/scripts/%s" % args.release])
 
     if args.template == "ubuntu":
