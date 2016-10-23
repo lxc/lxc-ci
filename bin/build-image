@@ -113,11 +113,11 @@ try:
         for key, value in config['template_env'].items():
             env.append("%s=%s" % (key, value))
 
-    if args.template == "debian":
+    if args.template == "debian" and args.release != "sid":
         build_env.execute(["ln", "-sf", "sid",
                            "/usr/share/debootstrap/scripts/%s" % args.release])
 
-    if args.template == "ubuntu":
+    if args.template == "ubuntu" and args.release != "gutsy":
         build_env.execute(["ln", "-sf", "gutsy",
                            "/usr/share/debootstrap/scripts/%s" % args.release])
 
