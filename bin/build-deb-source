@@ -37,7 +37,7 @@ parser.add_argument("--use-daily", dest="daily", action="store_true",
 args = parser.parse_args()
 
 try:
-    build_env = lxc_ci.BuildEnvironment("ubuntu", "trusty")
+    build_env = lxc_ci.BuildEnvironment("ubuntu", "xenial")
     build_env.setup()
 
     if args.daily:

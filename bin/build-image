@@ -32,7 +32,7 @@ parser.add_argument("arch", metavar="ARCH")
 parser.add_argument("variant", metavar="VARIANT")
 parser.add_argument("target", metavar="TARGET")
 parser.add_argument("--builder-dist", metavar="DIST", default="ubuntu")
-parser.add_argument("--builder-release", metavar="RELEASE", default="trusty")
+parser.add_argument("--builder-release", metavar="RELEASE", default="xenial")
 parser.add_argument("--builder-arch", metavar="RELEASE", default=None)
 args = parser.parse_args()
 

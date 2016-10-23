@@ -27,7 +27,7 @@ parser.add_argument("repository", metavar="REPOSITORY")
 parser.add_argument("branch", metavar="BRANCH")
 parser.add_argument("commit", metavar="COMMIT", default="HEAD")
 parser.add_argument("--builder-dist", metavar="DIST", default="ubuntu")
-parser.add_argument("--builder-release", metavar="RELEASE", default="trusty")
+parser.add_argument("--builder-release", metavar="RELEASE", default="xenial")
 parser.add_argument("--builder-arch", metavar="RELEASE", default=None)
 parser.add_argument("--use-daily", dest="daily", action="store_true",
                     default=False)
