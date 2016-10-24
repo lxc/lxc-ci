@@ -87,6 +87,7 @@ LXC_RUN_DEPENDENCIES['ubuntu'] = {'default': set(["bridge-utils",
                                                   "file", "iptables",
                                                   "openssl", "rpm",
                                                   "rsync", "uidmap",
+                                                  "squashfs-tools",
                                                   "uuid-runtime",
                                                   "yum", "wget",
                                                   "xz-utils"])}
