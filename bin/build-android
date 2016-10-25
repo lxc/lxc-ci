@@ -134,6 +134,7 @@ cp -P /build/libcap/libcap/include/uapi/linux/capability.h \\
                           "--disable-python", "--enable-tests",
                           "--disable-examples",
                           "--prefix=/data/lxc/lxc",
+                          "--host=arm-linux-androideabi",
                           "--with-runtime-path=/cache/",
                           "--with-config-path=/data/lxc/containers/"],
                          "/build/source/") != 0:
