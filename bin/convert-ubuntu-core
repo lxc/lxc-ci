@@ -96,7 +96,7 @@ cp /sbin/pivot_root bin/pivot_root
 cp /usr/bin/squashfuse bin/squashfuse
 
 # And needed libraries
-cp -L /lib/*-linux-gnu/ld-linux-*.so.2 lib/
+cp -L /lib/*-linux-gnu/ld-linux*.so.2 lib/
 cp -L /lib/*-linux-gnu/libc.so.6 lib/
 cp -L /lib/*-linux-gnu/libdl.so.2 lib/
 cp -L /lib/*-linux-gnu/libfuse.so.2 lib/
