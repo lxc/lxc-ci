@@ -282,7 +282,7 @@ echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
         match = glob.glob("%s/%s" % (rootfs, expr))
 
         for entry in match:
-            print(" ==> Downloading: %s" % entry)
+            print(" ==> Downloading: %s to %s" % (entry, target))
             path = target
             if os.path.isdir(target):
                 path = "%s/%s" % (target, os.path.basename(entry))
@@ -297,7 +297,7 @@ echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
         match = glob.glob(expr)
 
         for entry in match:
-            print(" ==> Uploading: %s" % entry)
+            print(" ==> Uploading: %s to %s" % (entry, target))
             with open(entry, "rb") as source:
                 mode = os.stat(entry).st_mode
 
