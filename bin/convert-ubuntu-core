@@ -50,7 +50,7 @@ try:
 
     # Install dependencies
     build_env.install(["busybox-static", "fuse", "squashfuse",
-                       "wget", "xz-utils"])
+                       "squashfs-tools", "wget", "xz-utils"])
 
     # Setup for loop devices
     build_env.execute("""#!/bin/sh -ex
@@ -153,10 +153,15 @@ cp -L /lib/*-linux-gnu/libz.so.1 lib/
 
     if build_env.execute(["tar", "-Jcf", "/build/lxd.tar.xz",
                           "-C", "/build/",
-                          "metadata.yaml", "templates/", "rootfs/"]) != 0:
+                          "metadata.yaml", "templates/"]) != 0:
         build_env.exit_unstable()
-
     build_env.download("/build/lxd.tar.xz", args.target)
+
+    if build_env.execute(["mksquashfs", "/build/rootfs/",
+                          "/build/rootfs.squashfs"]) != 0:
+        build_env.exit_unstable()
+    build_env.download("/build/rootfs.squashfs", args.target)
+
     build_env.exit_pass()
 
 except Exception or KeyboardInterrupt:
