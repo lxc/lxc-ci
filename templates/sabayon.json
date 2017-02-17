@@ -1,0 +1,16 @@
+{
+    "create_message": ["You just created a Sabayon container ",
+                       "(release=RELEASE, arch=ARCH, variant=VARIANT)\n\n",
+                       "To enable sshd, run: rc-update add sshd"],
+    "expiry": 30,
+    "templates": ["/etc/conf.d/hostname", "/etc/hostname", "/etc/hosts"],
+    "config_user": ["common", "userns"],
+    "config_system": ["common"],
+    "template_arch": {"amd64": "amd64",
+                      "armhf": "arm",
+                      "i386": "x86"},
+    "template_args": ["-a", "ARCH"],
+    "template_env": {"root_password": "root"},
+    "post_create": ["passwd -dl root",
+                    "rc-update del sshd"]
+}
