@@ -1,0 +1,3 @@
+JENKINS_HOST="http://jenkins.example:8080"
+JENKINS_KEY="some-key"
+JENKINS_NAME="some-name"

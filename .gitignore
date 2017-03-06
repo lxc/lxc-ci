@@ -8,4 +8,5 @@ deps/genetlink.h
 deps/jenkins-cli.jar
 deps/gimme
 etc/config
+etc/jenkins
 build/*

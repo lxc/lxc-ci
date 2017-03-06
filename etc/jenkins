@@ -1,3 +1,0 @@
-JENKINS_HOST="http://jenkins01.srv.mtl.stgraber.net:8080"
-JENKINS_KEY="bd0b6eaf345eac9fbff7ed854aa85f6fed4e4ea5271353de989e0fef5df1b339"
-JENKINS_NAME="stgraber-buildd01"
