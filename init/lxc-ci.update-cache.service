@@ -1,0 +1,14 @@
+[Unit]
+Description=lxc-ci - Update cache
+Requires=network-online.target
+After=network-online.target
+Before=lxc-ci.jenkins-slave.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/lxc-ci
+ExecStart=/lxc-ci/bin/update-cache
+
+[Install]
+WantedBy=multi-user.target

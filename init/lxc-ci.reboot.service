@@ -1,0 +1,7 @@
+[Unit]
+Description=lxc-ci - Reboot
+
+[Service]
+Type=oneshot
+WorkingDirectory=/lxc-ci
+ExecStart=/lxc-ci/bin/reboot

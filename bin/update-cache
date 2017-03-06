@@ -1,0 +1,57 @@
+#!/bin/sh -eu
+ifconfig > /tmp/debug
+cat /etc/resolv.conf >> /tmp/debug
+TEMP_DIR=$(mktemp -d -p /lxc-ci/build/)
+
+cleanup() {
+    rm -Rf "${TEMP_DIR}"
+}
+
+trap cleanup EXIT HUP INT TERM
+
+ifup lxdbr0 >/dev/null 2>&1 || true
+
+# Setup the gimme cache
+[ "$(arch)" != "i686" ] || export GIMME_ARCH=x86
+export GIMME_ENV_PREFIX=${TEMP_DIR}/gimme/envs/
+export GIMME_VERSION_PREFIX=${TEMP_DIR}/gimme/versions/
+export GOPATH=${TEMP_DIR}/go
+
+[ ! -d /lxc-ci/deps/gimme ] && git clone -q https://github.com/travis-ci/gimme /lxc-ci/deps/gimme
+
+cd /lxc-ci/deps/gimme
+git pull -q
+
+OLD_PATH=${PATH}
+for version in 1.6.4 1.7.5 tip; do
+    ./gimme ${version} >/dev/null
+    if [ "${version}" = "tip" ]; then
+        export GOROOT="${TEMP_DIR}/gimme/versions/go"
+    else
+        goroot="$(readlink -f "${TEMP_DIR}/gimme/versions/go${version}"*)"
+        export GOROOT="${goroot}"
+    fi
+    export PATH="${GOROOT}/bin:${OLD_PATH}"
+
+    go get github.com/rogpeppe/godeps >/dev/null
+    go get github.com/remyoudompheng/go-misc/deadcode >/dev/null
+    go get github.com/golang/lint/golint >/dev/null
+    go get github.com/snapcore/snapd/i18n/xgettext-go >/dev/null
+
+    mv "${GOPATH}/bin" "${GOPATH}/bin.$(go version | cut -d' ' -f3)"
+    mv "${GOPATH}/pkg" "${GOPATH}/pkg.$(go version | cut -d' ' -f3)"
+done
+cd - >/dev/null
+
+# Setup the Go cache
+. "${TEMP_DIR}"/gimme/envs/go1.7*.env 2>/dev/null
+mkdir -p "${TEMP_DIR}/go"
+export GOPATH=${TEMP_DIR}/go
+go get -d -t github.com/lxc/lxd/... >/dev/null
+
+# Move things into place
+rm -Rf /lxc-ci/build/cache
+mkdir -p /lxc-ci/build/cache
+rm -Rf "${TEMP_DIR}/go/pkg" "${TEMP_DIR}/go/bin"
+mv "${TEMP_DIR}/gimme" /lxc-ci/build/cache/gimme
+mv "${TEMP_DIR}/go" /lxc-ci/build/cache/go

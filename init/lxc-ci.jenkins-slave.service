@@ -1,0 +1,12 @@
+[Unit]
+Description=lxc-ci - Jenkins slave
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+ExecStart=/lxc-ci/bin/jenkins-slave
+User=jenkins
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

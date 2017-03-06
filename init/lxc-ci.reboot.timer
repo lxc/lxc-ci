@@ -1,0 +1,8 @@
+[Unit]
+Description=lxc-ci - Reboot timer
+
+[Timer]
+OnBootSec=1d
+
+[Install]
+WantedBy=timers.target

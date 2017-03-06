@@ -1,0 +1,145 @@
+#!/bin/sh -eu
+GO_VERSION=${1}
+GIT_REPOSITORY=${2}
+GIT_REF=${3}
+LXD_BACKEND=${4}
+
+cleanup() {
+    set +e
+    echo "==> CLEANUP BEGIN"
+    if [ -d "${TEST_DIR}/logs" ] && [ -n "${WORKSPACE:-}" ]; then
+        sudo tar zcf "${WORKSPACE}/logs.tar.gz" "${TEST_DIR}/logs/"
+        sudo chown "$(id -u):$(id -g)" "${WORKSPACE}/logs.tar.gz"
+    fi
+
+    sudo rm -Rf "${TEST_DIR}"
+    echo "==> CLEANUP DONE"
+
+    [ "${SUCCESS}" = "0" ] && exit 1
+    exit 0
+}
+
+echo "==> SETUP BEGIN"
+echo "===> Creating test environment"
+SUCCESS=0
+TEST_DIR=$(mktemp -d -p /lxc-ci/build/)
+chmod +x "${TEST_DIR}"
+trap cleanup EXIT HUP INT TERM
+
+export TMPDIR=${TEST_DIR}/tmp
+mkdir -p "${TMPDIR}"
+chmod 1777 "${TMPDIR}"
+
+# Setup Go
+if [ "${GO_VERSION}" != "gccgo" ]; then
+    if [ -d /lxc-ci/build/cache ]; then
+        echo "===> Copying a pre-built Go compiler"
+
+        mkdir -p "${TEST_DIR}/go"
+        export GOROOT=${TEST_DIR}/go/golang/
+        export PATH=${GOROOT}/bin:$PATH
+
+        if [ "${GO_VERSION}" = "golang-tip" ]; then
+            cp -Ra /lxc-ci/build/cache/gimme/versions/go/ "${GOROOT}"
+        else
+            cp -Ra /lxc-ci/build/cache/gimme/versions/go*"${GO_VERSION#golang-}"*/ "${GOROOT}"
+        fi
+    else
+        echo "===> Downloading the Go compiler"
+
+        [ "$(arch)" != "i686" ] || export GIMME_ARCH=x86
+        export GIMME_ENV_PREFIX=${TEST_DIR}/go/envs/
+        export GIMME_VERSION_PREFIX=${TEST_DIR}/go/versions/
+
+        cd /lxc-ci/deps/gimme/ || exit 1
+        [ "${GO_VERSION}" = "golang-tip" ] && ./gimme 1.7
+        ./gimme "${GO_VERSION#golang-}" >/dev/null
+        cd -
+        . "${GIMME_ENV_PREFIX}/go${GO_VERSION#golang-}.env" 2>/dev/null
+    fi
+else
+    echo "===> Using the system Go compiler"
+fi
+
+# Setup build environment
+echo "===> Setting up environment variables"
+mkdir -p "${TEST_DIR}/go"
+export GOPATH=${TEST_DIR}/go
+export PATH=${PATH}:${GOPATH}/bin
+if [ -d "/lxc-ci/build/cache" ]; then
+    echo "===> Copying pre-built dependencies"
+    VERSION=$(go version | cut -d' ' -f3)
+    [ -d "/lxc-ci/build/cache/go/bin.${VERSION}" ] && cp -Ra "/lxc-ci/build/cache/go/bin.${VERSION}" "${GOPATH}/bin"
+    [ -d "/lxc-ci/build/cache/go/pkg.${VERSION}" ] && cp -Ra "/lxc-ci/build/cache/go/pkg.${VERSION}" "${GOPATH}/pkg"
+    [ -d "/lxc-ci/build/cache/go/src" ] && cp -Ra /lxc-ci/build/cache/go/src "${GOPATH}/src"
+fi
+
+# Setup Git
+mkdir -p "${GOPATH}/src/github.com/lxc"
+rm -Rf "${GOPATH}/src/github.com/lxc/lxd"
+if [ -n "${WORKSPACE:-}" ]; then
+    echo "===> Copying the Jenkins git reository"
+    cp -R "${WORKSPACE}" "${GOPATH}/src/github.com/lxc/lxd"
+    cd "${GOPATH}/src/github.com/lxc/lxd"
+else
+    echo "===> Cloning the git repository"
+    git clone -q "${GIT_REPOSITORY}" "${GOPATH}/src/github.com/lxc/lxd"
+    cd "${GOPATH}/src/github.com/lxc/lxd"
+    git fetch -q "${GIT_REPOSITORY}" "+refs/pull/*:refs/remotes/origin/pr/*"
+    git checkout -q "${GIT_REF}"
+fi
+echo "==> SETUP DONE"
+
+# Print go version
+echo "==> ENVIRONMENT BEGIN"
+echo "===> Environment variables"
+env | sort
+echo "===> Go version"
+go version
+echo "===> Kernel version"
+uname -a
+echo "==> ENVIRONMENT DONE"
+
+# Build LXD
+echo "==> BUILD BEGIN: lxd"
+go get -t -v -x -d ./...
+go install -v -x -tags libsqlite3 ./...
+echo "==> BUILD DONE: lxd"
+
+# Run the unit tests
+if [ "${LXD_BACKEND}" = "dir" ]; then
+    echo "==> UNIT BEGIN: all tests"
+    go test -v -tags libsqlite3 ./...
+    echo "==> UNIT DONE: all tests"
+fi
+
+# Run testsuite
+mkdir -p "${TEST_DIR}/logs"
+cd "test/"
+
+(
+    cat << EOF
+#!/bin/sh
+# Remount /proc
+umount -l /proc
+mount -t proc proc /proc
+echo ""
+
+# Remount /sys
+mount --move /sys /mnt
+mount -t sysfs sysfs /sys
+mount --move /mnt/fs/cgroup /sys/fs/cgroup
+mount --move /mnt/kernel/security /sys/kernel/security
+umount -l /mnt
+
+# Setup the network
+ip link set lo up
+ip link add lxdbr0 up type bridge
+
+# Run the tests
+exec ./main.sh
+EOF
+) | sudo -E "LXD_LOGS=${TEST_DIR}/logs" "LXD_VERBOSE=1" "LXD_OFFLINE=1" "LXD_BACKEND=${LXD_BACKEND}" "PATH=${PATH}"  unshare -m -n -- sh
+
+
+SUCCESS=1

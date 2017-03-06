@@ -125,7 +125,12 @@ class BuildEnvironment:
         self.release = release
         self.architecture = architecture
 
-        self.container = lxc.Container(str(uuid.uuid1()))
+        # Find the LXC path
+        lxcpath = lxc.default_config_path
+        if os.path.exists("/lxc-ci/build"):
+            lxcpath = "/lxc-ci/build"
+
+        self.container = lxc.Container(str(uuid.uuid1()), lxcpath)
         print(" ==> Defined %s as %s %s %s" %
               (self.container.name,
                self.distribution,

@@ -1,0 +1,4 @@
+#!/bin/sh -e
+. /lxc-ci/etc/jenkins
+wget -q "${JENKINS_HOST}/jnlpJars/slave.jar" -O ~/slave.jar
+exec java -jar ~/slave.jar -jnlpUrl "${JENKINS_HOST}/computer/${JENKINS_NAME}/slave-agent.jnlp" -secret "${JENKINS_KEY}"

@@ -6,4 +6,6 @@ deps/credentials.pub
 deps/exercise
 deps/genetlink.h
 deps/jenkins-cli.jar
+deps/gimme
 etc/config
+build/*

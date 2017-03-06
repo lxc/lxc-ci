@@ -1,0 +1,12 @@
+#!/bin/sh
+while :; do
+    # shellcheck disable=SC2010
+    if ls /lxc-ci/build/ | grep -v cache | grep -v lxc-monitord; then
+        sleep 5m
+        continue
+    fi
+
+    break
+done
+
+reboot
