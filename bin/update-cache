@@ -1,6 +1,4 @@
 #!/bin/sh -eu
-ifconfig > /tmp/debug
-cat /etc/resolv.conf >> /tmp/debug
 TEMP_DIR=$(mktemp -d -p /lxc-ci/build/)
 
 cleanup() {
