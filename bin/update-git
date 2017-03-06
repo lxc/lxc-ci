@@ -1,0 +1,9 @@
+#!/bin/sh -eu
+cd /lxc-ci
+
+# Update the repository
+git pull -q
+
+# Update the init scripts
+cd init
+./update

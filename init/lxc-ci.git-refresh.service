@@ -6,7 +6,7 @@ After=network-online.target
 [Service]
 Type=oneshot
 WorkingDirectory=/lxc-ci
-ExecStart=/usr/bin/git pull -q
+ExecStart=/lxc-ci/bin/update-git
 
 [Install]
 WantedBy=multi-user.target
