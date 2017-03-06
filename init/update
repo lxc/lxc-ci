@@ -1,6 +1,6 @@
 #!/bin/sh
 for file in *.service *.timer; do
-  cp -f "$file" /etc/systemd/system/
+  cp -f "$file" /lib/systemd/system/
   systemctl daemon-reload
   systemctl -q reenable "$file"
 done
