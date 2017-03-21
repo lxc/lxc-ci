@@ -3,9 +3,9 @@
 
 for file in *.service *.timer; do
   if [ "${JENKINS_MODE:-}" = "ssh" ] && [ "${file}" = "lxc-ci.jenkins-slave.service" ]; then
-    if [ -e "/lib/system/system/${file}" ]; then
+    if [ -e "/lib/systemd/system/${file}" ]; then
       systemctl -q disable "${file}"
-      rm "/lib/system/system/${file}"
+      rm "/lib/systemd/system/${file}"
     fi
     continue
   fi
