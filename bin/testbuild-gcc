@@ -19,7 +19,6 @@ sys.path.insert(0, '.')
 
 import argparse
 import lxc_ci
-import os
 import traceback
 
 parser = argparse.ArgumentParser(description="gcc testbuild")
@@ -99,41 +98,19 @@ try:
     if build_env.execute(["make"], "/build/") != 0:
         build_env.exit_fail()
 
-    # Testsuite run
+    # Install everything
     if build_env.execute(["make", "install"], "/build/") != 0:
         build_env.exit_fail()
 
-    rootfs = build_env.container.get_config_item("lxc.rootfs")
-    if os.path.exists(os.path.join(rootfs, "etc", "default", "lxc")):
-        if build_env.execute(["sed", "-i", 's/USE_LXC_BRIDGE="false"/'
-                                           'USE_LXC_BRIDGE="true"/g',
-                              "/etc/default/lxc"]):
-            build_env.exit_fail()
-        build_env.execute(["touch", "/etc/default/lxc-net"])
-
-    if os.path.exists(os.path.join(rootfs, "etc", "init", "lxc-net.conf")):
-        if build_env.execute(["sed", "-i", "s/10\\.0\\.3\\./10.12.34./g",
-                              "/etc/init/lxc-net.conf"]) != 0:
-            build_env.exit_fail()
-
-    if os.path.exists(os.path.join(rootfs, "usr", "share",
-                                   "lxc", "lxc.net")):
-        if build_env.execute(["sed", "-i", "s/10\\.0\\.3\\./10.12.34./g",
-                              "/usr/share/lxc/lxc.net"]) != 0:
-            build_env.exit_fail()
-
-    if os.path.exists(os.path.join(rootfs, "usr", "libexec",
-                                   "lxc", "lxc-net")):
-        if build_env.execute(["sed", "-i", "s/10\\.0\\.3\\./10.12.34./g",
-                              "/usr/libexec/lxc/lxc-net"]) != 0:
-            build_env.exit_fail()
-
-    if build_env.execute(["useradd", "--system", "lxc-dnsmasq"]) != 0:
+    # Setup networking
+    if build_env.execute("""#!/bin/sh
+ip link add lxcbr0-phy up link eth0 type macvlan mode bridge
+ip link add lxcbr0 up type bridge
+ip link set lxcbr0-phy master lxcbr0
+""") != 0:
         build_env.exit_unstable()
 
-    if build_env.execute(["start", "lxc-net"]) != 0:
-        build_env.exit_fail()
-
+    # Setup the test scripts
     if build_env.execute(["mkdir", "-p",
                           "/usr/share/doc/python3-lxc/examples/"]) != 0:
         build_env.exit_unstable()
@@ -149,10 +126,11 @@ try:
                           "api_test.py"]) != 0:
         build_env.exit_unstable()
 
+    # Run the test suite
     if build_env.execute(["/tmp/exercise"]) != 0:
         build_env.exit_fail()
 
-    # Test run
+    # Success
     build_env.exit_pass()
 
 except Exception or KeyboardInterrupt:
