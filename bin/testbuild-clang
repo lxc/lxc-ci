@@ -105,9 +105,18 @@ try:
 
     # Setup networking
     if build_env.execute("""#!/bin/sh
-ip link add lxcbr0-phy up link eth0 type macvlan mode bridge
-ip link add lxcbr0 up type bridge
-ip link set lxcbr0-phy master lxcbr0
+ifdown eth0
+(
+cat << EOF
+auto lo
+iface lo inet loopback
+
+auto lxcbr0
+iface lxcbr0 inet dhcp
+    bridge-ports eth0
+EOF
+) > /etc/network/interfaces
+ifup lxcbr0
 """) != 0:
         build_env.exit_unstable()
 
