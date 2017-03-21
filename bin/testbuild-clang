@@ -122,22 +122,6 @@ iptables -I FORWARD -p udp --dport 123 -j REJECT
 """) != 0:
         build_env.exit_unstable()
 
-    # Setup the test scripts
-    if build_env.execute(["mkdir", "-p",
-                          "/usr/share/doc/python3-lxc/examples/"]) != 0:
-        build_env.exit_unstable()
-
-    if build_env.execute(["cp", "-p",
-                          "/build/src/python-lxc/examples/api_test.py",
-                          "/usr/share/doc/python3-lxc/examples/"
-                          "api_test.py"]) != 0:
-        build_env.exit_unstable()
-
-    if build_env.execute(["gzip", "-9",
-                          "/usr/share/doc/python3-lxc/examples/"
-                          "api_test.py"]) != 0:
-        build_env.exit_unstable()
-
     # Run the test suite
     if build_env.execute(["/tmp/exercise"]) != 0:
         build_env.exit_fail()
