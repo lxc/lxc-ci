@@ -1,0 +1,12 @@
+[Unit]
+Description=lxc-ci - Ready
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/lxc-ci
+ExecStart=/lxc-ci/bin/ready
+
+[Install]
+WantedBy=multi-user.target

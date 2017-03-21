@@ -1,6 +1,7 @@
 #!/bin/sh -eu
-ARCH=$(uname -m)
-if [ "${ARCH}" != "x86_64" ] && [ "${ARCH}" != "i686" ]; then
+[ -e /lxc-ci/etc/config ] && . /lxc-ci/etc/config
+
+if [ "${LXD_GOCACHE:-}" != "true" ]; then
     exit 0
 fi
 

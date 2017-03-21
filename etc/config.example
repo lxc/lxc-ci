@@ -3,6 +3,13 @@ http_proxy="http://proxy.server.com:3128"
 https_proxy="http://proxy.server.com:3128"
 
 # Jenkins env variables
+JENKINS_MODE="jnlp"
 JENKINS_HOST="http://jenkins.example:8080"
 JENKINS_KEY="some-key"
 JENKINS_NAME="some-name"
+
+# LXD testing
+LXD_GOCACHE=true
+
+# Host cleanup
+DAILY_REBOOT=true

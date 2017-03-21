@@ -1,6 +1,16 @@
-#!/bin/sh
+#!/bin/sh -eu
+[ -e /lxc-ci/etc/config ] && . /lxc-ci/etc/config
+
 for file in *.service *.timer; do
+  if [ "${JENKINS_MODE:-}" = "ssh" ] && [ "${file}" = "lxc-ci.jenkins-slave.service" ]; then
+    if [ -e "/lib/system/system/${file}" ]; then
+      systemctl -q disable "${file}"
+      rm "/lib/system/system/${file}"
+    fi
+    continue
+  fi
+
   cp -f "$file" /lib/systemd/system/
   systemctl daemon-reload
-  systemctl -q reenable "$file"
+  systemctl -q reenable "${file}"
 done

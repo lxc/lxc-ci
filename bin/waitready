@@ -1,0 +1,5 @@
+#!/bin/sh
+while :; do
+  [ -e /run/lxc-ci.ready ] && exit 0
+  sleep 1
+done
