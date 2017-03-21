@@ -14,7 +14,6 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 from io import BytesIO
-import configparser
 import glob
 import json
 import lxc
@@ -322,17 +321,23 @@ def load_config():
     if not os.path.exists("etc/config"):
         return config
 
-    configp = configparser.ConfigParser()
-    configp.read("etc/config")
+    with open("etc/config", "r") as fd:
+        for line in fd:
+            content = line.split("#")[0].strip()
+            if not content:
+                continue
 
-    for section in configp.sections():
-        config_section = {}
-        for option in configp.options(section):
-            value = configp.get(section, option)
-            config_section[option] = value.strip('"')
-        config[section] = config_section
+            fields = content.split("=", 1)
+            if len(fields) != 2:
+                continue
+
+            key = fields[0].replace("\"", "").strip()
+            value = fields[1].replace("\"", "").strip()
+
+            config[key] = value
 
     return config
+
 
 def load_template_config(template, release, arch, variant):
     config = {}
