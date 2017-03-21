@@ -1,7 +1,7 @@
 [Unit]
 Description=lxc-ci - Jenkins slave
 Requires=network-online.target
-After=network-online.target
+After=network-online.target lxc-ci.ready.service
 
 [Service]
 ExecStart=/lxc-ci/bin/jenkins-slave

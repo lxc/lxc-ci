@@ -2,7 +2,7 @@
 Description=lxc-ci - Update cache
 Requires=network-online.target
 After=network-online.target
-Before=lxc-ci.jenkins-slave.service
+Before=lxc-ci.ready.service
 
 [Service]
 Type=oneshot
