@@ -5,11 +5,11 @@ if ls /lxc-ci/build/ | grep -v cache | grep -v lxc-monitord; then
     exit 0
 fi
 
-grep /lxc-ci/build/ /proc/mounts | awk '{print $2}' | while read line; do umount "${line}"; done
+grep /lxc-ci/build/ /proc/mounts | awk '{print $2}' | while read -r line; do umount "${line}"; done
 
 if which zpool >/dev/null 2>&1; then
-    zpool list | grep ONLINE | awk '{print $1}' | while read line; do zpool destroy "${line}"; done
+    zpool list | grep ONLINE | awk '{print $1}' | while read -r line; do zpool destroy "${line}"; done
 fi
 
 dmsetup remove_all
-losetup -a | grep -v /var/lib/snapd | cut -d: -f1 | while read line; do losetup -d "${line}"; done
+losetup -a | grep -v /var/lib/snapd | cut -d: -f1 | while read -r line; do losetup -d "${line}"; done

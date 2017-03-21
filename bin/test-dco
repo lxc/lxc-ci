@@ -8,12 +8,12 @@ fi
 
 RET=0
 echo ""
-for i in $(git cherry origin/${ghprbTargetBranch:-master} | grep '^+' | cut -d' ' -f2); do
+for i in $(git cherry "origin/${ghprbTargetBranch:-master}" | grep '^+' | cut -d' ' -f2); do
   if ! git show "${i}" | grep -q 'Signed-off-by'; then
-    echo "=> Commit without sign-off: $(git show -s --oneline ${i})"
+    echo "=> Commit without sign-off: $(git show -s --oneline "${i}")"
     RET=1
   else
-    echo "=> Commit properly signed-off: $(git show -s --oneline ${i})"
+    echo "=> Commit properly signed-off: $(git show -s --oneline "${i}")"
   fi
 done
 

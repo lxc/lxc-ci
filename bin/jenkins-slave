@@ -1,4 +1,10 @@
-#!/bin/sh -e
+#!/bin/sh -eu
 . /lxc-ci/etc/config
+
+if [ -z "${JENKINS_HOST:-}" ] || [ -z "${JENKINS_KEY:-}" ] || [ -z "${JENKINS_NAME:-}" ]; then
+    echo "Missing Jenkins configuration" >&2
+    exit 1
+fi
+
 wget -q "${JENKINS_HOST}/jnlpJars/slave.jar" -O ~/slave.jar
 exec java -jar ~/slave.jar -jnlpUrl "${JENKINS_HOST}/computer/${JENKINS_NAME}/slave-agent.jnlp" -secret "${JENKINS_KEY}"
