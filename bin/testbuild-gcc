@@ -116,6 +116,8 @@ iface lxcbr0 inet dhcp
 EOF
 ) > /etc/network/interfaces
 ifup lxcbr0
+
+iptables -I FORWARD -p udp --dport 123 -j REJECT
 """) != 0:
         build_env.exit_unstable()
 
