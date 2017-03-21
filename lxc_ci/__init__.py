@@ -99,18 +99,16 @@ LXC_DEB_DEPENDENCIES['ubuntu'] = {'default': set(["git", "debhelper",
                                                   "dh-autoreconf",
                                                   "hardening-wrapper"])}
 
-config = {}
-
 
 class BuildEnvironment:
     architecture = None
     container = None
     distribution = None
     release = None
+    config = None
 
     def __init__(self, distribution, release, architecture=None):
-        if not config:
-            load_config()
+        self.config = load_config()
 
         if not architecture:
             dpkg = subprocess.Popen(['dpkg', '--print-architecture'],
@@ -231,10 +229,10 @@ echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
 
             os.environ['PATH'] = '/usr/sbin:/usr/bin:/sbin:/bin'
             os.environ['HOME'] = '/root'
-            if "env" in config and "proxy" in config['env']:
+            if "env" in self.config and "proxy" in self.config['env']:
                 os.environ["DEBIAN_FRONTEND"] = "noninteractive"
-                os.environ['http_proxy'] = config['env']['proxy']
-                os.environ['https_proxy'] = config['env']['proxy']
+                os.environ['http_proxy'] = self.config['env']['proxy']
+                os.environ['https_proxy'] = self.config['env']['proxy']
 
             return subprocess.call(cmd, cwd=cwd)
 
@@ -319,8 +317,10 @@ echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
 
 
 def load_config():
+    config = {}
+
     if not os.path.exists("etc/config"):
-        return
+        return config
 
     configp = configparser.ConfigParser()
     configp.read("etc/config")
@@ -332,6 +332,7 @@ def load_config():
             config_section[option] = value.strip('"')
         config[section] = config_section
 
+    return config
 
 def load_template_config(template, release, arch, variant):
     config = {}
