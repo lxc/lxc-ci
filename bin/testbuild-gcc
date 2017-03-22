@@ -121,6 +121,17 @@ iptables -I FORWARD -p udp --dport 123 -j REJECT
 """) != 0:
         build_env.exit_unstable()
 
+    # Fix cgroups
+    if build_env.execute("""#!/bin/sh
+cat /proc/self/cgroup | cut -d: -f2 | while read line; do
+    mountpoint -q /sys/fs/cgroup/${line} && continue
+
+    mkdir -p /sys/fs/cgroup/${line}
+    mount -n -t cgroup -o ${line} cgroup /sys/fs/cgroup/${line}
+done
+""") != 0:
+        build_env.exit_unstable()
+
     # Setup the test scripts
     if build_env.execute(["mkdir", "-p",
                           "/usr/share/doc/python3-lxc/examples/"]) != 0:
