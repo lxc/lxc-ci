@@ -33,7 +33,7 @@ parser.add_argument("--builder-dist", metavar="DIST", default="ubuntu")
 parser.add_argument("--builder-release", metavar="RELEASE", default="xenial")
 parser.add_argument("--builder-arch", metavar="RELEASE", default=None)
 parser.add_argument("--source", metavar="SOURCE",
-                    default="http://releases.ubuntu.com/ubuntu-core")
+                    default="http://cdimage.ubuntu.com/ubuntu-core")
 args = parser.parse_args()
 
 if os.geteuid():
@@ -63,7 +63,7 @@ done
     # Download the image
     if build_env.execute([
         "wget",
-        "%s/%s/ubuntu-core-%s-%s.img.xz" % (args.source, args.release,
+        "%s/%s/stable/ubuntu-core-%s-%s.img.xz" % (args.source, args.release,
                                             args.release, args.arch),
             "-O", "/build/core.img.xz"]) != 0:
         build_env.exit_unstable()
