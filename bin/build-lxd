@@ -52,7 +52,7 @@ if [ "${GO_VERSION}" != "gccgo" ]; then
         export GIMME_VERSION_PREFIX=${TEST_DIR}/go/versions/
 
         cd /lxc-ci/deps/gimme/ || exit 1
-        [ "${GO_VERSION}" = "golang-tip" ] && ./gimme 1.7
+        [ "${GO_VERSION}" = "golang-tip" ] && ./gimme 1.8
         ./gimme "${GO_VERSION#golang-}" >/dev/null
         cd -
         . "${GIMME_ENV_PREFIX}/go${GO_VERSION#golang-}.env" 2>/dev/null
