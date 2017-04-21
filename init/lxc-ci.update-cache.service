@@ -6,7 +6,6 @@ Before=lxc-ci.ready.service
 
 [Service]
 Type=oneshot
-RemainAfterExit=yes
 WorkingDirectory=/lxc-ci
 ExecStart=/lxc-ci/bin/update-cache
 
