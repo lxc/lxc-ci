@@ -15,6 +15,7 @@
                       "arm64": "arm64",
                       "armhf": "armhf"},
     "template_args": ["-r", "RELEASE", "-a", "ARCH"],
-    "post_create": ["passwd -dl root",
+    "post_create": ["passwd -d root",
+                    "passwd -l root",
                     "apt-get remove --purge openssh-server -y"]
 }

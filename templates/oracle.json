@@ -10,7 +10,9 @@
     "template_arch": {"amd64": "x86_64",
                       "i386": "i386"},
     "template_args": ["-R", "RELEASE", "-a", "ARCH"],
-    "post_create": ["passwd -dl root",
-                    "passwd -dl oracle",
+    "post_create": ["passwd -d root",
+                    "passwd -d oracle",
+                    "passwd -l root",
+                    "passwd -l oracle",
                     "yum -y remove openssh-server"]
 }

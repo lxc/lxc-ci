@@ -12,6 +12,7 @@
                       "i386": "i386"},
     "template_args": ["-R", "RELEASE", "-a", "ARCH"],
     "template_env": {"root_password": "root"},
-    "post_create": ["passwd -dl root",
+    "post_create": ["passwd -d root",
+                    "passwd -l root",
                     "dnf -y remove openssh-server"]
 }

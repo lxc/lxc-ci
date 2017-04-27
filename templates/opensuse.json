@@ -10,7 +10,8 @@
     "template_arch": {"amd64": "x86_64",
                       "i386": "i686"},
     "template_args": ["-r", "RELEASE"],
-    "post_create": ["passwd -dl root",
+    "post_create": ["passwd -d root",
+                    "passwd -l root",
                     "ln -s /dev/null /etc/systemd/system/sshd.service",
                     "rm -f /etc/HOSTNAME /etc/hostname",
                     "echo LXC_NAME > /etc/hostname"]

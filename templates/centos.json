@@ -11,6 +11,7 @@
                       "i386": "i686"},
     "template_args": ["-R", "RELEASE", "-a", "ARCH"],
     "template_env": {"root_password": "root"},
-    "post_create": ["passwd -dl root",
+    "post_create": ["passwd -d root",
+                    "passwd -l root",
                     "yum -y remove openssh-server"]
 }
