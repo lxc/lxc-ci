@@ -137,10 +137,14 @@ done
         build_env.exit_fail()
 
     # Run post-create hooks
+    build_env.execute(["mount", "--bind", "/dev",
+                       "/build/containers/LXC_NAME/rootfs/dev"])
     for cmd in config.get("post_create", []):
         if build_env.execute(["chroot", "/build/containers/LXC_NAME/rootfs",
-                           "sh", "-c", cmd]) != 0:
+                              "sh", "-c", cmd]) != 0:
             build_env.exit_fail()
+    build_env.execute(["umount", "-l",
+                       "/build/containers/LXC_NAME/rootfs/dev"])
 
     # Generate the config
     if build_env.execute("""#!/bin/sh -ex
