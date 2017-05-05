@@ -1,0 +1,12 @@
+[Unit]
+Description=lxc-ci - LXD setup
+Requires=network-online.target
+After=network-online.target lxd.socket
+
+[Service]
+Type=oneshot
+WorkingDirectory=/lxc-ci
+ExecStart=/lxc-ci/bin/setup-lxd
+
+[Install]
+WantedBy=multi-user.target

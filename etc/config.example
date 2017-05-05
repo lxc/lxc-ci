@@ -13,3 +13,6 @@ LXD_GOCACHE=true
 
 # Host cleanup
 DAILY_REBOOT=true
+
+# LXD
+LXD_DAEMON=true
