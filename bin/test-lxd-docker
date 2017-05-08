@@ -1,0 +1,56 @@
+#!/bin/sh -eu
+CNAME="docker-$(uuidgen)"
+
+cleanup() {
+    lxc delete --force ${CNAME}
+}
+
+trap cleanup EXIT HUP INT TERM
+
+# Create the container
+lxc launch images:ubuntu/xenial ${CNAME} -c security.nesting=true
+
+# Wait for network
+DNS=0
+for i in $(seq 30); do
+    sleep 1
+    ! lxc file pull ${CNAME}/etc/resolv.conf - | grep -q nameserver && continue
+
+    DNS=1
+    break
+done
+
+(
+cat << EOF
+# Install distro docker
+apt update --yes --force-yes
+apt install docker.io wget --yes --force-yes
+
+# Stop the distro docker
+systemctl stop docker.service
+systemctl stop docker.socket
+
+# Download binaries built from current git head of the Docker repo.
+wget https://master.dockerproject.org/linux/amd64/docker -O /usr/bin/docker
+wget https://master.dockerproject.org/linux/amd64/dockerd -O /usr/bin/dockerd
+wget https://master.dockerproject.org/linux/amd64/docker-containerd -O /usr/bin/docker-containerd
+wget https://master.dockerproject.org/linux/amd64/docker-containerd-shim -O /usr/bin/docker-containerd-shim
+wget https://master.dockerproject.org/linux/amd64/docker-init -O /usr/bin/docker-init
+wget https://master.dockerproject.org/linux/amd64/docker-proxy -O /usr/bin/docker-proxy
+wget https://master.dockerproject.org/linux/amd64/docker-runc -O /usr/bin/docker-runc
+chmod +x /usr/bin/docker*
+
+# Start docker again
+systemctl start docker
+sleep 5
+
+# Test whether we can pull a simple Docker image.
+docker pull busybox:latest
+
+# Test whether we can remove a simple Docker image.
+docker rmi busybox:latest
+
+# Run a basic hello-world
+docker run hello-world
+EOF
+) | lxc exec ${CNAME} -- sh -eux
