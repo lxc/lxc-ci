@@ -1,0 +1,57 @@
+#!/bin/sh -eu
+[ -e /lxc-ci/etc/config ] && . /lxc-ci/etc/config
+
+if [ "${1:-}" = "" ] || [ "${2:-}" = "" ] || [ "${3:-}" = "" ]; then
+    echo "Usage: $0 <filter> <series> <script>"
+    exit 1
+fi
+
+# Login to maas
+echo "==> Connecting to MAAS"
+maas login maas "${MAAS_URL}" "${MAAS_API}" >/dev/null
+
+# Allocate a machine
+echo "==> Allocating a machine"
+system_id=$(maas maas machines allocate "${1}" | jq -r .system_id)
+
+# Release on exit
+RET=1
+cleanup() {
+    echo "==> Releasing the machine"
+    maas maas machine release "${system_id}" >/dev/null
+
+    if [ "${RET}" = "0" ]; then
+        echo ""
+        echo "==> Test passed"
+    fi
+
+    echo ""
+    echo "==> Test failed"
+    exit ${RET}
+}
+trap cleanup EXIT HUP INT TERM
+
+# Deploy the machine
+echo "==> Deploying ${2}"
+maas maas machine deploy "${system_id}" "distro_series=${2}" >/dev/null
+
+# Wait for the deployment to complete
+while :; do
+    [ "$(maas maas machine read "${system_id}" | jq -r .status_name)" = "Deployed" ] && break
+    sleep 30
+done
+
+# Wait for SSH
+echo "==> Waiting for SSH to respond"
+IP=$(maas maas machine read "${system_id}" | jq .ip_addresses[0] -r)
+while :; do
+    ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "ubuntu@${IP}" true 2>/dev/null && break
+    sleep 5
+done
+
+# Connect and run something
+echo "==> Running the job"
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "ubuntu@${IP}" sh < "${3}"
+
+# Success
+RET=0

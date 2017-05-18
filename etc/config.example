@@ -16,3 +16,7 @@ DAILY_REBOOT=true
 
 # LXD
 LXD_DAEMON=true
+
+# MAAS
+MAAS_URL="http://maas.local/MAAS"
+MAAS_API="SOME-API-KEY"
