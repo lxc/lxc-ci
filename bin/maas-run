@@ -18,11 +18,12 @@ system_id=$(maas maas machines allocate "${1}" | jq -r .system_id)
 RET=1
 cleanup() {
     echo "==> Releasing the machine"
-    maas maas machine release "${system_id}" >/dev/null
+#    maas maas machine release "${system_id}" >/dev/null
 
     if [ "${RET}" = "0" ]; then
         echo ""
         echo "==> Test passed"
+        exit 0
     fi
 
     echo ""
