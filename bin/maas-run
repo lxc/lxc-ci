@@ -1,7 +1,7 @@
 #!/bin/sh -eu
 [ -e /lxc-ci/etc/config ] && . /lxc-ci/etc/config
 
-if [ "${1:-}" = "" ] || [ "${2:-}" = "" ] || [ "${3:-}" = "" ]; then
+if [ "${1:-}" = "" ] || [ "${2:-}" = "" ] || [ "${3:-}" = "" ] || [ "${4:-}" = "" ]; then
     echo "Usage: $0 <filter> <series> <script>"
     exit 1
 fi
@@ -34,7 +34,7 @@ trap cleanup EXIT HUP INT TERM
 
 # Deploy the machine
 echo "==> Deploying ${2}"
-maas maas machine deploy "${system_id}" "distro_series=${2}" >/dev/null
+maas maas machine deploy "${system_id}" "distro_series=${2}" "hwe_kernel=${3}" >/dev/null
 
 # Wait for the deployment to complete
 while :; do
@@ -52,7 +52,7 @@ done
 
 # Connect and run something
 echo "==> Running the job"
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "ubuntu@${IP}" sh < "${3}"
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "ubuntu@${IP}" sh < "${4}"
 
 # Success
 RET=0
