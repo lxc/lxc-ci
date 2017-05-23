@@ -1,5 +1,5 @@
 #!/bin/sh
-set -eux
+set -eu
 
 echo "==> Removing the system LXD"
 while :; do
@@ -8,11 +8,21 @@ while :; do
     sleep 3
 done 
 
+echo "==> Installing snapd"
 export PATH=$PATH:/snap/bin
+sudo apt install snapd --yes
+
 for channel in stable candidate beta edge; do
     echo "==> Installing LXD snap from ${channel}"
     sudo snap install lxd --${channel}
-    lxd waitready --timeout=60
+
+    for i in $(seq 12); do
+        sudo lxd waitready --timeout=10 >/dev/null 2>&1 && break
+    done
+
+    if ! getent group lxd >/dev/null; then
+        sudo chgrp $(id -g) /var/snap/lxd/common/lxd/unix.socket
+    fi
 
     lxc version
 
