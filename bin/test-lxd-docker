@@ -31,13 +31,13 @@ systemctl stop docker.service
 systemctl stop docker.socket
 
 # Download binaries built from current git head of the Docker repo.
-wget https://master.dockerproject.org/linux/amd64/docker -O /usr/bin/docker
-wget https://master.dockerproject.org/linux/amd64/dockerd -O /usr/bin/dockerd
-wget https://master.dockerproject.org/linux/amd64/docker-containerd -O /usr/bin/docker-containerd
-wget https://master.dockerproject.org/linux/amd64/docker-containerd-shim -O /usr/bin/docker-containerd-shim
-wget https://master.dockerproject.org/linux/amd64/docker-init -O /usr/bin/docker-init
-wget https://master.dockerproject.org/linux/amd64/docker-proxy -O /usr/bin/docker-proxy
-wget https://master.dockerproject.org/linux/amd64/docker-runc -O /usr/bin/docker-runc
+wget https://master.dockerproject.org/linux/x86_64/docker -O /usr/bin/docker
+wget https://master.dockerproject.org/linux/x86_64/dockerd -O /usr/bin/dockerd
+wget https://master.dockerproject.org/linux/x86_64/docker-containerd -O /usr/bin/docker-containerd
+wget https://master.dockerproject.org/linux/x86_64/docker-containerd-shim -O /usr/bin/docker-containerd-shim
+wget https://master.dockerproject.org/linux/x86_64/docker-init -O /usr/bin/docker-init
+wget https://master.dockerproject.org/linux/x86_64/docker-proxy -O /usr/bin/docker-proxy
+wget https://master.dockerproject.org/linux/x86_64/docker-runc -O /usr/bin/docker-runc
 chmod +x /usr/bin/docker*
 
 # Start docker again
