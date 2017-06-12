@@ -15,5 +15,10 @@ if which zpool >/dev/null 2>&1; then
     zpool list | grep ONLINE | awk '{print $1}' | grep -v default | while read -r line; do zpool destroy "${line}"; done
 fi
 
-dmsetup remove_all
-losetup -a | grep -v /var/lib/snapd | cut -d: -f1 | while read -r line; do losetup -d "${line}"; done
+if which dmsetup >/dev/null 2>&1; then
+    dmsetup remove_all
+fi
+
+if which losetup >/dev/null 2>&1; then
+    losetup -a | grep -v /var/lib/snapd | cut -d: -f1 | while read -r line; do losetup -d "${line}"; done
+fi
