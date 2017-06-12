@@ -27,6 +27,7 @@ cleanup() {
     echo "==> Test failed"
     exit "${RET}"
 }
+trap cleanup EXIT HUP INT TERM
 
 echo "==> Installing LXD snap from ${channel}"
 snap install lxd "--${channel}"
