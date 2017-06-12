@@ -1,16 +1,21 @@
 #!/bin/sh -eu
 [ -e /lxc-ci/etc/config ] && . /lxc-ci/etc/config
 
+UNITS_PATH="/lib/systemd/system"
+if [ ! -e "${UNITS_PATH}" ] && [ -e "/usr/lib/systemd/system" ]; then
+    UNITS_PATH="/usr/lib/systemd/system"
+fi
+
 for file in *.service *.timer; do
   if [ "${JENKINS_MODE:-}" = "ssh" ] && [ "${file}" = "lxc-ci.jenkins-slave.service" ]; then
-    if [ -e "/lib/systemd/system/${file}" ]; then
+    if [ -e "${UNITS_PATH}/${file}" ]; then
       systemctl -q disable "${file}"
-      rm "/lib/systemd/system/${file}"
+      rm "${UNITS_PATH}/${file}"
     fi
     continue
   fi
 
-  cp -f "$file" /lib/systemd/system/
+  cp -f "$file" "${UNITS_PATH}/"
   systemctl daemon-reload
   systemctl -q reenable "${file}"
 done
