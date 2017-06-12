@@ -1,53 +1,62 @@
 #!/bin/sh
 set -eu
+channel=${1:-stable}
 
-echo "==> Removing the system LXD"
-while :; do
-    sudo apt remove --purge lxd lxd-client --yes && break
-    echo "Re-trying in 3s"
-    sleep 3
-done 
+echo "==> Loading kernel modules"
+modprobe ip6table_nat
+modprobe ip6table_filter
+modprobe ip6table_mangle
+modprobe iptable_mangle
+modprobe iptable_filter
+modprobe iptable_nat
 
-echo "==> Installing snapd"
-export PATH=$PATH:/snap/bin
-sudo apt install snapd --yes
+RET=1
+cleanup() {
+    set +e
+    echo "==> Cleaning up"
+    snap remove lxd
+    ip link del lxdbr0
 
-for channel in stable candidate beta edge; do
-    echo "==> Installing LXD snap from ${channel}"
-    sudo snap install lxd --${channel}
-
-    # shellcheck disable=SC2034
-    for i in $(seq 12); do
-        sudo lxd waitready --timeout=10 >/dev/null 2>&1 && break
-    done
-
-    if ! getent group lxd >/dev/null; then
-        sudo chgrp "$(id -g)" /var/snap/lxd/common/lxd/unix.socket
+    if [ "${RET}" = "0" ]; then
+        echo ""
+        echo "==> Test passed"
+        exit 0
     fi
 
-    lxc version
+    echo ""
+    echo "==> Test failed"
+    exit "${RET}"
+}
 
-    lxc storage create default dir
-    lxc profile device add default root disk pool=default path=/
+echo "==> Installing LXD snap from ${channel}"
+snap install lxd "--${channel}"
 
-    lxc network create lxdbr0
-    lxc profile device add default eth0 nic nictype=bridged parent=lxdbr0 name=eth0
-
-    lxc launch images:centos/7 centos
-    lxc launch ubuntu:16.04 ubuntu
-
-    sleep 3
-    lxc list
-
-    lxc delete -f centos
-    lxc delete -f ubuntu
-
-    lxc profile device remove default root
-    lxc storage delete default
-
-    lxc profile device remove default eth0
-    lxc network delete lxdbr0
-
-    echo "==> Cleaning up"
-    sudo snap remove lxd
+# shellcheck disable=SC2034
+for i in $(seq 12); do
+    lxd waitready --timeout=10 >/dev/null 2>&1 && break
 done
+
+lxc version
+
+lxc storage create default dir
+lxc profile device add default root disk pool=default path=/
+
+lxc network create lxdbr0
+lxc profile device add default eth0 nic nictype=bridged parent=lxdbr0 name=eth0
+
+lxc launch images:centos/7 centos
+lxc launch ubuntu:16.04 ubuntu
+
+sleep 3
+lxc list
+
+lxc delete -f centos
+lxc delete -f ubuntu
+
+lxc profile device remove default root
+lxc storage delete default
+
+lxc profile device remove default eth0
+lxc network delete lxdbr0
+
+RET=0
