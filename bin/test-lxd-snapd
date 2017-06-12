@@ -2,7 +2,7 @@
 set -eu
 channel=${1:-stable}
 
-. /etc/profile
+export PATH="${PATH}:/var/lib/snapd/snap/bin:/snap/bin"
 
 echo "==> Loading kernel modules"
 modprobe ip6table_nat
