@@ -16,12 +16,13 @@ for channel in stable candidate beta edge; do
     echo "==> Installing LXD snap from ${channel}"
     sudo snap install lxd --${channel}
 
+    # shellcheck disable=SC2034
     for i in $(seq 12); do
         sudo lxd waitready --timeout=10 >/dev/null 2>&1 && break
     done
 
     if ! getent group lxd >/dev/null; then
-        sudo chgrp $(id -g) /var/snap/lxd/common/lxd/unix.socket
+        sudo chgrp "$(id -g)" /var/snap/lxd/common/lxd/unix.socket
     fi
 
     lxc version

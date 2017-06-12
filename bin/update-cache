@@ -45,6 +45,7 @@ for version in 1.6.4 1.7.5 1.8.1 tip; do
     mv "${GOPATH}/bin" "${GOPATH}/bin.$(go version | cut -d' ' -f3)"
     mv "${GOPATH}/pkg" "${GOPATH}/pkg.$(go version | cut -d' ' -f3)"
 done
+
 cd - >/dev/null
 
 # Setup the Go cache
