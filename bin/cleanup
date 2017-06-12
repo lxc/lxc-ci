@@ -1,5 +1,9 @@
 #!/bin/sh
 
+if [ "${1:-}" = "force" ]; then
+    for ctn in $(lxc-ls -P /lxc-ci/build/); do lxc-destroy --force -n "${ctn}" -P /lxc-ci/build/; done
+fi
+
 # shellcheck disable=SC2010
 if ls /lxc-ci/build/ | grep -v cache | grep -v lxc-monitord; then
     exit 0
