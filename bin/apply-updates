@@ -1,0 +1,11 @@
+#!/bin/sh
+. /etc/os-release
+
+if [ "${ID}" = "arch" ]; then
+    pacman -Syu --noconfirm
+elif [ "${ID}" = "ubuntu" ] || [ "${ID}" = "debian" ]; then
+    apt update
+    apt dist-upgrade -y
+elif [ "${ID}" = "ubuntu-core" ]; then
+    snap refresh
+fi
