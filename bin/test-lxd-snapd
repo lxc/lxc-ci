@@ -15,7 +15,7 @@ cleanup() {
     set +e
     echo "==> Cleaning up"
     snap remove lxd
-    ip link del lxdbr0
+    [ -e /sys/class/net/lxdbr0 ] && ip link del lxdbr0
 
     if [ "${RET}" = "0" ]; then
         echo ""
