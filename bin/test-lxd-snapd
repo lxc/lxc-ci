@@ -2,6 +2,8 @@
 set -eu
 channel=${1:-stable}
 
+. /etc/profile.d/apps-bin-path.sh
+
 echo "==> Loading kernel modules"
 modprobe ip6table_nat
 modprobe ip6table_filter
