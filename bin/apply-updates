@@ -8,4 +8,8 @@ elif [ "${ID}" = "ubuntu" ] || [ "${ID}" = "debian" ]; then
     apt dist-upgrade -y
 elif [ "${ID}" = "ubuntu-core" ]; then
     snap refresh
+elif [ "${ID}" = "fedora" ]; then
+    dnf upgrade --refresh -y
+elif [ "${ID}" = "opensuse" ]; then
+    zypper update -y
 fi
