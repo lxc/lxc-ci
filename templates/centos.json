@@ -8,6 +8,7 @@
     "config_user": ["common", "userns"],
     "config_system": ["common"],
     "template_arch": {"amd64": "x86_64",
+                      "armhf": "armv7l",
                       "i386": "i686"},
     "template_args": ["-R", "RELEASE", "-a", "ARCH"],
     "template_env": {"root_password": "root"},
