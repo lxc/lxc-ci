@@ -4,4 +4,4 @@ Description=lxc-ci - Reboot
 [Service]
 Type=oneshot
 WorkingDirectory=/lxc-ci
-ExecStart=/lxc-ci/bin/reboot
+ExecStart=/bin/sh -c "exec /lxc-ci/bin/reboot"

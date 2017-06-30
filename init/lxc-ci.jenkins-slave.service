@@ -4,7 +4,7 @@ Requires=network-online.target
 After=network-online.target lxc-ci.ready.service
 
 [Service]
-ExecStart=/lxc-ci/bin/jenkins-slave
+ExecStart=/bin/sh -c "exec /lxc-ci/bin/jenkins-slave"
 User=jenkins
 Restart=always
 

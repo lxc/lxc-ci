@@ -4,4 +4,4 @@ Description=lxc-ci - Cleanup
 [Service]
 Type=oneshot
 WorkingDirectory=/lxc-ci
-ExecStart=/lxc-ci/bin/cleanup
+ExecStart=/bin/sh -c "exec /lxc-ci/bin/cleanup"

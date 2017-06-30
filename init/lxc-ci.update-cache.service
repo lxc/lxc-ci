@@ -7,7 +7,7 @@ Before=lxc-ci.ready.service
 [Service]
 Type=oneshot
 WorkingDirectory=/lxc-ci
-ExecStart=/lxc-ci/bin/update-cache
+ExecStart=/bin/sh -c "exec /lxc-ci/bin/update-cache"
 
 [Install]
 WantedBy=multi-user.target

@@ -6,7 +6,7 @@ After=network-online.target
 [Service]
 Type=oneshot
 WorkingDirectory=/lxc-ci
-ExecStart=/lxc-ci/bin/ready
+ExecStart=/bin/sh -c "exec /lxc-ci/bin/ready"
 
 [Install]
 WantedBy=multi-user.target

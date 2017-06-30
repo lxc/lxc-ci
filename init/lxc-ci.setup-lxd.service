@@ -6,7 +6,7 @@ After=network-online.target lxd.socket
 [Service]
 Type=oneshot
 WorkingDirectory=/lxc-ci
-ExecStart=/lxc-ci/bin/setup-lxd
+ExecStart=/bin/sh -c "exec /lxc-ci/bin/setup-lxd"
 
 [Install]
 WantedBy=multi-user.target
