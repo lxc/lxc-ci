@@ -158,7 +158,8 @@ cp -L /lib/*-linux-gnu/libz.so.1 lib/
     build_env.download("/build/lxd.tar.xz", args.target)
 
     if build_env.execute(["mksquashfs", "/build/rootfs/",
-                          "/build/rootfs.squashfs"]) != 0:
+                          "/build/rootfs.squashfs",
+                          "-comp", "xz", "-b", "1M"]) != 0:
         build_env.exit_unstable()
     build_env.download("/build/rootfs.squashfs", args.target)
 
