@@ -280,7 +280,8 @@ echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
         sys.exit(2)
 
     def download(self, expr, target):
-        rootfs = self.container.get_config_item("lxc.rootfs")
+        rootfs = self.container.get_config_item("lxc.rootfs") \
+            .replace("dir:", "")
         match = glob.glob("%s/%s" % (rootfs, expr))
 
         for entry in match:
