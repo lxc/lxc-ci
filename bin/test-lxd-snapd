@@ -33,7 +33,7 @@ cleanup() {
 trap cleanup EXIT HUP INT TERM
 
 echo "==> Installing LXD snap from ${track}/${channel}"
-snap install lxd "--${track}/${channel}"
+snap install lxd --channel="${track}/${channel}"
 
 # shellcheck disable=SC2034
 for i in $(seq 12); do
