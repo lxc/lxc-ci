@@ -32,8 +32,14 @@ cleanup() {
 }
 trap cleanup EXIT HUP INT TERM
 
+if [ "${track}" = "latest" ]; then
+    snapd_channel=${channel}
+else
+    snapd_channel=${track}/${channel}
+fi
+
 echo "==> Installing LXD snap from ${track}/${channel}"
-snap install lxd --channel="${track}/${channel}"
+snap install lxd --channel="${snapd_channel}"
 
 # shellcheck disable=SC2034
 for i in $(seq 12); do
