@@ -1,6 +1,7 @@
 #!/bin/sh
 set -eu
-channel=${1:-stable}
+track=${1:-latest}
+channel=${2:-stable}
 
 export PATH="${PATH}:/var/lib/snapd/snap/bin:/snap/bin"
 
@@ -31,8 +32,8 @@ cleanup() {
 }
 trap cleanup EXIT HUP INT TERM
 
-echo "==> Installing LXD snap from ${channel}"
-snap install lxd "--${channel}"
+echo "==> Installing LXD snap from ${track}/${channel}"
+snap install lxd "--${track}/${channel}"
 
 # shellcheck disable=SC2034
 for i in $(seq 12); do
@@ -41,25 +42,54 @@ done
 
 lxc version
 
-lxc storage create default dir
-lxc profile device add default root disk pool=default path=/
 
-lxc network create lxdbr0
-lxc profile device add default eth0 nic nictype=bridged parent=lxdbr0 name=eth0
+# LXD setup
+if [ "${track}" = "2.0" ]; then
+    (
+    cat << EOF
+USE_LXD_BRIDGE="true"
+LXD_BRIDGE="lxdbr0"
+LXD_DOMAIN="lxd"
 
-lxc launch images:centos/7 centos
-lxc launch ubuntu:16.04 ubuntu
+LXD_IPV4_ADDR="10.214.179.1"
+LXD_IPV4_NETMASK="255.255.255.0"
+LXD_IPV4_NETWORK="10.99.58.1/24"
+LXD_IPV4_DHCP_RANGE="10.214.179.2,10.214.179.254"
+LXD_IPV4_DHCP_MAX="252"
+LXD_IPV4_NAT="true"
+
+LXD_IPV6_ADDR="fdc9:2f0d:62bc:1953::1"
+LXD_IPV6_MASK="64"
+LXD_IPV6_NETWORK="fd42:4e5a:ccbc:ef6e::1/64"
+LXD_IPV6_NAT="true"
+EOF
+    ) > /var/snap/lxd/common/lxd-bridge/config
+
+    systemctl restart snap.lxd.daemon.service
+else
+    lxc storage create default dir
+    lxc profile device add default root disk pool=default path=/
+
+    lxc network create lxdbr0
+    lxc profile device add default eth0 nic nictype=bridged parent=lxdbr0 name=eth0
+fi
+
+# Container creation test
+lxc launch images:alpine/edge unprivileged
+lxc launch images:alpine/edge privileged -c security.privileged=true
+lxc launch images:alpine/edge isolated -c security.idmap.isolated=true
 
 sleep 3
 lxc list
 
-lxc delete -f centos
-lxc delete -f ubuntu
+lxc delete -f unprivileged privileged isolated
 
-lxc profile device remove default root
-lxc storage delete default
+if [ "${track}" != "2.0" ]; then
+    lxc profile device remove default root
+    lxc storage delete default
 
-lxc profile device remove default eth0
-lxc network delete lxdbr0
+    lxc profile device remove default eth0
+    lxc network delete lxdbr0
+fi
 
 RET=0
