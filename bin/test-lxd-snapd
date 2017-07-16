@@ -19,6 +19,8 @@ cleanup() {
     echo "==> Cleaning up"
     snap remove lxd
     [ -e /sys/class/net/lxdbr0 ] && ip link del lxdbr0
+    pkill -9 lxd
+    pkill -9 dnsmasq
 
     if [ "${RET}" = "0" ]; then
         echo ""
