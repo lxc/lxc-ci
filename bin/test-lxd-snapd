@@ -1,5 +1,10 @@
 #!/bin/sh
 set -eu
+
+# Source host information
+# shellcheck disable=SC1091
+[ -e "/etc/os-release" ] && . /etc/os-release
+
 track=${1:-latest}
 channel=${2:-stable}
 
@@ -125,7 +130,7 @@ if [ "${track}" != "2.0" ]; then
         lxc launch images:alpine/edge -s test-zfs zfs
     fi
 
-    if false && modprobe -q -n dm_mod; then
+    if [ "${ID}" != "ubuntu-core" ] && modprobe -q -n dm_mod; then
         lxc storage create test-lvm lvm
         lxc launch images:alpine/edge -s test-lvm lvm
     fi
