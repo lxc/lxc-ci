@@ -17,8 +17,32 @@ RET=1
 cleanup() {
     set +e
     echo "==> Cleaning up"
+    for container in $(lxc list --fast | tail -n+3 | grep "^| " | cut -d' ' -f2); do
+        lxc delete "${container}" -f || true
+    done
+
+    for image in $(lxc image list | tail -n+3 | grep "^| " | cut -d'|' -f3 | sed "s/^ //g"); do
+        lxc image delete "${image}" || true
+    done
+
+    for profile in $(lxc profile list | tail -n+3 | grep "^| " | cut -d' ' -f2); do
+        lxc profile delete "${profile}" || true
+    done
+
+    if [ "${track}" = "2.0" ]; then
+        [ -e /sys/class/net/lxdbr0 ] && ip link del lxdbr0
+    else
+        for network in $(lxc network list | grep YES | grep "^| " | cut -d' ' -f2); do
+            lxc network delete "${network}" || true
+        done
+
+        for storage in $(lxc storage list | tail -n+3 | grep "^| " | cut -d' ' -f2); do
+            lxc storage delete "${storage}" || true
+        done
+    fi
+
+    echo "==> Removing LXD"
     snap remove lxd
-    [ -e /sys/class/net/lxdbr0 ] && ip link del lxdbr0
     pkill -x -9 lxd
     pkill -x -9 dnsmasq
 
@@ -92,17 +116,45 @@ lxc launch images:alpine/edge unprivileged
 lxc launch images:alpine/edge privileged -c security.privileged=true
 lxc launch images:alpine/edge isolated -c security.idmap.isolated=true
 
+# Storage backends test
+if [ "${track}" != "2.0" ]; then
+    if modprobe -q -n btrfs; then
+        lxc storage create test-btrfs btrfs
+        lxc launch images:alpine/edge -s test-btrfs btrfs
+    fi
+
+    if modprobe -q -n zfs; then
+        lxc storage create test-zfs zfs
+        lxc launch images:alpine/edge -s test-zfs zfs
+    fi
+
+    if false && modprobe -q -n dm_mod; then
+        lxc storage create test-lvm lvm
+        lxc launch images:alpine/edge -s test-lvm lvm
+    fi
+
+    if false && modprobe -q -n rbd; then
+        (
+cat << EOF
+[global]
+mon_initial_members = ceph01
+mon_host = [2001:470:b0f8:1015:216:3eff:fe52:5748]
+EOF
+        ) > /var/snap/lxd/common/ceph/ceph.conf
+
+        (
+cat << EOF
+[client.admin]
+    key = AQDxu3dZ8yh8KxAAa5Vlk9kWSD0aCIR7FNGnJQ==
+EOF
+        ) > /var/snap/lxd/common/ceph/ceph.client.admin.keyring
+
+        lxc storage create test-ceph ceph "ceph.osd.pool_name=$(mktemp -u XXXXXXXXX)"
+        lxc launch images:alpine/edge -s test-ceph ceph
+    fi
+fi
+
 sleep 10
 lxc list
-
-lxc delete -f unprivileged privileged isolated
-
-if [ "${track}" != "2.0" ]; then
-    lxc profile device remove default root
-    lxc storage delete default
-
-    lxc profile device remove default eth0
-    lxc network delete lxdbr0
-fi
 
 RET=0
