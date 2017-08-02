@@ -6,12 +6,9 @@ channel=${2:-stable}
 export PATH="${PATH}:/var/lib/snapd/snap/bin:/snap/bin"
 
 echo "==> Loading kernel modules"
-modprobe ip6table_nat
-modprobe ip6table_filter
-modprobe ip6table_mangle
-modprobe iptable_mangle
-modprobe iptable_filter
-modprobe iptable_nat
+for mod in btrfs dm_mod ip6table_nat ip6table_filter ip6table_mangle iptable_nat iptable_filter iptable_mangle rbd zfs; do
+    modprobe ${mod} >/dev/null 2>&1 || true
+done
 
 RET=1
 cleanup() {
