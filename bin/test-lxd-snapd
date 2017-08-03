@@ -11,7 +11,7 @@ channel=${2:-stable}
 export PATH="${PATH}:/var/lib/snapd/snap/bin:/snap/bin"
 
 echo "==> Loading kernel modules"
-for mod in btrfs dm_mod dm_thin_pool ip6table_nat ip6table_filter ip6table_mangle iptable_nat iptable_filter iptable_mangle rbd zfs; do
+for mod in btrfs dm_mod dm_snapshot dm_thin_pool ip6table_nat ip6table_filter ip6table_mangle iptable_nat iptable_filter iptable_mangle rbd zfs; do
     modprobe ${mod} >/dev/null 2>&1 || true
 done
 
