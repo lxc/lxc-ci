@@ -131,7 +131,7 @@ if [ "${track}" != "2.0" ]; then
     fi
 
     if [ "${ID}" != "ubuntu-core" ] && modprobe -q -n dm_mod; then
-        lxc storage create test-lvm lvm
+        lxc storage create test-lvm lvm volume.size=25MB
         lxc launch images:alpine/edge -s test-lvm lvm
     fi
 
@@ -151,7 +151,7 @@ cat << EOF
 EOF
         ) > /var/snap/lxd/common/ceph/ceph.client.admin.keyring
 
-        lxc storage create test-ceph ceph "ceph.osd.pool_name=$(mktemp -u XXXXXXXXX)"
+        lxc storage create test-ceph ceph "ceph.osd.pool_name=$(mktemp -u XXXXXXXXX)" volume.size=25MB
         lxc launch images:alpine/edge -s test-ceph ceph
     fi
 fi
