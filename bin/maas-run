@@ -52,7 +52,7 @@ done
 
 # Connect and run something
 echo "==> Running the job"
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "ubuntu@${IP}" sh < "${4}"
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "ubuntu@${IP}" sudo sh < "${4}"
 
 # Success
 RET=0
