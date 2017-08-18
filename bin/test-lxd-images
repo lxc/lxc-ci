@@ -1,0 +1,63 @@
+#!/bin/sh -eu
+PREFIX="$(mktemp -u "XXXX")"
+
+cleanup() {
+    if [ "${FAIL}" = "1" ]; then
+        echo ""
+        echo "Test failed"
+        exit 1
+    fi
+}
+
+CONTAINERS=""
+FAIL=0
+trap cleanup EXIT HUP INT TERM
+
+# Install LXD
+apt remove --purge lxd lxd-client --yes
+snap install lxd --edge
+export PATH="/snap/bin/:${PATH}"
+
+# Setup network
+lxc network create lxdbr0 ipv4.address=10.0.3.1/24 ipv4.nat=true ipv6.address=2001:470:b368:4242::1/64 ipv6.nat=true
+lxc network attach-profile lxdbr0 default eth0 eth0
+
+# Setup storage
+for backend in zfs btrfs dir; do
+    lxc storage create default ${backend} >/dev/null 2>&1 && break
+done
+
+lxc storage show default >/dev/null 2>&1 || exit 1
+lxc profile device add default root disk pool=default path=/
+
+# Create the containers
+for i in $(lxc image list images: | grep x86_64 | grep "more" | awk '{print $2}'); do
+    name=$(echo "${i}" | sed -e "s/\//-/g" -e "s/\.//g")
+    lxc launch "images:${i}" "${PREFIX}-${name}-unpriv" -c security.nesting=true
+    lxc launch "images:${i}" "${PREFIX}-${name}-priv" -c security.privileged=true -c security.nesting=true
+    CONTAINERS="${CONTAINERS} ${PREFIX}-${name}-unpriv ${PREFIX}-${name}-priv"
+done
+
+# Wait for network
+sleep 20
+
+# Check that all containers have an IPv4 and IPv6 address
+lxc list --format=csv "${PREFIX}-" | while read -r line; do
+    NAME=$(echo "${line}" | cut -d, -f1)
+    IPV4=$(echo "${line}" | cut -d, -f3)
+    IPV6=$(echo "${line}" | cut -d, -f4)
+
+    if [ -z "${IPV4}" ]; then
+        echo "FAIL: ${NAME} doesn't have an IPv4 address"
+        FAIL=1
+    fi
+
+    if [ -z "${IPV6}" ]; then
+        echo "FAIL: ${NAME} doesn't have an IPv6 address"
+        FAIL=1
+    fi
+
+    if [ -n "${IPV4}" ] && [ -n "${IPV6}" ]; then
+        echo "PASS: ${NAME} has working IPv4 and IPv6 connectivty"
+    fi
+done
