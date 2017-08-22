@@ -21,6 +21,6 @@
                     "passwd -l ubuntu",
                     "apt-get remove --purge openssh-server -y",
                     "rm /etc/*-",
-                    "rm /etc/resolvconf/resolv.conf.d/original",
-                    "rm /etc/resolvconf/resolv.conf.d/tail"]
+                    "rm -f /etc/resolvconf/resolv.conf.d/original",
+                    "rm -f /etc/resolvconf/resolv.conf.d/tail"]
 }
