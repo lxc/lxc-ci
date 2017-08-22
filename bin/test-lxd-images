@@ -9,7 +9,6 @@ cleanup() {
     fi
 }
 
-CONTAINERS=""
 FAIL=0
 trap cleanup EXIT HUP INT TERM
 
