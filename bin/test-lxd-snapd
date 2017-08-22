@@ -76,7 +76,6 @@ done
 
 lxc version
 
-
 # LXD setup
 if [ "${track}" = "2.0" ]; then
     (
@@ -98,20 +97,22 @@ LXD_IPV6_NETWORK="fd42:4e5a:ccbc:ef6e::1/64"
 LXD_IPV6_NAT="true"
 EOF
     ) > /var/snap/lxd/common/lxd-bridge/config
-
-    systemctl restart snap.lxd.daemon.service
-
-    # shellcheck disable=SC2034
-    for i in $(seq 12); do
-        lxd waitready --timeout=10 >/dev/null 2>&1 && break
-    done
 else
     lxc storage create default dir
     lxc profile device add default root disk pool=default path=/
 
     lxc network create lxdbr0
     lxc profile device add default eth0 nic nictype=bridged parent=lxdbr0 name=eth0
+
+    snap set lxd ceph.builtin=true
 fi
+
+systemctl restart snap.lxd.daemon.service
+
+# shellcheck disable=SC2034
+for i in $(seq 12); do
+    lxd waitready --timeout=10 >/dev/null 2>&1 && break
+done
 
 # Container creation test
 lxc launch images:alpine/edge unprivileged
