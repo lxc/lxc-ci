@@ -136,7 +136,7 @@ if [ "${track}" != "2.0" ]; then
         lxc launch images:alpine/edge -s test-lvm lvm
     fi
 
-    if [ "${channel}" = "edge" ] && modprobe -q -n rbd; then
+    if modprobe -q -n rbd; then
         (
 cat << EOF
 [global]
