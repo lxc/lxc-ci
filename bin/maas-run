@@ -52,7 +52,12 @@ done
 
 # Connect and run something
 echo "==> Running the job"
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "ubuntu@${IP}" sudo sh < "${4}"
+script=${4}
+shift
+shift
+shift
+# shellcheck disable=SC2029
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "ubuntu@${IP}" sudo sh /dev/stdin "$@" < "${script}"
 
 # Success
 RET=0
