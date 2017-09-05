@@ -38,13 +38,13 @@ apt install -t "${series}" lxd lxd-client --yes
 if [ "${series}" = "trusty-backports" ]; then
     apt install snapd --yes
 else
-    apt install zfsutils-linux --yes
+    apt install zfsutils-linux thin-provisioning-tools --yes
 fi
 
 # Configure the LXD deb
 if [ "${series}" = "trusty-backports" ] || [ "${series}" = "xenial-updates" ]; then
     # LXD 2.0
-    lxd waitready --timeout=300
+    lxd waitready --timeout=120
     if [ "${series}" != "trusty-backports" ]; then
         lxd init --auto --storage-backend=zfs --storage-create-loop=10 --storage-pool=lxd
     fi
@@ -76,10 +76,10 @@ EOF
         systemctl restart lxd-bridge
     fi
 
-    lxd waitready --timeout=300
+    lxd waitready --timeout=120
 else
     # LXD 2.x
-    lxd waitready --timeout=300
+    lxd waitready --timeout=120
 
     # Base configuration
     lxc network create lxdbr0
@@ -108,7 +108,7 @@ fi
 
 snap install lxd --channel="${snapd_channel}"
 export PATH="/snap/bin/:${PATH}"
-lxd waitready --timeout=300
+lxd waitready --timeout=120
 
 # Run the migration
 lxd.migrate --yes
@@ -119,9 +119,9 @@ lxc list
 
 # Check that all containers have an IPv4 and IPv6 address
 lxc list | grep PERSISTENT | awk '{print $2","$4","$6","$9}' | while read -r line; do
-    NAME=$(echo "${line}" | cut -d, -f1)
-    IPV4=$(echo "${line}" | cut -d, -f3)
-    IPV6=$(echo "${line}" | cut -d, -f4)
+    NAME=$(echo "${line}" | cut -d, -f1 | sed "s/|//g")
+    IPV4=$(echo "${line}" | cut -d, -f3 | sed "s/|//g")
+    IPV6=$(echo "${line}" | cut -d, -f4 | sed "s/|//g")
 
     if [ -z "${IPV4}" ]; then
         echo "FAIL: ${NAME} doesn't have an IPv4 address"
