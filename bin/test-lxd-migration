@@ -96,7 +96,7 @@ launch c3 lvm
 launch c4 btrfs
 
 # Pre-migration listing
-sleep 20
+sleep 30
 lxc list
 
 # Install the LXD snap
@@ -114,7 +114,7 @@ lxd waitready --timeout=120
 lxd.migrate --yes
 
 # Show a new listing
-sleep 20
+sleep 30
 lxc list
 
 # Check that all containers have an IPv4 and IPv6 address
