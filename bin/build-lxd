@@ -136,10 +136,28 @@ umount -l /mnt
 ip link set lo up
 ip link add lxdbr0 up type bridge
 
+# Setup host netns access
+mount -t tmpfs tmpfs /run/netns
+touch /run/netns/hostns
+mount --bind /proc/1/ns/net /run/netns/hostns
+
+mount -t tmpfs tmpfs /usr/local/bin
+(
+cat << EOE
+#!/bin/sh
+exec ip netns exec hostns /usr/bin/\\\$(basename \\\$0) "\\\$@"
+EOE
+) > /usr/local/bin/in-hostnetns
+chmod +x /usr/local/bin/in-hostnetns
+
+# Setup ceph
+ln -s in-hostnetns /usr/local/bin/ceph
+ln -s in-hostnetns /usr/local/bin/rbd
+
 # Run the tests
 exec ./main.sh
 EOF
-) | sudo -E "LXD_LOGS=${TEST_DIR}/logs" "LXD_VERBOSE=1" "LXD_OFFLINE=1" "LXD_BACKEND=${LXD_BACKEND}" "PATH=${PATH}"  unshare -m -n -- sh
+) | sudo -E "LXD_LOGS=${TEST_DIR}/logs" "LXD_VERBOSE=1" "LXD_OFFLINE=1" "LXD_BACKEND=${LXD_BACKEND}" "LXD_CEPH_CLUSTER=ceph" "PATH=${PATH}"  unshare -m -n -- sh
 
 
 SUCCESS=1
