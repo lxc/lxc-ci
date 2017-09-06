@@ -137,6 +137,7 @@ ip link set lo up
 ip link add lxdbr0 up type bridge
 
 # Setup host netns access
+mkdir -p /run/netns
 mount -t tmpfs tmpfs /run/netns
 touch /run/netns/hostns
 mount --bind /proc/1/ns/net /run/netns/hostns
