@@ -152,7 +152,7 @@ cat << EOF
 EOF
         ) > /var/snap/lxd/common/ceph/ceph.client.admin.keyring
 
-        lxc storage create test-ceph ceph "ceph.osd.pool_name=$(mktemp -u XXXXXXXXX)" volume.size=25MB
+        lxc storage create test-ceph ceph "ceph.osd.pool_name=$(mktemp -u snaptest-XXX)" volume.size=25MB
         lxc launch images:alpine/edge -s test-ceph ceph
     fi
 fi
