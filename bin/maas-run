@@ -17,11 +17,23 @@ system_id=$(maas maas machines allocate "${1}" | jq -r .system_id)
 # Release on exit
 RET=1
 cleanup() {
+    set +e
+
     echo "==> Releasing the machine"
+    maas maas machine release "${system_id}" >/dev/null
     while :; do
-        maas maas machine release "${system_id}" >/dev/null
-        sleep 20
-        [ "$(maas maas machine read "${system_id}" | jq -r .status_name)" = "Releasing failed" ] && continue
+        status=$(maas maas machine read "${system_id}" | jq -r .status_name)
+        if [ "${status}" = "Releasing failed" ]; then
+            maas maas machine release "${system_id}" >/dev/null
+            sleep 5
+            continue
+        fi
+
+        if [ "${status}" = "Releasing" ]; then
+            sleep 5
+            continue
+        fi
+
         break
     done
 
