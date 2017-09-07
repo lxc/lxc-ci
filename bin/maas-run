@@ -77,5 +77,9 @@ shift
 # shellcheck disable=SC2029
 ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "ubuntu@${IP}" sudo sh /dev/stdin "$@" < "${script}"
 
+if [ -n "${WORKSPACE:-}" ]; then
+    ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "ubuntu@${IP}" sudo cat artifacts.tar.gz | tar zxvf - -C "${WORKSPACE}" >/dev/null 2>&1 || true
+fi
+
 # Success
 RET=0
