@@ -1,0 +1,44 @@
+#!/bin/sh
+set -eu
+
+export DEBIAN_FRONTEND=noninteractive
+
+cleanup() {
+    if [ "${FAIL}" = "1" ]; then
+        echo ""
+        echo "Test failed"
+        exit 1
+    fi
+}
+
+FAIL=1
+trap cleanup EXIT HUP INT TERM
+
+# Make sure we're up to date
+while :; do
+    apt update && break
+    sleep 10
+done
+
+while :; do
+    apt dist-upgrade --yes && break
+    sleep 10
+done
+
+# Setup the environment
+apt remove --purge lxd lxd-client --yes
+apt install golang-go libacl1-dev libsqlite3-dev lxc-dev sqlite3 zfsutils-linux lvm2 thin-provisioning-tools btrfs-tools ceph-common --yes
+
+# Build LXD
+export GOPATH=/root/go
+go get -v -tags libsqlite3 github.com/lxc/lxd/lxc
+go get -v -tags libsqlite3 github.com/lxc/lxd/lxd
+go get -v -tags libsqlite3 github.com/lxc/lxd/lxd-benchmark
+
+# Run the tests
+chmod +x /root
+cd /root/go/src/github.com/lxc/lxd/test/
+LXD_TMPFS=1 LXD_BACKEND=$1 ./perf.sh
+tar -zcf /home/ubuntu/artifacts.tar.gz perf.csv
+
+FAIL=0
