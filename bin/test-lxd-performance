@@ -26,8 +26,34 @@ while :; do
 done
 
 # Setup the environment
+export LXD_BACKEND=$1
 apt remove --purge lxd lxd-client --yes
 apt install golang-go libacl1-dev libsqlite3-dev lxc-dev sqlite3 zfsutils-linux lvm2 thin-provisioning-tools btrfs-tools ceph-common --yes
+
+# Setup storage
+mkdir /root/go
+mkfs.ext4 -F /dev/sde
+mount /dev/sde /root/go
+
+# Configure ceph
+if [ "${LXD_BACKEND}" = "ceph" ]; then
+    (
+cat << EOF
+[global]
+mon_initial_members = ceph01
+mon_host = [2001:470:b0f8:1015:216:3eff:fe52:5748]
+EOF
+    ) > /var/snap/lxd/common/ceph/ceph.conf
+
+    (
+cat << EOF
+[client.admin]
+    key = AQDxu3dZ8yh8KxAAa5Vlk9kWSD0aCIR7FNGnJQ==
+EOF
+    ) > /var/snap/lxd/common/ceph/ceph.client.admin.keyring
+
+    export LXD_CEPH_CLUSTER=ceph
+fi
 
 # Build LXD
 export GOPATH=/root/go
@@ -38,7 +64,7 @@ go get -v -tags libsqlite3 github.com/lxc/lxd/lxd-benchmark
 # Run the tests
 chmod +x /root
 cd /root/go/src/github.com/lxc/lxd/test/
-LXD_TMPFS=1 LXD_BACKEND=$1 ./perf.sh
+./perf.sh
 tar -zcf /home/ubuntu/artifacts.tar.gz perf.csv
 
 FAIL=0
