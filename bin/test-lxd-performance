@@ -43,14 +43,14 @@ cat << EOF
 mon_initial_members = ceph01
 mon_host = [2001:470:b0f8:1015:216:3eff:fe52:5748]
 EOF
-    ) > /var/snap/lxd/common/ceph/ceph.conf
+    ) > /etc/ceph/ceph.conf
 
     (
 cat << EOF
 [client.admin]
     key = AQDxu3dZ8yh8KxAAa5Vlk9kWSD0aCIR7FNGnJQ==
 EOF
-    ) > /var/snap/lxd/common/ceph/ceph.client.admin.keyring
+    ) > /etc/ceph/ceph.client.admin.keyring
 
     export LXD_CEPH_CLUSTER=ceph
 fi
