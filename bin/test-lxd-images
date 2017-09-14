@@ -27,7 +27,11 @@ lxc network attach-profile lxdbr0 default eth0 eth0
 
 # Setup storage
 for backend in zfs btrfs dir; do
-    lxc storage create default ${backend} >/dev/null 2>&1 && break
+    if [ "${backend}" = "dir" ]; then
+        lxc storage create default ${backend} >/dev/null 2>&1 && break
+    else
+        lxc storage create default ${backend} size=30GB >/dev/null 2>&1 && break
+    fi
 done
 
 lxc storage show default >/dev/null 2>&1 || exit 1
