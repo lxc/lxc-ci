@@ -2,14 +2,17 @@
 set -eu
 
 cleanup() {
+    echo ""
     if [ "${FAIL}" = "1" ]; then
-        echo ""
         echo "Test failed"
         exit 1
     fi
+
+    echo "Test passed"
+    exit 0
 }
 
-FAIL=0
+FAIL=1
 trap cleanup EXIT HUP INT TERM
 
 # Install LXD
@@ -48,6 +51,7 @@ done
 sleep 20
 
 # Check that all containers have an IPv4 and IPv6 address
+FAIL=0
 lxc list --format=csv | while read -r line; do
     NAME=$(echo "${line}" | cut -d, -f1)
     IPV4=$(echo "${line}" | cut -d, -f3)
