@@ -52,7 +52,8 @@ sleep 20
 
 # Check that all containers have an IPv4 and IPv6 address
 FAIL=0
-lxc list --format=csv | while read -r line; do
+for ctn in $(lxc list -cn --format=csv); do
+    line=$(lxc list "${ctn}" --format=csv)
     NAME=$(echo "${line}" | cut -d, -f1)
     IPV4=$(echo "${line}" | cut -d, -f3)
     IPV6=$(echo "${line}" | cut -d, -f4)
