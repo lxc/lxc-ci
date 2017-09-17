@@ -12,4 +12,7 @@ elif [ "${ID}" = "fedora" ]; then
     dnf upgrade --refresh -y
 elif [ "${ID}" = "opensuse" ]; then
     zypper update -y
+elif [ "${ID}" = "solus" ]; then
+    eopkg update-repo -y
+    eopkg upgrade -y
 fi
