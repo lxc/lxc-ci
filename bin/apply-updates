@@ -6,6 +6,7 @@ if [ "${ID}" = "arch" ]; then
 elif [ "${ID}" = "ubuntu" ] || [ "${ID}" = "debian" ]; then
     apt update
     apt dist-upgrade -y
+    apt autoremove --purge -y
 elif [ "${ID}" = "ubuntu-core" ]; then
     snap refresh
 elif [ "${ID}" = "fedora" ]; then
