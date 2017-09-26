@@ -3,7 +3,7 @@
 
 if [ "${ID}" = "arch" ]; then
     pacman -Syu --noconfirm
-elif [ "${ID}" = "ubuntu" ] || [ "${ID}" = "debian" ]; then
+elif [ "${ID}" = "ubuntu" ] || [ "${ID}" = "debian" ] || [ "${ID}" = "elementary" ]; then
     apt update
     apt dist-upgrade -y
     apt autoremove --purge -y
