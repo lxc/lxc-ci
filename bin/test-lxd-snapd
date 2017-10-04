@@ -109,6 +109,14 @@ for i in $(seq 12); do
     lxd waitready --timeout=10 >/dev/null 2>&1 && break
 done
 
+# Check that user access works
+if [ "${ID}" != "ubuntu-core" ]; then
+    cd /tmp
+    usermod -G lxd -a jenkins || true
+    su jenkins -c "/snap/bin/lxc info"
+    cd - >/dev/null
+fi
+
 # Container creation test
 lxc launch images:alpine/edge unprivileged
 lxc launch images:alpine/edge privileged -c security.privileged=true
