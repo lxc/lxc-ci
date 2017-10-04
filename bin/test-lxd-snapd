@@ -111,10 +111,12 @@ done
 
 # Check that user access works
 if [ "${ID}" != "ubuntu-core" ]; then
-    cd /tmp
-    usermod -G lxd -a jenkins || true
-    su jenkins -c "/snap/bin/lxc info"
-    cd - >/dev/null
+    (
+        set -e
+        usermod -G lxd -a jenkins || true
+        LXC=$(which lxc)
+        su jenkins -c "${LXC} info"
+    )
 fi
 
 # Container creation test
