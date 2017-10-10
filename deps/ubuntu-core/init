@@ -153,6 +153,7 @@ pivot_root . mnt
 /bin/mount --move /mnt/proc /proc || true
 /bin/mount --move /mnt/sys /sys || true
 /bin/umount -l /mnt
+/bin/mount -t tmpfs tmpfs /usr/share/bash-completion/completions/
 
 # Exec new init
 exec /sbin/init $@
