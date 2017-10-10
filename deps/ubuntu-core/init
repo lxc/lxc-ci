@@ -32,7 +32,7 @@ fi
 # Extract initramfs
 mkdir -p /mnt /initrd
 mount -t tmpfs tmpfs /initrd
-/bin/squashfuse /writable/system-data/var/lib/snapd/snaps/${SNAP_KERNEL} /mnt -o allow_other
+/bin/squashfuse /writable/system-data/var/lib/snapd/snaps/${SNAP_KERNEL} /mnt -o ro,allow_other
 cd /initrd
 lzcat /mnt/initrd.img | cpio -i
 umount /mnt
@@ -53,7 +53,7 @@ rootmnt=/root
 mkdir -p ${rootmnt}
 
 ## Mount the root
-/bin/squashfuse /writable/system-data/var/lib/snapd/snaps/${SNAP_CORE} /root -o allow_other
+/bin/squashfuse /writable/system-data/var/lib/snapd/snaps/${SNAP_CORE} /root -o ro,allow_other
 
 ## Mount runtime directory
 mount -o rw,nosuid,noexec,relatime,mode=755 -t tmpfs tmpfs "/root//run"
@@ -153,7 +153,6 @@ pivot_root . mnt
 /bin/mount --move /mnt/proc /proc || true
 /bin/mount --move /mnt/sys /sys || true
 /bin/umount -l /mnt
-/bin/mount -t tmpfs tmpfs /usr/share/bash-completion/completions/
 
 # Exec new init
 exec /sbin/init $@
