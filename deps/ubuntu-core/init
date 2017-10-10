@@ -39,6 +39,7 @@ umount /mnt
 cd /
 
 # Exec initramfs
+[ ! -L /scripts ] && ln -s /initrd/scripts /scripts
 . /initrd/scripts/ubuntu-core-rootfs
 export PATH=$PATH:/initrd/bin:/initrd/sbin
 export root=/root
