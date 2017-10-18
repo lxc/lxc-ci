@@ -40,6 +40,9 @@ done
 lxc storage show default >/dev/null 2>&1 || exit 1
 lxc profile device add default root disk pool=default path=/
 
+# Workaround systemd keyring issues
+lxc profile set default security.syscalls.blacklist "keyctl errno 38"
+
 # Create the containers
 for i in $(lxc image list images: | grep x86_64 | grep "more" | awk '{print $2}'); do
     name=$(echo "${i}" | sed -e "s/\//-/g" -e "s/\.//g")
