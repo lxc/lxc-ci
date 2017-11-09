@@ -41,6 +41,8 @@ for version in 1.6.4 1.7.6 1.8.5 1.9.2 tip; do
     go get github.com/remyoudompheng/go-misc/deadcode >/dev/null
     go get github.com/golang/lint/golint >/dev/null
     go get github.com/snapcore/snapd/i18n/xgettext-go >/dev/null
+    go get github.com/client9/misspell/cmd/misspell >/dev/null
+    go get github.com/gordonklaus/ineffassign >/dev/null
 
     mkdir -p "${GOPATH}/bin" && mv "${GOPATH}/bin" "${GOPATH}/bin.$(go version | cut -d' ' -f3)"
     mkdir -p "${GOPATH}/pkg" && mv "${GOPATH}/pkg" "${GOPATH}/pkg.$(go version | cut -d' ' -f3)"
