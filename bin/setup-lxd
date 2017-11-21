@@ -7,8 +7,18 @@ fi
 
 export PATH="${PATH}:/snap/bin"
 
-# Wait for LXD
-lxd waitready --timeout 600
+# Setup the snap
+if [ -d /var/snap/lxd/common ] && mountpoint -q /var/snap/lxd/common; then
+    systemctl stop snap.lxd.daemon
+
+    mkdir -p /var/snap/lxd/common/lxd/logs
+    rm -f /var/snap/lxd/current/lxd/lxd.db
+    touch /var/snap/lxd/current/lxd/lxd.db
+    ln -s /var/snap/lxd/current/lxd/lxd.db /var/snap/lxd/common/lxd/lxd.db
+
+    systemctl start snap.lxd.daemon
+    lxd waitready --timeout 600
+fi
 
 # Setup network
 lxc network create lxdbr0 ipv4.address=10.0.3.1/24 ipv4.nat=true ipv6.address=2001:470:b368:4242::1/64 ipv6.nat=true
