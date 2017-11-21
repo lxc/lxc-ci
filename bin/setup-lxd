@@ -5,6 +5,11 @@ if [ "${LXD_DAEMON:-}" != "true" ]; then
     exit 0
 fi
 
+export PATH="${PATH}:/snap/bin"
+
+# Wait for LXD
+lxd waitready --timeout 600
+
 # Setup network
 lxc network create lxdbr0 ipv4.address=10.0.3.1/24 ipv4.nat=true ipv6.address=2001:470:b368:4242::1/64 ipv6.nat=true
 lxc network attach-profile lxdbr0 default eth0 eth0
