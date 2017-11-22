@@ -75,7 +75,7 @@ try:
 
     build_env.execute("""#!/bin/sh
 mknod /dev/loop-control c 10 237
-for i in $(seq 0 7); do
+for i in $(seq 0 254); do
     mknod /dev/loop${i} b 7 ${i}
 done
 """)
