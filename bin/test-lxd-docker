@@ -35,14 +35,10 @@ systemctl stop docker.service
 systemctl stop docker.socket
 
 # Download binaries built from current git head of the Docker repo.
-wget https://master.dockerproject.org/linux/x86_64/docker -O /usr/bin/docker
-wget https://master.dockerproject.org/linux/x86_64/dockerd -O /usr/bin/dockerd
-wget https://master.dockerproject.org/linux/x86_64/docker-containerd -O /usr/bin/docker-containerd
-wget https://master.dockerproject.org/linux/x86_64/docker-containerd-shim -O /usr/bin/docker-containerd-shim
-wget https://master.dockerproject.org/linux/x86_64/docker-init -O /usr/bin/docker-init
-wget https://master.dockerproject.org/linux/x86_64/docker-proxy -O /usr/bin/docker-proxy
-wget https://master.dockerproject.org/linux/x86_64/docker-runc -O /usr/bin/docker-runc
-chmod +x /usr/bin/docker*
+for BIN in docker dockerd docker-containerd docker-containerd-shim docker-init docker-proxy docker-runc; do
+    wget -q "https://master.dockerproject.org/linux/x86_64/${BIN}" -O "/usr/bin/${BIN}" && \
+        chmod +x "/usr/bin/${BIN}"
+done
 
 # Start docker again
 systemctl start docker
@@ -53,6 +49,9 @@ docker pull busybox:latest
 
 # Test whether we can remove a simple Docker image.
 docker rmi busybox:latest
+
+# Show docker info (client and daemon version, etc.)
+docker info
 
 # Run a basic hello-world
 docker run hello-world
