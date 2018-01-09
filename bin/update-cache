@@ -15,6 +15,15 @@ trap cleanup EXIT HUP INT TERM
 
 ifup lxdbr0 >/dev/null 2>&1 || true
 
+# Clustering bits
+git clone -q https://github.com/CanonicalLtd/sqlite -b replication-support "${TEMP_DIR}/sqlite"
+cd "${TEMP_DIR}/sqlite"
+git log -1 --format=format:%ci%n | sed -e 's/ [-+].*$//;s/ /T/;s/^/D /' > manifest
+git log -1 --format=format:%H > manifest.uuid
+./configure >/dev/null 2>&1
+make >/dev/null 2>&1
+cd - >/dev/null
+
 # Setup the gimme cache
 [ "$(arch)" != "i686" ] || export GIMME_ARCH=x86
 export GIMME_ENV_PREFIX=${TEMP_DIR}/gimme/envs/
@@ -62,3 +71,4 @@ mkdir -p /lxc-ci/build/cache
 rm -Rf "${TEMP_DIR}/go/pkg" "${TEMP_DIR}/go/bin"
 mv "${TEMP_DIR}/gimme" /lxc-ci/build/cache/gimme
 mv "${TEMP_DIR}/go" /lxc-ci/build/cache/go
+mv "${TEMP_DIR}/sqlite" /lxc-ci/build/cache/sqlite
