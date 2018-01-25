@@ -16,7 +16,7 @@ trap cleanup EXIT HUP INT TERM
 ifup lxdbr0 >/dev/null 2>&1 || true
 
 # Clustering bits
-git clone -q https://github.com/CanonicalLtd/sqlite -b replication-support "${TEMP_DIR}/sqlite"
+git clone -q https://github.com/CanonicalLtd/sqlite "${TEMP_DIR}/sqlite"
 cd "${TEMP_DIR}/sqlite"
 git log -1 --format=format:%ci%n | sed -e 's/ [-+].*$//;s/ /T/;s/^/D /' > manifest
 git log -1 --format=format:%H > manifest.uuid
