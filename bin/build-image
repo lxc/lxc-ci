@@ -165,7 +165,7 @@ find . -type c >> /build/exclude-user
     # Compress and grab the result
     if build_env.execute(["tar", "-Jcf", "/build/rootfs.tar.xz",
                           "-C", "/build/containers/LXC_NAME/rootfs",
-                          ".", "--numeric-owner"]) != 0:
+                          ".", "--numeric-owner", "--selinux"]) != 0:
         build_env.exit_unstable()
 
     build_env.download("/build/rootfs.tar.xz", args.target)
