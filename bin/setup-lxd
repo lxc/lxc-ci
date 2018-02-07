@@ -10,9 +10,6 @@ export PATH="${PATH}:/snap/bin"
 # Setup the snap
 if [ -d /var/snap/lxd/common ] && mountpoint -q /var/snap/lxd/common/lxd; then
     mkdir -p /var/snap/lxd/common/lxd/logs
-    rm -f /var/snap/lxd/current/lxd/lxd.db /var/snap/lxd/common/lxd/lxd.db
-    touch /var/snap/lxd/current/lxd/lxd.db
-    ln -s /var/snap/lxd/current/lxd/lxd.db /var/snap/lxd/common/lxd/lxd.db
 
     systemctl restart snap.lxd.daemon
     lxd waitready --timeout 600
