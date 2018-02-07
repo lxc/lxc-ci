@@ -1,7 +1,7 @@
 [Unit]
 Description=lxc-ci - Ready
 Requires=network-online.target
-After=network-online.target
+After=network-online.target lxc-ci.setup-lxd.service
 
 [Service]
 Type=oneshot
