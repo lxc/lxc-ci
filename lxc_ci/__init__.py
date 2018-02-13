@@ -143,7 +143,7 @@ class BuildEnvironment:
             raise Exception("Failed to create the rootfs")
 
         if self.distribution in ("ubuntu", "archlinux"):
-            self.container.set_config_item("lxc.aa_profile", "unconfined")
+            self.container.set_config_item("lxc.apparmor.profile", "unconfined")
 
         # FIXME: Very ugly workaround
         if self.distribution == "ubuntu":
