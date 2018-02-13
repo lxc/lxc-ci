@@ -143,7 +143,11 @@ class BuildEnvironment:
             raise Exception("Failed to create the rootfs")
 
         if self.distribution in ("ubuntu", "archlinux"):
-            self.container.set_config_item("lxc.apparmor.profile", "unconfined")
+            if lxc.version.startswith("2.0"):
+                self.container.set_config_item("lxc.aa_profile", "unconfined")
+            else:
+                self.container.set_config_item("lxc.apparmor.profile",
+                                               "unconfined")
 
         # FIXME: Very ugly workaround
         if self.distribution == "ubuntu":
@@ -280,8 +284,12 @@ echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
         sys.exit(2)
 
     def download(self, expr, target):
-        rootfs = self.container.get_config_item("lxc.rootfs") \
-            .replace("dir:", "")
+        if lxc.version.startswith("2.0"):
+            rootfs = self.container.get_config_item("lxc.rootfs")
+        else:
+            rootfs = self.container.get_config_item("lxc.rootfs.path")
+
+        rootfs = rootfs.replace("dir:", "")
         match = glob.glob("%s/%s" % (rootfs, expr))
 
         for entry in match:
