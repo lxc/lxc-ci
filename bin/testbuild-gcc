@@ -18,7 +18,6 @@ import sys
 sys.path.insert(0, '.')
 
 import argparse
-import lxc
 import lxc_ci
 import traceback
 
@@ -133,7 +132,8 @@ done
 """) != 0:
         build_env.exit_unstable()
 
-    if lxc.version.startswith("2.0"):
+    if build_env.execute(["test", "-e",
+                          "/build/src/python-lxc/examples/api_test.py"]) == 0:
         # Setup the test scripts
         if build_env.execute(["mkdir", "-p",
                               "/usr/share/doc/python3-lxc/examples/"]) != 0:
