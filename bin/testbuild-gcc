@@ -18,6 +18,7 @@ import sys
 sys.path.insert(0, '.')
 
 import argparse
+import lxc
 import lxc_ci
 import traceback
 
