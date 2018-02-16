@@ -5,14 +5,26 @@ if [ "${DAILY_REBOOT:-}" != "true" ]; then
     exit 0
 fi
 
+# Avoid restarting all machines at the same time, so wait up to 1.5h
+sleep "$(shuf -i1-90 -n1)"m
+
 while :; do
+    # Check that nothing is running
     # shellcheck disable=SC2010
-    if ls /lxc-ci/build/ | grep -v cache | grep -v lxc-monitord; then
-        sleep 5m
+    if [ "$(ls /lxc-ci/build/ | grep -Evc 'cache|lxc-monitord')" -gt 0 ]; then
+        sleep 1m
         continue
     fi
 
-    break
-done
+    # Make sure there's nothing about to start
+    sleep 1m
 
-reboot
+    # shellcheck disable=SC2010
+    if [ "$(ls /lxc-ci/build/ | grep -Evc 'cache|lxc-monitord')" -gt 0 ]; then
+        sleep 1m
+        continue
+    fi
+
+    reboot
+    exit 0
+done
