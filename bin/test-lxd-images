@@ -26,7 +26,7 @@ export PATH="/snap/bin/:${PATH}"
 lxd waitready --timeout=300
 
 # Setup network
-lxc network create lxdbr0 ipv4.address=10.0.3.1/24 ipv4.nat=true ipv6.address=2001:470:b368:4242::1/64 ipv6.nat=true
+lxc network create lxdbr0 ipv4.address=10.0.0.1/16 ipv4.nat=true ipv6.address=2001:470:b368:4242::1/64 ipv6.nat=true
 lxc network attach-profile lxdbr0 default eth0 eth0
 
 # Setup storage
@@ -47,8 +47,21 @@ lxc profile set default security.syscalls.blacklist "keyctl errno 38"
 # Create the containers
 for i in $(lxc image list images: | grep x86_64 | grep "more" | awk '{print $2}'); do
     name=$(echo "${i}" | sed -e "s/\//-/g" -e "s/\.//g")
-    lxc launch "images:${i}" "${name}-unpriv" -c security.nesting=true
-    lxc launch "images:${i}" "${name}-priv" -c security.privileged=true -c security.nesting=true
+    lxc init "images:${i}" "${name}-unpriv" -c security.nesting=true
+    lxc init "images:${i}" "${name}-priv" -c security.privileged=true -c security.nesting=true
+done
+
+# Start them all
+COUNT=0
+for url in $(lxc query "/1.0/containers" | jq -r .[]); do
+    name=$(echo "${url}" | cut -d/ -f4)
+    lxc start "${name}"
+
+    COUNT=$((COUNT+1))
+    if [ "${COUNT}" = "5" ]; then
+        COUNT=0
+        sleep 10
+    fi
 done
 
 # Wait for network
