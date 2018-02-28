@@ -424,6 +424,7 @@ or create user accounts.
     templates_file.name = "templates"
     tarball.addfile(templates_file, BytesIO(content.encode('utf-8')))
 
+    # config-user
     content = ""
     for conf in config['config_user']:
         content += "lxc.include = LXC_TEMPLATE_CONFIG/%s.%s.conf\n" \
@@ -438,6 +439,7 @@ or create user accounts.
     config_user_file.name = "config-user"
     tarball.addfile(config_user_file, BytesIO(content.encode('utf-8')))
 
+    # config
     content = ""
     for conf in config['config_system']:
         content += "lxc.include = LXC_TEMPLATE_CONFIG/%s.%s.conf\n" \
@@ -451,6 +453,31 @@ or create user accounts.
     config_system_file.mtime = int(time.strftime("%s", time.localtime()))
     config_system_file.name = "config"
     tarball.addfile(config_system_file, BytesIO(content.encode('utf-8')))
+
+    # config-user.5
+    content = "lxc.include = LXC_TEMPLATE_CONFIG/common.conf"
+    content += "lxc.include = LXC_TEMPLATE_CONFIG/userns.conf"
+    if arch == "amd64":
+        content += "lxc.arch = x86_64\n"
+    elif arch == "i386":
+        content += "lxc.arch = x86\n"
+    config_user_file = tarfile.TarInfo()
+    config_user_file.size = len(content)
+    config_user_file.mtime = int(time.strftime("%s", time.localtime()))
+    config_user_file.name = "config-user.5"
+    tarball.addfile(config_user_file, BytesIO(content.encode('utf-8')))
+
+    # config.5
+    content = "lxc.include = LXC_TEMPLATE_CONFIG/common.conf"
+    if arch == "amd64":
+        content += "lxc.arch = x86_64\n"
+    elif arch == "i386":
+        content += "lxc.arch = x86\n"
+    config_user_file = tarfile.TarInfo()
+    config_user_file.size = len(content)
+    config_user_file.mtime = int(time.strftime("%s", time.localtime()))
+    config_user_file.name = "config.5"
+    tarball.addfile(config_user_file, BytesIO(content.encode('utf-8')))
 
     content = "%s\n" % "\n".join(sorted(config['exclude_user']))
     exclude_user_file = tarfile.TarInfo()
