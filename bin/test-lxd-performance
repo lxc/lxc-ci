@@ -28,7 +28,7 @@ done
 # Setup the environment
 export LXD_BACKEND=$1
 apt remove --purge lxd lxd-client --yes
-apt install golang-1.9 libacl1-dev libsqlite3-dev lxc-dev sqlite3 zfsutils-linux lvm2 thin-provisioning-tools btrfs-tools ceph-common --yes
+apt install golang-1.9 libacl1-dev libsqlite3-dev lxc-dev sqlite3 zfsutils-linux lvm2 thin-provisioning-tools btrfs-tools ceph-common tclsh --yes
 export PATH=/usr/lib/go-1.9/bin/:${PATH}
 
 # Setup storage
@@ -55,6 +55,16 @@ EOF
 
     export LXD_CEPH_CLUSTER=ceph
 fi
+
+# Build sqlite
+git clone https://github.com/CanonicalLtd/sqlite /root/sqlite
+cd /root/sqlite
+./configure
+make
+
+export CGO_CFLAGS="-I/root/sqlite/"
+export CGO_LDFLAGS="-L/root/sqlite/.libs/"
+export LD_LIBRARY_PATH="/root/sqlite/.libs/"
 
 # Build LXD
 export GOPATH=/root/go
