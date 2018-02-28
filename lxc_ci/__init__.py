@@ -455,8 +455,8 @@ or create user accounts.
     tarball.addfile(config_system_file, BytesIO(content.encode('utf-8')))
 
     # config-user.5
-    content = "lxc.include = LXC_TEMPLATE_CONFIG/common.conf"
-    content += "lxc.include = LXC_TEMPLATE_CONFIG/userns.conf"
+    content = "lxc.include = LXC_TEMPLATE_CONFIG/common.conf\n"
+    content += "lxc.include = LXC_TEMPLATE_CONFIG/userns.conf\n"
     if arch == "amd64":
         content += "lxc.arch = x86_64\n"
     elif arch == "i386":
@@ -468,7 +468,7 @@ or create user accounts.
     tarball.addfile(config_user_file, BytesIO(content.encode('utf-8')))
 
     # config.5
-    content = "lxc.include = LXC_TEMPLATE_CONFIG/common.conf"
+    content = "lxc.include = LXC_TEMPLATE_CONFIG/common.conf\n"
     if arch == "amd64":
         content += "lxc.arch = x86_64\n"
     elif arch == "i386":
