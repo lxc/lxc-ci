@@ -73,6 +73,8 @@ LXC_RUN_DEPENDENCIES['archlinux'] = {'default': set(["arch-install-scripts",
                                                      "rsync", "util-linux",
                                                      "wget", "xz"])}
 LXC_RUN_DEPENDENCIES['opensuse'] = {'default': set(["build", "curl", "ed",
+                                                    "ca-certificates",
+                                                    "ca-certificates-mozilla",
                                                     "file", "openssl",
                                                     "rsync", "util-linux",
                                                     "wget", "xz"])}
