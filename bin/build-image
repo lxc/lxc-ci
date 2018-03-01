@@ -106,6 +106,27 @@ done
     if build_env.execute(["make", "install"], "/build/git/") != 0:
         build_env.exit_unstable()
 
+    if build_env.execute(["git",
+                          "clone", "https://github.com/lxc/lxc-templates",
+                          "-b", "master",
+                          "/build/templates"]) != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["./autogen.sh"], "/build/templates/") != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["./configure",
+                          "--prefix=/usr/", "--sysconfdir=/etc/",
+                          "--localstatedir=/var/"], "/build/templates/") != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["make"], "/build/templates/") != 0:
+        build_env.exit_unstable()
+
+    if build_env.execute(["make", "install"], "/build/templates/") != 0:
+        build_env.exit_unstable()
+
+
     # Create the image
     if build_env.execute(["mkdir", "-p",
                           "/build/containers/LXC_NAME/rootfs"]) != 0:
