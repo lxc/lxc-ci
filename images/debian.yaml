@@ -3,7 +3,7 @@ image:
 
 source:
   downloader: debootstrap
-  url: http://ftp.us.debian.org/debian
+  url: http://deb.debian.org/debian
   keys:
     - 0x126C0D24BD8A2942CC7DF8AC7638D0442B90D010
     - 0xA1BD8E9D78F7FE5C3E65D8AF8B48AD6246925553 
