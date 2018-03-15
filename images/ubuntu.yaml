@@ -9,7 +9,7 @@ source:
     - 0x790BC7277767219C42C86F933B4FE6ACC0B21F32
 
   apt_sources: |-
-    {% if image.architecture == "x86_64" or image.architecture == "i686" %}deb http://archive.ubuntu.com/ubuntu {{ image.release }} main restricted universe multiverse
+    {% if image.architecture == "x86_64" or image.architecture == "i686" or image.architecture == "amd64" or image.architecture == "i386" %}deb http://archive.ubuntu.com/ubuntu {{ image.release }} main restricted universe multiverse
     deb http://archive.ubuntu.com/ubuntu {{ image.release }}-updates main restricted universe multiverse
     deb http://security.ubuntu.com/ubuntu {{ image.release }}-security main restricted universe multiverse
     {% else %}deb http://ports.ubuntu.com/ubuntu-ports {{ image.release }} main restricted universe multiverse
