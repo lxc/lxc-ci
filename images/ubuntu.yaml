@@ -4,6 +4,7 @@ image:
 source:
   downloader: debootstrap
   url: http://archive.ubuntu.com/ubuntu
+  keyserver: keyserver.ubuntu.com
   keys:
     - 0x790BC7277767219C42C86F933B4FE6ACC0B21F32
 
