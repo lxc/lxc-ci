@@ -66,12 +66,7 @@ export PATH=/root/go/bin:\${PATH}
 export GOPATH=/root/go/
 
 # Install distrobuilder
-go get -d -v -x github.com/lxc/distrobuilder/distrobuilder
-cd /root/go/src/github.com/lxc/distrobuilder
-git remote add stgraber https://github.com/stgraber/distrobuilder
-git remote update
-git checkout stgraber/master
-go install -v -x github.com/lxc/distrobuilder/distrobuilder
+go get -v -x github.com/lxc/distrobuilder/distrobuilder
 
 # Build the image
 mkdir /root/build
