@@ -58,11 +58,11 @@ deb \${ARCHIVE} xenial-backports main universe restricted multiverse
 EOL
 apt-get update --yes
 
-# Setup Go 1.10
+# Install dependencies
 apt-get install --yes --no-install-recommends \
-    golang-1.10 git ca-certificates gcc libc6-dev \
+    golang-go git ca-certificates gcc libc6-dev \
     debootstrap xz-utils squashfs-tools
-export PATH=/root/go/bin:/usr/lib/go-1.10/bin/:\${PATH}
+export PATH=/root/go/bin:\${PATH}
 export GOPATH=/root/go/
 
 # Install distrobuilder
