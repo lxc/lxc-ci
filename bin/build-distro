@@ -48,10 +48,10 @@ fi
 
 # Setup clean sources
 cat > /etc/apt/sources.list << EOL
-deb ${ARCHIVE} xenial main universe restricted multiverse
-deb ${ARCHIVE} xenial-updates main universe restricted multiverse
-deb ${ARCHIVE} xenial-security main universe restricted multiverse
-deb ${ARCHIVE} xenial-backports main universe restricted multiverse
+deb \${ARCHIVE} xenial main universe restricted multiverse
+deb \${ARCHIVE} xenial-updates main universe restricted multiverse
+deb \${ARCHIVE} xenial-security main universe restricted multiverse
+deb \${ARCHIVE} xenial-backports main universe restricted multiverse
 EOL
 apt-get update --yes
 
