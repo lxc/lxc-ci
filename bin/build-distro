@@ -41,6 +41,9 @@ set -x
 lxc file push "${YAML}" "${CNAME}/root/image.yaml"
 (
 cat << EOF
+#!/bin/sh
+set -eux
+
 ARCHIVE="http://us.archive.ubuntu.com/ubuntu"
 if grep -q ports /etc/apt/sources.list; then
     ARCHIVE="http://us.ports.ubuntu.com/ubuntu-ports"
