@@ -40,12 +40,17 @@ done
 lxc file push "${YAML}" "${CNAME}/root/image.yaml"
 (
 cat << EOF
+ARCHIVE="http://us.archive.ubuntu.com/ubuntu"
+if grep -q ports /etc/apt/sources.list; then
+    ARCHIVE="http://us.ports.ubuntu.com/ubuntu-ports"
+fi
+
 # Setup clean sources
 cat > /etc/apt/sources.list << EOL
-deb http://us.archive.ubuntu.com/ubuntu xenial main universe restricted multiverse
-deb http://us.archive.ubuntu.com/ubuntu xenial-updates main universe restricted multiverse
-deb http://us.archive.ubuntu.com/ubuntu xenial-security main universe restricted multiverse
-deb http://us.archive.ubuntu.com/ubuntu xenial-backports main universe restricted multiverse
+deb ${ARCHIVE} xenial main universe restricted multiverse
+deb ${ARCHIVE} xenial-updates main universe restricted multiverse
+deb ${ARCHIVE} xenial-security main universe restricted multiverse
+deb ${ARCHIVE} xenial-backports main universe restricted multiverse
 EOL
 apt-get update --yes
 
