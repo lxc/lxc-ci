@@ -7,14 +7,12 @@ fi
 
 export PATH="${PATH}:/snap/bin"
 
-# Setup the snap
-if [ -d /var/snap/lxd/common ] && mountpoint -q /var/snap/lxd/common/lxd; then
-    mkdir -p /var/snap/lxd/common/lxd/logs
+# Wait for LXD to come online
+lxd waitready --timeout 600
 
-    systemctl restart snap.lxd.daemon
-    lxd waitready --timeout 600
-    systemctl restart snap.lxd.daemon
-    lxd waitready --timeout 600
+# Check if dealing with older LXD
+if systemctl is-enabled lxd-bridge >/dev/null 2>&1; then
+    exit 0
 fi
 
 # Setup network
