@@ -83,7 +83,4 @@ exit 0
 EOF
 ) | lxc file push - "${CNAME}/root/build.sh" --mode=755
 lxc exec "${CNAME}" -- /root/build.sh "$@"
-
-lxc file pull -r "${CNAME}/root/build/" "${TARGET}"
-mv "${TARGET}/build"/* "${TARGET}/"
-rmdir "${TARGET}/build"
+lxc exec "${CNAME}" -- tar -cf - -C /root/build/ . | tar -xvf - -C "${TARGET}"
