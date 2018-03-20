@@ -8,7 +8,7 @@ source:
   keys:
     - 0x126C0D24BD8A2942CC7DF8AC7638D0442B90D010
     - 0xA1BD8E9D78F7FE5C3E65D8AF8B48AD6246925553 
-
+  variant: minbase
   apt_sources: |-
     deb http://deb.debian.org/debian {{ image.release }} main
     {% if image.release != "sid" and not (image.release == "wheezy" and image.architecture == "powerpc") and not (image.release == "wheezy" and image.architecture == "s390x") %}deb http://security.debian.org/debian-security {{ image.release }}/updates main{% endif %}
