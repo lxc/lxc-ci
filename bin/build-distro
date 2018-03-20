@@ -65,6 +65,10 @@ apt-get install --yes --no-install-recommends \
 export PATH=/root/go/bin:\${PATH}
 export GOPATH=/root/go/
 
+# Install latest debootstrap
+wget https://launchpad.net/ubuntu/+source/debootstrap/1.0.93+nmu2/+build/14468850/+files/debootstrap_1.0.93+nmu2_all.deb
+dpkg -i debootstrap_1.0.93+nmu2_all.deb
+
 # Install distrobuilder
 go get -v -x github.com/lxc/distrobuilder/distrobuilder
 
