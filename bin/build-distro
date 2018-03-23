@@ -88,3 +88,6 @@ EOF
 ) | lxc file push - "${CNAME}/root/build.sh" --mode=755
 lxc exec "${CNAME}" -- /root/build.sh "$@"
 lxc exec "${CNAME}" -- tar -cf - -C /root/build/ . | tar -xvf - -C "${TARGET}"
+
+[ -n "${SUDO_UID:-}" ] && chown "${SUDO_UID}" -R "${TARGET}"
+[ -n "${SUDO_GID:-}" ] && chgrp "${SUDO_GID}" -R "${TARGET}"
