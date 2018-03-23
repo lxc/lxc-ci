@@ -61,7 +61,7 @@ git clone https://github.com/CanonicalLtd/sqlite /root/sqlite
 cd /root/sqlite
 git log -1 --format=format:%ci%n | sed -e 's/ [-+].*$//;s/ /T/;s/^/D /' > manifest
 git log -1 --format=format:%H > manifest.uuid
-./configure
+./configure --enable-replication
 make
 
 export CGO_CFLAGS="-I/root/sqlite/"
