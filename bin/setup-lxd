@@ -25,9 +25,7 @@ lxc network create lxdbr0 ipv4.address=10.0.3.1/24 ipv4.nat=true ipv6.address=20
 lxc network attach-profile lxdbr0 default eth0 eth0
 
 # Setup storage
-for backend in zfs btrfs dir; do
-    lxc storage create default ${backend} >/dev/null 2>&1 && break
-done
+lxc storage create default dir >/dev/null 2>&1 && break
 
 lxc storage show default >/dev/null 2>&1 || exit 1
 lxc profile device add default root disk pool=default path=/
