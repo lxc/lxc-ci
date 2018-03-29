@@ -69,7 +69,7 @@ for i in $(seq 12); do
     lxd waitready --timeout=10 >/dev/null 2>&1 && break
 done
 
-lxc version
+lxc --version
 
 # LXD setup
 if [ "${track}" = "2.0" ]; then
