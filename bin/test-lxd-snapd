@@ -1,5 +1,5 @@
 #!/bin/sh
-set -eu
+set -eux
 
 # Source host information
 # shellcheck disable=SC1091
