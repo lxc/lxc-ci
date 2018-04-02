@@ -7,7 +7,8 @@
     "config_system": ["common"],
     "template_arch": {"amd64": "x86_64",
                       "i386": "x86",
-                      "armhf": "armhf"},
+                      "armhf": "armhf",
+                      "arm64": "arm64"},
     "template_args": ["-r", "RELEASE", "-a", "ARCH"],
     "post_create": []
 }
