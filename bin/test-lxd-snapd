@@ -141,7 +141,7 @@ if [ "${track}" != "2.0" ]; then
         lxc launch images:alpine/edge -s test-lvm lvm
     fi
 
-    if modprobe -q -n rbd; then
+    if [ "${ID}" != "centos" ] && modprobe -q -n rbd; then
         (
 cat << EOF
 [global]
