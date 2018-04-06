@@ -38,7 +38,7 @@ while :; do
 done
 
 # Install the LXD deb
-apt install -t "${series}" lxd lxd-client --yes
+apt install -t "${series}" lxd lxd-client jq --yes
 if [ "${series}" = "trusty-backports" ]; then
     apt install snapd --yes
 else
