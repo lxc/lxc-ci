@@ -122,22 +122,25 @@ sleep 30
 lxc list
 
 # Check that all containers have an IPv4 and IPv6 address
-lxc list | grep PERSISTENT | awk '{print $2","$4","$6","$9}' | while read -r line; do
-    NAME=$(echo "${line}" | cut -d, -f1 | sed "s/|//g")
-    IPV4=$(echo "${line}" | cut -d, -f3 | sed "s/|//g")
-    IPV6=$(echo "${line}" | cut -d, -f4 | sed "s/|//g")
+FAIL=0
+for url in $(lxc query "/1.0/containers" | jq -r .[]); do
+    address=$(lxc query "${url}/state" | jq -r ".network.eth0.addresses | .[] | select(.scope | contains(\"global\")) | .address")
+    name=$(echo "${url}" | cut -d/ -f4)
+    echo ""
 
-    if [ -z "${IPV4}" ]; then
-        echo "FAIL: ${NAME} doesn't have an IPv4 address"
+    # IPv4
+    if echo "${address}" | grep "\." -q; then
+        echo "PASS-IPv4: ${name}"
+    else
+        echo "FAIL-IPv4: ${name}"
         FAIL=1
     fi
 
-    if [ -z "${IPV6}" ]; then
-        echo "FAIL: ${NAME} doesn't have an IPv6 address"
+    # IPv6
+    if echo "${address}" | grep ":" -q; then
+        echo "PASS-IPv6: ${name}"
+    else
+        echo "FAIL-IPv6: ${name}"
         FAIL=1
-    fi
-
-    if [ -n "${IPV4}" ] && [ -n "${IPV6}" ]; then
-        echo "PASS: ${NAME} has working IPv4 and IPv6 connectivty"
     fi
 done
