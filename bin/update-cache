@@ -48,10 +48,12 @@ for version in 1.9.4 1.10 tip; do
 
     go get github.com/rogpeppe/godeps >/dev/null
     go get github.com/remyoudompheng/go-misc/deadcode >/dev/null
-    go get github.com/golang/lint/golint >/dev/null
     go get github.com/snapcore/snapd/i18n/xgettext-go >/dev/null
     go get github.com/client9/misspell/cmd/misspell >/dev/null
     go get github.com/gordonklaus/ineffassign >/dev/null
+
+    [ ! -e "${GOPATH}/src/golang.org/x/lint" ] && git clone --depth=1 https://github.com/golang/lint.git ${GOPATH}/src/golang.org/x/lint
+    go get github.com/golang/lint/golint >/dev/null
 
     mkdir -p "${GOPATH}/bin" && mv "${GOPATH}/bin" "${GOPATH}/bin.$(go version | cut -d' ' -f3)"
     mkdir -p "${GOPATH}/pkg" && mv "${GOPATH}/pkg" "${GOPATH}/pkg.$(go version | cut -d' ' -f3)"
