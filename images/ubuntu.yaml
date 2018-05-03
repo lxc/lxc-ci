@@ -76,9 +76,9 @@ files:
    generator: dump
    content: |-
      network:
+       version: 2
        ethernets:
          eth0: {dhcp4: true}
-     version: 2
    releases:
      - artful
      - bionic
