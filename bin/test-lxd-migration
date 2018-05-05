@@ -123,8 +123,8 @@ lxc list
 
 # Check that all containers have an IPv4 and IPv6 address
 FAIL=0
-for url in $(lxc query "/1.0/containers" | jq -r .[]); do
-    address=$(lxc query "${url}/state" | jq -r ".network.eth0.addresses | .[] | select(.scope | contains(\"global\")) | .address")
+for url in $(curl -s --unix-socket /var/snap/lxd/common/lxd/unix.socket "lxd/1.0/containers" | jq -r ".metadata | .[]"); do
+    address=$(curl -s --unix-socket /var/snap/lxd/common/lxd/unix.socket "lxd${url}/state" | jq -r ".metadata.network.eth0.addresses | .[] | select(.scope | contains(\"global\")) | .address")
     name=$(echo "${url}" | cut -d/ -f4)
     echo ""
 
