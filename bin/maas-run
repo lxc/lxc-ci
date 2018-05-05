@@ -23,7 +23,7 @@ while :; do
         sleep 60
         continue
     elif [ "${RET}" != "0" ]; then
-        echo "===> Failed to allocate"
+        echo "==> Failed to allocate"
         cat "${TMPFILE}"
         rm "${TMPFILE}"
     fi
@@ -76,6 +76,10 @@ maas maas machine deploy "${system_id}" "distro_series=${2}" "hwe_kernel=${3}" >
 # Wait for the deployment to complete
 while :; do
     [ "$(maas maas machine read "${system_id}" | jq -r .status_name)" = "Deployed" ] && break
+    if [ "$(maas maas machine read "${system_id}" | jq -r .status_name)" = "Failed deployment" ]; then
+         echo "==> Failed to deploy"
+         exit 1
+    fi
     sleep 30
 done
 
