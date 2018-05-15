@@ -136,7 +136,7 @@ if [ "${track}" != "2.0" ]; then
         lxc launch images:alpine/edge -s test-zfs zfs
     fi
 
-    if [ "${ID}" != "ubuntu-core" ] && modprobe -q -n dm_mod; then
+    if [ "${ID}" != "ubuntu-core" ] && [ "${ID}" != "elementary" ] && modprobe -q -n dm_mod; then
         lxc storage create test-lvm lvm volume.size=25MB
         lxc launch images:alpine/edge -s test-lvm lvm
     fi
