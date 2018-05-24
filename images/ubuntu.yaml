@@ -83,6 +83,7 @@ files:
    releases:
      - artful
      - bionic
+     - cosmic
 
  - path: /etc/network/interfaces
    generator: dump
