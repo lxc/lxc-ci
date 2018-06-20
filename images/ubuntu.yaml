@@ -53,6 +53,10 @@ targets:
         content: |-
           lxc.include = LXC_TEMPLATE_CONFIG/userns.conf
 
+          # For Ubuntu 14.04
+          lxc.mount.entry = /sys/firmware/efi/efivars sys/firmware/efi/efivars none bind,optional 0 0
+          lxc.mount.entry = /proc/sys/fs/binfmt_misc proc/sys/fs/binfmt_misc none bind,optional 0 0
+
       - type: all
         content: |-
           lxc.arch = {{ image.architecture_personality }}
