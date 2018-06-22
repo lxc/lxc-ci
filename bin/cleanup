@@ -2,7 +2,7 @@
 
 if [ "${1:-}" = "force" ]; then
     for ctn in $(lxc-ls -P /lxc-ci/build/); do lxc-destroy --force -n "${ctn}" -P /lxc-ci/build/; done
-    lxc info >/dev/null 2>&1 && lxc query /1.0/containers | jq -r .[] | cut -d/ -f4- | xargs lxc delete -f
+    lxc info >/dev/null 2>&1 && lxc query /1.0/containers | jq -r .[] | cut -d/ -f4- | xargs -r lxc delete -f
 fi
 
 # shellcheck disable=SC2010
