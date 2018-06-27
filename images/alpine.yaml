@@ -3,6 +3,7 @@ image:
 
 source:
   downloader: alpinelinux-http
+  same_as: 3.8
   url: http://dl-cdn.alpinelinux.org/alpine/
   keyserver: keyserver.ubuntu.com
   keys:
