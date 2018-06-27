@@ -4,6 +4,7 @@ image:
 source:
   downloader: alpinelinux-http
   url: http://dl-cdn.alpinelinux.org/alpine/
+  keyserver: keyserver.ubuntu.com
   keys:
     - 0482D84022F52DF1C4E7CD43293ACD0907D9495A
 
