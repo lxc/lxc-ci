@@ -106,3 +106,6 @@ actions:
 
       # Rewrite configuration for LXC
       sed -i 's/#rc_sys=""/rc_sys="lxc"/' /etc/rc.conf
+
+mappings:
+  architecture_map: alpinelinux
