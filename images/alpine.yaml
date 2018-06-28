@@ -107,5 +107,14 @@ actions:
       # Rewrite configuration for LXC
       sed -i 's/#rc_sys=""/rc_sys="lxc"/' /etc/rc.conf
 
+      # Enable services
+      for svc_name in bootmisc syslog; do
+          ln -s /etc/init.d/${svc_name} /etc/runlevels/boot/${svc_name}
+      done
+
+      for svc_name in networking crond; do
+          ln -s /etc/init.d/${svc_name} /etc/runlevels/default/${svc_name}
+      done
+
 mappings:
   architecture_map: alpinelinux
