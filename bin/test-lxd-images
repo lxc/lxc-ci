@@ -41,14 +41,21 @@ done
 lxc storage show default >/dev/null 2>&1 || exit 1
 lxc profile device add default root disk pool=default path=/
 
-# Workaround systemd keyring issues
-lxc profile set default security.syscalls.blacklist "keyctl errno 38"
-
 # Create the containers
 for i in $(lxc image list images: | grep x86_64 | grep "more" | awk '{print $2}'); do
     name=$(echo "${i}" | sed -e "s/\//-/g" -e "s/\.//g")
     lxc init "images:${i}" "${name}-unpriv" -c security.nesting=true
     lxc init "images:${i}" "${name}-priv" -c security.privileged=true -c security.nesting=true
+
+    if [ "${name}" = "archlinux" ]; then
+        # Needed because of keyctl
+        lxc config set "${name}-unpriv" security.syscalls.blacklist "keyctl errno 38"
+        lxc config set "${name}-priv" security.syscalls.blacklist "keyctl errno 38"
+
+        # Needed because of AppArmor unix mediation bug
+        lxc config set "${name}-unpriv" raw.lxc lxc.apparmor.profile=unconfined
+        lxc config set "${name}-priv" raw.lxc lxc.apparmor.profile=unconfined
+    fi
 done
 
 # Start them all
