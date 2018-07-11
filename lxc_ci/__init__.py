@@ -138,6 +138,7 @@ class BuildEnvironment:
 
     def setup(self):
         print(" ==> Creating rootfs")
+        os.environ["DOWNLOAD_KEYSERVER"] = "hkp://keyserver.ubuntu.com:80"
         if not self.container.create("download", lxc.LXC_CREATE_QUIET,
                                      {'dist': self.distribution,
                                       'release': self.release,
