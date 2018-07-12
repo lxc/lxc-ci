@@ -103,17 +103,8 @@ go get -t -d ./...
 go install -tags libsqlite3 ./...
 echo "==> BUILD DONE: lxd"
 
-# Run the unit tests
-if [ "${LXD_BACKEND}" = "dir" ]; then
-    echo "==> UNIT BEGIN: all tests"
-    go test -tags libsqlite3 ./...
-    echo "==> UNIT DONE: all tests"
-fi
-
-# Run testsuite
+# Test namespace
 mkdir -p "${TEST_DIR}/logs"
-cd "test/"
-
 (
     cat << EOF
 #!/bin/sh
@@ -152,7 +143,15 @@ chmod +x /usr/local/bin/in-hostnetns
 ln -s in-hostnetns /usr/local/bin/ceph
 ln -s in-hostnetns /usr/local/bin/rbd
 
+# Run the unit tests
+if [ "${LXD_BACKEND}" = "dir" ]; then
+    echo "==> UNIT BEGIN: all tests"
+    go test -tags libsqlite3 ./...
+    echo "==> UNIT DONE: all tests"
+fi
+
 # Run the tests
+cd "test/"
 exec ./main.sh
 EOF
 ) | sudo -E "LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}" "LXD_LOGS=${TEST_DIR}/logs" "LXD_VERBOSE=1" "LXD_OFFLINE=1" "LXD_BACKEND=${LXD_BACKEND}" "LXD_CEPH_CLUSTER=ceph" "PATH=${PATH}"  unshare -m -n -- sh
