@@ -47,7 +47,7 @@ for i in $(lxc image list images: | grep x86_64 | grep "more" | awk '{print $2}'
     lxc init "images:${i}" "${name}-unpriv" -c security.nesting=true
     lxc init "images:${i}" "${name}-priv" -c security.privileged=true -c security.nesting=true
 
-    if [ "${name}" = "archlinux" ]; then
+    if [ "${name}" = "archlinux" ] || [ "${name}" = "fedora-28" ]; then
         # Needed because of keyctl
         lxc config set "${name}-unpriv" security.syscalls.blacklist "keyctl errno 38"
         lxc config set "${name}-priv" security.syscalls.blacklist "keyctl errno 38"
