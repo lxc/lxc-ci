@@ -134,6 +134,7 @@ mount -t tmpfs tmpfs /usr/local/bin
 (
 cat << EOE
 #!/bin/sh
+set -eu
 exec ip netns exec hostns /usr/bin/\\\$(basename \\\$0) "\\\$@"
 EOE
 ) > /usr/local/bin/in-hostnetns
