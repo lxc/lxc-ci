@@ -24,11 +24,19 @@ git log -1 --format=format:%H > manifest.uuid
 make >/dev/null 2>&1
 cd - >/dev/null
 
+git clone -q https://github.com/CanonicalLtd/dqlite "${TEMP_DIR}/dqlite"
+cd "${TEMP_DIR}/dqlite"
+export PKG_CONFIG_PATH="${TEMP_DIR}/sqlite"
+autoreconf -i >/dev/null 2>&1
+./configure >/dev/null 2>&1
+make >/dev/null 2>&1
+cd - >/dev/null
+
 # Setup the gimme cache
 [ "$(arch)" != "i686" ] || export GIMME_ARCH=x86
-export GIMME_ENV_PREFIX=${TEMP_DIR}/gimme/envs/
-export GIMME_VERSION_PREFIX=${TEMP_DIR}/gimme/versions/
-export GOPATH=${TEMP_DIR}/go
+export GIMME_ENV_PREFIX="${TEMP_DIR}/gimme/envs/"
+export GIMME_VERSION_PREFIX="${TEMP_DIR}/gimme/versions/"
+export GOPATH="${TEMP_DIR}/go"
 
 [ ! -d /lxc-ci/deps/gimme ] && git clone -q https://github.com/travis-ci/gimme /lxc-ci/deps/gimme
 
@@ -37,7 +45,7 @@ git pull -q
 
 OLD_PATH=${PATH}
 for version in 1.9.4 1.10 tip; do
-    ./gimme ${version} >/dev/null
+    ./gimme "${version}" >/dev/null
     if [ "${version}" = "tip" ]; then
         export GOROOT="${TEMP_DIR}/gimme/versions/go"
     else
@@ -52,7 +60,7 @@ for version in 1.9.4 1.10 tip; do
     go get github.com/client9/misspell/cmd/misspell >/dev/null
     go get github.com/gordonklaus/ineffassign >/dev/null
 
-    [ ! -e "${GOPATH}/src/golang.org/x/lint" ] && git clone --depth=1 https://github.com/golang/lint.git ${GOPATH}/src/golang.org/x/lint
+    [ ! -e "${GOPATH}/src/golang.org/x/lint" ] && git clone -q --depth=1 https://github.com/golang/lint.git ${GOPATH}/src/golang.org/x/lint
     go get github.com/golang/lint/golint >/dev/null
 
     mkdir -p "${GOPATH}/bin" && mv "${GOPATH}/bin" "${GOPATH}/bin.$(go version | cut -d' ' -f3)"
@@ -74,3 +82,4 @@ rm -Rf "${TEMP_DIR}/go/pkg" "${TEMP_DIR}/go/bin"
 mv "${TEMP_DIR}/gimme" /lxc-ci/build/cache/gimme
 mv "${TEMP_DIR}/go" /lxc-ci/build/cache/go
 mv "${TEMP_DIR}/sqlite" /lxc-ci/build/cache/sqlite
+mv "${TEMP_DIR}/dqlite" /lxc-ci/build/cache/dqlite
