@@ -65,7 +65,7 @@ cd - >/dev/null
 . "${TEMP_DIR}"/gimme/envs/go1.10*.env 2>/dev/null
 mkdir -p "${TEMP_DIR}/go"
 export GOPATH=${TEMP_DIR}/go
-go get -d -t github.com/lxc/lxd/... >/dev/null
+go get -d -t github.com/lxc/lxd/... >/dev/null || echo "Failed to download LXD dependencies"
 
 # Move things into place
 rm -Rf /lxc-ci/build/cache
