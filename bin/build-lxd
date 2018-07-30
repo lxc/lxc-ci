@@ -84,9 +84,9 @@ echo "==> ENVIRONMENT BEGIN"
 # Clustering
 if [ -e "lxd/cluster" ]; then
     echo "===> Setting up for LXD clustering"
-    export CGO_CFLAGS="-I/lxc-ci/build/cache/sqlite/"
-    export CGO_LDFLAGS="-L/lxc-ci/build/cache/sqlite/.libs/"
-    export LD_LIBRARY_PATH="/lxc-ci/build/cache/sqlite/.libs/"
+    export CGO_CFLAGS="-I/lxc-ci/build/cache/sqlite/,-I/lxc-ci/build/cache/dqlite/"
+    export CGO_LDFLAGS="-L/lxc-ci/build/cache/sqlite/.libs/,-L/lxc-ci/build/cache/dqlite/.libs/"
+    export LD_LIBRARY_PATH="/lxc-ci/build/cache/sqlite/.libs/:/lxc-ci/build/cache/dqlite/.libs/"
 fi
 
 echo "===> Environment variables"
