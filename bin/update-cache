@@ -28,7 +28,7 @@ git clone -q https://github.com/CanonicalLtd/dqlite "${TEMP_DIR}/dqlite"
 cd "${TEMP_DIR}/dqlite"
 export PKG_CONFIG_PATH="${TEMP_DIR}/sqlite"
 autoreconf -i >/dev/null 2>&1
-./configure >/dev/null 2>&1
+./configure --enable-debug >/dev/null 2>&1
 make >/dev/null 2>&1
 cd - >/dev/null
 
