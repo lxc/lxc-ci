@@ -76,6 +76,7 @@ export GOPATH=${TEMP_DIR}/go
 go get -d -t github.com/lxc/lxd/... >/dev/null || echo "Failed to download LXD dependencies"
 
 # Move things into place
+rm -Rf /lxc-ci/build/cache.new
 mkdir -p /lxc-ci/build/cache.new
 rm -Rf "${TEMP_DIR}/go/pkg" "${TEMP_DIR}/go/bin"
 mv "${TEMP_DIR}/gimme" /lxc-ci/build/cache.new/gimme
