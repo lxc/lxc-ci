@@ -28,7 +28,7 @@ done
 # Setup the environment
 export LXD_BACKEND=$1
 apt remove --purge lxd lxd-client lxcfs liblxc1 --yes
-apt install zfsutils-linux sqlite3 --yes
+apt install ceph-common zfsutils-linux sqlite3 --yes
 
 # Configure ceph
 if [ "${LXD_BACKEND}" = "ceph" ]; then
