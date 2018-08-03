@@ -2,13 +2,40 @@
 set -eu
 
 export DEBIAN_FRONTEND=noninteractive
+export LXD_BACKEND=$1
+export LXD_DEVICE=$2
 
 cleanup() {
+    set +e
+
+    lxc profile device remove default root eth0
+    lxc storage delete default
+    lxc network delete lxdbr0
+    mountpoint -q /var/snap/lxd/common/lxd && umount -l /var/snap/lxd/common/lxd
+    mountpoint -q /var/snap/lxd/common/ns/shmounts && umount -l /var/snap/lxd/common/ns/shmounts
+    mountpoint -q /var/snap/lxd/common/ns && umount -l /var/snap/lxd/common/ns
+    snap remove lxd
+    pkill -x -9 lxd
+
     if [ "${FAIL}" = "1" ]; then
         echo ""
         echo "Test failed"
         exit 1
     fi
+
+    exit 0
+}
+
+run_benchmark() {
+    # shellcheck disable=SC2039
+    local label description
+    label="$1"
+    description="$2"
+    shift 2
+
+    echo "Benchmark start: $label - $description"
+    lxd.benchmark "$@" --report-file perf.csv --report-label "$label"
+    echo "Benchmark completed: $label"
 }
 
 FAIL=1
@@ -26,9 +53,7 @@ while :; do
 done
 
 # Setup the environment
-export LXD_BACKEND=$1
 apt remove --purge lxd lxd-client lxcfs liblxc1 --yes
-apt install ceph-common zfsutils-linux sqlite3 --yes
 
 # Configure ceph
 if [ "${LXD_BACKEND}" = "ceph" ]; then
@@ -47,28 +72,45 @@ cat << EOF
     key = AQDxu3dZ8yh8KxAAa5Vlk9kWSD0aCIR7FNGnJQ==
 EOF
     ) > /etc/ceph/ceph.client.admin.keyring
-
-    export LXD_CEPH_CLUSTER=ceph
 fi
 
-# Setup LXD snap
+# Install LXD snap
 snap install lxd --edge
-snap alias lxd.benchmark lxd-benchmark
-lxd waitready
 snap stop lxd
-nsenter --mount=/run/snapd/ns/lxd.mnt mount --bind /var/lib/snapd/hostfs/srv /srv
 
-# Setup storage
-mkfs.ext4 -F /dev/sde
-mount /dev/sde /srv
-cd /srv
+# Setup the SSD
+mkfs.ext4 -F "${LXD_DEVICE}"
+mkdir -p /var/snap/lxd/common/lxd
+mount "${LXD_DEVICE}" /var/snap/lxd/common/lxd
+snap start lxd
+lxd waitready
 
-# Get LXD testsuite
-git clone https://github.com/lxc/lxd /srv/lxd
-cd /srv/lxd/test/
+# Configure LXD
+## Storage
+if [ "${LXD_BACKEND}" = "ceph" ]; then
+    lxc storage create default "${LXD_BACKEND}" source="lxd-perf-$$" volume.size=25MB ceph.osd.pg_num=1
+elif [ "${LXD_BACKEND}" = "lvm" ]; then
+    lxc storage create default "${LXD_BACKEND}" volume.size=25MB
+else
+    lxc storage create default "${LXD_BACKEND}"
+fi
+
+## Network
+lxc network create lxdbr0
+
+## Profile
+lxc profile device add default root disk path=/ pool=default
+lxc profile device add default eth0 nic nictype=bridged parent=lxdbr0 name=eth0
 
 # Run the tests
-./perf.sh
+lxc image copy images:alpine/edge local: --alias testimage
+run_benchmark "create-one" "create 1 container" init --count 1 testimage
+run_benchmark "start-one" "start 1 container" start
+run_benchmark "stop-one" "stop 1 container" stop
+run_benchmark "delete-one" "delete 1 container" delete
+run_benchmark "create-128" "create 128 containers" init --count 128 testimage
+run_benchmark "start-128" "start 128 containers" start
+run_benchmark "delete-128" "delete 128 containers" delete
 tar -zcf /home/ubuntu/artifacts.tar.gz perf.csv
 
 FAIL=0
