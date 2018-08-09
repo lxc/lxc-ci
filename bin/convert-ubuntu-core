@@ -111,11 +111,11 @@ cp -L /lib/*-linux-gnu/libz.so.1 lib/
         build_env.exit_unstable()
 
     # Copy the template files
-    build_env.upload("deps/ubuntu-core/init", "/build/rootfs/bin/init")
+    build_env.upload("images/ubuntu-core/init", "/build/rootfs/bin/init")
     for template in ("cloud-init-meta.tpl", "cloud-init-network.tpl",
                      "cloud-init-user.tpl", "cloud-init-vendor.tpl",
                      "hostname.tpl"):
-        build_env.upload("deps/ubuntu-core/%s" % template,
+        build_env.upload("images/ubuntu-core/%s" % template,
                          "/build/templates/%s" % template)
 
     # Generate the metadata
