@@ -1,4 +1,0 @@
-{
-    "config_user": ["common", "userns", "lucid"],
-    "config_system": ["common", "lucid"]
-}
