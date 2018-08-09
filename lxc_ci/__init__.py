@@ -183,8 +183,6 @@ class BuildEnvironment:
 
         self.execute(["mkdir", "-p", "/build"])
 
-        self.upload("deps/wget", "/usr/sbin/wget")
-
         if self.distribution in ("ubuntu", "debian"):
             self.execute("""#!/bin/sh -ex
 echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
