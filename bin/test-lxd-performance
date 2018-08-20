@@ -82,6 +82,7 @@ snap stop lxd
 mkfs.ext4 -F "${LXD_DEVICE}"
 mkdir -p /var/snap/lxd/common/lxd
 mount "${LXD_DEVICE}" /var/snap/lxd/common/lxd
+systemctl restart snap.lxd.daemon.unix.socket || true
 snap start lxd
 lxd waitready
 
