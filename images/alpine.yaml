@@ -76,6 +76,7 @@ files:
 
  - path: /etc/inittab
    generator: template
+   name: inittab
    content: |-
      # /etc/inittab
      ::sysinit:/sbin/openrc sysinit
