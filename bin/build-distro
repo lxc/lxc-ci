@@ -51,7 +51,7 @@ apt-get update --yes
 # Install dependencies
 apt-get install --yes --no-install-recommends \
     golang-go git ca-certificates gcc libc6-dev \
-    debootstrap xz-utils squashfs-tools gpg dirmngr
+    debootstrap xz-utils squashfs-tools gpg dirmngr gpg-agent
 export PATH=/root/go/bin:\${PATH}
 export GOPATH=/root/go/
 
