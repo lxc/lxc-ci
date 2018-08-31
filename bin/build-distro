@@ -29,7 +29,7 @@ DNS=0
 # shellcheck disable=SC2034
 for i in $(seq 30); do
     sleep 1
-    ! lxc exec "${CNAME}" -- cat /etc/resolv.conf 2>/dev/null | grep -q nameserver && continue
+    ! lxc exec "${CNAME}" -- cat /run/systemd/resolve/resolv.conf 2>/dev/null | grep -q nameserver && continue
 
     DNS=1
     break
