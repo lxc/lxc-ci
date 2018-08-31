@@ -21,7 +21,7 @@ cleanup() {
 trap cleanup EXIT HUP INT TERM
 
 # Create the container
-lxc launch "images:ubuntu/xenial/${ARCH}" "${CNAME}" -c security.privileged=true -c security.nesting=true
+lxc launch "images:ubuntu/bionic/${ARCH}" "${CNAME}" -c security.privileged=true -c security.nesting=true
 
 # Wait for network
 DNS=0
@@ -51,10 +51,10 @@ fi
 
 # Setup clean sources
 cat > /etc/apt/sources.list << EOL
-deb \${ARCHIVE} xenial main universe restricted multiverse
-deb \${ARCHIVE} xenial-updates main universe restricted multiverse
-deb \${ARCHIVE} xenial-security main universe restricted multiverse
-deb \${ARCHIVE} xenial-backports main universe restricted multiverse
+deb \${ARCHIVE} bionic main universe restricted multiverse
+deb \${ARCHIVE} bionic-updates main universe restricted multiverse
+deb \${ARCHIVE} bionic-security main universe restricted multiverse
+deb \${ARCHIVE} bionic-backports main universe restricted multiverse
 EOL
 apt-get update --yes
 
@@ -64,10 +64,6 @@ apt-get install --yes --no-install-recommends \
     debootstrap xz-utils squashfs-tools
 export PATH=/root/go/bin:\${PATH}
 export GOPATH=/root/go/
-
-# Install latest debootstrap
-wget https://launchpad.net/ubuntu/+source/debootstrap/1.0.93+nmu2/+build/14468850/+files/debootstrap_1.0.93+nmu2_all.deb
-dpkg -i debootstrap_1.0.93+nmu2_all.deb
 
 # Install distrobuilder
 go get -v -x github.com/lxc/distrobuilder/distrobuilder
