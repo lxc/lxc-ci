@@ -1,12 +1,4 @@
 */__pycache__
-deps/android-ndk-linux-x86_64.zip
-deps/coverity-linux64.tar.gz
-deps/credentials
-deps/credentials.pub
-deps/exercise
-deps/genetlink.h
-deps/jenkins-cli.jar
-deps/gimme
 etc/config
-etc/jenkins
+etc/hosts
 build/*
