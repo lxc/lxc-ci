@@ -37,6 +37,7 @@ cd - >/dev/null
 export GIMME_ENV_PREFIX="${TEMP_DIR}/gimme/envs/"
 export GIMME_VERSION_PREFIX="${TEMP_DIR}/gimme/versions/"
 export GOPATH="${TEMP_DIR}/go"
+export GOCACHE="${GOPATH}/pkg"
 
 [ ! -d /lxc-ci/deps/gimme ] && git clone -q https://github.com/travis-ci/gimme /lxc-ci/deps/gimme
 
@@ -86,3 +87,5 @@ mv "${TEMP_DIR}/dqlite" /lxc-ci/build/cache.new/dqlite
 [ -e "/lxc-ci/build/cache" ] && mv /lxc-ci/build/cache /lxc-ci/build/cache.old
 mv /lxc-ci/build/cache.new /lxc-ci/build/cache
 rm -Rf /lxc-ci/build/cache.old
+
+rm -Rf /home/jenkins/.cache/go-build/
