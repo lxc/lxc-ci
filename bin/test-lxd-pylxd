@@ -28,6 +28,9 @@ while :; do
     sleep 10
 done
 
+# Remove pre-installed LXD
+apt remove --purge lxd lxd-client lxcfs --yes
+
 # Install the LXD snap
 if [ "${track}" = "latest" ]; then
     snapd_channel=${channel}
@@ -38,7 +41,6 @@ fi
 snap install lxd --channel="${snapd_channel}"
 export PATH="/snap/bin/:${PATH}"
 lxd waitready --timeout=120
-lxd.migrate -yes
 
 # Generate local certs
 rm -rf ~/.config/lxc ~/snap
