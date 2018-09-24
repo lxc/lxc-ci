@@ -1,0 +1,50 @@
+#!/bin/sh
+set -eu
+
+track=${1:-latest}
+channel=${2:-stable}
+
+export DEBIAN_FRONTEND=noninteractive
+
+cleanup() {
+    if [ "${FAIL}" = "1" ]; then
+        echo ""
+        echo "Test failed"
+        exit 1
+    fi
+}
+
+FAIL=0
+trap cleanup EXIT HUP INT TERM
+
+# Make sure we're up to date
+while :; do
+    apt update && break
+    sleep 10
+done
+
+while :; do
+    apt dist-upgrade --yes && break
+    sleep 10
+done
+
+# Install the LXD snap
+if [ "${track}" = "latest" ]; then
+    snapd_channel=${channel}
+else
+    snapd_channel=${track}/${channel}
+fi
+
+snap install lxd --channel="${snapd_channel}"
+export PATH="/snap/bin/:${PATH}"
+lxd waitready --timeout=120
+lxd.migrate -yes
+
+# Generate local certs
+rm -rf ~/.config/lxc ~/snap
+lxc remote add localhost --accept-certificate --password=abc || true
+
+# Run the pylxd tests
+git clone https://github.com/lxc/pylxd
+cd pylxd
+integration/run-integration-tests
