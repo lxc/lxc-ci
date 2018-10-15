@@ -188,6 +188,10 @@ class BuildEnvironment:
 echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/force-unsafe-io
 """)
 
+        if self.distribution == "archlinux":
+            self.execute(["systemctl", "disable", "systemd-resolved"])
+            self.execute(["systemctl", "stop", "systemd-resolved"])
+
         self.update()
 
     def update(self):
