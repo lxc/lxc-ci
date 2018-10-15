@@ -63,7 +63,7 @@ done
     # Download the image
     if build_env.execute([
         "wget",
-        "%s/%s/edge/current/ubuntu-core-%s-%s.img.xz" % (args.source,
+        "%s/%s/stable/current/ubuntu-core-%s-%s.img.xz" % (args.source,
                                                          args.release,
                                                          args.release,
                                                          args.arch),
