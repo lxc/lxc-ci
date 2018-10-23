@@ -1,0 +1,50 @@
+#!/bin/sh -eu
+CNAME="distrobuilder-$(uuidgen)"
+
+ARCH=${1}
+shift
+
+cleanup() {
+    lxc delete --force "${CNAME}"
+}
+
+trap cleanup EXIT HUP INT TERM
+
+# Create the container
+lxc launch "images:ubuntu/bionic/${ARCH}" "${CNAME}" -c security.nesting=true
+
+# Wait for network
+sleep 10
+
+set -x
+
+(
+cat << EOF
+#!/bin/sh
+set -eux
+
+ARCHIVE="http://us.archive.ubuntu.com/ubuntu"
+if grep -q ports /etc/apt/sources.list; then
+    ARCHIVE="http://us.ports.ubuntu.com/ubuntu-ports"
+fi
+
+# Setup clean sources
+cat > /etc/apt/sources.list << EOL
+deb \${ARCHIVE} bionic main universe restricted multiverse
+deb \${ARCHIVE} bionic-updates main universe restricted multiverse
+deb \${ARCHIVE} bionic-security main universe restricted multiverse
+deb \${ARCHIVE} bionic-backports main universe restricted multiverse
+EOL
+apt-get update --yes
+
+# Install dependencies
+apt-get install --yes snapd fuse
+mkdir -p /lib/modules
+useradd -m -s /bin/bash jenkins
+
+exit 0
+EOF
+) | lxc file push - "${CNAME}/root/build.sh" --mode=755
+lxc file push /lxc-ci/bin/test-lxd-snapd "${CNAME}/root/test.sh" --mode=755
+lxc exec "${CNAME}" -- /root/build.sh
+lxc exec "${CNAME}" -- /root/test.sh "$@"
