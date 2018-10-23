@@ -66,7 +66,7 @@ snap remove lxd || true
 snap install lxd --channel="${snapd_channel}"
 
 # shellcheck disable=SC2034
-for i in $(seq 12); do
+for i in $(seq 60); do
     lxd waitready --timeout=10 >/dev/null 2>&1 && break
 done
 
@@ -106,7 +106,7 @@ fi
 systemctl restart snap.lxd.daemon.service
 
 # shellcheck disable=SC2034
-for i in $(seq 12); do
+for i in $(seq 60); do
     lxd waitready --timeout=10 >/dev/null 2>&1 && break
 done
 
