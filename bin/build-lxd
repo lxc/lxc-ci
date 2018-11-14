@@ -3,6 +3,7 @@ GO_VERSION=${1}
 GIT_REPOSITORY=${2}
 GIT_REF=${3}
 LXD_BACKEND=${4}
+LXD_TESTSUITE=${5:-}
 
 cleanup() {
     set +e
@@ -154,7 +155,7 @@ fi
 
 # Run the tests
 cd "test/"
-exec ./main.sh
+exec ./main.sh ${LXD_TESTSUITE}
 EOF
 ) | sudo -E "LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}" "LXD_LOGS=${TEST_DIR}/logs" "LXD_VERBOSE=1" "LXD_OFFLINE=1" "LXD_BACKEND=${LXD_BACKEND}" "LXD_CEPH_CLUSTER=ceph" "PATH=${PATH}"  unshare -m -n -- sh
 
