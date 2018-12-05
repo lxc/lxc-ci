@@ -23,3 +23,7 @@ fi
 if which losetup >/dev/null 2>&1; then
     losetup -a | grep -v /var/lib/snapd | cut -d: -f1 | while read -r line; do losetup -d "${line}"; done
 fi
+
+if which pvscan >/dev/null 2>&1; then
+    pvscan --cache
+fi
