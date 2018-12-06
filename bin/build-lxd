@@ -146,6 +146,11 @@ chmod +x /usr/local/bin/in-hostnetns
 ln -s in-hostnetns /usr/local/bin/ceph
 ln -s in-hostnetns /usr/local/bin/rbd
 
+# Disable CEPH on non-amd64
+if [ "$(uname -m)" != "x86_64" ]; then
+    unset LXD_CEPH_CLUSTER
+fi
+
 # Run the unit tests
 if [ "${LXD_BACKEND}" = "dir" ]; then
     echo "==> UNIT BEGIN: all tests"
