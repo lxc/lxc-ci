@@ -122,6 +122,10 @@ mount --move /mnt/fs/cgroup /sys/fs/cgroup
 mount --move /mnt/kernel/security /sys/kernel/security
 umount -l /mnt
 
+# Setup separate locking
+mkdir -p /run/lock
+mount -t tmpfs tmpfs /run/lock
+
 # Setup the network
 ip link set lo up
 ip link add lxdbr0 up type bridge
