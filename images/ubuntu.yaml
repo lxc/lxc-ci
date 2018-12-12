@@ -88,6 +88,7 @@ files:
      - artful
      - bionic
      - cosmic
+     - disco
 
  - path: /etc/network/interfaces
    generator: dump
