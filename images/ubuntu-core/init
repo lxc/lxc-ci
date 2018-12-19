@@ -34,7 +34,9 @@ mkdir -p /mnt /initrd
 mount -t tmpfs tmpfs /initrd
 /bin/squashfuse /writable/system-data/var/lib/snapd/snaps/${SNAP_KERNEL} /mnt -o ro,allow_other
 cd /initrd
-lzcat /mnt/initrd.img | cpio -i
+if ! lzcat < /mnt/initrd.img | /bin/cpio -id || [ ! -e "/initrd/scripts/" ]; then
+    (/bin/cpio -t; lzcat | /bin/cpio -id) < /mnt/initrd.img
+fi
 umount /mnt
 cd /
 

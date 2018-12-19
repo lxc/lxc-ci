@@ -93,6 +93,7 @@ ln -s /bin/init sbin/init
 
 # Copy the system binaries
 cp /bin/busybox bin/busybox
+cp /bin/cpio bin/cpio
 cp /sbin/mount.fuse bin/mount.fuse
 cp /sbin/pivot_root bin/pivot_root
 cp /usr/bin/squashfuse bin/squashfuse
