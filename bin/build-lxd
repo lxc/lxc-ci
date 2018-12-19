@@ -110,10 +110,11 @@ mkdir -p "${TEST_DIR}/logs"
 (
     cat << EOF
 #!/bin/sh
+set -eu
+
 # Remount /proc
 umount -l /proc
 mount -t proc proc /proc
-echo ""
 
 # Remount /sys
 mount --move /sys /mnt
