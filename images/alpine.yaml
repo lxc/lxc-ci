@@ -93,11 +93,14 @@ files:
      ::shutdown:/sbin/openrc shutdown
 
 packages:
-    manager: apk
+  manager: apk
+  update: true
+  cleanup: true
 
-    update: true
-    install:
-        - alpine-base
+  sets:
+    - packages:
+      - alpine-base
+      action: install
 
 actions:
   - trigger: post-packages

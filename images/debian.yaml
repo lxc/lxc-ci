@@ -77,17 +77,20 @@ files:
 
 packages:
   manager: apt
-
   update: true
-  install:
-    - dialog
-    - ifupdown
-    - isc-dhcp-client
-    - locales
-    - netbase
-    - net-tools
-    - openssh-client
-    - vim
+  cleanup: true
+
+  sets:
+    - packages:
+      - dialog
+      - ifupdown
+      - isc-dhcp-client
+      - locales
+      - netbase
+      - net-tools
+      - openssh-client
+      - vim
+      action: install
 
 actions:
   - trigger: post-packages
