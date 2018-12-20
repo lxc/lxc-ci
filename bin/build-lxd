@@ -161,6 +161,9 @@ if [ "${LXD_BACKEND}" = "dir" ]; then
     echo "==> UNIT BEGIN: all tests"
     go test -tags libsqlite3 ./...
     echo "==> UNIT DONE: all tests"
+else
+    echo "==> Static analysis will be skipped (only run on dir)"
+    export LXD_SKIP_STATIC=1
 fi
 
 # Run the tests
