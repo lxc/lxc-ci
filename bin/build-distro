@@ -24,9 +24,9 @@ trap cleanup EXIT HUP INT TERM
 lxc launch "images:ubuntu/bionic/${ARCH}" "${CNAME}" -c security.privileged=true -c security.nesting=true
 
 # Setup loop devices
-lxc config device add "${CNAME}" loop-control unix-char path=/dev/loop-control
+lxc config device add "${CNAME}" loop-control unix-char path=/dev/loop-control major=10 minor=237 >/dev/null
 for i in $(seq 0 254); do
-    lxc config device add "${CNAME}" "loop${i}" unix-block "path=/dev/loop${i}"
+    lxc config device add "${CNAME}" "loop${i}" unix-block "path=/dev/loop${i}" major=7 "minor=${i}" >/dev/null
 done
 
 # Wait for network
