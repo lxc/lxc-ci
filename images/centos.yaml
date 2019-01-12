@@ -113,8 +113,8 @@ files:
          telinit 3
          exit 0
      end script
-  releases:
-   - 6
+   releases:
+    - 6
 
  - name: sigpwr.conf
    path: /etc/init/power-status-changed.conf
@@ -123,8 +123,8 @@ files:
      start on power-status-changed
 
      exec /sbin/shutdown -h now "SIGPWR received"
-  releases:
-   - 6
+   releases:
+    - 6
 
 packages:
     manager: yum
