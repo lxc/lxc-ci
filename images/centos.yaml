@@ -95,24 +95,24 @@ files:
    path: /etc/init/lxc-sysinit.conf
    generator: dump
    content: |-
-    start on startup
-    env container
+     start on startup
+     env container
 
-    pre-start script
-        if [ "x$container" != "xlxc" -a "x$container" != "xlibvirt" ]; then
-                stop;
-        fi
+     pre-start script
+         if [ "x$container" != "xlxc" -a "x$container" != "xlibvirt" ]; then
+             stop;
+         fi
 
-        rm -f /var/lock/subsys/*
-        rm -f /var/run/*.pid
-        [ -e /etc/mtab ] || ln -s /proc/mounts /etc/mtab
-        mkdir -p /dev/shm
-        mount -t tmpfs -o nosuid,nodev tmpfs /dev/shm
+         rm -f /var/lock/subsys/*
+         rm -f /var/run/*.pid
+         [ -e /etc/mtab ] || ln -s /proc/mounts /etc/mtab
+         mkdir -p /dev/shm
+         mount -t tmpfs -o nosuid,nodev tmpfs /dev/shm
 
-        initctl start tty TTY=console
-        telinit 3
-        exit 0
-    end script
+         initctl start tty TTY=console
+         telinit 3
+         exit 0
+     end script
   releases:
    - 6
 
@@ -120,9 +120,9 @@ files:
    path: /etc/init/power-status-changed.conf
    generator: dump
    content: |-
-    start on power-status-changed
+     start on power-status-changed
 
-    exec /sbin/shutdown -h now "SIGPWR received"
+     exec /sbin/shutdown -h now "SIGPWR received"
   releases:
    - 6
 
