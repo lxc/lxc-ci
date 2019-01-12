@@ -52,6 +52,7 @@ files:
  - name: ifcfg-eth0
    path: /etc/sysconfig/network-scripts/ifcfg-eth0
    generator: dump
+   templated: true
    content: |-
      DEVICE=eth0
      BOOTPROTO=dhcp
@@ -65,6 +66,7 @@ files:
  - name: network
    path: /etc/sysconfig/network
    generator: dump
+   templated: true
    content: |-
      NETWORKING=yes
      HOSTNAME=LXC_NAME
