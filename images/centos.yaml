@@ -91,6 +91,41 @@ files:
      NETWORKING=yes
      HOSTNAME={{ container.name }}
 
+ - name: lxc-sysinit
+   path: /etc/init/lxc-sysinit.conf
+   generator: dump
+   content: |-
+    start on startup
+    env container
+
+    pre-start script
+        if [ "x$container" != "xlxc" -a "x$container" != "xlibvirt" ]; then
+                stop;
+        fi
+
+        rm -f /var/lock/subsys/*
+        rm -f /var/run/*.pid
+        [ -e /etc/mtab ] || ln -s /proc/mounts /etc/mtab
+        mkdir -p /dev/shm
+        mount -t tmpfs -o nosuid,nodev tmpfs /dev/shm
+
+        initctl start tty TTY=console
+        telinit 3
+        exit 0
+    end script
+  releases:
+   - 6
+
+ - name: sigpwr.conf
+   path: /etc/init/power-status-changed.conf
+   generator: dump
+   content: |-
+    start on power-status-changed
+
+    exec /sbin/shutdown -h now "SIGPWR received"
+  releases:
+   - 6
+
 packages:
     manager: yum
     update: true
@@ -110,3 +145,17 @@ packages:
         - rsyslog
         - vim-minimal
        action: install
+
+actions:
+  - trigger: post-packages
+    action: |-
+      #!/bin/sh
+      set -eux
+
+      # Disable SELinux
+      mkdir -p $rootfs_path/selinux
+      echo 0 > $rootfs_path/selinux/enforce
+      sed -i '/^SELINUX=/s/.*/SELINUX=disabled/' $rootfs_path/etc/selinux/config
+
+      # Disable loginuid in PAM stack
+      sed -i '/^session.*pam_loginuid.so/s/^session/# session/' ${rootfs_path}/etc/pam.d/*
