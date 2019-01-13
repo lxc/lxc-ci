@@ -155,7 +155,6 @@ actions:
       # Disable SELinux
       mkdir -p /selinux
       echo 0 > /selinux/enforce
-      sed -i '/^SELINUX=/s/.*/SELINUX=disabled/' /etc/selinux/config
 
       # Disable loginuid in PAM stack
       sed -i '/^session.*pam_loginuid.so/s/^session/# session/' /etc/pam.d/*
