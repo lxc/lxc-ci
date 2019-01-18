@@ -75,7 +75,7 @@ SERIAL=\$(date -u +%Y%m%d_%H:%M)
 distrobuilder build-dir image.yaml rootfs -o image.serial="\${SERIAL}" "\$@"
 distrobuilder pack-lxc image.yaml rootfs -o image.serial="\${SERIAL}" "\$@"
 distrobuilder pack-lxd image.yaml rootfs -o image.serial="\${SERIAL}" "\$@"
-rm -Rf rootfs
+mv rootfs /root
 echo "\${SERIAL}" > serial
 
 exit 0
