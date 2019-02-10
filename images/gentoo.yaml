@@ -64,4 +64,4 @@ packages:
   cleanup: true
 
 mappings:
-  architecture_map: debian
+  architecture_map: gentoo
