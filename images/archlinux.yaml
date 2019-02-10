@@ -48,6 +48,16 @@ files:
     path: /etc/hosts
     generator: hosts
 
+  - name: eth0.network
+    path: /etc/systemd/network/eth0.network
+    generator: dump
+    content: |-
+      [Match]
+      Name=eth0
+
+      [Network]
+      DHCP=ipv4
+
 packages:
   manager: pacman
   update: true
@@ -83,3 +93,13 @@ packages:
         - vi
         - which
       action: install
+
+actions:
+  - trigger: post-packages
+    action: |-
+      #!/bin/sh
+      umount -l /etc/resolv.conf || true
+      rm /etc/resolv.conf
+      ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+      systemctl enable systemd-networkd
+      systemctl enable systemd-resolved
