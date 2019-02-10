@@ -1,0 +1,67 @@
+image:
+  distribution: gentoo
+
+source:
+  downloader: gentoo-http
+  url: http://distfiles.gentoo.org
+  keyserver: keyserver.ubuntu.com
+  keys:
+    - 13EBBDBEDE7A12775DFDB1BABB572E0E2D182910
+
+targets:
+  lxc:
+    create-message: |
+      You just created an {{ image.description }} container.
+
+    config:
+      - type: all
+        before: 5
+        content: |-
+          lxc.include = LXC_TEMPLATE_CONFIG/gentoo.common.conf
+
+      - type: user
+        before: 5
+        content: |-
+          lxc.include = LXC_TEMPLATE_CONFIG/gentoo.userns.conf
+
+      - type: all
+        after: 4
+        content: |-
+          lxc.include = LXC_TEMPLATE_CONFIG/common.conf
+
+      - type: user
+        after: 4
+        content: |-
+          lxc.include = LXC_TEMPLATE_CONFIG/userns.conf
+
+      - type: all
+        content: |-
+          lxc.arch = {{ image.architecture_kernel }}
+
+files:
+ - name: hostname
+   path: /etc/hostname
+   generator: hostname
+
+ - name: conf-hostname
+   path: /etc/conf.d/hostname
+   generator: hostname
+
+ - name: hosts
+   path: /etc/hosts
+   generator: hosts
+
+ - name: conf-net
+   path: /etc/conf.d/net
+   generator: dump
+   content: |-
+     rc_keyword="-stop"
+     config_eth0="dhcp"
+
+packages:
+  manager: portage
+  update: false
+  cleanup: true
+
+mappings:
+  architecture_map: debian
