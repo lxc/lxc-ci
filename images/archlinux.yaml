@@ -1,6 +1,5 @@
 image:
   distribution: archlinux
-  release: 2019.02.01
 
 source:
   downloader: archlinux-http
