@@ -68,9 +68,10 @@ actions:
    action: |-
      #!/bin/sh
      set -eux
-     mkdir -p /root/.gnupg
-     chmod 700 /root/.gnupg
-     echo "keyserver keyserver.ubuntu.com" > /root/.gnupg/gpg.conf
+     mv /usr/bin/gpg2 /usr/bin/gpg2.real
+     echo "#!/bin/sh" > /usr/bin/gpg2
+     echo "exec /usr/bin/gpg2.real --keyserver keyserver.ubuntu.com \"\$@\"" >> /usr/bin/gpg2
+     chmod +x /usr/bin/gpg2
 
  - trigger: post-packages
    action: |-
@@ -78,6 +79,9 @@ actions:
      set -eux
      ln -s net.lo /etc/init.d/net.eth0
      rc-update add net.eth0 default
+
+     rm /usr/bin/gpg2
+     mv /usr/bin/gpg2.real /usr/bin/gpg2
 
 mappings:
   architecture_map: gentoo
