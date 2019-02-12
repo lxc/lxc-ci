@@ -69,6 +69,7 @@ actions:
      #!/bin/sh
      set -eux
      mkdir -p /root/.gnupg
+     chmod 700 /root/.gnupg
      echo "keyserver keyserver.ubuntu.com" > /root/.gnupg/gpg.conf
 
 mappings:
