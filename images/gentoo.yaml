@@ -63,5 +63,13 @@ packages:
   update: false
   cleanup: true
 
+actions:
+ - trigger: post-unpack
+   action: |-
+     #!/bin/sh
+     set -eux
+     mkdir -p /root/.gnupg
+     echo "keyserver keyserver.ubuntu.com" > /root/.gnupg/gpg.conf
+
 mappings:
   architecture_map: gentoo
