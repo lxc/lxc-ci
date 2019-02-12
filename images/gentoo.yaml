@@ -78,6 +78,7 @@ actions:
      #!/bin/sh
      set -eux
      ln -s net.lo /etc/init.d/net.eth0
+     mkdir -p /etc/runlevels/default
      rc-update add net.eth0 default
 
      rm /usr/bin/gpg2
