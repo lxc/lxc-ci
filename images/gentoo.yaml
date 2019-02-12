@@ -72,5 +72,12 @@ actions:
      chmod 700 /root/.gnupg
      echo "keyserver keyserver.ubuntu.com" > /root/.gnupg/gpg.conf
 
+ - trigger: post-packages
+   action: |-
+     #!/bin/sh
+     set -eux
+     ln -s net.lo /etc/init.d/net.eth0
+     rc-update add net.eth0 default
+
 mappings:
   architecture_map: gentoo
