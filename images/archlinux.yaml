@@ -94,6 +94,29 @@ packages:
         - which
       action: install
 
+    - packages:
+        - dnssec-anchors
+        - haveged
+        - jfsutils
+        - ldns
+        - libaio
+        - libedit
+        - linux-aarch64
+        - linux-firmware
+        - lvm2
+        - mdadm
+        - mkinitcpio
+        - mkinitcpio-busybox
+        - net-tools
+        - openssh
+        - pciutils
+        - reiserfsprogs
+        - s-nail
+        - thin-provisioning-tools
+        - usbutils
+        - xfsprogs
+      action: remove
+
 actions:
   - trigger: post-packages
     action: |-
