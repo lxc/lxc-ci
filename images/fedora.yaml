@@ -1,0 +1,84 @@
+image:
+  distribution: fedora
+
+source:
+  downloader: fedora-http
+  url: https://kojipkgs.fedoraproject.org
+
+targets:
+  lxc:
+    create-message: |
+        You just created a {{ image.description }} container.
+
+    config:
+      - type: all
+        before: 5
+        content: |-
+          lxc.include = LXC_TEMPLATE_CONFIG/fedora.common.conf
+
+      - type: user
+        before: 5
+        content: |-
+          lxc.include = LXC_TEMPLATE_CONFIG/fedora.userns.conf
+
+      - type: all
+        after: 4
+        content: |-
+          lxc.include = LXC_TEMPLATE_CONFIG/common.conf
+
+      - type: user
+        after: 4
+        content: |-
+          lxc.include = LXC_TEMPLATE_CONFIG/userns.conf
+
+      - type: all
+        content: |-
+          lxc.arch = {{ image.architecture_kernel }}
+
+files:
+  - path: /etc/hostname
+    generator: hostname
+
+  - path: /etc/hosts
+    generator: hosts
+
+  - name: eth0.network
+    path: /etc/systemd/network/eth0.network
+    generator: dump
+    content: |-
+      [Match]
+      Name=eth0
+
+      [Network]
+      DHCP=ipv4
+
+packages:
+  manager: dnf
+  update: true
+  cleanup: true
+
+  sets:
+   - packages:
+      - cpio
+      - dhcp-client
+      - file
+      - findutils
+      - fipscheck
+      - gettext
+      - hardlink
+      - initscripts
+      - ipcalc
+      - iproute
+      - iproute-tc
+      - iputils
+      - kbd
+      - kmod
+      - openssh-clients
+      - passwd
+      - pigz
+      - policycoreutils
+      - procps-ng
+      - systemd-udev
+      - which
+      - xz
+     action: install
