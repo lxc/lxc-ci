@@ -1,0 +1,99 @@
+image:
+  distribution: sabayon
+
+source:
+  downloader: sabayon-http
+  url: http://dl.sabayon.org/sbi/sabayon%3Aiso/iso
+
+environment:
+  clear_defaults: true
+  variables:
+    - key: "SHELL"
+      value: "/bin/bash"
+    - key: "ACCEPT_LICENSE"
+      value: "*"
+
+targets:
+  lxc:
+    create-message: |
+      You just created an {{ image.description }} container.
+
+    config:
+      - type: all
+        before: 5
+        content: |-
+          lxc.include = LXC_TEMPLATE_CONFIG/sabayon.common.conf
+
+      - type: user
+        before: 5
+        content: |-
+          lxc.include = LXC_TEMPLATE_CONFIG/sabayon.userns.conf
+
+      - type: all
+        after: 4
+        content: |-
+          lxc.include = LXC_TEMPLATE_CONFIG/common.conf
+
+      - type: user
+        after: 4
+        content: |-
+          lxc.include = LXC_TEMPLATE_CONFIG/userns.conf
+
+      - type: all
+        content: |-
+          lxc.arch = {{ image.architecture_kernel }}
+
+files:
+ - path: /etc/hostname
+   generator: hostname
+
+ - path: /etc/hosts
+   generator: hosts
+
+ - path: /etc/systemd/system/systemd-sysctl.service.d/00gentoo.conf
+   generator: dump
+   content: |-
+     [Service]
+     ExecStart=
+     ExecStart=/usr/lib/systemd/systemd-sysctl  --prefix=/etc/sysctl.d/
+
+ - path: /etc/systemd/system/NetworkManager.service.d/override.conf
+   generator: dump
+   content: |-
+     [Service]
+     ExecStartPre=-/bin/ip -4 link set dev eth0 down
+
+packages:
+  manager: equo
+  update: false
+  cleanup: true
+
+actions:
+  - trigger: post-packages
+    action: |-
+      #!/bin/sh
+
+      # Disable problematic systemd units
+      ln -s /dev/null /etc/systemd/system/systemd-journald-audit.socket
+      ln -s /dev/null /etc/systemd/system/systemd-remount-fs.service
+      ln -s /dev/null /etc/systemd/system/sys-fs-fuse-connections.mount
+      ln -s /dev/null /etc/systemd/system/dev-hugepages.mount
+
+      # Disable sabayon-anti-fork-bomb limits
+      sed -i -e 's/^*/#*/g' /etc/security/limits.d/00-sabayon-anti-fork-bomb.conf
+      sed -i -e 's/^root/#root/g' /etc/security/limits.d/00-sabayon-anti-fork-bomb.conf
+
+      # Clean journal directory (to avoid permission errors)
+      rm -rf /var/log/journal/
+
+      # Remove LVM service. Normally not needed on container system.
+      rm -rf /etc/systemd/system/sysinit.target.wants/lvm2-lvmetad.service
+
+      # Comment unneeded entry on /etc/fstab
+      sed -e 's/\/dev/#\/dev/g' -i /etc/fstab
+
+      # Create some potentially missing directory
+      mkdir -p /etc/local.d
+
+mappings:
+  architecture_map: debian
