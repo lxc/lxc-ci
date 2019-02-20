@@ -65,6 +65,7 @@ packages:
       - findutils
       - fipscheck
       - gettext
+      - glibc-all-langpacks
       - hardlink
       - initscripts
       - ipcalc
@@ -82,3 +83,20 @@ packages:
       - which
       - xz
      action: install
+
+   - packages:
+      - libsss_idmap
+      - libsss_nss_idmap
+      - sssd-client
+     action: remove
+
+actions:
+  - trigger: post-packages
+    action: |-
+      #!/bin/sh
+      umount -l /etc/resolv.conf || true
+      rm /etc/resolv.conf
+      ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+      systemctl enable systemd-networkd
+      systemctl enable systemd-resolved
+      cp -R /etc/skel/.bash* /root/
