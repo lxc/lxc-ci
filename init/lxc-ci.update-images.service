@@ -1,0 +1,13 @@
+[Unit]
+Description=lxc-ci - Update images
+Requires=network-online.target
+After=network-online.target
+Before=lxc-ci.ready.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/lxc-ci
+ExecStart=/bin/sh -c "exec /lxc-ci/bin/update-images"
+
+[Install]
+WantedBy=multi-user.target
