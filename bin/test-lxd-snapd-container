@@ -1,5 +1,5 @@
 #!/bin/sh -eu
-CNAME="distrobuilder-$(uuidgen)"
+CNAME="snapd-$(uuidgen)"
 
 ARCH=${1}
 shift
