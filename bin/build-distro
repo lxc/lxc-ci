@@ -21,7 +21,7 @@ cleanup() {
 trap cleanup EXIT HUP INT TERM
 
 # Create the container
-lxc copy "distrobuilder-${ARCH}" "${CNAME}"
+lxc copy "cache-distrobuilder-${ARCH}" "${CNAME}"
 
 # Start the container
 lxc start "${CNAME}"

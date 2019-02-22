@@ -9,19 +9,19 @@ fi
 
 cleanup() {
     set +e
-    lxc delete distrobuilder-build -f >/dev/null 2>&1
+    lxc delete build-distrobuilder-cache -f >/dev/null 2>&1
     exit 0
 }
 trap cleanup EXIT HUP INT TERM
 
 for arch in ${DISTROBUILDER_ARCHES}; do
     # Create the container
-    lxc init "images:ubuntu/bionic/${arch}" distrobuilder-build \
+    lxc init "images:ubuntu/bionic/${arch}" build-distrobuilder-cache \
         -c security.privileged=true -c security.nesting=true
 
     # Setup loop devices
     (
-        lxc config show distrobuilder-build | sed "/devices:/d"
+        lxc config show build-distrobuilder-cache | sed "/devices:/d"
         cat << EOF
 devices:
   loop-control:
@@ -40,13 +40,13 @@ EOF
     type: unix-block
 EOF
         done
-    ) | lxc config edit distrobuilder-build
+    ) | lxc config edit build-distrobuilder-cache
 
     # Start the container
-    lxc start distrobuilder-build
+    lxc start build-distrobuilder-cache
 
     # Wait for network
-    while ! lxc info distrobuilder-build | grep -q "eth0.*inet.*10\\."; do
+    while ! lxc info build-distrobuilder-cache | grep -q "eth0.*inet.*10\\."; do
         sleep 5s
     done
 
@@ -82,11 +82,11 @@ export GOPATH=/root/go/
 # Install distrobuilder
 go get -v -x github.com/lxc/distrobuilder/distrobuilder
 EOF
-    ) | lxc exec distrobuilder-build -- sh
+    ) | lxc exec build-distrobuilder-cache -- sh
 
-    lxc stop distrobuilder-build
-    lxc delete -f "distrobuilder-${arch}" >/dev/null 2>&1 || true
-    lxc move distrobuilder-build "distrobuilder-${arch}"
+    lxc stop build-distrobuilder-cache
+    lxc delete -f "cache-distrobuilder-${arch}" >/dev/null 2>&1 || true
+    lxc move build-distrobuilder-cache "cache-distrobuilder-${arch}"
 done
 
 exit 0
