@@ -1,4 +1,6 @@
 #!/bin/sh -eu
+export PATH="/snap/bin/:${PATH}"
+
 [ -e /lxc-ci/etc/config ] && . /lxc-ci/etc/config
 
 if [ "${DISTROBUILDER_ARCHES:-}" = "" ]; then
