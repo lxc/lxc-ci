@@ -21,67 +21,29 @@ cleanup() {
 trap cleanup EXIT HUP INT TERM
 
 # Create the container
-lxc init "images:ubuntu/bionic/${ARCH}" "${CNAME}" -c security.privileged=true -c security.nesting=true
-
-# Setup loop devices
-(
-lxc config show "${CNAME}" | sed "/devices:/d"
-cat << EOF
-devices:
-  loop-control:
-    major: "10"
-    minor: "237"
-    path: /dev/loop-control
-    type: unix-char
-EOF
-for i in $(seq 0 64); do
-    cat << EOF
-  loop${i}:
-    major: "7"
-    minor: "${i}"
-    path: /dev/loop${i}
-    type: unix-block
-EOF
-done
-) | lxc config edit "${CNAME}"
+lxc copy "distrobuilder-${ARCH}" "${CNAME}"
 
 # Start the container
 lxc start "${CNAME}"
 
 # Wait for network
-sleep 30
+while ! lxc info "${CNAME}" | grep -q "eth0.*inet.*10\\."; do
+    sleep 5s
+done
+
+sleep 5s
 
 set -x
 
 lxc file push "${YAML}" "${CNAME}/root/image.yaml"
+
 (
 cat << EOF
 #!/bin/sh
 set -eux
 
-ARCHIVE="http://us.archive.ubuntu.com/ubuntu"
-if grep -q ports /etc/apt/sources.list; then
-    ARCHIVE="http://us.ports.ubuntu.com/ubuntu-ports"
-fi
-
-# Setup clean sources
-cat > /etc/apt/sources.list << EOL
-deb \${ARCHIVE} bionic main universe restricted multiverse
-deb \${ARCHIVE} bionic-updates main universe restricted multiverse
-deb \${ARCHIVE} bionic-security main universe restricted multiverse
-deb \${ARCHIVE} bionic-backports main universe restricted multiverse
-EOL
-apt-get update --yes
-
-# Install dependencies
-apt-get install --yes --no-install-recommends \
-    golang-go git ca-certificates gcc libc6-dev \
-    debootstrap xz-utils squashfs-tools gpg dirmngr gpg-agent rsync
 export PATH=/root/go/bin:\${PATH}
 export GOPATH=/root/go/
-
-# Install distrobuilder
-go get -v -x github.com/lxc/distrobuilder/distrobuilder
 
 # Build the image
 mkdir /root/build
