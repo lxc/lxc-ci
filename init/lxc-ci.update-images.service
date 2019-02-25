@@ -1,7 +1,7 @@
 [Unit]
 Description=lxc-ci - Update images
 Requires=network-online.target
-After=network-online.target
+After=network-online.target lxc-ci.setup-lxd.service
 Before=lxc-ci.ready.service
 
 [Service]
