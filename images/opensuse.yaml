@@ -46,7 +46,7 @@ files:
     generator: hosts
 
   - name: ifcfg-eth0
-    path: /etc/sysconfig/network-scripts/ifcfg-eth0
+    path: /etc/sysconfig/network/ifcfg-eth0
     generator: dump
     content: |-
       STARTMODE='auto'
