@@ -1,0 +1,74 @@
+image:
+  distribution: openSUSE
+
+source:
+  downloader: opensuse-http
+  url: https://download.opensuse.org
+  keyserver: keyserver.ubuntu.com
+  keys:
+    - 55A0B34D49501BB7CA474F5AA193FBB572174FC2
+
+targets:
+  lxc:
+    create-message: |
+      You just created an {{ image.description }} container.
+
+    config:
+      - type: all
+        before: 5
+        content: |-
+          lxc.include = LXC_TEMPLATE_CONFIG/opensuse.common.conf
+
+      - type: user
+        before: 5
+        content: |-
+          lxc.include = LXC_TEMPLATE_CONFIG/opensuse.userns.conf
+
+      - type: all
+        after: 4
+        content: |-
+          lxc.include = LXC_TEMPLATE_CONFIG/common.conf
+
+      - type: user
+        after: 4
+        content: |-
+          lxc.include = LXC_TEMPLATE_CONFIG/userns.conf
+
+      - type: all
+        content: |-
+          lxc.arch = {{ image.architecture_kernel }}
+
+files:
+  - path: /etc/hostname
+    generator: hostname
+
+  - path: /etc/hosts
+    generator: hosts
+
+packages:
+  manager: zypper
+  update: true
+  cleanup: true
+
+  sets:
+    - packages:
+       - apparmor-abstractions
+       - apparmor-parser
+       - elfutils
+       - file
+       - glib2-tools
+       - gzip
+       - hardlink
+       - hostname
+       - insserv-compat
+       - iproute2
+       - iputils
+       - kmod-compat
+       - net-tools
+       - pigz
+       - rsync
+       - systemd-sysvinit
+       - tar
+       - which
+       - xz
+      action: install
