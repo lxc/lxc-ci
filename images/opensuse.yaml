@@ -45,6 +45,13 @@ files:
   - path: /etc/hosts
     generator: hosts
 
+  - name: ifcfg-eth0
+    path: /etc/sysconfig/network-scripts/ifcfg-eth0
+    generator: dump
+    content: |-
+      STARTMODE='auto'
+      BOOTPROTO='dhcp'
+
 packages:
   manager: zypper
   update: true
@@ -65,6 +72,7 @@ packages:
        - net-tools
        - pigz
        - rsync
+       - systemd-sysvinit
        - tar
        - which
        - xz
