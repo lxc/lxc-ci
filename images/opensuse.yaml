@@ -82,4 +82,4 @@ packages:
       releases:
        - "15.0"
        - "tumbleweed"
-      action: remove
+      action: install
