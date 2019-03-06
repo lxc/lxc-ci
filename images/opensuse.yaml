@@ -59,6 +59,12 @@ packages:
 
   sets:
     - packages:
+       - hostname
+      releases:
+       - "42.3"
+      action: remove
+
+    - packages:
        - apparmor-abstractions
        - apparmor-parser
        - elfutils
