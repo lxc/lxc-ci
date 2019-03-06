@@ -59,12 +59,6 @@ packages:
 
   sets:
     - packages:
-       - hostname
-      releases:
-       - "42.3"
-      action: remove
-
-    - packages:
        - apparmor-abstractions
        - apparmor-parser
        - elfutils
@@ -75,7 +69,6 @@ packages:
        - hostname
        - iproute2
        - iputils
-       - net-tools
        - pigz
        - rsync
        - systemd-sysvinit
@@ -83,3 +76,10 @@ packages:
        - which
        - xz
       action: install
+
+    - packages:
+       - net-tools
+      releases:
+       - "15.0"
+       - "tumbleweed"
+      action: remove
