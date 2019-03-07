@@ -61,6 +61,7 @@ packages:
     - packages:
        - apparmor-abstractions
        - apparmor-parser
+       - dbus-1
        - elfutils
        - file
        - glib2-tools
