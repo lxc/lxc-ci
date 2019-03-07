@@ -116,8 +116,6 @@ packages:
         - linux-firmware
         - lvm2
         - mdadm
-        - mkinitcpio
-        - mkinitcpio-busybox
         - net-tools
         - openssh
         - pciutils
