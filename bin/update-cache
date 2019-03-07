@@ -83,7 +83,7 @@ mv "${TEMP_DIR}/go" /lxc-ci/build/cache.new/go
 mv "${TEMP_DIR}/sqlite" /lxc-ci/build/cache.new/sqlite
 mv "${TEMP_DIR}/dqlite" /lxc-ci/build/cache.new/dqlite
 [ -e "/lxc-ci/build/cache" ] && mv /lxc-ci/build/cache /lxc-ci/build/cache.old
-chmod -R u+rX /lxc-ci/build/cache.new
+chmod -R o+rX /lxc-ci/build/cache.new
 mv /lxc-ci/build/cache.new /lxc-ci/build/cache
 rm -Rf /lxc-ci/build/cache.old
 
