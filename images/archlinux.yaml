@@ -95,6 +95,18 @@ packages:
       action: install
 
     - packages:
+        - linux-aarch64
+      action: remove
+      architectures:
+        - aarch64
+
+    - packages:
+        - linux-armv7
+      action: remove
+      architectures:
+        - armv7
+
+    - packages:
         - dnssec-anchors
         - haveged
         - jfsutils
@@ -117,18 +129,6 @@ packages:
       action: remove
       architectures:
         - aarch64
-        - armv7
-
-    - packages:
-        - linux-aarch64
-      action: remove
-      architectures:
-        - aarch64
-
-    - packages:
-        - linux-armv7
-      action: remove
-      architectures:
         - armv7
 
 actions:
