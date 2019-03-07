@@ -95,3 +95,4 @@ actions:
 
       # Fix boot
       systemctl disable systemd-hwdb-update.service
+      systemd-machine-id-setup
