@@ -1,103 +1,88 @@
-#!/usr/bin/python3 -u
-# Copyright 2014 - Stéphane Graber <stgraber@ubuntu.com>
+#!/bin/sh -eu
+CNAME="lxc-tarballs-$(uuidgen)"
 
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2, as
-# published by the Free Software Foundation.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+# Check arguments
+if [ "${1:-}" = "" ] || [ "${2:-}" = "" ] || [ "${3:-}" = "" ] || [ "${4:-}" = "" ] || [ "${5:-}" = "" ]; then
+    echo "Usage: ${0} <arch> <repository> <branch> <commit> <target>"
+    exit 1
+fi
 
-import sys
-sys.path.insert(0, '.')
+ARCH=${1}
+shift
+REPO=${1}
+shift
+BRANCH=${1}
+shift
+COMMIT=${1}
+shift
+TARGET=${1}
+shift
 
-import argparse
-import lxc_ci
-import traceback
+cleanup() {
+    lxc delete --force "${CNAME}"
+}
 
-parser = argparse.ArgumentParser(description="tarballs generator")
-parser.add_argument("repository", metavar="REPOSITORY")
-parser.add_argument("branch", metavar="BRANCH")
-parser.add_argument("commit", metavar="COMMIT", default="HEAD")
-parser.add_argument("target", metavar="TARGET")
-args = parser.parse_args()
+trap cleanup EXIT HUP INT TERM
 
-try:
-    build_env = lxc_ci.BuildEnvironment("ubuntu", "xenial")
-    build_env.setup()
+# Create the container
+lxc copy "cache-lxc-${ARCH}" "${CNAME}"
 
-    if build_env.install(
-            list(lxc_ci.LXC_BUILD_DEPENDENCIES['ubuntu']['default'])) != 0:
-        build_env.exit_unstable()
+# Start the container
+lxc start "${CNAME}"
 
-    if build_env.architecture in \
-            lxc_ci.LXC_BUILD_DEPENDENCIES['ubuntu']:
-        if build_env.install(
-            list(lxc_ci.LXC_BUILD_DEPENDENCIES['ubuntu']
-                 [build_env.architecture])) != 0:
-            build_env.exit_unstable()
-
-    if build_env.execute(["git",
-                          "clone", args.repository,
-                          "-b", args.branch,
-                          "/build/git"]) != 0:
-        build_env.exit_unstable()
-
-    if build_env.execute(["git",
-                          "fetch", args.repository,
-                          "+refs/pull/*:refs/remotes/origin/pr/*"],
-                         "/build/git") != 0:
-        build_env.exit_unstable()
-
-    if build_env.execute(["git", "checkout", args.commit],
-                         "/build/git") != 0:
-        build_env.exit_unstable()
-
-    if build_env.execute(["./autogen.sh"], "/build/git/") != 0:
-        build_env.exit_fail()
-
-    if build_env.execute(["./configure", "--enable-doc", "--enable-apidoc",
-                          "--enable-python", "--prefix=/usr/",
-                          "--sysconfdir=/etc/", "--localstatedir=/var/"],
-                         "/build/git/") != 0:
-        build_env.exit_fail()
-
-    # Build dist tarball
-    if build_env.execute(["make", "dist"], "/build/git/") != 0:
-        build_env.exit_fail()
-
-    build_env.download("/build/git/*.tar.gz", "%s/lxc.tar.gz" % args.target)
-
-    # Build documentation
-    if build_env.execute(["make", "-C", "doc"], "/build/git/") != 0:
-        build_env.exit_fail()
-
-    if build_env.execute(["tar", "-zcf", "/build/apidoc.tar.gz",
-                          "-C", "/build/git/doc/api/html/", "."]) != 0:
-        build_env.exit_fail()
-
-    build_env.download("/build/apidoc.tar.gz", args.target)
-
-    # Build manpage
-    if build_env.execute("""#!/bin/sh -ex
-find . | grep \\\\.[0-9]$ | while read line; do
-    dst_file="/build/man/${line}"
-    mkdir -p $(dirname $dst_file)
-    cp $line $dst_file
+# Wait for network
+while ! lxc info "${CNAME}" | grep -q "eth0.*inet.*10\\."; do
+    sleep 5s
 done
-tar -zcf /build/manpages.tar.gz -C /build/man/ .""", "/build/git/doc/") != 0:
-        build_env.exit_fail()
 
-    build_env.download("/build/manpages.tar.gz", args.target)
+sleep 5s
 
-    build_env.exit_pass()
+set -x
 
-except Exception or KeyboardInterrupt:
-    traceback.print_exc()
-    build_env.exit_unstable()
+(
+cat << EOF
+#!/bin/sh
+set -eux
+
+# Create build directories
+mkdir -p /build/android /build/source
+
+# Get the source
+git clone "${REPO}" -b "${BRANCH}" /build/source
+cd /build/source
+git fetch "${REPO}" "+refs/pull/*:refs/remotes/origin/pr/*"
+git checkout "${COMMIT}"
+
+# Build the dist tarball
+cd /build/source/
+./autogen.sh
+./configure --enable-doc --enable-apidoc --enable-python \
+    --prefix=/usr/ --sysconfdir=/etc/ --localstatedir=/var/
+
+make dist
+mv *.tar.gz /build/lxc.tar.gz
+
+# Build API doc
+make -C doc
+tar -zcf /build/apidoc.tar.gz -C /build/source/doc/api/html/ .
+
+# Build manpages
+cd /build/source/doc/
+find . | grep \\\\.[0-9]$ | while read line; do
+    dst_file="/build/man/\${line}"
+    mkdir -p \$(dirname \$dst_file)
+    cp \$line \$dst_file
+done
+tar -zcf /build/manpages.tar.gz -C /build/man/ .
+
+exit 0
+EOF
+) | lxc file push - "${CNAME}/root/build.sh" --mode=755
+lxc exec "${CNAME}" -- /root/build.sh "$@"
+
+lxc file pull "${CNAME}/build/lxc.tar.gz" "${TARGET}"
+lxc file pull "${CNAME}/build/apidoc.tar.gz" "${TARGET}"
+lxc file pull "${CNAME}/build/manpages.tar.gz" "${TARGET}"
+
+[ -n "${SUDO_UID:-}" ] && chown "${SUDO_UID}" -R "${TARGET}"
+[ -n "${SUDO_GID:-}" ] && chgrp "${SUDO_GID}" -R "${TARGET}"
