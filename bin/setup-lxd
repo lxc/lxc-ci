@@ -25,7 +25,9 @@ lxc network create lxdbr0 ipv4.address=10.0.3.1/24 ipv4.nat=true ipv6.address=20
 lxc network attach-profile lxdbr0 default eth0 eth0
 
 # Setup storage
-lxc storage create default dir >/dev/null 2>&1 && break
+if ! lxc storage create default btrfs size=5GB >/dev/null 2>&1; then
+    lxc storage create default dir
+fi
 
 lxc storage show default >/dev/null 2>&1 || exit 1
 lxc profile device add default root disk pool=default path=/
