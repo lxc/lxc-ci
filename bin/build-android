@@ -1,161 +1,86 @@
-#!/usr/bin/python3 -u
-# Copyright 2014 - Stéphane Graber <stgraber@ubuntu.com>
+#!/bin/sh -eu
+CNAME="distrobuilder-$(uuidgen)"
 
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2, as
-# published by the Free Software Foundation.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+# Check arguments
+if [ "${1:-}" = "" ] || [ "${2:-}" = "" ] || [ "${3:-}" = "" ] || [ "${4:-}" = "" ] || [ "${5:-}" = "" ]; then
+    echo "Usage: ${0} <arch> <repository> <branch> <commit> <target>"
+    exit 1
+fi
 
-import sys
-sys.path.insert(0, '.')
+ARCH=${1}
+shift
+REPO=${1}
+shift
+BRANCH=${1}
+shift
+COMMIT=${1}
+shift
+TARGET=${1}
+shift
 
-import argparse
-import lxc_ci
-import os
-import traceback
+cleanup() {
+    lxc delete --force "${CNAME}"
+}
 
-parser = argparse.ArgumentParser(description="coverity build")
-parser.add_argument("repository", metavar="REPOSITORY")
-parser.add_argument("branch", metavar="BRANCH")
-parser.add_argument("commit", metavar="COMMIT")
-parser.add_argument("target", metavar="TARGET")
-args = parser.parse_args()
+trap cleanup EXIT HUP INT TERM
 
-try:
-    build_env = lxc_ci.BuildEnvironment("ubuntu", "xenial")
-    build_env.setup()
+# Create the container
+lxc copy "cache-lxc-${ARCH}" "${CNAME}"
 
-    if build_env.install(
-            list(lxc_ci.LXC_BUILD_DEPENDENCIES['ubuntu']['default'])) != 0:
-        build_env.exit_unstable()
+# Start the container
+lxc start "${CNAME}"
 
-    if build_env.architecture in lxc_ci.LXC_BUILD_DEPENDENCIES['ubuntu']:
-        if build_env.install(
-            list(lxc_ci.LXC_BUILD_DEPENDENCIES['ubuntu']
-                 [build_env.architecture])) != 0:
-            build_env.exit_unstable()
+# Wait for network
+while ! lxc info "${CNAME}" | grep -q "eth0.*inet.*10\\."; do
+    sleep 5s
+done
 
-    build_env.upload("deps/android-ndk-linux-x86_64.zip",
-                     "/tmp/ndk.zip")
-    build_env.upload("deps/genetlink.h", "/tmp/genetlink.h")
+sleep 5s
 
-    build_env.execute(["mkdir", "-p", "/build/source"])
-    build_env.execute(["mkdir", "-p", "/build/ndk"])
-    build_env.execute(["mkdir", "-p", "/build/android"])
+set -x
 
-    if build_env.execute(["git",
-                          "clone", args.repository,
-                          "-b", args.branch,
-                          "/build/source"]) != 0:
-        build_env.exit_unstable()
+(
+cat << EOF
+#!/bin/sh
+set -eux
 
-    if build_env.execute(["git",
-                          "fetch", args.repository,
-                          "+refs/pull/*:refs/remotes/origin/pr/*"],
-                         "/build/source") != 0:
-        build_env.exit_unstable()
+# Create build directories
+mkdir -p /build/android /build/source
 
-    if build_env.execute(["git", "checkout", args.commit],
-                         "/build/source") != 0:
-        build_env.exit_unstable()
+# Get the source
+git clone "${REPO}" -b "${BRANCH}" /build/source
+cd /build/source
+git fetch "${REPO}" "+refs/pull/*:refs/remotes/origin/pr/*"
+git checkout "${COMMIT}"
 
-    if build_env.execute("""#!/bin/sh -ex
-unzip -q /tmp/ndk.zip
-mv android-ndk-*/* .
-rmdir android-ndk-*
-""", "/build/ndk/") != 0:
-        build_env.exit_unstable()
+# Environment
+export PATH=/build/ndk/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/:${PATH}
+export CC="arm-linux-androideabi-gcc --sysroot=/build/ndk/platforms/android-21/arch-arm/"
+export DESTDIR=/build/android
+export BUILD_CC=gcc
+export LD=arm-linux-androideabi-ld
 
-    if build_env.execute(["cp", "/tmp/genetlink.h",
-                          "/build/ndk/platforms/android-21/arch-arm"
-                          "/usr/include/linux/genetlink.h"]) != 0:
-        build_env.exit_unstable()
-
-    if build_env.execute(["git", "clone", "git://git.kernel.org/pub/scm/linux/"
-                                          "kernel/git/morgan/libcap.git",
-                          "/build/libcap"]) != 0:
-        build_env.exit_unstable()
-
-    if build_env.execute(["git", "checkout",
-                          "0ee94211e95096750ede752acd13b163aa6d5046"],
-                          "/build/libcap") != 0:
-        build_env.exit_unstable()
-
-    env = []
-    env.append("PATH=/build/ndk/toolchains/arm-linux-androideabi-4.9/prebuilt/"
-               "linux-x86_64/bin/:%s" % os.environ['PATH'])
-    env.append("CC=arm-linux-androideabi-gcc "
-               "--sysroot=/build/ndk/platforms/android-21/arch-arm/")
-    env.append("DESTDIR=/build/android")
-    env.append("BUILD_CC=gcc")
-
-    # Build libcap
-    if build_env.execute(["env"] + env + ["make", "-e", "LIBATTR=no"],
-                         "/build/libcap/libcap/") != 0:
-        build_env.exit_unstable()
-
-    if build_env.execute("""#!/bin/sh -ex
-
-cp -P /build/libcap/libcap/libcap.so* \\
-    /build/ndk/platforms/android-21/arch-arm/usr/lib/
-
-cp -P /build/libcap/libcap/libcap.a \\
-    /build/ndk/platforms/android-21/arch-arm/usr/lib/
-
+# Copy libcap
 mkdir -p /build/android/data/lxc/lxc/lib/
-cp -P /build/libcap/libcap/libcap.so* \\
-    /build/android/data/lxc/lxc/lib/
+cp -P /build/libcap/libcap/libcap.so* /build/android/data/lxc/lxc/lib/
 
-cp -P /build/libcap/libcap/include/sys/capability.h \\
-    /build/ndk/platforms/android-21/arch-arm/usr/include/sys/
+# Build LXC
+cd /build/source/
+./autogen.sh
+./configure --host=arm-eabi CFLAGS=-I/build/libcap/libcap/include/ \
+    --disable-api-docs --disable-lua --disable-python --enable-tests \
+    --disable-examples --prefix=/data/lxc/lxc --host=arm-linux-androideabi \
+    --with-runtime-path=/cache/ --with-config-path=/data/lxc/containers/
+make
+make install
 
-cp -P /build/libcap/libcap/include/uapi/linux/capability.h \\
-    /build/ndk/platforms/android-21/arch-arm/usr/include/linux/
-""") != 0:
-        build_env.exit_unstable()
+# Generate tarball
+tar -zcf /build/lxc-android.tar.gz -C /build/android data
+exit 0
+EOF
+) | lxc file push - "${CNAME}/root/build.sh" --mode=755
+lxc exec "${CNAME}" -- /root/build.sh "$@"
+lxc file pull "${CNAME}/build/lxc-android.tar.gz" "${TARGET}"
 
-    # Build LXC
-    env.append("LD=arm-linux-androideabi-ld")
-    if build_env.execute(["./autogen.sh"], "/build/source/") != 0:
-        build_env.exit_fail()
-
-    if build_env.execute(["env"] + env +
-                         ["./configure", "--host=arm-eabi",
-                          "CFLAGS=-I/build/libcap/libcap/include/",
-                          "--disable-api-docs", "--disable-lua",
-                          "--disable-python", "--enable-tests",
-                          "--disable-examples",
-                          "--prefix=/data/lxc/lxc",
-                          "--host=arm-linux-androideabi",
-                          "--with-runtime-path=/cache/",
-                          "--with-config-path=/data/lxc/containers/"],
-                         "/build/source/") != 0:
-        build_env.exit_fail()
-
-    if build_env.execute(["env"] + env + ["make"], "/build/source/") != 0:
-        build_env.exit_fail()
-
-    if build_env.execute(["env"] + env + ["make", "install"],
-                         "/build/source/") != 0:
-        build_env.exit_fail()
-
-    # Make the tarball
-    if build_env.execute(["tar", "-zcf", "/build/lxc-android.tar.gz",
-                          "-C", "/build/android", "data"]) != 0:
-        build_env.exit_unstable()
-
-    build_env.download("/build/lxc-android.tar.gz", args.target)
-
-    build_env.exit_pass()
-
-except Exception or KeyboardInterrupt:
-    traceback.print_exc()
-    build_env.exit_unstable()
+[ -n "${SUDO_UID:-}" ] && chown "${SUDO_UID}" -R "${TARGET}"
+[ -n "${SUDO_GID:-}" ] && chgrp "${SUDO_GID}" -R "${TARGET}"
