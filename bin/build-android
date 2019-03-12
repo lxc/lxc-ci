@@ -1,5 +1,5 @@
 #!/bin/sh -eu
-CNAME="distrobuilder-$(uuidgen)"
+CNAME="lxc-android-$(uuidgen)"
 
 # Check arguments
 if [ "${1:-}" = "" ] || [ "${2:-}" = "" ] || [ "${3:-}" = "" ] || [ "${4:-}" = "" ] || [ "${5:-}" = "" ]; then
@@ -80,6 +80,7 @@ exit 0
 EOF
 ) | lxc file push - "${CNAME}/root/build.sh" --mode=755
 lxc exec "${CNAME}" -- /root/build.sh "$@"
+
 lxc file pull "${CNAME}/build/lxc-android.tar.gz" "${TARGET}"
 
 [ -n "${SUDO_UID:-}" ] && chown "${SUDO_UID}" -R "${TARGET}"
