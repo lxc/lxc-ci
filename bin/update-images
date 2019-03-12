@@ -3,10 +3,6 @@ export PATH="/snap/bin/:${PATH}"
 
 [ -e /lxc-ci/etc/config ] && . /lxc-ci/etc/config
 
-if [ "${DISTROBUILDER_ARCHES:-}" = "" ]; then
-    exit 0
-fi
-
 cleanup() {
     set +e
     lxc delete build-distrobuilder-cache -f >/dev/null 2>&1
@@ -17,6 +13,10 @@ cleanup() {
 trap cleanup EXIT HUP INT TERM
 
 build_distrobuilder() {
+    if [ "${DISTROBUILDER_ARCHES:-}" = "" ]; then
+        return
+    fi
+
     for arch in ${DISTROBUILDER_ARCHES}; do
         # Create the container
         lxc init "images:ubuntu/bionic/${arch}" build-distrobuilder-cache \
@@ -94,31 +94,34 @@ EOF
 }
 
 build_lxc() {
-    arch=$(uname -m)
-
-    # Create the container
-    lxc init "images:ubuntu/bionic/${arch}" build-lxc-cache \
-        -c security.privileged=true -c security.nesting=true
-
-    # Start the container
-    lxc start build-lxc-cache
-
-    # Wait for network
-    while ! lxc info build-lxc-cache | grep -q "eth0.*inet.*10\\."; do
-        sleep 5s
-    done
-
-    sleep 5s
-
-    # Transfer Android dependencies
-    if [ "${arch}" = "x86_64" ]; then
-        lxc file push deps/android-ndk-linux-x86_64.zip build-lxc-cache/root/deps/ndk.zip
-        lxc file push deps/genetlink.h build-lxc-cache/root/deps/genetlink.h
+    if [ "${LXC_ARCHES:-}" = "" ]; then
+        return
     fi
 
-    # Install dependencies
-    (
-        cat << EOF
+    for arch in ${LXC_ARCHES}; do
+        # Create the container
+        lxc init "images:ubuntu/bionic/${arch}" build-lxc-cache \
+            -c security.privileged=true -c security.nesting=true
+
+        # Start the container
+        lxc start build-lxc-cache
+
+        # Wait for network
+        while ! lxc info build-lxc-cache | grep -q "eth0.*inet.*10\\."; do
+            sleep 5s
+        done
+
+        sleep 5s
+
+        # Transfer Android dependencies
+        if [ "${arch}" = "amd64" ]; then
+            lxc file push deps/android-ndk-linux-x86_64.zip build-lxc-cache/root/deps/ndk.zip
+            lxc file push deps/genetlink.h build-lxc-cache/root/deps/genetlink.h
+        fi
+
+        # Install dependencies
+        (
+            cat << EOF
 #!/bin/sh
 set -eux
 
@@ -150,6 +153,7 @@ EOF
         lxc stop build-lxc-cache
         lxc delete -f "cache-lxc-${arch}" >/dev/null 2>&1 || true
         lxc move build-lxc-cache "cache-lxc-${arch}"
+    done
 }
 
 build_distrobuilder
