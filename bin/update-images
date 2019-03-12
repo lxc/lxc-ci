@@ -113,14 +113,7 @@ build_lxc() {
 
         sleep 5s
 
-        # Transfer Android dependencies
-        if [ "${arch}" = "amd64" ]; then
-            lxc exec build-lxc-cache -- mkdir /root/deps
-            lxc file push deps/android-ndk-linux-x86_64.zip build-lxc-cache/root/deps/ndk.zip
-            lxc file push deps/genetlink.h build-lxc-cache/root/deps/genetlink.h
-        fi
-
-        # Install dependencies
+        # Install build dependencies
         (
             cat << EOF
 #!/bin/sh
@@ -144,12 +137,56 @@ apt-get update --yes
 apt-get install --yes --no-install-recommends \
     automake autoconf clang docbook2x doxygen gcc graphviz git \
     libapparmor-dev libcap-dev libgnutls28-dev liblua5.2-dev \
-    libseccomp-dev libselinux1-dev linux-libc-dev lsb-release \
+    libseccomp-dev libselinux1-dev libtool linux-libc-dev lsb-release \
     make pkg-config python3-all-dev python3-setuptools unzip
 
 
 EOF
         ) | lxc exec build-lxc-cache -- sh
+
+	# Install Android dependencies
+        if [ "${arch}" = "amd64" ]; then
+            lxc file push deps/android-ndk-linux-x86_64.zip build-lxc-cache/tmp/ndk.zip
+            lxc file push deps/genetlink.h build-lxc-cache/tmp/genetlink.h
+	    (
+	        cat << EOF
+#!/bin/sh
+set -eux
+
+mkdir -p /build/ndk
+cd /build/ndk/
+
+# Unpack the Android NDK
+unzip -q /tmp/ndk.zip
+mv android-ndk-*/* .
+rmdir android-ndk-*
+rm /tmp/ndk.zip
+
+# Workaround missing header
+mv /tmp/genetlink.h /build/ndk/platforms/android-21/arch-arm/usr/include/linux/genetlink.h
+
+# Get specific libcap source
+git clone git://git.kernel.org/pub/scm/linux/kernel/git/morgan/libcap.git /build/libcap
+cd /build/libcap
+git checkout 0ee94211e95096750ede752acd13b163aa6d5046
+
+# Environment
+export PATH=/build/ndk/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/:\${PATH}
+export CC="arm-linux-androideabi-gcc --sysroot=/build/ndk/platforms/android-21/arch-arm/"
+export DESTDIR=/build/android
+export BUILD_CC=gcc
+
+# Build and install libcap
+cd /build/libcap/libcap/
+make -e LIBATTR=no
+
+cp -P /build/libcap/libcap/libcap.so* /build/ndk/platforms/android-21/arch-arm/usr/lib/
+cp -P /build/libcap/libcap/libcap.a /build/ndk/platforms/android-21/arch-arm/usr/lib/
+cp -P /build/libcap/libcap/include/sys/capability.h /build/ndk/platforms/android-21/arch-arm/usr/include/sys/
+cp -P /build/libcap/libcap/include/uapi/linux/capability.h /build/ndk/platforms/android-21/arch-arm/usr/include/linux/
+EOF
+	    ) | lxc exec build-lxc-cache -- sh
+	fi
 
         lxc stop build-lxc-cache
         lxc delete -f "cache-lxc-${arch}" >/dev/null 2>&1 || true
