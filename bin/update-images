@@ -115,6 +115,7 @@ build_lxc() {
 
         # Transfer Android dependencies
         if [ "${arch}" = "amd64" ]; then
+            lxc exec build-lxc-cache -- mkdir /root/deps
             lxc file push deps/android-ndk-linux-x86_64.zip build-lxc-cache/root/deps/ndk.zip
             lxc file push deps/genetlink.h build-lxc-cache/root/deps/genetlink.h
         fi
@@ -142,7 +143,7 @@ apt-get update --yes
 # Install dependencies
 apt-get install --yes --no-install-recommends \
     automake autoconf clang docbook2x doxygen gcc graphviz git \
-    libapparmor-dev libcap-dev libgnutls-dev liblua5.2-dev \
+    libapparmor-dev libcap-dev libgnutls28-dev liblua5.2-dev \
     libseccomp-dev libselinux1-dev linux-libc-dev lsb-release \
     make pkg-config python3-all-dev python3-setuptools unzip
 
