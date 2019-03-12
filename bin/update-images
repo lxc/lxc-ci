@@ -10,19 +10,22 @@ fi
 cleanup() {
     set +e
     lxc delete build-distrobuilder-cache -f >/dev/null 2>&1
+    lxc delete build-lxc-cache -f >/dev/null 2>&1
+
     exit 0
 }
 trap cleanup EXIT HUP INT TERM
 
-for arch in ${DISTROBUILDER_ARCHES}; do
-    # Create the container
-    lxc init "images:ubuntu/bionic/${arch}" build-distrobuilder-cache \
-        -c security.privileged=true -c security.nesting=true
+build_distrobuilder() {
+    for arch in ${DISTROBUILDER_ARCHES}; do
+        # Create the container
+        lxc init "images:ubuntu/bionic/${arch}" build-distrobuilder-cache \
+            -c security.privileged=true -c security.nesting=true
 
-    # Setup loop devices
-    (
-        lxc config show build-distrobuilder-cache | sed "/devices:/d"
-        cat << EOF
+        # Setup loop devices
+        (
+            lxc config show build-distrobuilder-cache | sed "/devices:/d"
+            cat << EOF
 devices:
   loop-control:
     major: "10"
@@ -31,30 +34,30 @@ devices:
     type: unix-char
 EOF
 
-        for i in $(seq 0 64); do
-            cat << EOF
+            for i in $(seq 0 64); do
+                cat << EOF
   loop${i}:
     major: "7"
     minor: "${i}"
     path: /dev/loop${i}
     type: unix-block
 EOF
+            done
+        ) | lxc config edit build-distrobuilder-cache
+
+        # Start the container
+        lxc start build-distrobuilder-cache
+
+        # Wait for network
+        while ! lxc info build-distrobuilder-cache | grep -q "eth0.*inet.*10\\."; do
+            sleep 5s
         done
-    ) | lxc config edit build-distrobuilder-cache
 
-    # Start the container
-    lxc start build-distrobuilder-cache
-
-    # Wait for network
-    while ! lxc info build-distrobuilder-cache | grep -q "eth0.*inet.*10\\."; do
         sleep 5s
-    done
 
-    sleep 5s
-
-    # Install distrobuilder
-    (
-        cat << EOF
+        # Install distrobuilder
+        (
+            cat << EOF
 #!/bin/sh
 set -eux
 
@@ -82,11 +85,74 @@ export GOPATH=/root/go/
 # Install distrobuilder
 go get -v -x github.com/lxc/distrobuilder/distrobuilder
 EOF
-    ) | lxc exec build-distrobuilder-cache -- sh
+        ) | lxc exec build-distrobuilder-cache -- sh
 
-    lxc stop build-distrobuilder-cache
-    lxc delete -f "cache-distrobuilder-${arch}" >/dev/null 2>&1 || true
-    lxc move build-distrobuilder-cache "cache-distrobuilder-${arch}"
-done
+        lxc stop build-distrobuilder-cache
+        lxc delete -f "cache-distrobuilder-${arch}" >/dev/null 2>&1 || true
+        lxc move build-distrobuilder-cache "cache-distrobuilder-${arch}"
+    done
+}
+
+build_lxc() {
+    arch=$(uname -m)
+
+    # Create the container
+    lxc init "images:ubuntu/bionic/${arch}" build-lxc-cache \
+        -c security.privileged=true -c security.nesting=true
+
+    # Start the container
+    lxc start build-lxc-cache
+
+    # Wait for network
+    while ! lxc info build-lxc-cache | grep -q "eth0.*inet.*10\\."; do
+        sleep 5s
+    done
+
+    sleep 5s
+
+    # Transfer Android dependencies
+    if [ "${arch}" = "x86_64" ]; then
+        lxc file push deps/android-ndk-linux-x86_64.zip build-lxc-cache/root/deps/ndk.zip
+        lxc file push deps/genetlink.h build-lxc-cache/root/deps/genetlink.h
+    fi
+
+    # Install dependencies
+    (
+        cat << EOF
+#!/bin/sh
+set -eux
+
+ARCHIVE="http://us.archive.ubuntu.com/ubuntu"
+if grep -q ports /etc/apt/sources.list; then
+    ARCHIVE="http://us.ports.ubuntu.com/ubuntu-ports"
+fi
+
+# Setup clean sources
+cat > /etc/apt/sources.list << EOL
+deb \${ARCHIVE} bionic main universe restricted multiverse
+deb \${ARCHIVE} bionic-updates main universe restricted multiverse
+deb \${ARCHIVE} bionic-security main universe restricted multiverse
+deb \${ARCHIVE} bionic-backports main universe restricted multiverse
+EOL
+apt-get update --yes
+
+# Install dependencies
+apt-get install --yes --no-install-recommends \
+    automake autoconf clang docbook2x doxygen gcc graphviz git \
+    libapparmor-dev libcap-dev libgnutls-dev liblua5.2-dev \
+    libseccomp-dev libselinux1-dev linux-libc-dev lsb-release \
+    make pkg-config python3-all-dev python3-setuptools unzip
+
+
+EOF
+        ) | lxc exec build-lxc-cache -- sh
+
+        lxc stop build-lxc-cache
+        lxc delete -f "cache-lxc-${arch}" >/dev/null 2>&1 || true
+        lxc move build-lxc-cache "cache-lxc-${arch}"
+}
+
+build_distrobuilder
+build_lxc
 
 exit 0
