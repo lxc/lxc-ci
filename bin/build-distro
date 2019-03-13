@@ -50,7 +50,7 @@ mkdir /root/build
 mv /root/image.yaml /root/build/
 cd /root/build/
 SERIAL=\$(date -u +%Y%m%d_%H:%M)
-distrobuilder --timeout 1800 build-dir image.yaml rootfs -o image.serial="\${SERIAL}" "\$@"
+distrobuilder --timeout 2700 build-dir image.yaml rootfs -o image.serial="\${SERIAL}" "\$@"
 distrobuilder pack-lxc image.yaml rootfs -o image.serial="\${SERIAL}" "\$@"
 distrobuilder pack-lxd image.yaml rootfs -o image.serial="\${SERIAL}" "\$@"
 btrfs subvolume delete rootfs/var/lib/machines >/dev/null 2>&1 || true
