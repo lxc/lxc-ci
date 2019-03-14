@@ -55,12 +55,12 @@ for version in 1.10.8 1.12 tip; do
     fi
     export PATH="${GOROOT}/bin:${OLD_PATH}"
 
-    go get github.com/rogpeppe/godeps >/dev/null
-    go get github.com/remyoudompheng/go-misc/deadcode >/dev/null
-    go get github.com/snapcore/snapd/i18n/xgettext-go >/dev/null
-    go get github.com/client9/misspell/cmd/misspell >/dev/null
-    go get github.com/gordonklaus/ineffassign >/dev/null
-    go get golang.org/x/lint/golint >/dev/null
+    go get github.com/rogpeppe/godeps >/dev/null || true
+    go get github.com/remyoudompheng/go-misc/deadcode >/dev/null || true
+    go get github.com/snapcore/snapd/i18n/xgettext-go >/dev/null || true
+    go get github.com/client9/misspell/cmd/misspell >/dev/null || true
+    go get github.com/gordonklaus/ineffassign >/dev/null || true
+    go get golang.org/x/lint/golint >/dev/null || true
 
     mkdir -p "${GOPATH}/bin" && mv "${GOPATH}/bin" "${GOPATH}/bin.$(go version | cut -d' ' -f3)"
     mkdir -p "${GOPATH}/pkg" && mv "${GOPATH}/pkg" "${GOPATH}/pkg.$(go version | cut -d' ' -f3)"
