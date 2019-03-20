@@ -135,12 +135,11 @@ apt-get update --yes
 
 # Install dependencies
 apt-get install --yes --no-install-recommends \
-    automake autoconf clang docbook2x doxygen gcc graphviz git \
-    libapparmor-dev libcap-dev libgnutls28-dev liblua5.2-dev \
+    automake autoconf bash-completion build-essential clang debhelper devscripts \
+    dh-apparmor dh-autoreconf dh-systemd docbook2x doxygen fakeroot gcc graphviz \
+    git libapparmor-dev libcap-dev libgnutls28-dev liblua5.2-dev libpam0g-dev \
     libseccomp-dev libselinux1-dev libtool linux-libc-dev lsb-release \
     make pkg-config python3-all-dev python3-setuptools unzip
-
-
 EOF
         ) | lxc exec build-lxc-cache -- sh
 

@@ -1,130 +1,107 @@
-#!/usr/bin/python3 -u
-# Copyright 2014 - Stéphane Graber <stgraber@ubuntu.com>
+#!/bin/sh -eu
+CNAME="lxc-tarballs-$(uuidgen)"
 
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2, as
-# published by the Free Software Foundation.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+# Check arguments
+if [ "${1:-}" = "" ] || [ "${2:-}" = "" ] || [ "${3:-}" = "" ] || \
+        [ "${4:-}" = "" ] || [ "${5:-}" = "" ] || [ "${6:-}" = "" ] || \
+        [ "${7:-}" = "" ] || [ "${8:-}" = "" ] || [ "${9:-}" = "" ] || \
+        [ "${10:-}" = "" ] || [ "${11:-}" = "" ]; then
+    echo "Usage: ${0} <arch> <repository> <branch> <commit> <pkg_repository> <pkg_branch> <pkg_commit> <dist> <release> <pkg_version> <target>"
+    exit 1
+fi
 
-import sys
-sys.path.insert(0, '.')
+ARCH=${1}
+shift
+REPO=${1}
+shift
+BRANCH=${1}
+shift
+COMMIT=${1}
+shift
+PKG_REPO=${1}
+shift
+PKG_BRANCH=${1}
+shift
+PKG_COMMIT=${1}
+shift
+DIST=${1}
+shift
+RELEASE=${1}
+shift
+PKG_VERSION=${1}
+shift
+TARGET=${1}
+shift
 
-import argparse
-import lxc_ci
-import traceback
+cleanup() {
+    lxc delete --force "${CNAME}"
+}
 
-parser = argparse.ArgumentParser(description="deb source package build")
-parser.add_argument("repository", metavar="REPOSITORY")
-parser.add_argument("branch", metavar="BRANCH")
-parser.add_argument("commit", metavar="COMMIT")
-parser.add_argument("pkg_repository", metavar="REPOSITORY")
-parser.add_argument("pkg_branch", metavar="BRANCH")
-parser.add_argument("pkg_commit", metavar="COMMIT", default="HEAD")
-parser.add_argument("dist", metavar="DIST")
-parser.add_argument("release", metavar="RELEASE")
-parser.add_argument("pkg_version", metavar="PKG_VERSION")
-parser.add_argument("target", metavar="TARGET")
-parser.add_argument("--use-daily", dest="daily", action="store_true",
-                    default=False)
-args = parser.parse_args()
+trap cleanup EXIT HUP INT TERM
 
-try:
-    build_env = lxc_ci.BuildEnvironment("ubuntu", "xenial")
-    build_env.setup()
+# Create the container
+lxc copy "cache-lxc-${ARCH}" "${CNAME}"
 
-    if args.daily:
-        build_env.install(["software-properties-common"])
-        build_env.execute(["apt-add-repository",
-                           "ppa:ubuntu-lxc/daily", "-y"])
-        build_env.update()
+# Start the container
+lxc start "${CNAME}"
 
-    if build_env.install(
-            list(lxc_ci.LXC_DEB_DEPENDENCIES['ubuntu']['default']) +
-            ["dh-systemd"]) != 0:
-        build_env.exit_unstable()
+# Wait for network
+while ! lxc info "${CNAME}" | grep -q "eth0.*inet.*10\\."; do
+    sleep 5s
+done
 
-    if build_env.architecture in lxc_ci.LXC_BUILD_DEPENDENCIES['ubuntu']:
-        if build_env.install(
-            list(lxc_ci.LXC_BUILD_DEPENDENCIES['ubuntu']
-                 [build_env.architecture])) != 0:
-            build_env.exit_unstable()
+sleep 5s
 
-    if build_env.install(
-            list(lxc_ci.LXC_BUILD_DEPENDENCIES["ubuntu"]
-                 ['default'])) != 0:
-        build_env.exit_unstable()
+set -x
 
-    if build_env.architecture in \
-            lxc_ci.LXC_BUILD_DEPENDENCIES["ubuntu"]:
-        if build_env.install(
-            list(lxc_ci.LXC_BUILD_DEPENDENCIES["ubuntu"]
-                 [build_env.architecture])) != 0:
-            build_env.exit_unstable()
+(
+cat << EOF
+#!/bin/sh
+set -eux
 
-    if build_env.execute(["git",
-                          "clone", args.repository,
-                          "-b", args.branch,
-                          "/build/source"]) != 0:
-        build_env.exit_unstable()
+# Get the source
+git clone "${REPO}" -b "${BRANCH}" /build/source
+cd /build/source
+git fetch "${REPO}" "+refs/pull/*:refs/remotes/origin/pr/*"
+git checkout "${COMMIT}"
 
-    if build_env.execute(["git",
-                          "fetch", args.repository,
-                          "+refs/pull/*:refs/remotes/origin/pr/*"],
-                         "/build/source") != 0:
-        build_env.exit_unstable()
+# Get the package source
+git clone "${PKG_REPO}" -b "${PKG_BRANCH}" /build/packaging
+cd /build/packaging
+git fetch "${PKG_REPO}" "+refs/pull/*:refs/remotes/origin/pr/*"
+git checkout "${PKG_COMMIT}"
 
-    if build_env.execute(["git", "checkout", args.commit],
-                         "/build/source") != 0:
-        build_env.exit_unstable()
-
-    if build_env.execute(["git",
-                          "clone", args.pkg_repository,
-                          "-b", args.pkg_branch,
-                          "/tmp/packaging"]) != 0:
-        build_env.exit_unstable()
-
-    if build_env.execute(["git", "reset", "--hard", args.pkg_commit],
-                         "/tmp/packaging") != 0:
-        build_env.exit_unstable()
-
-    if build_env.execute("""#!/bin/sh -ex
+# Environment
 export DEBEMAIL="lxc-devel@lists.linuxcontainers.org"
 export DEBFULLNAME="LXC snapshot packages"
+version="${PKG_VERSION}~$(date +%Y%m%d-%H%M)"
 
-version="%s~$(date +%%Y%%m%%d-%%H%%M)"
-
+# Build the dist tarball
 cd /build/source/
 ./autogen.sh
 ./configure
 make dist
-mv *.tar.gz /build/lxc_${version}.orig.tar.gz
+mv *.tar.gz /build/lxc_\${version}.orig.tar.gz
 rm -Rf /build/source/
 
 mkdir /build/dist
 cd /build/dist
-tar zxf /build/lxc_${version}.orig.tar.gz --strip 1
-cp -R /tmp/packaging/debian/ /build/dist/debian/
+tar zxf /build/lxc_\${version}.orig.tar.gz --strip 1
+cp -R /build/packaging/debian/ /build/dist/debian/
 rm -f debian/changelog
 
-dch --create --package lxc -v ${version}-0%s1~%s --distribution %s \
+dch --create --package lxc -v \${version}-0${DIST}1~${RELEASE} --distribution ${RELEASE} \
     "Automated snapshot build."
 
 debuild -S -sa -us -uc
-""" % (args.pkg_version, args.dist, args.release, args.release)) != 0:
-        build_env.exit_fail()
+mkdir /build/pkg
+mv /build/lxc_* /build/pkg/
+exit 0
+EOF
+) | lxc file push - "${CNAME}/root/build.sh" --mode=755
+lxc exec "${CNAME}" -- /root/build.sh "$@"
 
-    build_env.download("/build/lxc_*", args.target)
+lxc exec "${CNAME}" -- tar -cf - -C /build/pkg . | tar -xvf - -C "${TARGET}"
 
-    build_env.exit_pass()
-
-except Exception or KeyboardInterrupt:
-    traceback.print_exc()
-    build_env.exit_unstable()
+[ -n "${SUDO_UID:-}" ] && chown "${SUDO_UID}" -R "${TARGET}"
+[ -n "${SUDO_GID:-}" ] && chgrp "${SUDO_GID}" -R "${TARGET}"
