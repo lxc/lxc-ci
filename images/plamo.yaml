@@ -1,0 +1,276 @@
+image:
+  distribution: plamolinux
+
+source:
+  downloader: plamolinux-http
+  url: https://repository.plamolinux.org/pub/linux/Plamo
+
+targets:
+  lxc:
+    create-message: |
+      You just created an {{ image.description }} container.
+
+    config:
+      - type: all
+        before: 5
+        content: |-
+          lxc.include = LXC_TEMPLATE_CONFIG/plamo.common.conf
+
+      - type: user
+        before: 5
+        content: |-
+          lxc.include = LXC_TEMPLATE_CONFIG/plamo.userns.conf
+
+      - type: all
+        after: 4
+        content: |-
+          lxc.include = LXC_TEMPLATE_CONFIG/common.conf
+
+      - type: user
+        after: 4
+        content: |-
+          lxc.include = LXC_TEMPLATE_CONFIG/userns.conf
+
+      - type: all
+        content: |-
+          lxc.arch = {{ image.architecture_kernel }}
+
+files:
+  - name: hostname
+    path: /etc/hostname
+    generator: hostname
+
+  - name: hosts
+    path: /etc/hosts
+    generator: hosts
+
+  - name: inittab
+    path: /etc/inittab
+    generator: dump
+    releaes:
+     - 6
+    content: |-
+      #
+      # inittab	This file describes how the INIT process should set up
+      #		the system in a certain run-level.
+      #
+      # Version:	@(#)inittab		2.04	17/05/93	MvS
+      #                                       2.10    02/10/95        PV
+      #
+      # Author:	Miquel van Smoorenburg, <miquels@drinkel.nl.mugnet.org>
+      # Modified by:	Patrick J. Volkerding, <volkerdi@ftp.cdrom.com>
+      #
+      # Default runlevel.
+      id:3:initdefault:
+
+      # System initialization (runs when system boots).
+      si:S:sysinit:/etc/rc.d/rc.S
+
+      # Script to run when going single user (runlevel 1).
+      su:1S:wait:/etc/rc.d/rc.K
+
+      # Script to run when going multi user.
+      rc:2345:wait:/etc/rc.d/rc.M
+
+      # What to do at the "Three Finger Salute".
+      ca::ctrlaltdel:/sbin/shutdown -t5 -rf now
+
+      # Runlevel 0 halts the system.
+      l0:0:wait:/etc/rc.d/rc.0
+
+      # Runlevel 6 reboots the system.
+      l6:6:wait:/etc/rc.d/rc.6
+
+      # What to do when power fails (shutdown).
+      pf::powerfail:/sbin/shutdown -h +0 "THE POWER IS FAILING"
+
+      # If power is back before shutdown, cancel the running shutdown.
+      pg:0123456:powerokwait:/sbin/shutdown -c "THE POWER IS BACK"
+
+      # If power comes back in single user mode, return to multi user mode.
+      ps:S:powerokwait:/sbin/init 5
+
+      # The getties in multi user mode on consoles an serial lines.
+      #
+      # NOTE NOTE NOTE adjust this to your getty or you will not be
+      #                able to login !!
+      #
+      # Note: for 'agetty' you use linespeed, line.
+      # for 'getty_ps' you use line, linespeed and also use 'gettydefs'
+      1:1235:respawn:/sbin/agetty 38400 console
+      c1:1235:respawn:/sbin/agetty 38400 tty1 linux
+      c2:1235:respawn:/sbin/agetty 38400 tty2 linux
+      c3:1235:respawn:/sbin/agetty 38400 tty3 linux
+      c4:1235:respawn:/sbin/agetty 38400 tty4 linux
+
+      # Serial lines
+      #s1:12345:respawn:/sbin/agetty 19200 ttyS0 vt100
+      #s2:12345:respawn:/sbin/agetty 19200 ttyS1 vt100
+
+      # Dialup lines
+      #d1:12345:respawn:/sbin/agetty -mt60 38400,19200,9600,2400,1200 ttyS0 vt100
+      #d2:12345:respawn:/sbin/agetty -mt60 38400,19200,9600,2400,1200 ttyS1 vt100
+
+      # Runlevel 4 used to be for an X-window only system, until we discovered
+      # that it throws init into a loop that keeps your load avg at least 1 all 
+      # the time. Thus, there is now one getty opened on tty6. Hopefully no one
+      # will notice. ;^)
+      # It might not be bad to have one text console anyway, in case something 
+      # happens to X.
+      x1:4:wait:/etc/rc.d/rc.4
+
+      # End of /etc/inittab
+
+  - name: fstab
+    path: /etc/fstab
+    generator: dump
+    releases:
+     - 6
+    content: |-
+      none            /proc                   proc        defaults        0 0
+      none            /sys                    sysfs       defaults        0 0
+      none            /dev                    tmpfs       defaults        0 0
+      none            /tmp                    tmpfs       defaults        0 0
+      none            /dev/pts                devpts      gid=5,mode=620  0 0
+      none            /proc/bus/usb           usbfs       noauto          0 0
+      none            /var/lib/nfs/rpc_pipefs rpc_pipefs  defaults        0 0
+
+  - name: fstab
+    path: /etc/fstab
+    generator: dump
+    releases:
+     - 7
+    content: |-
+      proc            /proc           proc    defaults        0 0
+      tmpfs           /run            tmpfs   defaults        0 0
+      sysfs           /sys            sysfs   defaults        0 0
+      tmpfs           /tmp            tmpfs   defaults        0 0
+      devpts          /dev/pts        devpts  gid=5,mode=620  0 0
+      usbfs           /proc/bus/usb   usbfs   noauto          0 0
+
+  - name: eth0
+    path: /var/run/inet1-scheme
+    generator: dump
+    releases:
+     - 6
+    content: |-
+      DHCP
+
+  - name: eth0
+    path: /etc/sysconfig/ifconfig.eth0
+    generator: dump
+    releases:
+     - 7
+    content: |-
+      ONBOOT="yes"
+      IFACE="eth0"
+      SERVICE="dhclient"
+
+packages:
+  custom-manager:
+    install:
+      cmd: installpkg
+    remove:
+      cmd: removepkg
+    update:
+      cmd: updatepkg
+    clean:
+      cmd: true 
+    refresh:
+      cmd: true
+
+actions:
+  - trigger: post-unpack
+    action: |
+      #!/bin/sh
+      set -eux
+
+      # Configure timezone
+      ln -s ../usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+
+      # Disable pam_loginuid.so in /etc/pam.d/login
+      sed -i '/pam_loginuid/s/^/#/' /etc/pam.d/login
+
+  - trigger: post-unpack
+    releases:
+     - 6
+    action: |
+      #!/bin/sh
+      set -eux
+
+      # Suppress log level output for udev
+      sed -i 's/="err"/=0/' /etc/udev/udev.conf
+
+      # Configure glibc
+      mv /etc/ld.so.conf.new /etc/ld.so.conf
+      ldconfig
+
+      # Delete unnecessary process from rc.S
+      ed - /etc/rc.d/rc.S << EOF
+        /^mount -w -n -t proc/;/^mkdir \/dev\/shm/-1d
+        /^mknod \/dev\/null/;/^# Clean \/etc\/mtab/-2d
+        /^# copy the rules/;/^# Set the hostname/-1d
+        /^# Check the integrity/;/^# Clean up temporary/-1d
+        w
+      EOF
+
+      # Delete unnecessary process from rc.M
+      ed - /etc/rc.d/rc.M << EOF
+        /^# Screen blanks/;/^# Initialize ip6tables/-1d
+        /^# Initialize sysctl/;/^echo "Starting services/-1d
+        /^sync/;/^# All done/-1d
+        w
+      EOF
+
+      # Delete unnecessary process from rc.6
+      ed - /etc/rc.d/rc.6 << EOF
+        /^# Save system time/;/^# Unmount any remote filesystems/-1d
+        /^# Turn off swap/;/^# See if this is a powerfail situation/-1d
+        w
+      EOF
+
+      # /etc/rc.d/rc.inet2
+      sed -i "/rpc.mountd/s/^/#/" /etc/rc.d/rc.inet2
+      sed -i "/modprobe/s/^/#/" /etc/rc.d/rc.inet2
+
+  - trigger: post-unpack
+    releases:
+     - 7
+    action: |
+      #!/bin/sh
+      set -eux
+
+      # Inittab
+      sed -i -e '/^1:2345/i c:1235:respawn:/sbin/agetty console 38400'\
+        -e '/^ca:/a pf::powerfail:/sbin/shutdown -h +0 "THE POWER IS FAILING"' \
+        -e '/^4:2345/d' \
+        -e '/^5:2345/d' \
+        -e '/^6:2345/d' /etc/inittab
+
+      # Tweak init script on startup
+      for script in S05modules S10eudev S20swap S30checkfs S35setclock S50eudev_retry S70console; do
+        rm -f "/etc/rc.d/rcS.d/${script}"
+      done
+
+      # Remove init script in runlevel3
+      for script in rc3.d/S30sshd rc6.d/K30sshd rc6.d/K35setclock rc6.d/S65swap rc6.d/S70mountfs \
+                    rc0.d/K30sshd rc0.d/K35setclock rc0.d/S65swap rc0.d/S70mountfs; do
+        rm -f "/etc/rc.d/${script}"
+      done
+
+      # Tweak rc script
+      if [ -e /etc/rc.d/init.d/rc ]; then
+        sed -i -e '/wait_for_user/d' -e '/Press Enter to/d' /etc/rc.d/init.d/rc
+      fi
+
+      # initpkg
+      for pkg in shadow netconfig7 eudev openssh; do
+        rm -f "/var/log/initpkg/${pkg}"
+      done
+
+      for pkg in /var/log/initpkg/*; do
+        sh ${pkg}
+      done
+
+mappings:
+  architecture_map: plamolinux
