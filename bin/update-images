@@ -67,6 +67,7 @@ if grep -q ports /etc/apt/sources.list; then
 fi
 
 # Setup clean sources
+echo force-unsafe-io >> /etc/dpkg/dpkg.cfg
 cat > /etc/apt/sources.list << EOL
 deb \${ARCHIVE} bionic main universe restricted multiverse
 deb \${ARCHIVE} bionic-updates main universe restricted multiverse
@@ -125,6 +126,7 @@ if grep -q ports /etc/apt/sources.list; then
 fi
 
 # Setup clean sources
+echo force-unsafe-io >> /etc/dpkg/dpkg.cfg
 cat > /etc/apt/sources.list << EOL
 deb \${ARCHIVE} bionic main universe restricted multiverse
 deb \${ARCHIVE} bionic-updates main universe restricted multiverse
