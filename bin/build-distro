@@ -47,6 +47,9 @@ set -eux
 export PATH=/root/go/bin:\${PATH}
 export GOPATH=/root/go/
 
+# Workaround for plamo not liking dbus much
+rm -f /run/dbus/system_bus_socket
+
 # Build the image
 mkdir /root/build
 mv /root/image.yaml /root/build/
