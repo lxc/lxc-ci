@@ -48,7 +48,7 @@ files:
     path: /etc/inittab
     generator: dump
     releaes:
-     - 6
+     - 6.x
     content: |-
       #
       # inittab	This file describes how the INIT process should set up
@@ -125,7 +125,7 @@ files:
     path: /etc/fstab
     generator: dump
     releases:
-     - 6
+     - 6.x
     content: |-
       none            /proc                   proc        defaults        0 0
       none            /sys                    sysfs       defaults        0 0
@@ -139,7 +139,7 @@ files:
     path: /etc/fstab
     generator: dump
     releases:
-     - 7
+     - 7.x
     content: |-
       proc            /proc           proc    defaults        0 0
       tmpfs           /run            tmpfs   defaults        0 0
@@ -152,7 +152,7 @@ files:
     path: /var/run/inet1-scheme
     generator: dump
     releases:
-     - 6
+     - 6.x
     content: |-
       DHCP
 
@@ -160,7 +160,7 @@ files:
     path: /etc/sysconfig/ifconfig.eth0
     generator: dump
     releases:
-     - 7
+     - 7.x
     content: |-
       ONBOOT="yes"
       IFACE="eth0"
@@ -193,7 +193,7 @@ actions:
 
   - trigger: post-unpack
     releases:
-     - 6
+     - 6.x
     action: |
       #!/bin/sh
       set -eux
@@ -235,7 +235,7 @@ actions:
 
   - trigger: post-unpack
     releases:
-     - 7
+     - 7.x
     action: |
       #!/bin/sh
       set -eux
