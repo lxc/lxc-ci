@@ -55,6 +55,7 @@ echo "===> Setting up environment variables"
 mkdir -p "${TEST_DIR}/go"
 export GOPATH=${TEST_DIR}/go
 export PATH=${PATH}:${GOPATH}/bin
+export GO111MODULE=off
 
 # Setup dependencies
 echo "===> Copying pre-built dependencies"

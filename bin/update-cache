@@ -38,6 +38,7 @@ export GIMME_ENV_PREFIX="${TEMP_DIR}/gimme/envs/"
 export GIMME_VERSION_PREFIX="${TEMP_DIR}/gimme/versions/"
 export GOPATH="${TEMP_DIR}/go"
 export GOCACHE="${GOPATH}/pkg"
+export GO111MODULE=off
 
 [ ! -d /lxc-ci/deps/gimme ] && git clone -q https://github.com/travis-ci/gimme /lxc-ci/deps/gimme
 
