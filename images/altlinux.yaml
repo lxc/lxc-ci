@@ -1,0 +1,77 @@
+image:
+  distribution: "altlinux"
+
+source:
+  downloader: alt-http
+  url: http://ftp.altlinux.org/pub/distributions/ALTLinux/images
+  keyserver: keyserver.ubuntu.com
+  keys:
+    - 0x17F112840DE94827C9C109FD3E2B30EA57EF33CE
+
+targets:
+  lxc:
+    create-message: |
+        You just created an {{ image.description }} container.
+
+    config:
+      - type: all
+        content: |-
+          lxc.include = LXC_TEMPLATE_CONFIG/common.conf
+
+      - type: user
+        content: |-
+          lxc.include = LXC_TEMPLATE_CONFIG/userns.conf
+
+      - type: all
+        content: |-
+          lxc.arch = {{ image.architecture_personality }}
+
+files:
+  - path: /etc/hostname
+    generator: hostname
+
+  - path: /etc/hosts
+    generator: hosts
+
+  - path: /etc/systemd/network/eth0.network
+    generator: dump
+    content: |-
+      [Match]
+      Name=eth0
+
+      [Network]
+      DHCP=ipv4
+
+packages:
+  custom-manager:
+    install:
+      cmd: apt-get
+      flags: ["install", "-y"]
+    remove:
+      cmd: apt-get
+      flags: ["remove", "-y"]
+    update:
+      cmd: apt-get
+      flags: ["upgrade", "-y"]
+    clean:
+      cmd: apt-get
+      flags: ["clean"]
+    refresh:
+      cmd: apt-get
+      flags: ["update"]
+
+  update: true
+  cleanup: true
+
+  sets:
+    - packages:
+        - vim-console
+      action: install
+
+environment:
+  variables:
+    - key: TMPDIR
+      set: false
+
+mappings:
+  architecture_map: altlinux
