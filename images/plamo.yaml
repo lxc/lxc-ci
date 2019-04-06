@@ -291,7 +291,7 @@ actions:
       sed -i "/modprobe/s/^/#/" /etc/rc.d/rc.inet2
 
       # Disable services
-      rm -f /var/log/initpkg/shado
+      rm -f /var/log/initpkg/shadow
 
   - trigger: post-unpack
     releases:
