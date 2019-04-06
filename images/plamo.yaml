@@ -40,6 +40,10 @@ files:
     path: /etc/hostname
     generator: hostname
 
+  - name: hostname
+    path: /etc/HOSTNAME
+    generator: hostname
+
   - name: hosts
     path: /etc/hosts
     generator: hosts
@@ -47,6 +51,85 @@ files:
   - name: inittab
     path: /etc/inittab
     generator: dump
+    releases:
+     - 6.x
+    content: |-
+      #
+      # inittab	This file describes how the INIT process should set up
+      #		the system in a certain run-level.
+      #
+      # Version:	@(#)inittab		2.04	17/05/93	MvS
+      #                                       2.10    02/10/95        PV
+      #
+      # Author:	Miquel van Smoorenburg, <miquels@drinkel.nl.mugnet.org>
+      # Modified by:	Patrick J. Volkerding, <volkerdi@ftp.cdrom.com>
+      #
+      # Default runlevel.
+      id:3:initdefault:
+
+      # System initialization (runs when system boots).
+      si:S:sysinit:/etc/rc.d/rc.S
+
+      # Script to run when going single user (runlevel 1).
+      su:1S:wait:/etc/rc.d/rc.K
+
+      # Script to run when going multi user.
+      rc:2345:wait:/etc/rc.d/rc.M
+
+      # What to do at the "Three Finger Salute".
+      ca::ctrlaltdel:/sbin/shutdown -t5 -rf now
+
+      # Runlevel 0 halts the system.
+      l0:0:wait:/etc/rc.d/rc.0
+
+      # Runlevel 6 reboots the system.
+      l6:6:wait:/etc/rc.d/rc.6
+
+      # What to do when power fails (shutdown).
+      pf::powerfail:/sbin/shutdown -h +0 "THE POWER IS FAILING"
+
+      # If power is back before shutdown, cancel the running shutdown.
+      pg:0123456:powerokwait:/sbin/shutdown -c "THE POWER IS BACK"
+
+      # If power comes back in single user mode, return to multi user mode.
+      ps:S:powerokwait:/sbin/init 5
+
+      # The getties in multi user mode on consoles an serial lines.
+      #
+      # NOTE NOTE NOTE adjust this to your getty or you will not be
+      #                able to login !!
+      #
+      # Note: for 'agetty' you use linespeed, line.
+      # for 'getty_ps' you use line, linespeed and also use 'gettydefs'
+      1:1235:respawn:/sbin/agetty 38400 console
+      c1:1235:respawn:/sbin/agetty 38400 tty1 linux
+      c2:1235:respawn:/sbin/agetty 38400 tty2 linux
+      c3:1235:respawn:/sbin/agetty 38400 tty3 linux
+      c4:1235:respawn:/sbin/agetty 38400 tty4 linux
+
+      # Serial lines
+      #s1:12345:respawn:/sbin/agetty 19200 ttyS0 vt100
+      #s2:12345:respawn:/sbin/agetty 19200 ttyS1 vt100
+
+      # Dialup lines
+      #d1:12345:respawn:/sbin/agetty -mt60 38400,19200,9600,2400,1200 ttyS0 vt100
+      #d2:12345:respawn:/sbin/agetty -mt60 38400,19200,9600,2400,1200 ttyS1 vt100
+
+      # Runlevel 4 used to be for an X-window only system, until we discovered
+      # that it throws init into a loop that keeps your load avg at least 1 all 
+      # the time. Thus, there is now one getty opened on tty6. Hopefully no one
+      # will notice. ;^)
+      # It might not be bad to have one text console anyway, in case something 
+      # happens to X.
+      x1:4:wait:/etc/rc.d/rc.4
+
+      # End of /etc/inittab
+
+  - name: inittab
+    path: /etc/inittab
+    generator: dump
+    releases:
+     - 7.x
     content: |-
       # /etc/inittab derived from LFS 20170713
       # Begin /etc/inittab
@@ -183,9 +266,32 @@ actions:
         w
       EOF
 
+      # Networking
+      head -n-93 /sbin/netconfig.tradnet > /tmp/netconfig.rconly
+      cat << EOF >> /tmp/netconfig.rconly
+      	PCMCIA=n
+      	RC=${rootfs}/etc/rc.d/rc.inet1.tradnet
+      	IFCONFIG=sbin/ifconfig
+      	ROUTE=sbin/route
+      	INET1SCHEME=var/run/inet1-scheme
+      	IPADDR=127.0.0.1
+      	NETWORK=127.0.0.0
+      	DHCPCD=usr/sbin/dhclient
+      	LOOPBACK=y
+      	make_config_file
+      EOF
+
+      rm -f /etc/rc.d/rc.inet1.tradnet
+      sh /tmp/netconfig.rconly
+      rm -f /tmp/netconfig.rconly
+      sed -i '/cmdline/s/if/& false \&\&/' /etc/rc.d/rc.inet1.tradnet
+
       # /etc/rc.d/rc.inet2
       sed -i "/rpc.mountd/s/^/#/" /etc/rc.d/rc.inet2
       sed -i "/modprobe/s/^/#/" /etc/rc.d/rc.inet2
+
+      # Disable services
+      rm -f /var/log/initpkg/shado
 
   - trigger: post-unpack
     releases:
