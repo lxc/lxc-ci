@@ -270,7 +270,7 @@ actions:
       head -n-93 /sbin/netconfig.tradnet > /tmp/netconfig.rconly
       cat << EOF >> /tmp/netconfig.rconly
       	PCMCIA=n
-      	RC=${rootfs}/etc/rc.d/rc.inet1.tradnet
+      	RC=/etc/rc.d/rc.inet1.tradnet
       	IFCONFIG=sbin/ifconfig
       	ROUTE=sbin/route
       	INET1SCHEME=var/run/inet1-scheme
