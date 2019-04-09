@@ -52,7 +52,7 @@ rm -f /run/dbus/system_bus_socket
 
 # Build the image
 mkdir /root/build
-mount -t tmpfs tmpfs /root/build -o size=5GB
+mount -t tmpfs tmpfs /root/build -o size=5G,nr_inodes=10000000
 mv /root/image.yaml /root/build/
 cd /root/build/
 SERIAL=\$(date -u +%Y%m%d_%H:%M)
