@@ -65,7 +65,7 @@ for url in $(lxc query "/1.0/containers" | jq -r .[]); do
     lxc start "${name}"
 
     COUNT=$((COUNT+1))
-    if [ "${COUNT}" = "5" ]; then
+    if [ "${COUNT}" = "3" ]; then
         COUNT=0
         sleep 10
     fi
