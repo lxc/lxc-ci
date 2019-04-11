@@ -52,13 +52,17 @@ rm -f /run/dbus/system_bus_socket
 
 # Build the image
 mkdir /root/build
-mount -t tmpfs tmpfs /root/build -o size=8G,nr_inodes=10000000
+
+if [ "$(uname -m)" = "x86_64" ] || [ "$(uname -m)" = "i686" ]; then
+    mount -t tmpfs tmpfs /root/build -o size=8G,nr_inodes=10000000
+fi
 mv /root/image.yaml /root/build/
 cd /root/build/
 SERIAL=\$(date -u +%Y%m%d_%H:%M)
 distrobuilder --timeout "${TIMEOUT}" build-dir image.yaml rootfs -o image.serial="\${SERIAL}" "\$@"
 distrobuilder pack-lxc image.yaml rootfs -o image.serial="\${SERIAL}" "\$@"
 distrobuilder pack-lxd image.yaml rootfs -o image.serial="\${SERIAL}" "\$@"
+btrfs subvolume delete rootfs/var/lib/machines >/dev/null 2>&1 || true
 rm -Rf rootfs
 echo "\${SERIAL}" > serial
 
