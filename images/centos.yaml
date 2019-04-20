@@ -4,7 +4,7 @@ image:
 source:
   downloader: centos-http
   url: http://centos.mirror.iweb.ca
-  keyserver: keyserver.ubuntu.com
+  keyserver: ha.pool.sks-keyservers.net
   keys:
     - 6341AB2753D78A78A7C27BB124C6A8A7F4A80EB5
     - C1DAC52D1664E8A4386DBA430946FCA2C105B9DE

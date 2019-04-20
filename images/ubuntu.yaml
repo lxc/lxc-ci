@@ -5,7 +5,7 @@ source:
   downloader: debootstrap
   same_as: gutsy
   url: http://archive.ubuntu.com/ubuntu
-  keyserver: keyserver.ubuntu.com
+  keyserver: ha.pool.sks-keyservers.net
   keys:
     - 0x790BC7277767219C42C86F933B4FE6ACC0B21F32
 
