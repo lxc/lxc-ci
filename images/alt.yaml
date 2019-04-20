@@ -4,7 +4,7 @@ image:
 source:
   downloader: alt-http
   url: http://ftp.altlinux.org/pub/distributions/ALTLinux/images
-  keyserver: ha.pool.sks-keyservers.net
+  keyserver: hkps.pool.sks-keyservers.net
   keys:
     - 0x17F112840DE94827C9C109FD3E2B30EA57EF33CE
 
