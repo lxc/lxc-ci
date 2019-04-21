@@ -85,10 +85,10 @@ files:
        ethernets:
          eth0: {dhcp4: true}
    releases:
-     - artful
      - bionic
      - cosmic
      - disco
+     - eoan
 
  - path: /etc/network/interfaces
    generator: dump
