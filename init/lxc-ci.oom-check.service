@@ -1,0 +1,7 @@
+[Unit]
+Description=lxc-ci - OOM check
+
+[Service]
+Type=oneshot
+WorkingDirectory=/lxc-ci
+ExecStart=/bin/sh -c "exec /lxc-ci/bin/oom-check"

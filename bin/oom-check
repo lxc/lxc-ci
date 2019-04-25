@@ -1,0 +1,10 @@
+#!/bin/sh -eu
+[ -e /lxc-ci/etc/config ] && . /lxc-ci/etc/config
+
+if [ "${DAILY_REBOOT:-}" != "true" ]; then
+    exit 0
+fi
+
+dmesg | grep -q "Out of memory" && reboot
+
+exit 0
