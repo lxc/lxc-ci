@@ -5,6 +5,11 @@ if [ "${LXD_GOCACHE:-}" != "true" ]; then
     exit 0
 fi
 
+# shellcheck disable=SC2010
+if [ -e /lxc-ci/build/cache/ ] && ls /lxc-ci/build/ | grep -v cache | grep -v lxc-monitord; then
+    exit 0
+fi
+
 TEMP_DIR=$(mktemp -d -p /lxc-ci/build/)
 
 cleanup() {
