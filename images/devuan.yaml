@@ -5,6 +5,7 @@ source:
   downloader: debootstrap
   url: http://deb.devuan.org/merged
   keyserver: hkps.pool.sks-keyservers.net
+  same_as: sid
   keys:
     - 0x72E3CB773315DFA2E464743D94532124541922FB
     - 0xE032601B7CA10BC3EA53FA81BB23C00C61FC752C
