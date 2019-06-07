@@ -50,7 +50,7 @@ files:
 
      config interface 'wan6'
          option ifname 'eth0'
-         option proto 'dhcp6'
+         option proto 'dhcpv6'
 
 actions:
   - trigger: post-unpack
