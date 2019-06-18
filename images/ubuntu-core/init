@@ -78,7 +78,11 @@ mount --bind /root/bin/mount /root/usr/local/bin/mount.real
 cat > /root/usr/local/bin/mount << EOF
 #!/bin/sh
 if echo \$@ | grep -q fuse.squashfuse; then
-    exec /usr/local/bin/mount.fuse \$1 \$2
+    if [ "\$1" = "-t" ]; then
+        exec /usr/local/bin/mount.fuse \$3 \$4
+    else
+        exec /usr/local/bin/mount.fuse \$1 \$2
+    fi
 fi
 
 exec /usr/local/bin/mount.real \$@
@@ -119,6 +123,12 @@ if [ ! -e ${rootmnt}/writable/system-data/etc/machine-id ]; then
 fi
 mount -o bind "${rootmnt}/writable/system-data/etc/machine-id" "${rootmnt}/etc/machine-id"
 
+## create system-key
+mkdir -p ${rootmnt}/writable/system-data/var/lib/snapd/
+cat > ${rootmnt}/writable/system-data/var/lib/snapd/system-key << EOF
+{"version":1}
+EOF
+
 ## Pretend to have grub
 mkdir -p "${rootmnt}/writable/system-data/boot/grub"
 mount -o bind "${rootmnt}/writable/system-data/boot/grub" "${rootmnt}/boot/grub"
@@ -155,6 +165,9 @@ pivot_root . mnt
 /bin/mount --move /mnt/proc /proc || true
 /bin/mount --move /mnt/sys /sys || true
 /bin/umount -l /mnt
+
+# Attempt to fix mount issues early
+/bin/mount -a
 
 # Exec new init
 exec /sbin/init $@
