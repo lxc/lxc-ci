@@ -115,20 +115,7 @@ actions:
     action: |-
       #!/bin/sh
       set -eux
-      apt-get install iproute sysvinit -y
-    releases:
-      - wheezy
-
-  - trigger: post-packages
-    action: |-
-      #!/bin/sh
-      set -eux
       apt-get install iproute2 init -y
-    releases:
-      - jessie
-      - stretch
-      - buster
-      - sid
 
 mappings:
   architecture_map: debian
