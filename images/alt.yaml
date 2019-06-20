@@ -43,23 +43,7 @@ files:
       DHCP=ipv4
 
 packages:
-  custom-manager:
-    install:
-      cmd: apt-get
-      flags: ["install", "-y"]
-    remove:
-      cmd: apt-get
-      flags: ["remove", "-y"]
-    update:
-      cmd: apt-get
-      flags: ["upgrade", "-y"]
-    clean:
-      cmd: apt-get
-      flags: ["clean"]
-    refresh:
-      cmd: apt-get
-      flags: ["update"]
-
+  manager: apt
   update: true
   cleanup: true
 
