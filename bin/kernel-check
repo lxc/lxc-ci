@@ -6,5 +6,6 @@ if [ "${DAILY_REBOOT:-}" != "true" ]; then
 fi
 
 dmesg | grep -q "Out of memory" && reboot
+dmesg | grep -q "blocked for more than 120 seconds" && reboot
 
 exit 0

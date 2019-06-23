@@ -1,5 +1,5 @@
 [Unit]
-Description=lxc-ci - OOM check timer
+Description=lxc-ci - kernel check timer
 
 [Timer]
 OnBootSec=5m
