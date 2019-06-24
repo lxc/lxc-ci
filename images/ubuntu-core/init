@@ -11,7 +11,7 @@ fi
 
 # Grab the snaps version
 SNAP_KERNEL=$(grep pc-kernel_ /system-data/var/lib/snapd/seed/seed.yaml | awk '{print $NF}')
-SNAP_CORE=$(grep core_ /system-data/var/lib/snapd/seed/seed.yaml | awk '{print $NF}')
+SNAP_CORE=$(grep 'core[0-9]\{0,2\}_' /system-data/var/lib/snapd/seed/seed.yaml | awk '{print $NF}')
 
 # Attempt to parse the grub environment
 new_snap_mode=""
