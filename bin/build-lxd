@@ -94,8 +94,8 @@ fi
 
 # Networking
 NETDEV="lxd-$$"
-ip link add dev ${NETDEV}-1 type veth peer name ${NETDEV}-2
-ip link set ${NETDEV}-1 master lxdbr0 up
+sudo ip link add dev ${NETDEV}-1 type veth peer name ${NETDEV}-2
+sudo ip link set ${NETDEV}-1 master lxdbr0 up
 
 echo "===> Environment variables"
 env | sort
