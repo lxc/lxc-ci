@@ -92,6 +92,11 @@ if [ -e "lxd/cluster" ]; then
     export LD_LIBRARY_PATH="/lxc-ci/build/cache/sqlite/.libs/:/lxc-ci/build/cache/libco/:/lxc-ci/build/cache/raft/.libs/:/lxc-ci/build/cache/dqlite/.libs/"
 fi
 
+# Networking
+NETDEV="lxd-$$"
+ip link add dev ${NETDEV}-1 type veth peer name ${NETDEV}-2
+ip link set ${NETDEV}-1 master lxdbr0 up
+
 echo "===> Environment variables"
 env | sort
 echo "===> Go version"
@@ -137,6 +142,9 @@ mkdir -p /run/netns
 mount -t tmpfs tmpfs /run/netns
 touch /run/netns/hostns
 mount --bind /proc/1/ns/net /run/netns/hostns
+
+# Pass minimal connectivity (for CEPHFS)
+ip netns exec hostns ip link set ${NETDEV}-2 netns \$\$ up
 
 mount -t tmpfs tmpfs /usr/local/bin
 (
