@@ -72,6 +72,7 @@ actions:
      echo "#!/bin/sh" > /usr/bin/gpg2
      echo "exec /usr/bin/gpg2.real --keyserver hkps.pool.sks-keyservers.net \"\$@\"" >> /usr/bin/gpg2
      chmod +x /usr/bin/gpg2
+     sed -i 's/^c[0-9]:/#\0/' /etc/inittab
 
  - trigger: post-packages
    action: |-
