@@ -79,7 +79,7 @@ apt-get update --yes
 # Install dependencies
 apt-get install --yes --no-install-recommends \
     btrfs-progs golang-go git ca-certificates gcc libc6-dev \
-    debootstrap xz-utils squashfs-tools gpg dirmngr gpg-agent rsync
+    debootstrap xz-utils squashfs-tools gpg dirmngr gpg-agent rsync kpartx
 export PATH=/root/go/bin:\${PATH}
 export GOPATH=/root/go/
 
