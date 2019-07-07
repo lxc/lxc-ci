@@ -1,0 +1,13 @@
+- view:
+    name: Internal
+    view-type: list
+    description: Internal projects
+    columns:
+        - status
+        - weather
+        - job
+        - last-success
+        - last-failure
+        - last-duration
+        - build-button
+    regex: (linuxcontainers.org|lxc-ci)-.*

@@ -1,0 +1,13 @@
+- view:
+    name: LXCFS
+    view-type: list
+    description: LXCFS
+    columns:
+        - status
+        - weather
+        - job
+        - last-success
+        - last-failure
+        - last-duration
+        - build-button
+    regex: lxcfs-.*

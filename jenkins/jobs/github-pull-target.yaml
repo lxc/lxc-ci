@@ -1,0 +1,170 @@
+- project:
+    name: github-pull-target
+    jobs:
+        # Main repos
+        - "{repo}-github-pull-target":
+            repo: cgmanager
+            admins:
+              !include: ../includes/admins/cgmanager.yaml.inc
+
+        - "{repo}-github-pull-target":
+            repo: crio-lxc
+            admins:
+              !include: ../includes/admins/crio-lxc.yaml.inc
+
+        - "{repo}-github-pull-target":
+            repo: distrobuilder
+            admins:
+              !include: ../includes/admins/distrobuilder.yaml.inc
+
+        - "{repo}-github-pull-target":
+            repo: libresource
+            admins:
+              !include: ../includes/admins/libresource.yaml.inc
+
+        - "{repo}-github-pull-target":
+            repo: lxc
+            admins:
+              !include: ../includes/admins/lxc.yaml.inc
+
+        - "{repo}-github-pull-target":
+            repo: lxc-templates
+            admins:
+              !include: ../includes/admins/lxc-templates.yaml.inc
+
+        - "{repo}-github-pull-target":
+            repo: lxcfs
+            admins:
+              !include: ../includes/admins/lxcfs.yaml.inc
+
+        - "{repo}-github-pull-target":
+            repo: lxd
+            admins:
+              !include: ../includes/admins/lxd.yaml.inc
+
+        - "{repo}-github-pull-target":
+            repo: lxd-demo-server
+            admins:
+              !include: ../includes/admins/lxd-demo-server.yaml.inc
+
+        # Internal
+        - "{repo}-github-pull-target":
+            repo: lxc-ci
+            admins:
+              !include: ../includes/admins/lxc-ci.yaml.inc
+
+        - "{repo}-github-pull-target":
+            repo: linuxcontainers.org
+            admins:
+              !include: ../includes/admins/linuxcontainers.org.yaml.inc
+
+        - "{repo}-github-pull-target":
+            repo: stable-maintenance
+            admins:
+              !include: ../includes/admins/stable-maintenance.yaml.inc
+
+        # Packaging
+        - "{repo}-github-pull-target":
+            repo: lxd-pkg-chocolatey
+            admins:
+              !include: ../includes/admins/lxd-pkg-chocolatey.yaml.inc
+
+        - "{repo}-github-pull-target":
+            repo: lxc-pkg-ubuntu
+            admins:
+              !include: ../includes/admins/lxc-pkg-ubuntu.yaml.inc
+
+        - "{repo}-github-pull-target":
+            repo: lxd-pkg-snap
+            admins:
+              !include: ../includes/admins/lxd-pkg-snap.yaml.inc
+
+        - "{repo}-github-pull-target":
+            repo: lxd-pkg-ubuntu
+            branch: dpm-disco
+            admins:
+              !include: ../includes/admins/lxd-pkg-ubuntu.yaml.inc
+
+        # Bindings
+        - "{repo}-github-pull-target":
+            repo: go-lxc
+            branch: v2
+            admins:
+              !include: ../includes/admins/go-lxc.yaml.inc
+
+        - "{repo}-github-pull-target":
+            repo: lua-lxc
+            admins:
+              !include: ../includes/admins/lua-lxc.yaml.inc
+
+        - "{repo}-github-pull-target":
+            repo: pylxd
+            admins:
+              !include: ../includes/admins/pylxd.yaml.inc
+
+        - "{repo}-github-pull-target":
+            repo: python2-lxc
+            admins:
+              !include: ../includes/admins/python2-lxc.yaml.inc
+
+        - "{repo}-github-pull-target":
+            repo: python3-lxc
+            admins:
+              !include: ../includes/admins/python3-lxc.yaml.inc
+
+        - "{repo}-github-pull-target":
+            repo: ruby-lxc
+            admins:
+              !include: ../includes/admins/ruby-lxc.yaml.inc
+
+- job-template:
+    name: "{repo}-github-pull-target"
+    concurrent: true
+    description: Triggered by new Github pull requests, runs branch target test.
+    node: master
+    project-type: freestyle
+
+    branch: master
+
+    builders:
+    - shell: exec /lxc/bin/test-target {branch}
+
+    properties:
+    - build-discarder:
+        num-to-keep: 15
+
+    - github:
+        url: https://github.com/lxc/{repo}
+
+    - raw:
+        !include: ../includes/webhook.yaml.inc
+
+    publishers:
+    - workspace-cleanup:
+        fail-build: false
+
+    scm:
+    - git:
+        branches:
+        - ${{sha1}}
+        refspec: +refs/pull/*:refs/remotes/origin/pr/* +refs/heads/*:refs/remotes/origin/*
+        url: https://github.com/lxc/{repo}
+
+    triggers:
+    - github-pull-request:
+        admin-list: '{admins}'
+        org-list: lxc
+        github-hooks: true
+        permit-all: true
+        auth-id: 8f79e203-0e13-4c4e-ad31-d4a9bfedb2c9
+
+        status-context: Branch target
+        triggered-status: Check pending
+        started-status: Check started
+        success-status: Branch target is correct
+        failure-status: Branch target is incorrect
+        error-status: Test runner failure
+
+    wrappers:
+    - ansicolor:
+        colormap: css

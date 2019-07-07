@@ -1,0 +1,13 @@
+- view:
+    name: LXC bindings
+    view-type: list
+    description: Bindings for liblxc
+    columns:
+        - status
+        - weather
+        - job
+        - last-success
+        - last-failure
+        - last-duration
+        - build-button
+    regex: (lua|go|python2|python3|ruby)-lxc-.*

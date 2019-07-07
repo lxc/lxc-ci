@@ -1,0 +1,13 @@
+- view:
+    name: CGManager
+    view-type: list
+    description: Cgroup manager daemon (deprecated)
+    columns:
+        - status
+        - weather
+        - job
+        - last-success
+        - last-failure
+        - last-duration
+        - build-button
+    regex: cgmanager-.*

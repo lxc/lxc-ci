@@ -1,0 +1,74 @@
+- job:
+    name: "lxd-test-snap-migration"
+    concurrent: false
+    description: Migration testing for .deb to .snap.
+    node: master
+    project-type: matrix
+
+    axes:
+    - axis:
+        name: source
+        type: user-defined
+        values:
+        - trusty-backports
+        - xenial-updates
+        - xenial-backports
+        - bionic-updates
+
+    - axis:
+        name: target
+        type: user-defined
+        values:
+        - latest-edge
+        - 2.0-edge
+        - 3.0-edge
+
+    - axis:
+        name: restrict
+        type: slave
+        values:
+        - master
+
+    builders:
+    - shell: |-
+        cd /lxc-ci
+        track=$(echo ${target} | cut -d- -f1)
+        channel=$(echo ${target} | cut -d- -f2)
+
+        if [ "${source}" = "trusty-backports" ]; then
+        exec sudo /lxc-ci/bin/maas-run tags=virtual trusty hwe-x bin/test-lxd-migration "${source}" "${track}" "${channel}"
+        elif [ "${source}" = "xenial-updates" ] || [ "${source}" = "xenial-backports" ]; then
+        exec sudo /lxc-ci/bin/maas-run tags=virtual xenial ga-16.04 bin/test-lxd-migration "${source}" "${track}" "${channel}"
+        elif [ "${source}" = "bionic-updates" ]; then
+        exec sudo /lxc-ci/bin/maas-run tags=virtual bionic ga-18.04 bin/test-lxd-migration "${source}" "${track}" "${channel}"
+        else
+        exit 1
+        fi
+
+    execution-strategy:
+      combination-filter: '!(source=="xenial-backports" && target == "2.0-edge") && !(source=="bionic-updates" && target == "2.0-edge")'
+
+    properties:
+    - build-discarder:
+        num-to-keep: 3
+
+    - raw:
+        !include: ../includes/webhook.yaml.inc
+
+    publishers:
+    - workspace-cleanup:
+        fail-build: true
+
+    - naginator:
+        rerun-unstable-builds: true
+        rerun-matrix-part: true
+        max-failed-builds: 3
+        progressive-delay-increment: 300
+        progressive-delay-maximum: 900
+
+    triggers:
+    - timed: '@daily'
+
+    wrappers:
+    - ansicolor:
+        colormap: css

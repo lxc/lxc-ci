@@ -2,3 +2,5 @@
 etc/config
 etc/hosts
 build/*
+jenkins/jenkins_jobs.ini
+jenkins/includes/trigger-token.inc

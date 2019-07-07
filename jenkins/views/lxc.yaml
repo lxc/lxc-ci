@@ -1,0 +1,13 @@
+- view:
+    name: LXC
+    view-type: list
+    description: LXC
+    columns:
+        - status
+        - weather
+        - job
+        - last-success
+        - last-failure
+        - last-duration
+        - build-button
+    regex: lxc-(build|github|templates)-.*

@@ -1,0 +1,13 @@
+- view:
+    name: Images
+    view-type: list
+    description: Container images for LXC and LXD
+    columns:
+        - status
+        - weather
+        - job
+        - last-success
+        - last-failure
+        - last-duration
+        - build-button
+    regex: (image|lxc-template)-.*

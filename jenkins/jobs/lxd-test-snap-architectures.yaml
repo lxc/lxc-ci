@@ -1,0 +1,71 @@
+- job:
+    name: "lxd-test-snap-architectures"
+    concurrent: false
+    description: Validates the LXD snap on all architectures
+    node: master
+    project-type: matrix
+
+    axes:
+    - axis:
+        name: architecture
+        type: slave
+        values:
+        - amd64
+        - arm64
+        - armhf
+        - i386
+        - ppc64el
+        - s390x
+
+    - axis:
+        name: track
+        type: user-defined
+        values:
+        - "2.0"
+        - "3.0"
+        - latest
+
+    - axis:
+        name: channel
+        type: user-defined
+        values:
+        - edge
+        - beta
+        - candidate
+        - stable
+
+    - axis:
+        name: restrict
+        type: slave
+        values:
+        - lxc-priv
+
+    builders:
+    - shell: |-
+        cd /lxc-ci
+        exec sudo /lxc-ci/bin/test-lxd-snapd-container ${architecture} ${track} ${channel}
+
+    properties:
+    - build-discarder:
+        num-to-keep: 2
+
+    - raw:
+        !include: ../includes/webhook.yaml.inc
+
+    publishers:
+    - workspace-cleanup:
+        fail-build: false
+
+    - naginator:
+        rerun-unstable-builds: true
+        rerun-matrix-part: true
+        max-failed-builds: 3
+        progressive-delay-increment: 300
+        progressive-delay-maximum: 900
+
+    triggers:
+    - timed: '@daily'
+
+    wrappers:
+    - ansicolor:
+        colormap: xterm

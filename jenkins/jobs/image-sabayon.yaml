@@ -1,0 +1,72 @@
+- job:
+    name: "image-sabayon"
+    concurrent: false
+    description: Sabayon images for LXC and LXD.
+    node: master
+    project-type: matrix
+
+    axes:
+    - axis:
+        name: architecture
+        type: slave
+        values:
+        - amd64
+
+    - axis:
+        name: release
+        type: user-defined
+        values:
+        - current
+
+    - axis:
+        name: variant
+        type: user-defined
+        values:
+        - default
+
+    - axis:
+        name: restrict
+        type: slave
+        values:
+        - lxc-priv
+
+    builders:
+    - shell: |-
+        cd /lxc-ci
+        LXD_ARCHITECTURE="${architecture}"
+
+        ARCH=${architecture}
+
+        exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/sabayon.yaml \
+            ${LXD_ARCHITECTURE} 3600 ${WORKSPACE} \
+            -o image.architecture=${ARCH}
+
+    properties:
+    - build-discarder:
+        num-to-keep: 2
+
+    - raw:
+        !include: ../includes/webhook.yaml.inc
+
+    publishers:
+    - archive:
+        artifacts: "*.tar.xz,*.squashfs,image.yaml,serial"
+        only-if-success: true
+
+    - workspace-cleanup:
+        fail-build: false
+
+
+    - naginator:
+        rerun-unstable-builds: true
+        rerun-matrix-part: true
+        max-failed-builds: 3
+        progressive-delay-increment: 300
+        progressive-delay-maximum: 900
+
+    triggers:
+    - timed: '@daily'
+
+    wrappers:
+    - ansicolor:
+        colormap: xterm

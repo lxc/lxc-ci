@@ -1,0 +1,60 @@
+- job:
+    name: "lxd-test-docker"
+    concurrent: false
+    description: Tests current upstream Docker with latest stable LXD.
+    node: master
+    project-type: matrix
+
+    axes:
+    - axis:
+        name: mode
+        type: user-defined
+        values:
+        - privileged
+        - unprivileged
+
+    - axis:
+        name: arch
+        type: slave
+        values:
+        - amd64
+
+    - axis:
+        name: restrict
+        type: slave
+        values:
+        - lxd-priv
+
+    builders:
+    - shell: |-
+        cd /lxc-ci
+        if [ "${mode}" = "privileged" ]; then
+        exec sudo /lxc-ci/bin/test-lxd-docker -c security.privileged=true
+        else
+        exec sudo /lxc-ci/bin/test-lxd-docker -c security.privileged=false
+        fi
+
+    properties:
+    - build-discarder:
+        num-to-keep: 3
+
+    - raw:
+        !include: ../includes/webhook.yaml.inc
+
+    publishers:
+    - workspace-cleanup:
+        fail-build: false
+
+    - naginator:
+        rerun-unstable-builds: true
+        rerun-matrix-part: true
+        max-failed-builds: 3
+        progressive-delay-increment: 300
+        progressive-delay-maximum: 900
+
+    triggers:
+    - timed: '@daily'
+
+    wrappers:
+    - ansicolor:
+        colormap: css

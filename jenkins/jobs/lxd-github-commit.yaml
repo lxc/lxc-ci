@@ -1,0 +1,118 @@
+- project:
+    name: lxd-github-commit
+    suffix: ""
+    jobs:
+        - "{name}{suffix}":
+            branch: master
+            storage:
+              - dir
+              - btrfs
+              - zfs
+              - lvm
+              - ceph
+            go:
+              - golang-1.10
+              - golang-1.12
+              - golang-tip
+
+        - "{name}{suffix}":
+            branch: stable-2.0
+            suffix: "-{branch}"
+            storage:
+              - dir
+              - btrfs
+              - zfs
+              - lvm
+            go:
+              - golang-1.10
+              - golang-1.12
+              - golang-tip
+
+        - "{name}{suffix}":
+            branch: stable-3.0
+            suffix: "-{branch}"
+            storage:
+              - dir
+              - btrfs
+              - zfs
+              - lvm
+              - ceph
+            go:
+              - golang-1.10
+              - golang-1.12
+              - golang-tip
+
+- job-template:
+    name: "{name}{suffix}"
+    concurrent: false
+    description: Triggered by new Github commits to {branch}.
+    node: master
+    project-type: matrix
+
+    axes:
+    - axis:
+        name: compiler
+        type: user-defined
+        values: '{go}'
+
+    - axis:
+        name: backend
+        type: user-defined
+        values: '{storage}'
+
+    - axis:
+        name: arch
+        type: slave
+        values:
+        - amd64
+        - i386
+
+    - axis:
+        name: restrict
+        type: slave
+        values:
+        - lxd-priv
+
+    builders:
+    - shell: exec /usr/bin/script /dev/null -e -q -c "/lxd/bin/build-lxd ${{compiler}}
+        https://github.com/lxc/lxd {branch} ${{backend}}"
+
+    execution-strategy:
+      combination-filter: '!(backend=="zfs" && arch!="amd64") && !(backend=="ceph" && arch!="amd64")'
+
+    properties:
+    - build-discarder:
+        num-to-keep: 10
+
+    - github:
+        url: https://github.com/lxc/lxd/
+
+    - raw:
+        !include: ../includes/webhook.yaml.inc
+
+    publishers:
+    - archive:
+        artifacts: logs.tar.gz
+
+    - naginator:
+        rerun-unstable-builds: true
+        rerun-matrix-part: true
+        max-failed-builds: 3
+        progressive-delay-increment: 300
+        progressive-delay-maximum: 900
+
+    - workspace-cleanup:
+        fail-build: false
+
+    scm:
+    - git:
+        branches:
+        - "{branch}"
+        url: https://github.com/lxc/lxd
+
+    triggers:
+    - github
+
+    wrappers:
+    - ansicolor:
+        colormap: css

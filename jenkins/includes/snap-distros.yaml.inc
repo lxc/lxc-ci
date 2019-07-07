@@ -1,0 +1,13 @@
+- archlinux
+- centos-7
+- debian-stretch
+- elementary-loki
+- fedora-28
+- manjaro
+- opensuse-15.0
+- opensuse-42.3
+- opensuse-tumbleweed
+- ubuntu-14.04
+- ubuntu-16.04
+- ubuntu-18.04
+- ubuntu-core-16

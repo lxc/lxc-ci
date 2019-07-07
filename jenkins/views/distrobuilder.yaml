@@ -1,0 +1,13 @@
+- view:
+    name: Distrobuilder
+    view-type: list
+    description: Image builder for LXC/LXD
+    columns:
+        - status
+        - weather
+        - job
+        - last-success
+        - last-failure
+        - last-duration
+        - build-button
+    regex: distrobuilder-.*

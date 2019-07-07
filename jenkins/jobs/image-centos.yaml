@@ -1,0 +1,93 @@
+- job:
+    name: "image-centos"
+    concurrent: false
+    description: CentOS images for LXC and LXD.
+    node: master
+    project-type: matrix
+
+    axes:
+    - axis:
+        name: architecture
+        type: slave
+        values:
+        - amd64
+        - arm64
+        - armhf
+        - i386
+        - ppc64el
+
+    - axis:
+        name: release
+        type: user-defined
+        values:
+        - 6
+        - 7
+
+    - axis:
+        name: variant
+        type: user-defined
+        values:
+        - default
+
+    - axis:
+        name: restrict
+        type: slave
+        values:
+        - lxc-priv
+
+    builders:
+    - shell: |-
+        cd /lxc-ci
+        LXD_ARCHITECTURE="${architecture}"
+
+        ARCH=${architecture}
+        [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
+        [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
+        [ "${ARCH}" = "armhf" ] && ARCH="armhfp"
+        [ "${ARCH}" = "ppc64el" ] && ARCH="ppc64le"
+
+        EXTRA_ARGS=""
+        if [ "${architecture}" != "amd64" ] && ([ "${architecture}" != "i386" ] || [ "${release}" != "6" ]); then
+            EXTRA_ARGS="-o source.url=http://mirror.math.princeton.edu/pub/centos-altarch/ -o source.skip_verification=true"
+        fi
+
+        exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/centos.yaml \
+            ${LXD_ARCHITECTURE} 7200 ${WORKSPACE} \
+            -o image.architecture=${ARCH} \
+            -o image.release=${release} ${EXTRA_ARGS}
+
+    execution-strategy:
+      combination-filter: '
+      !(architecture=="arm64" && release == "6")
+      && !(architecture=="armhf" && release == "6")
+      && !(architecture=="ppc64el" && release == "6")'
+
+    properties:
+    - build-discarder:
+        num-to-keep: 2
+
+    - raw:
+        !include: ../includes/webhook.yaml.inc
+
+    publishers:
+    - archive:
+        artifacts: "*.tar.xz,*.squashfs,image.yaml,serial"
+        only-if-success: true
+
+    - workspace-cleanup:
+        fail-build: false
+
+
+    - naginator:
+        rerun-unstable-builds: true
+        rerun-matrix-part: true
+        max-failed-builds: 3
+        progressive-delay-increment: 300
+        progressive-delay-maximum: 900
+
+    triggers:
+    - timed: '@daily'
+
+    wrappers:
+    - ansicolor:
+        colormap: xterm

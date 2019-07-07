@@ -1,0 +1,94 @@
+- project:
+    name: lxd-test-snap
+    jobs:
+        - "lxd-test-snap-{track}-{channel}":
+            track: latest
+            channel: edge
+
+        - "lxd-test-snap-{track}-{channel}":
+            track: latest
+            channel: beta
+
+        - "lxd-test-snap-{track}-{channel}":
+            track: latest
+            channel: candidate
+
+        - "lxd-test-snap-{track}-{channel}":
+            track: latest
+            channel: stable
+
+        - "lxd-test-snap-{track}-{channel}":
+            track: 2.0
+            channel: edge
+
+        - "lxd-test-snap-{track}-{channel}":
+            track: 2.0
+            channel: candidate
+
+        - "lxd-test-snap-{track}-{channel}":
+            track: 2.0
+            channel: stable
+
+        - "lxd-test-snap-{track}-{channel}":
+            track: 3.0
+            channel: edge
+
+        - "lxd-test-snap-{track}-{channel}":
+            track: 3.0
+            channel: candidate
+
+        - "lxd-test-snap-{track}-{channel}":
+            track: 3.0
+            channel: stable
+
+- job-template:
+    name: "lxd-test-snap-{track}-{channel}"
+    concurrent: false
+    description: Tests current LXD snap from the {channel} channel ({track} track).
+    node: master
+    project-type: matrix
+    auth-token: !include: ../includes/trigger-token.inc
+
+    axes:
+    - axis:
+        name: dist
+        type: slave
+        values:
+          !include: ../includes/snap-distros.yaml.inc
+
+    - axis:
+        name: restrict
+        type: slave
+        values:
+        - snapd
+
+    builders:
+    - shell: |-
+        if [ "${{dist}}" = "ubuntu-core-16" ]; then
+        cd ~/lxc-ci
+        else
+        cd /lxc-ci
+        fi
+        exec sudo bin/test-lxd-snapd {track} {channel}
+
+    properties:
+    - build-discarder:
+        num-to-keep: 3
+
+    - raw:
+        !include: ../includes/webhook.yaml.inc
+
+    publishers:
+    - workspace-cleanup:
+        fail-build: false
+
+    - naginator:
+        rerun-unstable-builds: true
+        rerun-matrix-part: true
+        max-failed-builds: 3
+        progressive-delay-increment: 300
+        progressive-delay-maximum: 900
+
+    wrappers:
+    - ansicolor:
+        colormap: css
