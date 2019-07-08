@@ -8,6 +8,7 @@ source:
   keys:
     - 0x126C0D24BD8A2942CC7DF8AC7638D0442B90D010
     - 0xA1BD8E9D78F7FE5C3E65D8AF8B48AD6246925553
+    - 0x6D33866EDD8FFA41C0143AEDDCC9EFBF77E11517
   variant: minbase
   apt_sources: |-
     deb http://deb.debian.org/debian {{ image.release }} main
