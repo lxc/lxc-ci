@@ -61,15 +61,15 @@ if [ "${LXD_BACKEND}" = "ceph" ]; then
     (
 cat << EOF
 [global]
-mon_initial_members = ceph01
-mon_host = [2001:470:b0f8:1015:216:3eff:fe52:5748]
+mon_initial_members = ceph01, ceph02, ceph03
+mon_host = [2001:470:b0f8:1015:5054:ff:fe5e:ea44],[2001:470:b0f8:1015:5054:ff:fe0a:750f],[2001:470:b0f8:1015:5054:ff:fe5e:4c7b]
 EOF
     ) > /etc/ceph/ceph.conf
 
     (
 cat << EOF
 [client.admin]
-    key = AQDxu3dZ8yh8KxAAa5Vlk9kWSD0aCIR7FNGnJQ==
+	key = AQC8ZyVdKO7uBhAAqswofEOZ7qxcdE8yIBuW6A==
 EOF
     ) > /etc/ceph/ceph.client.admin.keyring
 fi
