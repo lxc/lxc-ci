@@ -5,7 +5,7 @@
 - fedora-28
 - manjaro
 - opensuse-15.0
-- opensuse-42.3
+- opensuse-15.1
 - opensuse-tumbleweed
 - ubuntu-14.04
 - ubuntu-16.04

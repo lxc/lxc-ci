@@ -56,8 +56,7 @@
       combination-filter: '
       !(architecture=="s390x")
       && !(architecture=="i386" && release!="tumbleweed")
-      && !(architecture=="ppc64el" && release=="15.0")
-      && !(architecture!="amd64" && release=="42.3")'
+      && !(architecture=="ppc64el" && release=="15.0")'
 
     properties:
     - build-discarder:
