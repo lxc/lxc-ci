@@ -20,8 +20,8 @@
         name: release
         type: user-defined
         values:
+        - "15.1"
         - "15.0"
-        - "42.3"
         - "tumbleweed"
 
     - axis:
