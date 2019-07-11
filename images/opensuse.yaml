@@ -84,15 +84,3 @@ packages:
        - "15.0"
        - "tumbleweed"
       action: install
-
-actions:
-  - trigger: post-packages
-    releases:
-     - "42.3"
-    action: |-
-      #!/bin/sh
-      set -eux
-
-      # Fix boot
-      systemctl disable systemd-hwdb-update.service
-      systemd-machine-id-setup
