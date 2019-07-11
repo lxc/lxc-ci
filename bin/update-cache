@@ -114,5 +114,7 @@ mv "${TEMP_DIR}/libco" /lxc-ci/build/cache.new/libco
 mv "${TEMP_DIR}/raft" /lxc-ci/build/cache.new/raft
 mv "${TEMP_DIR}/dqlite" /lxc-ci/build/cache.new/dqlite
 chmod -R o+rX /lxc-ci/build/cache.new
-mv -T /lxc-ci/build/cache.new /lxc-ci/build/cache
+rm -Rf /lxc-ci/build/cache.old
+mv /lxc-ci/build/cache /lxc-ci/build/cache.old
+mv /lxc-ci/build/cache.new /lxc-ci/build/cache
 rm -Rf /home/jenkins/.cache/go-build/
