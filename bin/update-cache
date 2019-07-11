@@ -5,11 +5,6 @@ if [ "${LXD_GOCACHE:-}" != "true" ]; then
     exit 0
 fi
 
-# shellcheck disable=SC2010
-if [ -e /lxc-ci/build/cache/ ] && ls /lxc-ci/build/ | grep -v cache | grep -v lxc-monitord; then
-    exit 0
-fi
-
 TEMP_DIR=$(mktemp -d -p /lxc-ci/build/)
 
 cleanup() {
@@ -102,6 +97,7 @@ done
 cd - >/dev/null
 
 # Setup the Go cache
+# shellcheck disable=SC1090
 . "${TEMP_DIR}"/gimme/envs/go1.10*.env 2>/dev/null
 mkdir -p "${TEMP_DIR}/go"
 export GOPATH=${TEMP_DIR}/go
@@ -117,9 +113,6 @@ mv "${TEMP_DIR}/sqlite" /lxc-ci/build/cache.new/sqlite
 mv "${TEMP_DIR}/libco" /lxc-ci/build/cache.new/libco
 mv "${TEMP_DIR}/raft" /lxc-ci/build/cache.new/raft
 mv "${TEMP_DIR}/dqlite" /lxc-ci/build/cache.new/dqlite
-[ -e "/lxc-ci/build/cache" ] && mv /lxc-ci/build/cache /lxc-ci/build/cache.old
 chmod -R o+rX /lxc-ci/build/cache.new
-mv /lxc-ci/build/cache.new /lxc-ci/build/cache
-rm -Rf /lxc-ci/build/cache.old
-
+mv -T /lxc-ci/build/cache.new /lxc-ci/build/cache
 rm -Rf /home/jenkins/.cache/go-build/
