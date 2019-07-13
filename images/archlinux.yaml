@@ -4,7 +4,6 @@ image:
 source:
   downloader: archlinux-http
   url: https://archive.archlinux.org/iso
-  keyserver: hkps.pool.sks-keyservers.net
   keys:
     # 0x4AA4767BBC9C4B1D18AE28B77F2D434B9741E8AC
     - |-
