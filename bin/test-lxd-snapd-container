@@ -18,12 +18,13 @@ set -x
 (
 cat << EOF
 #!/bin/sh
-set -eux
-
 # Wait for network
 while :; do
     getent hosts linuxcontainers.org >/dev/null 2>&1 && break
+    sleep 1
 done
+
+set -eux
 
 ARCHIVE="http://us.archive.ubuntu.com/ubuntu"
 if grep -q ports /etc/apt/sources.list; then
