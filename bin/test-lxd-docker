@@ -8,7 +8,7 @@ cleanup() {
 trap cleanup EXIT HUP INT TERM
 
 # Create the container
-lxc launch images:ubuntu/xenial "${CNAME}" -c security.nesting=true "$@"
+lxc launch images:ubuntu/bionic "${CNAME}" -c security.nesting=true "$@"
 
 (
 cat << EOF
