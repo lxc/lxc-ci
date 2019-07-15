@@ -45,19 +45,17 @@ lxc copy "cache-lxc-${ARCH}" "${CNAME}"
 # Start the container
 lxc start "${CNAME}"
 
-# Wait for network
-while ! lxc info "${CNAME}" | grep -q "eth0.*inet.*10\\."; do
-    sleep 5s
-done
-
-sleep 5s
-
 set -x
 
 (
 cat << EOF
 #!/bin/sh
 set -eux
+
+# Wait for network
+while :; do
+    getent hosts linuxcontainers.org >/dev/null 2>&1 && break
+done
 
 # Get the source
 git clone "${REPO}" -b "${BRANCH}" /build/source

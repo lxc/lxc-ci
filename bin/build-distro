@@ -28,13 +28,6 @@ lxc copy "cache-distrobuilder-${ARCH}" "${CNAME}"
 # Start the container
 lxc start "${CNAME}"
 
-# Wait for network
-while ! lxc info "${CNAME}" | grep -q "eth0.*inet.*10\\."; do
-    sleep 5s
-done
-
-sleep 5s
-
 set -x
 
 lxc file push "${YAML}" "${CNAME}/root/image.yaml"
@@ -43,6 +36,11 @@ lxc file push "${YAML}" "${CNAME}/root/image.yaml"
 cat << EOF
 #!/bin/sh
 set -eux
+
+# Wait for network
+while :; do
+    getent hosts linuxcontainers.org >/dev/null 2>&1 && break
+done
 
 export PATH=/root/go/bin:\${PATH}
 export GOPATH=/root/go/

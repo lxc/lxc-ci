@@ -13,15 +13,17 @@ trap cleanup EXIT HUP INT TERM
 # Create the container
 lxc launch "images:ubuntu/bionic/${ARCH}" "${CNAME}" -c security.nesting=true
 
-# Wait for network
-sleep 10
-
 set -x
 
 (
 cat << EOF
 #!/bin/sh
 set -eux
+
+# Wait for network
+while :; do
+    getent hosts linuxcontainers.org >/dev/null 2>&1 && break
+done
 
 ARCHIVE="http://us.archive.ubuntu.com/ubuntu"
 if grep -q ports /etc/apt/sources.list; then
