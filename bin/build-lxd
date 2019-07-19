@@ -169,7 +169,7 @@ fi
 # Run the unit tests
 if [ "${LXD_BACKEND}" = "dir" ]; then
     echo "==> UNIT BEGIN: all tests"
-    go test -tags libsqlite3 ./...
+    GO_DQLITE_MULTITHREAD=1 go test -tags libsqlite3 ./...
     echo "==> UNIT DONE: all tests"
 else
     echo "==> Static analysis will be skipped (only run on dir)"
