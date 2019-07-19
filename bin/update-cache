@@ -112,7 +112,7 @@ unsquashfs -no-progress rootfs.squashfs >/dev/null
 mv squashfs-root/ rootfs
 tar Jxf lxd.tar.xz
 rm lxd.tar.xz rootfs.squashfs
-tar -C . -cf "${TEMP_DIR}/testimage.tar" *
+tar -C . -Jcf "${TEMP_DIR}/testimage.tar.xz" *
 rm -rf "${TEMP_DIR}/image"
 cd - >/dev/null
 
@@ -126,7 +126,7 @@ mv "${TEMP_DIR}/sqlite" /lxc-ci/build/cache.new/sqlite
 mv "${TEMP_DIR}/libco" /lxc-ci/build/cache.new/libco
 mv "${TEMP_DIR}/raft" /lxc-ci/build/cache.new/raft
 mv "${TEMP_DIR}/dqlite" /lxc-ci/build/cache.new/dqlite
-mv "${TEMP_DIR}/testimage.tar" /lxc-ci/build/cache.new/testimage.tar
+mv "${TEMP_DIR}/testimage.tar.xz" /lxc-ci/build/cache.new/testimage.tar.xz
 chmod -R o+rX /lxc-ci/build/cache.new
 rm -Rf /lxc-ci/build/cache.old
 [ -e "/lxc-ci/build/cache" ] && mv /lxc-ci/build/cache /lxc-ci/build/cache.old
