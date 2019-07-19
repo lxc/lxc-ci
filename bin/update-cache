@@ -110,6 +110,7 @@ cd "${TEMP_DIR}/image"
 lxc image export images:alpine/edge --quiet
 unsquashfs -no-progress rootfs.squashfs >/dev/null
 mv squashfs-root/ rootfs
+rm rootfs/etc/runlevels/*/*
 tar Jxf lxd.tar.xz
 rm lxd.tar.xz rootfs.squashfs
 tar -C . -Jcf "${TEMP_DIR}/testimage.tar.xz" *
