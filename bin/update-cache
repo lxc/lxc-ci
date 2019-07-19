@@ -113,7 +113,42 @@ mv squashfs-root/ rootfs
 rm rootfs/etc/runlevels/*/*
 tar Jxf lxd.tar.xz
 rm lxd.tar.xz rootfs.squashfs
-tar -C . -Jcf "${TEMP_DIR}/testimage.tar.xz" *
+
+rm -fR metadata.yaml templates
+(
+cat << EOF
+{
+    "architecture": "$(uname -m)",
+    "creation_date": $(date +%s),
+    "properties": {
+        "architecture": "$(uname -m)",
+        "description": "Busybox $(uname -m)",
+        "name": "busybox-$(uname -m)",
+        "os": "Busybox"
+    },
+    "templates": {
+        "/template": {
+            "template": "template.tpl"
+        }
+    }
+}
+EOF
+) > metadata.yaml
+
+mkdir -p templates
+(
+cat << EOF
+name: {{ container.name }}
+architecture: {{ container.architecture }}
+privileged: {{ container.privileged }}
+ephemeral: {{ container.ephemeral }}
+trigger: {{ trigger }}
+path: {{ path }}
+user.foo: {{ config_get("user.foo", "_unset_") }}
+EOF
+) > templates/template.tpl
+
+tar -C . -Jcf "${TEMP_DIR}/testimage.tar.xz" ./*
 rm -rf "${TEMP_DIR}/image"
 cd - >/dev/null
 
