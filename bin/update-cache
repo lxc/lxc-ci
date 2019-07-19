@@ -103,6 +103,18 @@ mkdir -p "${TEMP_DIR}/go"
 export GOPATH=${TEMP_DIR}/go
 go get -d -t github.com/lxc/lxd/... >/dev/null || echo "Failed to download LXD dependencies"
 
+# Build test image
+mkdir "${TEMP_DIR}/image"
+cd "${TEMP_DIR}/image"
+lxc image export images:alpine/edge --quiet
+unsquashfs rootfs.squashfs -no-progress >/dev/null
+mv squashfs-root/ rootfs
+tar Jxf lxd.tar.xz
+rm lxd.tar.xz rootfs.squashfs
+mksquashfs . "${TEMP_DIR}/testimage.squashfs" -comp xz -b 1M -no-progress -no-recovery >/dev/null
+rm -rf "${TEMP_DIR}/image"
+cd - >/dev/null
+
 # Move things into place
 rm -Rf /lxc-ci/build/cache.new
 mkdir -p /lxc-ci/build/cache.new
@@ -113,6 +125,7 @@ mv "${TEMP_DIR}/sqlite" /lxc-ci/build/cache.new/sqlite
 mv "${TEMP_DIR}/libco" /lxc-ci/build/cache.new/libco
 mv "${TEMP_DIR}/raft" /lxc-ci/build/cache.new/raft
 mv "${TEMP_DIR}/dqlite" /lxc-ci/build/cache.new/dqlite
+mv "${TEMP_DIR}/testimage.squashfs" /lxc-ci/build/cache.new/testimage.squashfs
 chmod -R o+rX /lxc-ci/build/cache.new
 rm -Rf /lxc-ci/build/cache.old
 [ -e "/lxc-ci/build/cache" ] && mv /lxc-ci/build/cache /lxc-ci/build/cache.old
