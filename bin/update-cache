@@ -126,7 +126,7 @@ mv "${TEMP_DIR}/sqlite" /lxc-ci/build/cache.new/sqlite
 mv "${TEMP_DIR}/libco" /lxc-ci/build/cache.new/libco
 mv "${TEMP_DIR}/raft" /lxc-ci/build/cache.new/raft
 mv "${TEMP_DIR}/dqlite" /lxc-ci/build/cache.new/dqlite
-mv "${TEMP_DIR}/testimage.squashfs" /lxc-ci/build/cache.new/testimage.squashfs
+mv "${TEMP_DIR}/testimage.tar" /lxc-ci/build/cache.new/testimage.tar
 chmod -R o+rX /lxc-ci/build/cache.new
 rm -Rf /lxc-ci/build/cache.old
 [ -e "/lxc-ci/build/cache" ] && mv /lxc-ci/build/cache /lxc-ci/build/cache.old
