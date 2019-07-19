@@ -148,7 +148,7 @@ user.foo: {{ config_get("user.foo", "_unset_") }}
 EOF
 ) > templates/template.tpl
 
-tar -C . -Jcf "${TEMP_DIR}/testimage.tar.xz" ./*
+tar -C . -Jcf "${TEMP_DIR}/testimage.tar.xz" *
 rm -rf "${TEMP_DIR}/image"
 cd - >/dev/null
 
