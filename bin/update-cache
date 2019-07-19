@@ -5,6 +5,7 @@ if [ "${LXD_GOCACHE:-}" != "true" ]; then
     exit 0
 fi
 
+export PATH="${PATH}:/snap/bin"
 TEMP_DIR=$(mktemp -d -p /lxc-ci/build/)
 
 cleanup() {
