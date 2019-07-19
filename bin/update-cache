@@ -108,11 +108,11 @@ go get -d -t github.com/lxc/lxd/... >/dev/null || echo "Failed to download LXD d
 mkdir "${TEMP_DIR}/image"
 cd "${TEMP_DIR}/image"
 lxc image export images:alpine/edge --quiet
-unsquashfs rootfs.squashfs -no-progress >/dev/null
+unsquashfs -no-progress rootfs.squashfs >/dev/null
 mv squashfs-root/ rootfs
 tar Jxf lxd.tar.xz
 rm lxd.tar.xz rootfs.squashfs
-mksquashfs . "${TEMP_DIR}/testimage.squashfs" -comp xz -b 1M -no-progress -no-recovery >/dev/null
+tar -C . -cf "${TEMP_DIR}/testimage.tar" *
 rm -rf "${TEMP_DIR}/image"
 cd - >/dev/null
 
