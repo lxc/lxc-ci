@@ -7,6 +7,7 @@ fi
 
 export PATH="${PATH}:/snap/bin"
 TEMP_DIR=$(mktemp -d -p /lxc-ci/build/)
+cd "${TEMP_DIR}"
 
 cleanup() {
     rm -Rf "${TEMP_DIR}"
@@ -16,6 +17,67 @@ trap cleanup EXIT HUP INT TERM
 
 ifup lxdbr0 >/dev/null 2>&1 || true
 
+# Test image
+git clone git://git.busybox.net/busybox "${TEMP_DIR}/busybox"
+cd "${TEMP_DIR}/busybox"
+make defconfig >/dev/null
+echo CONFIG_STATIC=y >> .config
+make -j5 >/dev/null 2>&1
+cd "${TEMP_DIR}"
+
+mkdir "${TEMP_DIR}/image"
+cd "${TEMP_DIR}/image"
+
+mkdir rootfs
+cd "${TEMP_DIR}/image/rootfs"
+mkdir -p bin dev etc mnt proc root sys tmp
+touch etc/inittab
+cp "${TEMP_DIR}/busybox/busybox" bin/busybox
+for cmd in $(bin/busybox --list-full); do
+    [ -z "${cmd}" ] && continue
+    [ "${cmd}" = "bin/busybox" ] && continue
+    mkdir -p "$(dirname "${cmd}")"
+    ln -s /bin/busybox "${cmd}"
+done
+cd "${TEMP_DIR}/image"
+
+(
+cat << EOF
+{
+    "architecture": "$(uname -m)",
+    "creation_date": $(date +%s),
+    "properties": {
+        "architecture": "$(uname -m)",
+        "description": "Busybox $(uname -m)",
+        "name": "busybox-$(uname -m)",
+        "os": "Busybox"
+    },
+    "templates": {
+        "/template": {
+            "template": "template.tpl"
+        }
+    }
+}
+EOF
+) > metadata.yaml
+
+mkdir -p templates
+(
+cat << EOF
+name: {{ container.name }}
+architecture: {{ container.architecture }}
+privileged: {{ container.privileged }}
+ephemeral: {{ container.ephemeral }}
+trigger: {{ trigger }}
+path: {{ path }}
+user.foo: {{ config_get("user.foo", "_unset_") }}
+EOF
+) > templates/template.tpl
+
+tar -C . -Jcf "${TEMP_DIR}/testimage.tar.xz" *
+rm -rf "${TEMP_DIR}/image"
+cd "${TEMP_DIR}"
+
 # Clustering bits
 git clone -q https://github.com/CanonicalLtd/sqlite "${TEMP_DIR}/sqlite"
 cd "${TEMP_DIR}/sqlite"
@@ -23,7 +85,7 @@ git log -1 --format=format:%ci%n | sed -e 's/ [-+].*$//;s/ /T/;s/^/D /' > manife
 git log -1 --format=format:%H > manifest.uuid
 ./configure --enable-debug --enable-replication >/dev/null 2>&1
 make >/dev/null 2>&1
-cd - >/dev/null
+cd "${TEMP_DIR}"
 
 git clone -q https://github.com/freeekanayaka/libco "${TEMP_DIR}/libco"
 cd "${TEMP_DIR}/libco"
@@ -41,14 +103,14 @@ Version: 18
 Libs: -L\${libdir} -lco
 Cflags: -I\${includedir}
 EOF
-cd - >/dev/null
+cd "${TEMP_DIR}"
 
 git clone -q https://github.com/CanonicalLtd/raft "${TEMP_DIR}/raft"
 cd "${TEMP_DIR}/raft"
 autoreconf -i >/dev/null 2>&1
 ./configure --enable-debug >/dev/null 2>&1
 make >/dev/null 2>&1
-cd - >/dev/null
+cd "${TEMP_DIR}"
 
 git clone -q https://github.com/CanonicalLtd/dqlite "${TEMP_DIR}/dqlite"
 cd "${TEMP_DIR}/dqlite"
@@ -58,7 +120,7 @@ export LDFLAGS="-L${TEMP_DIR}/sqlite/.libs -L${TEMP_DIR}/libco -L${TEMP_DIR}/raf
 autoreconf -i >/dev/null 2>&1
 ./configure --enable-debug >/dev/null 2>&1
 make >/dev/null 2>&1
-cd - >/dev/null
+cd "${TEMP_DIR}"
 
 # Setup the gimme cache
 [ "$(arch)" != "i686" ] || export GIMME_ARCH=x86
@@ -95,7 +157,7 @@ for version in 1.10.8 1.12 tip; do
     mkdir -p "${GOPATH}/pkg" && mv "${GOPATH}/pkg" "${GOPATH}/pkg.$(go version | cut -d' ' -f3)"
 done
 
-cd - >/dev/null
+cd "${TEMP_DIR}"
 
 # Setup the Go cache
 # shellcheck disable=SC1090
@@ -103,54 +165,6 @@ cd - >/dev/null
 mkdir -p "${TEMP_DIR}/go"
 export GOPATH=${TEMP_DIR}/go
 go get -d -t github.com/lxc/lxd/... >/dev/null || echo "Failed to download LXD dependencies"
-
-# Build test image
-mkdir "${TEMP_DIR}/image"
-cd "${TEMP_DIR}/image"
-lxc image export images:alpine/edge --quiet
-unsquashfs -no-progress rootfs.squashfs >/dev/null
-mv squashfs-root/ rootfs
-rm rootfs/etc/runlevels/*/*
-tar Jxf lxd.tar.xz
-rm lxd.tar.xz rootfs.squashfs
-
-rm -fR metadata.yaml templates
-(
-cat << EOF
-{
-    "architecture": "$(uname -m)",
-    "creation_date": $(date +%s),
-    "properties": {
-        "architecture": "$(uname -m)",
-        "description": "Busybox $(uname -m)",
-        "name": "busybox-$(uname -m)",
-        "os": "Busybox"
-    },
-    "templates": {
-        "/template": {
-            "template": "template.tpl"
-        }
-    }
-}
-EOF
-) > metadata.yaml
-
-mkdir -p templates
-(
-cat << EOF
-name: {{ container.name }}
-architecture: {{ container.architecture }}
-privileged: {{ container.privileged }}
-ephemeral: {{ container.ephemeral }}
-trigger: {{ trigger }}
-path: {{ path }}
-user.foo: {{ config_get("user.foo", "_unset_") }}
-EOF
-) > templates/template.tpl
-
-tar -C . -Jcf "${TEMP_DIR}/testimage.tar.xz" *
-rm -rf "${TEMP_DIR}/image"
-cd - >/dev/null
 
 # Move things into place
 rm -Rf /lxc-ci/build/cache.new
