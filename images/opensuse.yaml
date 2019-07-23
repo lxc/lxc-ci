@@ -3,7 +3,6 @@ image:
 
 source:
   downloader: opensuse-http
-  url: https://ftp2.nluug.nl/os/Linux/distr/opensuse
   keys:
     # 0x55A0B34D49501BB7CA474F5AA193FBB572174FC2
     - |-
