@@ -12,7 +12,7 @@
         values:
         - amd64
         - arm64
-        - armel
+        - armhf
         - i386
 
     - axis:
@@ -41,25 +41,28 @@
 
         ARCH=${architecture}
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
-        [ "${ARCH}" = "armel" ] && ARCH="armv7l"
+        [ "${ARCH}" = "armhf" ] && ARCH="armv7l"
         [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
         [ "${ARCH}" = "i386" ] && ARCH="i686"
 
         if [ "${variant}" != "default" ]; then
-          exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/voidlinux.yaml \
-              ${LXD_ARCHITECTURE} 1800 ${WORKSPACE} \
-              -o image.architecture=${ARCH} \
-              -o image.release=${release} \
-              -o image.variant=${variant} \
-              -o source.variant=${variant} \
-              -o source.url="https://mirrors.servercentral.com/voidlinux/live/current/
-        else
-          exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/voidlinux.yaml \
-              ${LXD_ARCHITECTURE} 1800 ${WORKSPACE} \
-              -o image.architecture=${ARCH} \
-              -o image.release=${release} \
-              -o source.url="https://mirrors.servercentral.com/voidlinux/live/current/
+            exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/voidlinux.yaml \
+                ${LXD_ARCHITECTURE} 1800 ${WORKSPACE} \
+                -o image.architecture=${ARCH} \
+                -o image.release=${release} \
+                -o image.variant=${variant} \
+                -o source.variant=${variant} \
+                -o source.url="https://mirrors.servercentral.com/voidlinux/live/current/"
         fi
+
+        exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/voidlinux.yaml \
+            ${LXD_ARCHITECTURE} 1800 ${WORKSPACE} \
+            -o image.architecture=${ARCH} \
+            -o image.release=${release} \
+            -o source.url="https://mirrors.servercentral.com/voidlinux/live/current/"
+
+    execution-strategy:
+      combination-filter: '!(architecture=="i386" && variant=="musl")'
 
     properties:
     - build-discarder:
