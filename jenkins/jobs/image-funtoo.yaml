@@ -1,0 +1,79 @@
+- job:
+    name: "image-funtoo"
+    concurrent: false
+    description: Funtoo images for LXC and LXD.
+    node: master
+    project-type: matrix
+
+    axes:
+    - axis:
+        name: architecture
+        type: slave
+        values:
+        - amd64
+        - armhf
+        - i386
+        - arm64
+
+    - axis:
+        name: release
+        type: user-defined
+        values:
+        - 1.3
+
+    - axis:
+        name: variant
+        type: user-defined
+        values:
+        - default
+
+    - axis:
+        name: restrict
+        type: slave
+        values:
+        - lxc-priv
+
+    builders:
+    - shell: |-
+        cd /lxc-ci
+        LXD_ARCHITECTURE="${architecture}"
+
+        ARCH=${architecture}
+        [ "${ARCH}" = "armhf" ] && ARCH="armv7a_vfpv3_hardfp"
+        [ "${ARCH}" = "aarch64" ] && ARCH="arm64_generic"
+        [ "${ARCH}" = "i386" ] && ARCH="generic_32"
+        [ "${ARCH}" = "amd64" ] && ARCH="generic_64"
+
+        exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/funtoo.yaml \
+            ${LXD_ARCHITECTURE} 7200 ${WORKSPACE} \
+            -o image.architecture=${ARCH}
+
+    properties:
+    - build-discarder:
+        num-to-keep: 2
+
+    - raw:
+        !include: ../includes/webhook.yaml.inc
+
+    publishers:
+    - archive:
+        artifacts: "*.tar.xz,*.squashfs,image.yaml,serial"
+        only-if-success: true
+
+    - workspace-cleanup:
+        fail-build: false
+
+
+    - naginator:
+        rerun-unstable-builds: true
+        rerun-matrix-part: true
+        max-failed-builds: 3
+        progressive-delay-increment: 300
+        progressive-delay-maximum: 900
+
+    triggers:
+    - timed: '@daily'
+
+    wrappers:
+    - ansicolor:
+        colormap: xterm
