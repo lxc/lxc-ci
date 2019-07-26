@@ -121,9 +121,10 @@ actions:
       ln -s /etc/sv/nanoklogd /etc/runit/runsvdir/default/
       ln -s /etc/sv/dhcpcd-eth0 /etc/runit/runsvdir/default/
       ln -s /etc/sv/cronie /etc/runit/runsvdir/default/
+      ln -s /etc/sv/agetty-console /etc/runit/runsvdir/default/
 
       # Disable services
-      for tty in 2 3 4 5 6; do
+      for tty in 1 2 3 4 5 6; do
           rm /etc/runit/runsvdir/default/agetty-tty${tty}
           touch /etc/sv/agetty-tty${tty}/down
       done
