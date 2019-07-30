@@ -31,7 +31,7 @@ systemctl stop docker.socket
 
 # Download binaries built from current git head of the Docker repo.
 for BIN in docker dockerd docker-containerd docker-containerd-shim docker-init docker-proxy docker-runc; do
-    wget -q "https://master.dockerproject.org/linux/x86_64/\${BIN}" -O "/usr/bin/${BIN}" && \
+    wget -q "https://master.dockerproject.org/linux/x86_64/\${BIN}" -O "/usr/bin/\${BIN}" && \
         chmod +x "/usr/bin/\${BIN}"
 done
 
