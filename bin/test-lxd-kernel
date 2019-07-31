@@ -25,6 +25,7 @@ go get -v -tags libsqlite3 github.com/lxc/lxd/lxd
 
 # Test environment
 chmod +x /root
+modprobe br_netfilter
 echo 0 > /proc/sys/net/bridge/bridge-nf-call-ip6tables
 ip link add lxdbr0 up type bridge
 
