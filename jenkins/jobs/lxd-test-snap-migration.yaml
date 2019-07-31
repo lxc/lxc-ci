@@ -36,11 +36,11 @@
         channel=$(echo ${target} | cut -d- -f2)
 
         if [ "${source}" = "trusty-backports" ]; then
-        exec sudo /lxc-ci/bin/maas-run tags=virtual trusty hwe-x bin/test-lxd-migration "${source}" "${track}" "${channel}"
+        exec sudo /lxc-ci/bin/maas-run tags=virtual trusty hwe-x default bin/test-lxd-migration "${source}" "${track}" "${channel}"
         elif [ "${source}" = "xenial-updates" ] || [ "${source}" = "xenial-backports" ]; then
-        exec sudo /lxc-ci/bin/maas-run tags=virtual xenial ga-16.04 bin/test-lxd-migration "${source}" "${track}" "${channel}"
+        exec sudo /lxc-ci/bin/maas-run tags=virtual xenial ga-16.04 default bin/test-lxd-migration "${source}" "${track}" "${channel}"
         elif [ "${source}" = "bionic-updates" ]; then
-        exec sudo /lxc-ci/bin/maas-run tags=virtual bionic ga-18.04 bin/test-lxd-migration "${source}" "${track}" "${channel}"
+        exec sudo /lxc-ci/bin/maas-run tags=virtual bionic ga-18.04 default bin/test-lxd-migration "${source}" "${track}" "${channel}"
         else
         exit 1
         fi

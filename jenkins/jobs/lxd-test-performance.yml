@@ -26,7 +26,7 @@
     - shell: |-
         set -e
         cd /lxc-ci
-        sudo -E /lxc-ci/bin/maas-run name=lantea bionic ga-18.04 bin/test-lxd-performance "${backend}" "/dev/sde"
+        sudo -E /lxc-ci/bin/maas-run name=lantea bionic ga-18.04 default bin/test-lxd-performance "${backend}" "/dev/sde"
         sudo -E chown -R $(id -u):$(id -g) "${WORKSPACE}"
 
     execution-strategy:
