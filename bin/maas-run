@@ -2,7 +2,7 @@
 [ -e /lxc-ci/etc/config ] && . /lxc-ci/etc/config
 
 if [ "${1:-}" = "" ] || [ "${2:-}" = "" ] || [ "${3:-}" = "" ] || [ "${4:-}" = "" ]; then
-    echo "Usage: $0 <filter> <series> <script>"
+    echo "Usage: $0 <filter> <series> <script> [<kernel>]"
     exit 1
 fi
 
@@ -90,6 +90,17 @@ while :; do
     ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "ubuntu@${IP}" true 2>/dev/null && break
     sleep 5
 done
+
+# Setup custom kernel
+if [ -n "${5:-}" ]; then
+    kernel=${5}
+    ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "ubuntu@${IP}" sudo sh /dev/stdin "${kernel}" < "bin/maas-kernel"
+
+    while :; do
+        ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "ubuntu@${IP}" true 2>/dev/null && break
+        sleep 5
+    done
+fi
 
 # Connect and run something
 echo "==> Running the job"

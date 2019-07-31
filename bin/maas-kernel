@@ -1,0 +1,7 @@
+#!/bin/sh
+if [ "${1}" = "daily" ]; then
+    wget -e robots=off -r --no-parent -A '*all*.deb' -R '*lpae*' -R '*lowlatency*' https://kernel.ubuntu.com/~kernel-ppa/mainline/daily/current/
+    wget -e robots=off -r --no-parent -A '*amd64*.deb' -R '*lpae*' -R '*lowlatency*' https://kernel.ubuntu.com/~kernel-ppa/mainline/daily/current/
+    cd kernel.ubuntu.com/~kernel-ppa/mainline/daily/current/
+    apt-get install ./*.deb --yes
+fi
