@@ -1,0 +1,29 @@
+#!/bin/sh
+set -eu
+
+# Install dependencies
+snap install go --classic
+apt-add-repository ppa:ubuntu-lxc/daily --yes
+apt-get dist-upgrade --yes
+apt-get install liblxc-dev libacl1-dev libuv1-dev tcl libcap-dev dh-autoreconf build-essential acl attr easy-rsa ebtables jq pkg-config socat sqlite3 dnsmasq-base --yes
+apt-get remove --purge uidmap --yes
+snap remove lxd
+
+# Build LXD
+go get -v github.com/lxc/lxd/lxc
+cd ~/go/src/github.com/lxc/lxd
+make deps
+export CGO_CFLAGS="-I/root/go/deps/sqlite/ -I/root/go/deps/libco/ -I/root/go/deps/raft/include/ -I/root/go/deps/dqlite/include/"
+export CGO_LDFLAGS="-L/root/go/deps/sqlite/.libs/ -L/root/go/deps/libco/ -L/root/go/deps/raft/.libs -L/root/go/deps/dqlite/.libs/"
+export LD_LIBRARY_PATH="/root/go/deps/sqlite/.libs/:/root/go/deps/libco/:/root/go/deps/raft/.libs/:/root/go/deps/dqlite/.libs/"
+export PATH=${PATH}:/root/go/bin
+go get -v -tags libsqlite3 github.com/lxc/lxd/lxd
+
+# Test environment
+chmod +x /root
+echo 0 > /proc/sys/net/bridge/bridge-nf-call-ip6tables
+ip link add lxdbr0 up type bridge
+
+# Run tests
+cd ~/go/src/github.com/lxc/lxd/test
+LXD_SKIP_STATIC=1 LXD_OFFLINE=0 LXD_TMPFS=1 LXD_VERBOSE=1 time ./main.sh
