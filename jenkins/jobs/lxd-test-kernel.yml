@@ -1,0 +1,54 @@
+- job:
+    name: "lxd-test-kernel"
+    concurrent: false
+    description: Run the LXD testsuite against various kernels.
+    node: master
+    project-type: matrix
+
+    axes:
+    - axis:
+        name: kernel
+        type: user-defined
+        values:
+        - default
+        - daily
+
+    - axis:
+        name: restrict
+        type: slave
+        values:
+        - master
+
+    builders:
+    - shell: |-
+        set -e
+        cd /lxc-ci
+        sudo -E /lxc-ci/bin/maas-run name=lantea eoan ga-19.10 ${kernel} bin/test-lxd-kernel
+
+    execution-strategy:
+      sequential: true
+
+    properties:
+    - build-discarder:
+        num-to-keep: 30
+
+    - raw:
+        !include: ../includes/webhook.yaml.inc
+
+    publishers:
+    - workspace-cleanup:
+        fail-build: false
+
+    - naginator:
+        rerun-unstable-builds: true
+        rerun-matrix-part: true
+        max-failed-builds: 3
+        progressive-delay-increment: 300
+        progressive-delay-maximum: 900
+
+    triggers:
+    - timed: '@daily'
+
+    wrappers:
+    - ansicolor:
+        colormap: xterm
