@@ -1,8 +1,42 @@
 #!/bin/sh
-if [ "${1}" = "daily" ]; then
+case "$1" in
+  default)
+    echo "===> No kernel changes needed"
+    exit 0
+  ;;
+
+  ubuntu)
+    echo "===> Ensuring default kernel is up to date"
+    apt-get update
+    apt-get dist-upgrade --yes
+  ;;
+
+  ubuntu-proposed)
+    echo "===> Installing the current proposed kernel"
+    . /etc/os-release
+    echo "deb http://us.archive.ubuntu.com/ubuntu ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" > /etc/apt/sources.list.d/proposed.list
+    apt-get update
+    apt-get dist-upgrade --yes
+  ;;
+
+  ubuntu-bootstrap)
+    echo "===> Installing the current bootstrap kernel"
+    apt-add-repository ppa:canonical-kernel-team/bootstrap --yes
+    apt-get dist-upgrade --yes
+  ;;
+
+  daily)
+    echo "===> Installing a mainline daily build"
     wget -e robots=off -r --no-parent -A '*all*.deb' -R '*lpae*' -R '*lowlatency*' https://kernel.ubuntu.com/~kernel-ppa/mainline/daily/current/
     wget -e robots=off -r --no-parent -A '*amd64*.deb' -R '*lpae*' -R '*lowlatency*' https://kernel.ubuntu.com/~kernel-ppa/mainline/daily/current/
     cd kernel.ubuntu.com/~kernel-ppa/mainline/daily/current/
     apt-get install ./*.deb --yes
-    reboot
-fi
+  ;;
+
+  *)
+    echo "Unsupported kernel requested: ${1}"
+    exit 1
+  ;;
+esac
+
+reboot
