@@ -10,8 +10,10 @@
         name: kernel
         type: user-defined
         values:
-        - default
         - daily
+        - ubuntu
+        - ubuntu-proposed
+        - ubuntu-bootstrap
 
     - axis:
         name: restrict
