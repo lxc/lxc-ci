@@ -32,4 +32,5 @@ ip link add lxdbr0 up type bridge
 
 # Run tests
 cd /root/go/src/github.com/lxc/lxd/test
-LXD_SKIP_STATIC=1 LXD_OFFLINE=0 LXD_TMPFS=1 LXD_VERBOSE=1 time ./main.sh
+uname -a
+LXD_SKIP_STATIC=1 LXD_OFFLINE=0 LXD_TMPFS=1 LXD_VERBOSE=1 time -p ./main.sh
