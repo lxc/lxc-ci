@@ -29,6 +29,7 @@ chmod +x /root
 modprobe br_netfilter
 echo 0 > /proc/sys/net/bridge/bridge-nf-call-ip6tables
 ip link add lxdbr0 up type bridge
+ln -sf /usr/sbin/ebtables-legacy /etc/alternatives/ebtables
 
 # Run tests
 cd /root/go/src/github.com/lxc/lxd/test
