@@ -33,6 +33,7 @@
         type: user-defined
         values:
         - default
+        - cloud
 
     - axis:
         name: restrict
@@ -52,10 +53,13 @@
             ${architecture} 3600 ${WORKSPACE} \
             -o image.architecture=${architecture} \
             -o image.release=${release} \
+            -o image.variant=${variant} \
             -o source.url=${ARCHIVE}
 
     execution-strategy:
-      combination-filter: '!(architecture=="s390x" && release == "trusty")'
+      combination-filter: '
+      !(architecture=="s390x" && release == "trusty") &&
+      !(variant == "cloud" && release == "trusty")'
 
     properties:
     - build-discarder:
