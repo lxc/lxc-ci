@@ -336,6 +336,26 @@ files:
    releases:
     - trusty
 
+ - name: meta-data
+   generator: cloud-init
+   variants:
+    - cloud
+
+ - name: network-config
+   generator: cloud-init
+   variants:
+    - cloud
+
+ - name: user-data
+   generator: cloud-init
+   variants:
+    - cloud
+
+ - name: vendor-data
+   generator: cloud-init
+   variants:
+    - cloud
+
 packages:
   manager: apt
   update: true
@@ -348,6 +368,12 @@ packages:
       - openssh-client
       - vim
       action: install
+
+    - packages:
+      - cloud-init
+      action: install
+      variants:
+       - cloud
 
 actions:
   - trigger: post-update
