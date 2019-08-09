@@ -13,7 +13,6 @@
     - trigger-builds:
       - project:
         - lxc-build-android
-        - lxc-build-coverity
         - lxc-build-tarballs
         predefined-parameters: |-
           sha1=${GIT_COMMIT}
