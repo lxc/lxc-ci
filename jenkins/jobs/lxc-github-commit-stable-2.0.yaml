@@ -71,7 +71,6 @@
     publishers:
     - archive:
         artifacts: "*.tar.gz"
-        foo: .*
         allow-empty: true
         fingerprint: true
 
