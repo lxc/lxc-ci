@@ -1,0 +1,100 @@
+- job:
+    name: lxc-github-pull-test
+    concurrent: true
+    description: Triggered by new Github pull requests.
+    node: master
+    project-type: matrix
+
+    builders:
+    - shell: |-
+        exec /usr/bin/script /dev/null -e -q -c "/lxd/bin/build-lxd ${compiler} https://github.com/lxc/lxd ${GIT_COMMIT} ${backend}"
+
+    properties:
+    - build-discarder:
+        days-to-keep: 7
+
+    - github:
+        url: https://github.com/lxc/lxd/
+
+    - raw:
+        !include: ../includes/webhook.yaml.inc
+
+    - throttle:
+        option: project
+        max-total: 2
+
+    parameters:
+    - string:
+        name: sha1
+
+    scm:
+    - git:
+        url: https://github.com/lxc/lxd
+        branches:
+          - ${sha1}
+        refspec: "+refs/pull/*:refs/remotes/origin/pr/* +refs/heads/*:refs/remotes/origin/*"
+
+    triggers:
+    - github-pull-request:
+        admin-list: !include: ../includes/admins/lxd.yaml.inc
+        github-hooks: true
+        org-list:
+        - lxc
+        cron: "H/5 * * * *"
+        skip-build-phrase: '.*jenkins:\W+\[skip\W+ci\].*'
+        auth-id: !include: ../includes/github-auth-id.inc
+        status-context: Testsuite
+        triggered-status: Test pending
+        started-status: Test started
+        success-comment: Testsuite passed
+        error-comment: Test runner failure
+        failure-commit: Testsuite failed
+
+    axes:
+    - axis:
+        name: compiler
+        type: user-defined
+        values:
+        - golang-1.10
+        - golang-1.12
+        - golang-tip
+
+    - axis:
+        name: backend
+        type: user-defined
+        values:
+        - dir
+        - zfs
+        - btrfs
+        - lvm
+        - ceph
+        - random
+
+    - axis:
+        name: arch
+        type: slave
+        values:
+        - amd64
+        - i386
+
+    - axis:
+        name: restrict
+        type: slave
+        values:
+        - lxd-priv
+
+    execution-strategy:
+      combination-filter: '!(arch=="i386" && backend!="dir") && !(arch=="i386" && compiler!="golang-1.12") && !(backend!="dir" && compiler!="golang-1.12")'
+
+    publishers:
+      - archive:
+          artifacts: logs.tar.gz
+          allow-empty: true
+          fingerprint: true
+
+      - workspace-cleanup:
+          fail-build: false
+
+    wrappers:
+    - ansicolor:
+        colormap: css
