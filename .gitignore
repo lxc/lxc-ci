@@ -4,3 +4,4 @@ etc/hosts
 build/*
 jenkins/jenkins_jobs.ini
 jenkins/includes/trigger-token.inc
+jenkins/includes/github-auth-id.inc
