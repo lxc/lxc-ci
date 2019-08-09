@@ -1,0 +1,35 @@
+- job:
+    name: lxc-build-android
+    concurrent: true
+    description: Builds an android tarball from the provided source.
+    node: lxc-priv && amd64
+    project-type: freestyle
+
+    builders:
+    - shell: |-
+        cd /lxc
+        exec sudo /lxc/bin/build-android amd64 https://github.com/lxc/lxc master ${sha1} ${WORKSPACE}
+
+    properties:
+    - build-discarder:
+        num-to-keep: 15
+
+    parameters:
+    - string:
+        name: sha1
+        description: Hash of the commit to build
+
+    - string:
+        name: branch
+        description: Source git branch
+
+    publishers:
+    - archive:
+        artifacts: lxc-android.tar.gz
+
+    - workspace-cleanup:
+        fail-build: false
+
+    wrappers:
+    - ansicolor:
+        colormap: css
