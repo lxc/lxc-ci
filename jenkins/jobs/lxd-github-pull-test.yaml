@@ -1,5 +1,5 @@
 - job:
-    name: lxc-github-pull-test
+    name: lxd-github-pull-test
     concurrent: true
     description: Triggered by new Github pull requests.
     node: master
