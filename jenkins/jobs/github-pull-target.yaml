@@ -127,7 +127,7 @@
     branch: master
 
     builders:
-    - shell: exec /lxc/bin/test-target {branch}
+    - shell: exec /lxc-ci/bin/test-target {branch}
 
     properties:
     - build-discarder:

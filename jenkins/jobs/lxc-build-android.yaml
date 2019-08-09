@@ -8,7 +8,7 @@
     builders:
     - shell: |-
         cd /lxc
-        exec sudo /lxc/bin/build-android amd64 https://github.com/lxc/lxc master ${sha1} ${WORKSPACE}
+        exec sudo /lxc-ci/bin/build-android amd64 https://github.com/lxc/lxc master ${sha1} ${WORKSPACE}
 
     properties:
     - build-discarder:

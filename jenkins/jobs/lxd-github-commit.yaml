@@ -74,7 +74,7 @@
         - lxd-priv
 
     builders:
-    - shell: exec /usr/bin/script /dev/null -e -q -c "/lxd/bin/build-lxd ${{compiler}}
+    - shell: exec /usr/bin/script /dev/null -e -q -c "/lxc-ci/bin/build-lxd ${{compiler}}
         https://github.com/lxc/lxd {branch} ${{backend}}"
 
     execution-strategy:

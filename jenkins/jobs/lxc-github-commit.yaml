@@ -8,7 +8,7 @@
     builders:
     - shell: |-
         cd /lxc
-        exec sudo /lxc/bin/testbuild-${compiler} https://github.com/lxc/lxc master ${GIT_COMMIT} --use-daily
+        exec sudo /lxc-ci/bin/testbuild-${compiler} https://github.com/lxc/lxc master ${GIT_COMMIT} --use-daily
 
     - trigger-builds:
       - project:

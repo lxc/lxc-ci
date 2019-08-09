@@ -7,7 +7,7 @@
 
     builders:
     - shell: |-
-        exec /usr/bin/script /dev/null -e -q -c "/lxd/bin/build-lxd ${compiler} https://github.com/lxc/lxd ${GIT_COMMIT} ${backend}"
+        exec /usr/bin/script /dev/null -e -q -c "/lxc-ci/bin/build-lxd ${compiler} https://github.com/lxc/lxd ${GIT_COMMIT} ${backend}"
 
     properties:
     - build-discarder:
