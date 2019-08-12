@@ -4,6 +4,7 @@ image:
 
 source:
   downloader: ubuntu-http
+  variant: core
   url: http://cdimage.ubuntu.com/ubuntu-core
   keys:
     # 0xC5986B4F1257FFA86632CBA746181433FBB75451
@@ -1393,7 +1394,7 @@ packages:
     update:
       cmd: true
     clean:
-      cmd: true 
+      cmd: true
     refresh:
       cmd: true
 
@@ -1437,7 +1438,7 @@ files:
       properties:
         default: |
           #cloud-config
-          {}	
+          {}
     content: |-
       {{ config_get("user.vendor-data", properties.default) }}
 
