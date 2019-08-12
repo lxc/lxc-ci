@@ -2,7 +2,7 @@
     name: lxd-github-commit
     suffix: ""
     jobs:
-        - "{name}{suffix}":
+        - "lxd-github-commit{suffix}":
             branch: master
             storage:
               - dir
@@ -15,7 +15,7 @@
               - golang-1.12
               - golang-tip
 
-        - "{name}{suffix}":
+        - "lxd-github-commit{suffix}":
             branch: stable-2.0
             suffix: "-{branch}"
             storage:
@@ -28,7 +28,7 @@
               - golang-1.12
               - golang-tip
 
-        - "{name}{suffix}":
+        - "lxd-github-commit{suffix}":
             branch: stable-3.0
             suffix: "-{branch}"
             storage:

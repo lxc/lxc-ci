@@ -2,16 +2,16 @@
     name: lxc-github-commit
     suffix: ""
     jobs:
-        - "{name}{suffix}":
+        - "lxc-github-commit{suffix}":
             branch: master
             pkg_version: 3.2.1+master
 
-        - "{name}{suffix}":
+        - "lxc-github-commit{suffix}":
             branch: stable-2.0
             suffix: "-{branch}"
             pkg_version: 2.0.11+stable
 
-        - "{name}{suffix}":
+        - "lxc-github-commit{suffix}":
             branch: stable-3.0
             suffix: "-{branch}"
             pkg_version: 3.0.4+stable
