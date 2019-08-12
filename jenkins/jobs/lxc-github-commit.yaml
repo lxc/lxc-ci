@@ -1,5 +1,6 @@
 - project:
     name: lxc-github-commit
+    branch: ""
     jobs:
     - "lxc-github-commit-${branch}":
       branch: master
