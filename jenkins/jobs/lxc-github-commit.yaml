@@ -49,23 +49,6 @@
         cd /lxc
         exec sudo /lxc-ci/bin/testbuild-${{compiler}} https://github.com/lxc/lxc {branch} ${{GIT_COMMIT}} --use-daily
 
-    - trigger-builds:
-      - project:
-        - lxc-build-android
-        - lxc-build-tarballs
-        predefined-parameters: |-
-          sha1=${{GIT_COMMIT}}
-          branch={branch}
-
-      - project:
-        - lxc-build-ubuntu-source
-        predefined-parameters: |-
-          sha1=${{GIT_COMMIT}}
-          pkg_version={pkg_version}
-          pkg_branch=ppa-daily
-          upload_target=lxc-git-{branch}
-          branch={branch}
-
     properties:
     - build-discarder:
         days-to-keep: 7
@@ -95,6 +78,22 @@
     - workspace-cleanup:
         fail-build: false
 
+    - trigger-parameterized-builds:
+      - project:
+        - lxc-build-android
+        - lxc-build-tarballs
+        predefined-parameters: |-
+          sha1=${{GIT_COMMIT}}
+          branch={branch}
+
+      - project:
+        - lxc-build-ubuntu-source
+        predefined-parameters: |-
+          sha1=${{GIT_COMMIT}}
+          pkg_version={pkg_version}
+          pkg_branch=ppa-daily
+          upload_target=lxc-git-{branch}
+          branch={branch}
     scm:
     - git:
         branches:
