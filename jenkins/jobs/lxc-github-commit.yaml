@@ -17,7 +17,7 @@
             pkg_version: 3.0.4+stable
 
 - job-template:
-    name: "{name}{suffix}"
+    name: "lxc-github-commit{suffix}"
     concurrent: false
     description: Triggered by new Github pull requests.
     node: master

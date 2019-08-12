@@ -43,7 +43,7 @@
               - golang-tip
 
 - job-template:
-    name: "{name}{suffix}"
+    name: "lxd-github-commit{suffix}"
     concurrent: false
     description: Triggered by new Github commits to {branch}.
     node: master
