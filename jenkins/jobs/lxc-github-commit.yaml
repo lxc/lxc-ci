@@ -1,23 +1,48 @@
 - project:
     name: lxc-github-commit
-    branch: ""
+    suffix: ""
     jobs:
-    - "lxc-github-commit-{branch}":
-      branch: master
-      pkg_version: 3.2.1+master
-    - "lxc-github-commit-{branch}":
-      branch: stable-2.0
-      pkg_version: 2.0.11+stable
-    - "lxc-github-commit-{branch}":
-      branch: stable-3.0
-      pkg_version: 3.0.4+stable
+        - "{name}{suffix}":
+            branch: master
+            pkg_version: 3.2.1+master
+
+        - "{name}{suffix}":
+            branch: stable-2.0
+            suffix: "-{branch}"
+            pkg_version: 2.0.11+stable
+
+        - "{name}{suffix}":
+            branch: stable-3.0
+            suffix: "-{branch}"
+            pkg_version: 3.0.4+stable
 
 - job-template:
-    name: "{name}{branch}"
+    name: "{name}{suffix}"
     concurrent: false
     description: Triggered by new Github pull requests.
     node: master
     project-type: matrix
+
+    axes:
+    - axis:
+        name: compiler
+        type: user-defined
+        values:
+        - gcc
+        - clang
+
+    - axis:
+        name: arch
+        type: slave
+        values:
+        - amd64
+        - i386
+
+    - axis:
+        name: restrict
+        type: slave
+        values:
+        - lxc-priv
 
     builders:
     - shell: |-
@@ -51,37 +76,6 @@
     - raw:
         !include: ../includes/webhook.yaml.inc
 
-    scm:
-    - git:
-        url: https://github.com/lxc/lxc
-        branches:
-          - {branch}
-        refspec: "+refs/pull/*:refs/remotes/origin/pr/* +refs/heads/*:refs/remotes/origin/*"
-
-    triggers:
-    - github
-
-    axes:
-    - axis:
-        name: compiler
-        type: user-defined
-        values:
-        - gcc
-        - clang
-
-    - axis:
-        name: arch
-        type: slave
-        values:
-        - amd64
-        - i386
-
-    - axis:
-        name: restrict
-        type: slave
-        values:
-        - lxc-priv
-
     publishers:
     - archive:
         artifacts: "*.tar.gz"
@@ -100,6 +94,15 @@
 
     - workspace-cleanup:
         fail-build: false
+
+    scm:
+    - git:
+        branches:
+        - "{branch}"
+        url: https://github.com/lxc/lxc
+
+    triggers:
+    - github
 
     wrappers:
     - ansicolor:
