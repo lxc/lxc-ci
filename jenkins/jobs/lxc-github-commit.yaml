@@ -22,7 +22,7 @@
     builders:
     - shell: |-
         cd /lxc
-        exec sudo /lxc-ci/bin/testbuild-${compiler} https://github.com/lxc/lxc ${branch} ${GIT_COMMIT} --use-daily
+        exec sudo /lxc-ci/bin/testbuild-${{compiler}} https://github.com/lxc/lxc {branch} ${{GIT_COMMIT}} --use-daily
 
     - trigger-builds:
       - project:
