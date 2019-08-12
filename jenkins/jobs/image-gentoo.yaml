@@ -27,6 +27,7 @@
         type: user-defined
         values:
         - default
+        - cloud
 
     - axis:
         name: restrict
@@ -46,7 +47,8 @@
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/gentoo.yaml \
             ${LXD_ARCHITECTURE} 7200 ${WORKSPACE} \
-            -o image.architecture=${ARCH}
+            -o image.architecture=${ARCH} \
+            -o image.variant=${variant}
 
     properties:
     - build-discarder:

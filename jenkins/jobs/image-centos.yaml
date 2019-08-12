@@ -28,6 +28,7 @@
         type: user-defined
         values:
         - default
+        - cloud
 
     - axis:
         name: restrict
@@ -54,7 +55,8 @@
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/centos.yaml \
             ${LXD_ARCHITECTURE} 7200 ${WORKSPACE} \
             -o image.architecture=${ARCH} \
-            -o image.release=${release} ${EXTRA_ARGS}
+            -o image.release=${release} \
+            -o image.variant=${variant} ${EXTRA_ARGS}
 
     execution-strategy:
       combination-filter: '
