@@ -1,5 +1,18 @@
-- job:
+- project:
     name: lxc-github-commit
+    jobs:
+    - "lxc-github-commit-${branch}":
+      branch: master
+      pkg_version: 3.2.1+master
+    - "lxc-github-commit-${branch}":
+      branch: stable-2.0
+      pkg_version: 2.0.11+stable
+    - "lxc-github-commit-${branch}":
+      branch: stable-3.0
+      pkg_version: 3.0.4+stable
+
+- job-template:
+    name: "lxc-github-commit-${branch}"
     concurrent: false
     description: Triggered by new Github pull requests.
     node: master
@@ -8,7 +21,7 @@
     builders:
     - shell: |-
         cd /lxc
-        exec sudo /lxc-ci/bin/testbuild-${compiler} https://github.com/lxc/lxc master ${GIT_COMMIT} --use-daily
+        exec sudo /lxc-ci/bin/testbuild-${compiler} https://github.com/lxc/lxc ${branch} ${GIT_COMMIT} --use-daily
 
     - trigger-builds:
       - project:
@@ -16,16 +29,16 @@
         - lxc-build-tarballs
         predefined-parameters: |-
           sha1=${GIT_COMMIT}
-          branch=master
+          branch=${branch}
 
       - project:
         - lxc-build-ubuntu-source
         predefined-parameters: |-
           sha1=${GIT_COMMIT}
-          pkg_version=3.2.1+master
+          pkg_version=${pkg_version}
           pkg_branch=ppa-daily
-          upload_target=lxc-git-master
-          branch=master
+          upload_target=lxc-git-${branch}
+          branch=${branch}
 
     properties:
     - build-discarder:
@@ -41,7 +54,7 @@
     - git:
         url: https://github.com/lxc/lxc
         branches:
-          - master
+          - ${branch}
         refspec: "+refs/pull/*:refs/remotes/origin/pr/* +refs/heads/*:refs/remotes/origin/*"
 
     triggers:
