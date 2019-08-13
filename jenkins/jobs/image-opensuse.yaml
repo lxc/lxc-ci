@@ -29,6 +29,7 @@
         type: user-defined
         values:
         - default
+        - cloud
 
     - axis:
         name: restrict

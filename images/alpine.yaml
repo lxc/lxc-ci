@@ -245,6 +245,26 @@ files:
      # Stuff to do before rebooting
      ::shutdown:/sbin/openrc shutdown
 
+ - name: meta-data
+   generator: cloud-init
+   variants:
+    - cloud
+
+ - name: network-config
+   generator: cloud-init
+   variants:
+    - cloud
+
+ - name: user-data
+   generator: cloud-init
+   variants:
+    - cloud
+
+ - name: vendor-data
+   generator: cloud-init
+   variants:
+    - cloud
+
 packages:
   manager: apk
   update: true
@@ -254,6 +274,12 @@ packages:
     - packages:
       - alpine-base
       action: install
+
+    - packages:
+       - cloud-init
+      action: install
+      variants:
+       - cloud
 
 actions:
   - trigger: post-packages
