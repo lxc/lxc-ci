@@ -1693,6 +1693,26 @@ files:
      auto eth0
      iface eth0 inet dhcp
 
+ - name: meta-data
+   generator: cloud-init
+   variants:
+    - cloud
+
+ - name: network-config
+   generator: cloud-init
+   variants:
+    - cloud
+
+ - name: user-data
+   generator: cloud-init
+   variants:
+    - cloud
+
+ - name: vendor-data
+   generator: cloud-init
+   variants:
+    - cloud
+
 packages:
   manager: apt
   update: true
@@ -1710,6 +1730,12 @@ packages:
       - vim
       - systemd
       action: install
+
+    - packages:
+       - cloud-init
+      action: install
+      variants:
+       - cloud
 
 actions:
   - trigger: post-packages
