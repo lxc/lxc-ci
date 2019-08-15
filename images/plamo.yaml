@@ -116,10 +116,10 @@ files:
       #d2:12345:respawn:/sbin/agetty -mt60 38400,19200,9600,2400,1200 ttyS1 vt100
 
       # Runlevel 4 used to be for an X-window only system, until we discovered
-      # that it throws init into a loop that keeps your load avg at least 1 all 
+      # that it throws init into a loop that keeps your load avg at least 1 all
       # the time. Thus, there is now one getty opened on tty6. Hopefully no one
       # will notice. ;^)
-      # It might not be bad to have one text console anyway, in case something 
+      # It might not be bad to have one text console anyway, in case something
       # happens to X.
       x1:4:wait:/etc/rc.d/rc.4
 
@@ -212,7 +212,7 @@ packages:
     update:
       cmd: updatepkg
     clean:
-      cmd: true 
+      cmd: true
     refresh:
       cmd: true
 
@@ -239,7 +239,7 @@ actions:
       sed -i 's/="err"/=0/' /etc/udev/udev.conf
 
       # Configure glibc
-      mv /etc/ld.so.conf.new /etc/ld.so.conf
+      [ -f /etc/ld.so.conf.new ] && mv /etc/ld.so.conf.new /etc/ld.so.conf
       ldconfig
 
       # Delete unnecessary process from rc.S
