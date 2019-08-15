@@ -21,6 +21,8 @@ case "$1" in
 
   ubuntu-bootstrap)
     echo "===> Installing the current bootstrap kernel"
+    apt-get update
+    apt-get install software-properties-common --yes
     apt-add-repository ppa:canonical-kernel-team/bootstrap --yes
     apt-get dist-upgrade --yes
   ;;
@@ -30,7 +32,9 @@ case "$1" in
     wget -e robots=off -r --no-parent -A '*all*.deb' -R '*lpae*' -R '*lowlatency*' https://kernel.ubuntu.com/~kernel-ppa/mainline/daily/current/
     wget -e robots=off -r --no-parent -A '*amd64*.deb' -R '*lpae*' -R '*lowlatency*' https://kernel.ubuntu.com/~kernel-ppa/mainline/daily/current/
     cd kernel.ubuntu.com/~kernel-ppa/mainline/daily/current/
+    apt-get update
     apt-get install ./*.deb --yes
+    apt-get dist-upgrade --yes
   ;;
 
   *)
