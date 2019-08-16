@@ -25,6 +25,7 @@
         - jessie
         - stretch
         - buster
+        - bullseye
         - sid
 
     - axis:
