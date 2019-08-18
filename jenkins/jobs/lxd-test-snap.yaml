@@ -64,7 +64,7 @@
 
     builders:
     - shell: |-
-        if [ "${{dist}}" = "ubuntu-core-16" ]; then
+        if [ "${{dist}}" = "ubuntu-core-16" ] || [ "${{dist}}" = "ubuntu-core-18" ]; then
         cd ~/lxc-ci
         else
         cd /lxc-ci
