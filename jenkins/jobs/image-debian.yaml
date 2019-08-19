@@ -53,6 +53,7 @@
             ${LXD_ARCHITECTURE} 1800 ${WORKSPACE} \
             -o image.architecture=${architecture} \
             -o image.release=${release} \
+            -o image.variant=${variant} \
             -o source.url="http://ftp.us.debian.org/debian"
 
     execution-strategy:
