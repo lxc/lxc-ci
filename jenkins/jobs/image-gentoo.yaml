@@ -35,6 +35,10 @@
         values:
         - lxc-priv
 
+    execution-strategy:
+      combination-filter: '
+      !(architecture!="amd64" && architecture!="i386" && variant=="cloud")'
+
     builders:
     - shell: |-
         cd /lxc-ci
