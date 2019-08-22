@@ -37,7 +37,8 @@
     triggers:
     - github-pull-request:
         admin-list: !include: ../includes/admins/lxd.yaml.inc
-        org-list: lxc
+        org-list:
+         - lxc
         github-hooks: true
         auth-id: !include: ../includes/github-token.inc
 

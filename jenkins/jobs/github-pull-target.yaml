@@ -153,7 +153,8 @@
     triggers:
     - github-pull-request:
         admin-list: '{admins}'
-        org-list: lxc
+        org-list:
+         - lxc
         github-hooks: true
         permit-all: true
         auth-id: !include: ../includes/github-token.inc
