@@ -156,7 +156,7 @@
         org-list: lxc
         github-hooks: true
         permit-all: true
-        auth-id: 8f79e203-0e13-4c4e-ad31-d4a9bfedb2c9
+        auth-id: !include: ../includes/github-token.inc
 
         status-context: Branch target
         triggered-status: Check pending
