@@ -40,18 +40,17 @@
     triggers:
     - github-pull-request:
         admin-list: !include: ../includes/admins/lxc.yaml.inc
-        github-hooks: true
         org-list:
         - lxc
-        cron: "H/5 * * * *"
-        skip-build-phrase: '.*jenkins:\W+\[skip\W+ci\].*'
+        github-hooks: true
         auth-id: !include: ../includes/github-token.inc
+
         status-context: Testsuite
         triggered-status: Test pending
         started-status: Test started
         success-comment: Testsuite passed
-        error-comment: Test runner failure
         failure-commit: Testsuite failed
+        error-comment: Test runner failure
 
     axes:
     - axis:
