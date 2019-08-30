@@ -3,7 +3,7 @@ CNAME="distrobuilder-$(uuidgen)"
 
 # Check arguments
 if [ "${1:-}" = "" ] || [ "${2:-}" = "" ] || [ "${3:-}" = "" ] || [ "${4:-}" = "" ]; then
-    echo "Usage: ${0} <yaml> <architecture> <target dir> <timeout> [flags]"
+    echo "Usage: ${0} <yaml> <architecture> <timeout> <target dir> [flags]"
     exit 1
 fi
 
