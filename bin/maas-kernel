@@ -1,4 +1,5 @@
 #!/bin/sh
+export DEBIAN_FRONTEND="noninteractive"
 case "$1" in
   default)
     echo "===> No kernel changes needed"
