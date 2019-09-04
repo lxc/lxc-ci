@@ -60,8 +60,13 @@ files:
 
 packages:
   manager: apt
-  update: false
+  update: true
   cleanup: false
+
+  sets:
+    - packages:
+        - connman
+      action: remove
 
 environment:
   variables:
