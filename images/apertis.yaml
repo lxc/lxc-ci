@@ -48,10 +48,25 @@ files:
  - path: /etc/machine-id
    generator: remove
 
+ - name: eth0.network
+   path: /etc/systemd/network/eth0.network
+   generator: dump
+   content: |-
+     [Match]
+     Name=eth0
+
+     [Network]
+     DHCP=ipv4
+
 packages:
   manager: apt
-  update: false
+  update: true
   cleanup: false
+
+  sets:
+    - packages:
+        - connman
+      action: remove
 
 environment:
   variables:
