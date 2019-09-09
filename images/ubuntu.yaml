@@ -327,6 +327,8 @@ files:
 
      auto eth0
      iface eth0 inet dhcp
+
+     source /etc/network/interfaces.d/*.cfg
    releases:
      - trusty
      - xenial
