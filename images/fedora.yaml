@@ -106,6 +106,8 @@ packages:
 
    - packages:
       - cloud-init
+      - network-scripts
+      - NetworkManager
      action: install
      variants:
       - cloud
@@ -123,6 +125,21 @@ actions:
       umount -l /etc/resolv.conf || true
       rm /etc/resolv.conf
       ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
-      systemctl enable systemd-networkd
       systemctl enable systemd-resolved
       cp -R /etc/skel/.bash* /root/
+
+  - trigger: post-packages
+    action: |-
+      #!/bin/sh
+      systemctl enable systemd-networkd
+    variants:
+      - default
+
+  - trigger: post-packages
+    action: |-
+      #!/bin/sh
+      systemctl disable systemd-networkd
+      systemctl enable NetworkManager
+      systemctl enable cloud-init
+    variants:
+      - cloud
