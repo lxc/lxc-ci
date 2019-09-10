@@ -129,3 +129,26 @@ packages:
       action: install
       variants:
        - cloud
+
+actions:
+ - trigger: post-packages
+   action: |-
+     #!/bin/sh
+     set -eux
+
+     # Have the sysconfig network renderer support openSUSE Tumbleweed
+     sed -i "s|'opensuse'|'opensuse-tumbleweed'|" $(find /usr -wholename '*/cloudinit/net/sysconfig.py')
+   releases:
+     - tumbleweed
+   variants:
+     - cloud
+
+ - trigger: post-packages
+   action: |-
+     #!/bin/sh
+     set -eux
+
+     # Enable the cloud-init systemd service
+     systemctl enable cloud-init.service
+   variants:
+     - cloud
