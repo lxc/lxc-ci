@@ -398,5 +398,13 @@ actions:
      rm /usr/bin/gpg2
      mv /usr/bin/gpg2.real /usr/bin/gpg2
 
+ - trigger: post-packages
+   action: |-
+     #!/bin/sh
+     set -eux
+     rc-update add cloud-init default
+   variants:
+     - cloud
+
 mappings:
   architecture_map: gentoo
