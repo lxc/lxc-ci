@@ -122,5 +122,14 @@ actions:
       # Create some potentially missing directory
       mkdir -p /etc/local.d
 
+  - trigger: post-packages
+    action: |-
+      #!/bin/sh
+
+      # Enable cloud-init systemd unit
+      systemctl enable cloud-init.service
+    variants:
+      - cloud
+
 mappings:
   architecture_map: debian
