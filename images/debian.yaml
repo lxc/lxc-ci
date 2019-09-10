@@ -848,6 +848,8 @@ files:
      auto eth0
      iface eth0 inet dhcp
 
+     source /etc/network/interfaces.d/*.cfg
+
  - name: meta-data
    generator: cloud-init
    variants:
@@ -877,6 +879,8 @@ packages:
     - packages:
       - dialog
       - ifupdown
+      - init
+      - iproute2
       - isc-dhcp-client
       - locales
       - netbase
@@ -909,12 +913,6 @@ actions:
 
       # Cleanup temporary shadow paths
       rm /etc/*-
-
-  - trigger: post-packages
-    action: |-
-      #!/bin/sh
-      set -eux
-      apt-get install iproute2 init -y
 
 mappings:
   architecture_map: debian
