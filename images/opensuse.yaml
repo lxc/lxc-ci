@@ -148,6 +148,19 @@ actions:
      #!/bin/sh
      set -eux
 
+     # Have the sysconfig network renderer support openSUSE Leap
+     sed -i "s|'opensuse'|'opensuse-leap'|" $(find /usr -wholename '*/cloudinit/net/sysconfig.py')
+   releases:
+     - 15.0
+     - 15.1
+   variants:
+     - cloud
+
+ - trigger: post-packages
+   action: |-
+     #!/bin/sh
+     set -eux
+
      # Enable the cloud-init systemd service
      systemctl enable cloud-init.service
    variants:
