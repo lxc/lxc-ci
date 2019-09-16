@@ -51,6 +51,17 @@ files:
 
       [Network]
       DHCP=ipv4
+    variants:
+      - default
+
+  - name: override.conf
+    path: /etc/systemd/system/NetworkManager.service.d/override.conf
+    generator: dump
+    content: |-
+      [Service]
+      ExecStartPre=-/usr/sbin/ip link set eth0 down
+    variants:
+      - cloud
 
   - name: meta-data
     generator: cloud-init
