@@ -344,6 +344,12 @@ actions:
       #!/bin/sh
       set -eux
 
+      # Fix container shutdown
+      sed -i "s#^pf::powerwait.*#pf::powerwait:/sbin/poweroff#" /etc/inittab
+
+      # Disable getty
+      sed -i '/tty[1-6]/s/^/#/'/etc/inittab
+
       # Make sure the locale is built and functional
       echo en_US.UTF-8 UTF-8 >> /etc/locale.gen
       locale-gen en_US.UTF-8 UTF-8
