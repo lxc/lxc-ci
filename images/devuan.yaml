@@ -344,6 +344,9 @@ actions:
       #!/bin/sh
       set -eux
 
+      # Disable networkd (unused)
+      systemctl disable systemd-networkd
+
       # Make sure the locale is built and functional
       echo en_US.UTF-8 UTF-8 >> /etc/locale.gen
       locale-gen en_US.UTF-8 UTF-8
