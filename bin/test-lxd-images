@@ -95,6 +95,6 @@ for url in $(lxc query "/1.0/containers" | jq -r .[]); do
 done
 
 # Check that all containers can be stopped
-if ! lxc stop --all --timeout=30; then
+if ! lxc stop --all --timeout=60; then
     FAIL=1
 fi
