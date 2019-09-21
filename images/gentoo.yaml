@@ -329,7 +329,9 @@ files:
 
  - name: conf-hostname
    path: /etc/conf.d/hostname
-   generator: hostname
+   generator: template
+   content: |-
+     hostname="{{ container.name }}"
 
  - name: hosts
    path: /etc/hosts
