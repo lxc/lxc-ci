@@ -902,7 +902,8 @@ actions:
       set -eux
 
       # Disable networkd (unused)
-      systemctl disable systemd-networkd
+      systemctl mask systemd-networkd.service
+      systemctl mask systemd-networkd.socket
 
       # Make sure the locale is built and functional
       echo en_US.UTF-8 UTF-8 >> /etc/locale.gen
