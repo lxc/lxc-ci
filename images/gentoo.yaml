@@ -381,13 +381,19 @@ actions:
    action: |-
      #!/bin/sh
      set -eux
+
+     # Workaround GPG issues
      mv /usr/bin/gpg2 /usr/bin/gpg2.real
      echo "#!/bin/sh" > /usr/bin/gpg2
      echo "exec /usr/bin/gpg2.real --keyserver keyserver.ubuntu.com \"\$@\"" >> /usr/bin/gpg2
      chmod +x /usr/bin/gpg2
-     sed -i 's/^c[0-9]:/#\0/' /etc/inittab
-     sed -i 's/^#\(x1:.*\)/\1/' etc/inittab
-     echo pf:12345:powerwait:/sbin/halt >> /etc/inittab
+
+     # Patch up /etc/inittab
+     if [ -e /etc/inittab ]; then
+         sed -i 's/^c[0-9]:/#\0/' /etc/inittab
+         sed -i 's/^#\(x1:.*\)/\1/' etc/inittab
+         echo pf:12345:powerwait:/sbin/halt >> /etc/inittab
+     fi
 
  - trigger: post-packages
    action: |-
