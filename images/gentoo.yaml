@@ -388,6 +388,9 @@ actions:
      echo "exec /usr/bin/gpg2.real --keyserver keyserver.ubuntu.com \"\$@\"" >> /usr/bin/gpg2
      chmod +x /usr/bin/gpg2
 
+     cp /usr/share/portage/config/repos.conf /usr/share/portage/config/repos.conf.orig
+     sed -i "s#hkps://keys.gentoo.org#keyserver.ubuntu.com#g" /usr/share/portage/config/repos.conf
+
      # Patch up /etc/inittab
      if [ -e /etc/inittab ]; then
          sed -i 's/^c[0-9]:/#\0/' /etc/inittab
@@ -401,10 +404,12 @@ actions:
      set -eux
      ln -s net.lo /etc/init.d/net.eth0
      mkdir -p /etc/runlevels/default
-     rc-update add net.eth0 default
+     rc-update add net.eth0 default || true
 
      rm /usr/bin/gpg2
      mv /usr/bin/gpg2.real /usr/bin/gpg2
+     rm /usr/share/portage/config/repos.conf
+     mv /usr/share/portage/config/repos.conf.orig /usr/share/portage/config/repos.conf
 
  - trigger: post-packages
    action: |-
