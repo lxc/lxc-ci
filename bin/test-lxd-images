@@ -77,19 +77,35 @@ for url in $(lxc query "/1.0/containers" | jq -r .[]); do
     name=$(echo "${url}" | cut -d/ -f4)
     echo ""
 
-    # IPv4
+    # IPv4 address
     if echo "${address}" | grep "\." -q; then
-        echo "PASS-IPv4: ${name}"
+        echo "PASS: IPv4 address: ${name}"
     else
-        echo "FAIL-IPv4: ${name}"
+        echo "FAIL: IPv4 address: ${name}"
         FAIL=1
     fi
 
-    # IPv6
-    if echo "${address}" | grep ":" -q; then
-        echo "PASS-IPv6: ${name}"
+    # IPv4 ping
+    if lxc exec "${name}" -- ping -4 -c1 -W1 linuxcontainers.org >/dev/null 2>&1; then
+        echo "PASS: IPv4 connectivity: ${name}"
     else
-        echo "FAIL-IPv6: ${name}"
+        echo "FAIL: IPv4 connectivity: ${name}"
+        FAIL=1
+    fi
+
+    # IPv6 address
+    if echo "${address}" | grep ":" -q; then
+        echo "PASS: IPv6 address: ${name}"
+    else
+        echo "FAIL: IPv6 address: ${name}"
+        FAIL=1
+    fi
+
+    # IPv6 ping
+    if lxc exec "${name}" -- ping -6 -c1 -W1 linuxcontainers.org >/dev/null 2>&1; then
+        echo "PASS: IPv6 connectivity: ${name}"
+    else
+        echo "FAIL: IPv6 connectivity: ${name}"
         FAIL=1
     fi
 done
