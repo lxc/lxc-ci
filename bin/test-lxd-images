@@ -71,6 +71,7 @@ done
 sleep 20
 
 # Check that all containers have an IPv4 and IPv6 address
+echo "=> Performing network tests"
 FAIL=0
 for url in $(lxc query "/1.0/containers" | jq -r .[]); do
     address=$(lxc query "${url}/state" | jq -r ".network.eth0.addresses | .[] | select(.scope | contains(\"global\")) | .address")
@@ -111,6 +112,7 @@ for url in $(lxc query "/1.0/containers" | jq -r .[]); do
 done
 
 # Check that all containers can be stopped
+echo "=> Performing shutdown test"
 if ! lxc stop --all --timeout=60; then
     FAIL=1
 fi
