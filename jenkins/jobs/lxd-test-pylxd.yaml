@@ -26,9 +26,6 @@
         values:
         - master
 
-    execution-strategy:
-      sequential: true
-
     builders:
     - shell: |-
         cd /lxc-ci
@@ -36,11 +33,11 @@
         channel=$(echo ${target} | cut -d- -f2)
 
         if [ "${source}" = "trusty-backports" ]; then
-        exec sudo /lxc-ci/bin/maas-run name=lantea trusty hwe-x default bin/test-lxd-pylxd "${track}" "${channel}"
+        exec sudo /lxc-ci/bin/maas-run tags=physical trusty hwe-x default bin/test-lxd-pylxd "${track}" "${channel}"
         elif [ "${source}" = "xenial-updates" ] || [ "${source}" = "xenial-backports" ]; then
-        exec sudo /lxc-ci/bin/maas-run name=lantea xenial ga-16.04 default bin/test-lxd-pylxd "${track}" "${channel}"
+        exec sudo /lxc-ci/bin/maas-run tags=physical xenial ga-16.04 default bin/test-lxd-pylxd "${track}" "${channel}"
         elif [ "${source}" = "bionic-updates" ]; then
-        exec sudo /lxc-ci/bin/maas-run name=lantea bionic ga-18.04 default bin/test-lxd-pylxd "${track}" "${channel}"
+        exec sudo /lxc-ci/bin/maas-run tags=physical bionic ga-18.04 default bin/test-lxd-pylxd "${track}" "${channel}"
         else
         exit 1
         fi

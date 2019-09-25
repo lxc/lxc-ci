@@ -25,7 +25,7 @@
     - shell: |-
         set -e
         cd /lxc-ci
-        sudo -E /lxc-ci/bin/maas-run name=lantea eoan ga-19.10 ${kernel} bin/test-lxd-kernel
+        sudo -E /lxc-ci/bin/maas-run tags=physical eoan ga-19.10 ${kernel} bin/test-lxd-kernel
 
     execution-strategy:
       sequential: true
