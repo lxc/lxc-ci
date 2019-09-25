@@ -68,6 +68,14 @@ packages:
         - connman
       action: remove
 
+actions:
+  - trigger: post-packages
+    action: |-
+      #!/bin/sh
+      umount -l /etc/resolv.conf || true
+      rm /etc/resolv.conf
+      ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+
 environment:
   variables:
     - key: TMPDIR
