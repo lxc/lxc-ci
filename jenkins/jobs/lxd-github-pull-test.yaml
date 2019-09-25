@@ -55,7 +55,7 @@
         type: user-defined
         values:
         - golang-1.10
-        - golang-1.12
+        - golang-1.13
         - golang-tip
 
     - axis:
@@ -83,7 +83,7 @@
         - lxd-priv
 
     execution-strategy:
-      combination-filter: '!(arch=="i386" && backend!="dir") && !(arch=="i386" && compiler!="golang-1.12") && !(backend!="dir" && compiler!="golang-1.12")'
+      combination-filter: '!(arch=="i386" && backend!="dir") && !(arch=="i386" && compiler!="golang-1.13") && !(backend!="dir" && compiler!="golang-1.13")'
 
     publishers:
       - archive:
