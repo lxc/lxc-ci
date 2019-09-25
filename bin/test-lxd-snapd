@@ -63,6 +63,8 @@ fi
 
 echo "==> Installing LXD snap from ${track}/${channel}"
 snap remove lxd || true
+snap version
+snap list
 snap install lxd --channel="${snapd_channel}"
 
 # shellcheck disable=SC2034
