@@ -52,6 +52,39 @@ for i in $(lxc image list images: | grep x86_64 | grep "more" | awk '{print $2}'
         lxc config set "${name}-unpriv" raw.lxc lxc.signal.halt=SIGCONT
         lxc config set "${name}-priv" raw.lxc lxc.signal.halt=SIGCONT
     fi
+
+    # Cloud-init testing
+    if echo "${name}" | grep -E -q "cloud$"; then
+        lxc config set "${name}-unpriv" user.user-data "$(cat << EOF
+#cloud-config
+write_files:
+  - content: "foo\n"
+    path: /user-data
+EOF
+)"
+
+        lxc config set "${name}-unpriv" user.vendor-data "$(cat << EOF
+#cloud-config
+bootcmd:
+  - "echo bar > /vendor-data"
+EOF
+)"
+
+        lxc config set "${name}-priv" user.user-data "$(cat << EOF
+#cloud-config
+write_files:
+  - content: "foo\n"
+    path: /user-data
+EOF
+)"
+
+        lxc config set "${name}-priv" user.vendor-data "$(cat << EOF
+#cloud-config
+bootcmd:
+  - "echo bar > /vendor-data"
+EOF
+)"
+    fi
 done
 
 # Start them all
@@ -100,6 +133,23 @@ for url in $(lxc query "/1.0/containers" | jq -r .[]); do
     else
         echo "FAIL: DNS resolution: ${name}"
         FAIL=1
+    fi
+
+    # Cloud-init testing
+    if echo "${name}" | grep -E -q "(cloud-priv|cloud-unpriv)$"; then
+        if [ "$(lxc file pull "${name}/user-data" -)" = "foo" ]; then
+            echo "PASS: cloud-init user-data provisioning: ${name}"
+        else
+            echo "FAIL: cloud-init user-data provisioning: ${name}"
+            FAIL=1
+        fi
+
+        if [ "$(lxc file pull "${name}/vendor-data" -)" = "bar" ]; then
+            echo "PASS: cloud-init vendor-data provisioning: ${name}"
+        else
+            echo "FAIL: cloud-init vendor-data provisioning: ${name}"
+            FAIL=1
+        fi
     fi
 done
 
