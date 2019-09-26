@@ -137,15 +137,17 @@ for url in $(lxc query "/1.0/containers" | jq -r .[]); do
 
     # Cloud-init testing
     if echo "${name}" | grep -E -q "(cloud-priv|cloud-unpriv)$"; then
-        if [ "$(lxc file pull "${name}/user-data" -)" = "foo" ]; then
+        if [ "$(lxc file pull "${name}/user-data" - 2>/dev/null)" = "foo" ]; then
             echo "PASS: cloud-init user-data provisioning: ${name}"
         else
             echo "FAIL: cloud-init user-data provisioning: ${name}"
             FAIL=1
         fi
 
-        if [ "$(lxc file pull "${name}/vendor-data" -)" = "bar" ]; then
+        if [ "$(lxc file pull "${name}/vendor-data" - 2>/dev/null)" = "bar" ]; then
             echo "PASS: cloud-init vendor-data provisioning: ${name}"
+        elif echo "${name}" | grep -E -q "^(debian-8|centos-6|oracle-6)-"; then
+            echo "SKIP: cloud-init vendor-data provisioning: ${name}"
         else
             echo "FAIL: cloud-init vendor-data provisioning: ${name}"
             FAIL=1
