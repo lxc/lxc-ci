@@ -1760,5 +1760,16 @@ actions:
       # Cleanup temporary shadow paths
       rm /etc/*-
 
+  - trigger: post-packages
+    action: |-
+      #!/bin/sh
+      set -eux
+
+      # Enable cloud-init units
+      systemctl enable cloud-init
+
+   variants:
+    - cloud
+
 mappings:
   architecture_map: debian
