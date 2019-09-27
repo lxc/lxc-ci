@@ -1768,8 +1768,8 @@ actions:
       # Enable cloud-init units
       systemctl enable cloud-init
 
-   variants:
-    - cloud
+    variants:
+     - cloud
 
 mappings:
   architecture_map: debian
