@@ -42,6 +42,7 @@ lxc storage show default >/dev/null 2>&1 || exit 1
 lxc profile device add default root disk pool=default path=/
 
 # Create the containers
+echo "=> Creating the containers"
 for i in $(lxc image list images: | grep x86_64 | grep "more" | awk '{print $2}'); do
     name=$(echo "${i}" | sed -e "s/\//-/g" -e "s/\.//g")
     lxc init "images:${i}" "${name}-unpriv" -c security.nesting=true
@@ -88,6 +89,7 @@ EOF
 done
 
 # Start them all
+echo "=> Starting the containers"
 COUNT=0
 for url in $(lxc query "/1.0/containers" | jq -r .[]); do
     name=$(echo "${url}" | cut -d/ -f4)
