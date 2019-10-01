@@ -904,6 +904,7 @@ actions:
       # Disable networkd (unused)
       systemctl mask systemd-networkd.service
       systemctl mask systemd-networkd.socket
+      systemctl mask systemd-networkd-wait-online.service
 
       # Make sure the locale is built and functional
       echo en_US.UTF-8 UTF-8 >> /etc/locale.gen
