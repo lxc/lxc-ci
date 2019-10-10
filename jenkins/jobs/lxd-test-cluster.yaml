@@ -1,0 +1,74 @@
+- job:
+    name: "lxd-test-cluster"
+    concurrent: false
+    description: Tests cluster upgrades.
+    node: master
+    project-type: matrix
+
+    axes:
+    - axis:
+        name: source
+        type: user-defined
+        values:
+        - previous/stable
+        - latest/stable
+        - latest/candidate
+
+    - axis:
+        name: target
+        type: user-defined
+        values:
+        - latest/stable
+        - latest/candidate
+        - latest/edge
+
+    - axis:
+        name: arch
+        type: slave
+        values:
+        - amd64
+
+    - axis:
+        name: restrict
+        type: slave
+        values:
+        - lxd-priv
+
+    builders:
+    - shell: |-
+        cd /lxc-ci
+        PREVIOUS=$(curl -s -H "Snap-Device-Series: 16" https://api.snapcraft.io/v2/snaps/info/lxd | jq -r '.["channel-map"] | sort_by(.["created-at"]) | .[].channel.track' | grep -v latest | uniq | tail -2 | head -1)
+        source=$(echo ${source} | sed "s/previous/${PREVIOUS}/g")
+        target=$(echo ${target} | sed "s/previous/${PREVIOUS}/g")
+        exec sudo /lxc-ci/bin/test-lxd-cluster 8 "${source}" "${target}"
+
+    execution-strategy:
+      combination-filter: '
+      !(source=="latest/stable" && target == "latest/stable")
+      && !(source=="latest/candidate" && target == "latest/stable")
+      && !(source=="latest/candidate" && target == "latest/candidate")'
+
+    properties:
+    - build-discarder:
+        num-to-keep: 3
+
+    - raw:
+        !include: ../includes/webhook.yaml.inc
+
+    publishers:
+    - workspace-cleanup:
+        fail-build: false
+
+    - naginator:
+        rerun-unstable-builds: true
+        rerun-matrix-part: true
+        max-failed-builds: 3
+        progressive-delay-increment: 300
+        progressive-delay-maximum: 900
+
+    triggers:
+    - timed: '@daily'
+
+    wrappers:
+    - ansicolor:
+        colormap: css
