@@ -44,9 +44,9 @@
 
     execution-strategy:
       combination-filter: '
-      !(source=="latest/stable" && target == "latest/stable")
-      && !(source=="latest/candidate" && target == "latest/stable")
-      && !(source=="latest/candidate" && target == "latest/candidate")'
+      !(source=="latest-stable" && target == "latest-stable")
+      && !(source=="latest-candidate" && target == "latest-stable")
+      && !(source=="latest-candidate" && target == "latest-candidate")'
 
     properties:
     - build-discarder:
