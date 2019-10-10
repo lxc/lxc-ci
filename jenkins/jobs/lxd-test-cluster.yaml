@@ -10,17 +10,17 @@
         name: source
         type: user-defined
         values:
-        - previous/stable
-        - latest/stable
-        - latest/candidate
+        - previous-stable
+        - latest-stable
+        - latest-candidate
 
     - axis:
         name: target
         type: user-defined
         values:
-        - latest/stable
-        - latest/candidate
-        - latest/edge
+        - latest-stable
+        - latest-candidate
+        - latest-edge
 
     - axis:
         name: arch
@@ -38,8 +38,8 @@
     - shell: |-
         cd /lxc-ci
         PREVIOUS=$(curl -s -H "Snap-Device-Series: 16" https://api.snapcraft.io/v2/snaps/info/lxd | jq -r '.["channel-map"] | sort_by(.["created-at"]) | .[].channel.track' | grep -v latest | uniq | tail -2 | head -1)
-        source=$(echo ${source} | sed "s/previous/${PREVIOUS}/g")
-        target=$(echo ${target} | sed "s/previous/${PREVIOUS}/g")
+        source=$(echo ${source} | sed -e "s/previous/${PREVIOUS}/g" -e "s/\//-/g")
+        target=$(echo ${target} | sed -e "s/previous/${PREVIOUS}/g" -e "s/\//-/g")
         exec sudo /lxc-ci/bin/test-lxd-cluster 8 "${source}" "${target}"
 
     execution-strategy:
