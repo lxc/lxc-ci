@@ -5,6 +5,49 @@ source:
   downloader: centos-http
   url: http://centos.mirror.iweb.ca
   keys:
+    # 0X99DB70FAE1D7CE227FB6488205B555B38483C65D
+    - |-
+      -----BEGIN PGP PUBLIC KEY BLOCK-----
+
+      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
+      =VOO+
+      -----END PGP PUBLIC KEY BLOCK-----
+
     # 0x6341AB2753D78A78A7C27BB124C6A8A7F4A80EB5
     - |-
       -----BEGIN PGP PUBLIC KEY BLOCK-----
