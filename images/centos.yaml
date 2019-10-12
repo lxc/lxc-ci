@@ -389,6 +389,15 @@ files:
    releases:
     - 8
 
+  - name: override.conf
+    path: /etc/systemd/system/NetworkManager.service.d/override.conf
+    generator: dump
+    content: |-
+      [Service]
+      ExecStartPre=-/usr/sbin/ip link set eth0 down
+    variants:
+      - cloud
+
  - name: network
    path: /etc/sysconfig/network
    generator: dump
