@@ -49,7 +49,7 @@
         [ "${ARCH}" = "ppc64el" ] && ARCH="ppc64le"
 
         EXTRA_ARGS=""
-        if ([ "${architecture}" != "amd64" ] && [ "${architecture}" != "i386" ]) || ([ "${architecture}" = "i386" ] && [ "${release}" = "7" ]); then
+        if [ "${release}" != "8" ] && ([ "${architecture}" != "amd64" ] && [ "${architecture}" != "i386" ]) || ([ "${architecture}" = "i386" ] && [ "${release}" = "7" ]); then
             EXTRA_ARGS="-o source.url=http://mirror.math.princeton.edu/pub/centos-altarch/ -o source.skip_verification=true"
         fi
 
@@ -67,6 +67,7 @@
       combination-filter: '
       !(architecture=="arm64" && release == "6")
       && !(architecture=="armhf" && release != "7")
+      && !(architecture=="i386" && release == "8")
       && !(architecture=="ppc64el" && release == "6")'
 
     properties:
