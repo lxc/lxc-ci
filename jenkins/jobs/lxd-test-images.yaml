@@ -8,7 +8,7 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        exec sudo /lxc-ci/bin/maas-run tags=physical bionic ga-18.04 default bin/test-lxd-images
+        exec sudo /lxc-ci/bin/maas-run name=lantea bionic ga-18.04 default bin/test-lxd-images
 
     properties:
     - build-discarder:
