@@ -39,8 +39,7 @@
 
     execution-strategy:
       combination-filter: '
-      !(architecture=="ppc64el" && release=="28")
-      && !(architecture=="armhf" && release=="30")'
+      !(architecture=="armhf" && release!="29")'
 
     builders:
     - shell: |-
