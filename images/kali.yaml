@@ -1631,10 +1631,6 @@ source:
       -----END PGP PUBLIC KEY BLOCK-----
 
   variant: minbase
-  apt_sources: |-
-    deb http://http.kali.org/kali {{ image.release }} main non-free contrib
-  early_packages:
-   - kali-archive-keyring
 
 targets:
   lxc:
@@ -1722,6 +1718,11 @@ packages:
 
   sets:
     - packages:
+      - kali-archive-keyring
+      action: install
+      early: true
+
+    - packages:
       - dialog
       - ifupdown
       - init
@@ -1740,6 +1741,11 @@ packages:
       action: install
       variants:
        - cloud
+
+  repositories:
+    - name: sources.list
+      url: |-
+        deb http://http.kali.org/kali {{ image.release }} main non-free contrib
 
 actions:
   - trigger: post-packages
