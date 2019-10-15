@@ -234,15 +234,6 @@ source:
       =384X
       -----END PGP PUBLIC KEY BLOCK-----
 
-  apt_sources: |-
-    deb http://packages.linuxmint.com {{ image.release }} main upstream import backport
-    deb http://archive.ubuntu.com/ubuntu {{ source.suite }} main restricted universe multiverse
-    deb http://archive.ubuntu.com/ubuntu {{ source.suite }}-updates main restricted universe multiverse
-    deb http://security.ubuntu.com/ubuntu {{ source.suite }}-security main restricted universe multiverse
-
-  early_packages:
-    - gnupg
-
 targets:
   lxc:
     create-message: |-
@@ -361,6 +352,11 @@ packages:
 
   sets:
     - packages:
+      - gnupg
+      action: install
+      early: true
+
+    - packages:
       - apt-transport-https
       - fuse
       - language-pack-en
@@ -373,6 +369,14 @@ packages:
       action: install
       variants:
        - cloud
+
+  repositories:
+    - name: sources.list
+      url: |-
+        deb http://packages.linuxmint.com {{ image.release }} main upstream import backport
+        deb http://archive.ubuntu.com/ubuntu {{ source.suite }} main restricted universe multiverse
+        deb http://archive.ubuntu.com/ubuntu {{ source.suite }}-updates main restricted universe multiverse
+        deb http://security.ubuntu.com/ubuntu {{ source.suite }}-security main restricted universe multiverse
 
 actions:
   - trigger: post-unpack

@@ -208,11 +208,6 @@ source:
       -----END PGP PUBLIC KEY BLOCK-----
 
   variant: minbase
-  apt_sources: |-
-    deb http://deb.devuan.org/merged {{ image.release }} main
-    deb http://deb.devuan.org/merged {{ image.release }}-security main
-  early_packages:
-    - devuan-keyring
 
 targets:
   lxc:
@@ -311,6 +306,11 @@ packages:
 
   sets:
     - packages:
+        - devuan-keyring
+      action: install
+      early: true
+
+    - packages:
         - ca-certificates
         - curl
         - dialog
@@ -337,6 +337,12 @@ packages:
       action: install
       variants:
        - cloud
+
+  repositories:
+    - name: sources.list
+      url: |-
+        deb http://deb.devuan.org/merged {{ image.release }} main
+        deb http://deb.devuan.org/merged {{ image.release }}-security main
 
 actions:
   - trigger: post-packages
