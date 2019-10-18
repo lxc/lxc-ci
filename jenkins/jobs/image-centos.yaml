@@ -54,7 +54,7 @@
         fi
 
         if [ "${release}" = "8" ]; then
-            EXTRA_ARGS="${EXTRA_ARGS} -o source.variant=dvd1"
+            EXTRA_ARGS="${EXTRA_ARGS} -o source.variant=boot"
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/centos.yaml \
