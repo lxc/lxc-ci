@@ -147,7 +147,7 @@ for version in 1.10.8 1.13 tip; do
     export PATH="${GOROOT}/bin:${OLD_PATH}"
 
     go get github.com/rogpeppe/godeps >/dev/null || true
-    go get github.com/remyoudompheng/go-misc/deadcode >/dev/null || true
+    go get github.com/tsenart/deadcode >/dev/null || true
     go get github.com/snapcore/snapd/i18n/xgettext-go >/dev/null || true
     go get github.com/client9/misspell/cmd/misspell >/dev/null || true
     go get github.com/gordonklaus/ineffassign >/dev/null || true
