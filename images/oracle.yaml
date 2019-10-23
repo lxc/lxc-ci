@@ -148,6 +148,14 @@ packages:
 
     sets:
      - packages:
+        - rsyslog
+        - tcp_wrappers-libs
+       action: install
+       releases:
+        - 6
+        - 7
+
+     - packages:
         - curl
         - dhclient
         - initscripts
@@ -155,8 +163,6 @@ packages:
         - passwd
         - policycoreutils
         - rootfiles
-        - rsyslog
-        - tcp_wrappers-libs
         - vim-minimal
        action: install
 
