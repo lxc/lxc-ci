@@ -27,6 +27,7 @@
         - cosmic
         - disco
         - eoan
+        - focal
 
     - axis:
         name: variant
