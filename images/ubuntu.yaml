@@ -307,6 +307,7 @@ files:
      - cosmic
      - disco
      - eoan
+     - focal
 
  - path: /etc/network/interfaces
    generator: dump
