@@ -57,14 +57,9 @@ files:
      TYPE=Ethernet
      MTU=
      DHCP_HOSTNAME=`hostname`
-
- - name: network
-   path: /etc/sysconfig/network
-   generator: dump
-   templated: true
-   content: |-
-     NETWORKING=yes
-     HOSTNAME=LXC_NAME
+   releases:
+    - 6
+    - 7
 
  - name: ifcfg-eth0.lxd
    path: /etc/sysconfig/network-scripts/ifcfg-eth0
@@ -78,6 +73,55 @@ files:
      TYPE=Ethernet
      MTU=
      DHCP_HOSTNAME=`hostname`
+   releases:
+    - 6
+    - 7
+
+ - name: ifcfg-eth0
+   path: /etc/sysconfig/network-scripts/ifcfg-eth0
+   generator: dump
+   templated: true
+   content: |-
+     DEVICE=eth0
+     BOOTPROTO=dhcp
+     ONBOOT=yes
+     HOSTNAME=LXC_NAME
+     TYPE=Ethernet
+     MTU=
+     DHCP_HOSTNAME=`cat /proc/sys/kernel/hostname`
+   releases:
+    - 8
+
+ - name: ifcfg-eth0.lxd
+   path: /etc/sysconfig/network-scripts/ifcfg-eth0
+   generator: template
+   content: |-
+     DEVICE=eth0
+     BOOTPROTO=dhcp
+     ONBOOT=yes
+     HOSTNAME={{ container.name }}
+     TYPE=Ethernet
+     MTU=
+     DHCP_HOSTNAME=`cat /proc/sys/kernel/hostname`
+   releases:
+    - 8
+
+ - name: override.conf
+   path: /etc/systemd/system/NetworkManager.service.d/override.conf
+   generator: dump
+   content: |-
+     [Service]
+     ExecStartPre=-/usr/sbin/ip link set eth0 down
+   variants:
+    - cloud
+
+ - name: network
+   path: /etc/sysconfig/network
+   generator: dump
+   templated: true
+   content: |-
+     NETWORKING=yes
+     HOSTNAME=LXC_NAME
 
  - name: network.lxd
    path: /etc/sysconfig/network
@@ -165,6 +209,12 @@ packages:
         - rootfiles
         - vim-minimal
        action: install
+
+     - packages:
+        - NetworkManager
+       action: install
+       releases:
+        - 8
 
      - packages:
         - cloud-init
