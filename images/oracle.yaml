@@ -171,6 +171,21 @@ packages:
        action: install
        variants:
         - cloud
+
+    repositories:
+      - name: AppStream
+        url: |-
+          [AppStream]
+          name=Oracle Linux AppStream
+          baseurl=http://yum.oracle.com/repo/OracleLinux/OL{{ image.release }}/appstream/$basearch/
+          enabled=1
+          gpgcheck=1
+          gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
+        releases:
+          - 8
+        variants:
+          - cloud
+
 actions:
   - trigger: post-packages
     action: |-
