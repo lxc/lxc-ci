@@ -51,7 +51,7 @@
 
     publishers:
     - workspace-cleanup:
-        fail-build: true
+        fail-build: false
 
     - naginator:
         rerun-unstable-builds: true
