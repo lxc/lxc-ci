@@ -304,7 +304,6 @@ files:
          eth0: {dhcp4: true}
    releases:
      - bionic
-     - cosmic
      - disco
      - eoan
      - focal
