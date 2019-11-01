@@ -474,6 +474,7 @@ packages:
 
   sets:
     - packages:
+        - base
         - dhcpcd
         - diffutils
         - file
