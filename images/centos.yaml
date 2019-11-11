@@ -395,8 +395,6 @@ files:
    content: |-
      [Service]
      ExecStartPre=-/usr/sbin/ip link set eth0 down
-   variants:
-    - cloud
 
  - name: network
    path: /etc/sysconfig/network
