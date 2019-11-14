@@ -5,6 +5,63 @@ source:
   downloader: openwrt-http
   url: https://downloads.openwrt.org
   keys:
+    # 0xAD0507363D2BCE9C9E36CEC4FBCB78F015807931
+    - |-
+      -----BEGIN PGP PUBLIC KEY BLOCK-----
+      Comment: OpenWrt 18.06 public key v2
+
+      mQINBF0sHYQBEADiZLXk11VHTLxdYlYalbN+hOfIRYdMras9EQDQac4hYGnWPvlH
+      TUuorTtrlvuEF1puYqU0achbCn8Fcop/UFOzyCD3MfjqTAbmG9kYVJz2pce6HqXY
+      q2sDlxyLOCs6AJD/DQqbYKq6rOtBbbUkE8EHXFMP0x42F7x4uW8p7FnYhuoBds2H
+      wNZja+LCH3BDJ+wmqNfA2T0JLqWe7o8pAUFNJ/5KVS//o755Jy3MOv7PPqVyB264
+      OlvUYIJD7a14o+b/7wPbCFkOnCVvJ+may3muG950z0BCJs4s5Zq+V3Z6Mnx/q8Cg
+      J+ICRecRp/X8EFYNUpmOWhuk980usiBaywcnPUkPknHZdz7d+4KonzErTta1LmSG
+      dtQQU1zTNCDKaZGLYgfvOITIWj643IbbObqN+fLif/q2nXcxCaEF6BnnDyBguAw0
+      sz40g0v+xeEgSgvUplgy7oPVd1QrsILLk4VnNXyOet3c81MuVXf32vqgA8H3eKnv
+      t8ApY7KB2I+0Bac+XIpSJ+tklXDc7nCW+e6wFqKIt76cXTkZtrvdx1/ExJ4oN5oI
+      37rWvk5MNlyBksuQVQ8Ghbpy09PawJSeG0eKlN6qDNjhNdurNmdSWQYSF8L2e9gh
+      FgTms8iwHjA5+Kof7clBJtGwIaxgO3t0JEJh/QC/afbxrw2zHX1/apHQ7QARAQAB
+      tFNPcGVuV3J0IEJ1aWxkIFN5c3RlbSAoUEdQIGtleSBmb3IgMTguMDYgcmVsZWFz
+      ZSBidWlsZHMpIDxwZ3BzaWduLTE4LjA2QG9wZW53cnQub3JnPokCVwQTAQgAQQIb
+      AwUJA8JnAAULCQgHAgYVCAkKCwIEFgIDAQIeAQIXgBYhBK0FBzY9K86cnjbOxPvL
+      ePAVgHkxBQJdN1D0AhkBAAoJEPvLePAVgHkxJpcP/2zGIsgfnzatXkivwJqoUSwu
+      JTGjUptQ4/dnP4Nn2y11E3USD4SyVTeEaPjCyg6C4tsKqeI/o+HalJJHy10f/7DM
+      zC5QhdA5zBZALDsBzHp+TIpsE0eeGSO3qBWsqN55WVa4R5iTXck1rz3/LebB/XSD
+      YHSBb65aCV8g4KCTShfUP6fepFVJnrUJITZYio2pSC2ecXw0KWgRsjp/OzDc8CFb
+      xbwZRwYjZqHqSCbK16IQ/yGx9m9ZPWSkjqMVGl2TD7uvSYXgnBp9dKfbIuzQRWiO
+      FbDsctI0OjjPr4ghpEwvfLgQlYsUKS8xVvlsEzwJ86JijimC+ojwo6rrKp+JDJVm
+      4V+UeI8iWtF0LIqJ1e0M6mi+GWMUp/pa04epluAezF7si5zprOaiGrX7fKO85vHP
+      AY3D//KRS9cO/8KJwl1dKO+hUntq1bjiPna5cLUveTHU3zXCYevAU01AKnCaCiwu
+      /duF0i/NfU6t2tt9AQEL7J5yznId3NJRTnMDmtR3O5NxssJh8FRIgHI6Q4+P2Xr9
+      XTPRU50DPjMmgSzMOcsbRWvNMURgKGMy5SExIH0Lay/aVAy6zSD/mqOiXMIa8fRY
+      iVJpITlEyc/Zpqse0kuXoemvTsz07BZxiAoJYnNJ9tt8PiRwRwJv1ywOpM4B/ZWH
+      yxJa3yr9L7iYcgvKKV68iQIzBBABCAAdFiEEVMx0MHosbcnOYYJpzYS87WJkcfEF
+      Al03UrEACgkQzYS87WJkcfFXqg/9G4qGnIG7k/iSDRZUPZkyA7o4069DEQILDAJS
+      GWW5nxmuPJrMZ9gW0B4MMlsH8k+vSPJuiQNNTuTIXlRSl2e/UI0KBjegkLFnIcVc
+      B5W9DjfHEHsqddVwbKpRBgnhn24N13vzR+0A6L85WqgpNgITqfepe6fJGk+jB3W0
+      /j0gHB3vVq/KJBd9VBjOh+6qMbUGgCr9a7D/6h1Fv7kEjpVPeNZCGJxGJaW7NiH8
+      RbRtJO8jXjxpmJwS9QhtMesectI9AovUP0Flw/BjAGbp4TUnri5TaVnrMou36CP6
+      qFvTl2pm2s6P3Nr/VpUGS8qtrhP03aQ51JlTWKEvg35kgwScIZN7YV7tkjgO4MdG
+      z4Ol5DirG+KYNrjrpJwQIoQI0UuH67t9kw7ZVJtvnc2g0USavHZw2S8YW14+nS7T
+      jve6QWp3f6Corlc7qAnUJkpeROam3AJ2tGeJ5gIB/QljeUKYI0gxKcgpGsyF/aL/
+      1pHmJJU7SsyQno/p3ZPy7q1+nOudEVCc0yx1c4mws84ksxr2yy+NOwQpDnUrvMDN
+      cXDdSMJsdAoIWB+c54xNAyPdcYGw+RDKYYwp55aMHKH4qi264GeAeA6bBstwJwB9
+      4uFkdcsnCws6fTEDcqGVGar4a/4SDKHIpA3L8iEuLVBPmk9QVzwOm2E06u/kPVsV
+      wGUh/Q2JAjMEEAEIAB0WIQSwm+eBrooM1HAv3NODPGAQ1Su7awUCXTdTEQAKCRCD
+      PGAQ1Su7a9r0D/9WbLMEnmeh63H06iuWFhZfgamFjeR0kdnlwz/JKUvA19SmO7Ts
+      CsVanvIOu0KidmDzfNMryAZTzC9HL4EOzWr282K2vrihqE7/ZraOoVDKS6Hf2m1l
+      /BtA7JR3OkQ5O77b+hkyfwRWf0khd1h2mfyYWw8am4bPD8waY/sEY9Q3noSXdFwy
+      E9emOZElwir/slh5t2sL2dV/VMi+VHqzhRBn8GbK0JYNMgq/0A/Uq4cHPSpDOwLJ
+      PdePs7JVRhF94diTNbhY4LDpUb2cqeeY+OQUkW1mIHcz58RrWpFGShIAlYWQe3Vw
+      RKSfC1Ouiujd6Wwx+M96azgcPQwTrbRJBK9z6Tp+733/BEpcuohQicLelFQZS/IF
+      vNeWTfRC/xOh1x7gtT2a90TzvXqD7Wf/aRR0O+HcUSaYnpEZHRTaS/5VH5yAPFV1
+      tcbDWu4Ah2705MnTnsmbmu4p6t0VF6o1Ia3PQFZTW/nVN1Rf68dDpkF9yOawqgSu
+      +OsZFXYRElm47BQ+Y0QwCEnBFjx8U+AdKHblTdll3WjL4+1FEufK+nUUh/kacC3b
+      IDhFUGAzYgl8nANgr8aQkN+YxX90QhGpwQgVLhyhqCrAFCIOs+9yyxjZfUl3GTL/
+      QGPYI6bhYSenR9fffWoO3sHnknEKFe1Aswgfc+a2o7Qv+r+sS6lzAWfcDw==
+      =VO4g
+      -----END PGP PUBLIC KEY BLOCK-----
+
     # 0x6768C55E79B032D77A28DA5F0F20257417E1CE16
     - |-
       -----BEGIN PGP PUBLIC KEY BLOCK-----
