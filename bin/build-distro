@@ -52,7 +52,9 @@ rm -f /run/dbus/system_bus_socket
 # Build the image
 mkdir /root/build
 if [ "$(uname -m)" = "x86_64" ] || [ "$(uname -m)" = "i686" ]; then
-    mount -t tmpfs tmpfs /root/build -o size=10G,nr_inodes=10000000
+    if ! echo "${YAML}" | grep -q sabayon; then
+        mount -t tmpfs tmpfs /root/build -o size=5G,nr_inodes=10000000
+    fi
 fi
 cp -R /root/go/src/github.com/lxc/distrobuilder/data /root/build/data
 mv /root/image.yaml /root/build/
