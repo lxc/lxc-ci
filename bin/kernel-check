@@ -7,5 +7,6 @@ fi
 
 dmesg | grep -q "Out of memory" && reboot
 dmesg | grep -q "blocked for more than 120 seconds" && reboot
+dmesg | grep -q "ceph.*tid.*pool does not exist" && reboot
 
 exit 0
