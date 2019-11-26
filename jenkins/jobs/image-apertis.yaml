@@ -18,10 +18,6 @@
         name: release
         type: user-defined
         values:
-        - '17.12'
-        - '18.03'
-        - '18.06'
-        - '18.09'
         - '18.12'
 
     - axis:
