@@ -12,6 +12,10 @@ fi
 
 grep /lxc-ci/build/ /proc/mounts | awk '{print $2}' | while read -r line; do umount "${line}"; done
 
+for i in $(seq 0 254); do
+    [ -e "/dev/rbd${i}" ] && rbd unmap /dev/rbd${i}
+done
+
 if which zpool >/dev/null 2>&1; then
     zpool list | grep ONLINE | awk '{print $1}' | grep -v default | while read -r line; do zpool destroy "${line}"; done
 fi
