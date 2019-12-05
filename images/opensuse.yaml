@@ -120,7 +120,6 @@ packages:
     - packages:
        - net-tools
       releases:
-       - "15.0"
        - "tumbleweed"
       action: install
 
@@ -151,7 +150,6 @@ actions:
      # Have the sysconfig network renderer support openSUSE Leap
      sed -i "s|'opensuse'|'opensuse-leap'|" $(find /usr -wholename '*/cloudinit/net/sysconfig.py')
    releases:
-     - 15.0
      - 15.1
    variants:
      - cloud
