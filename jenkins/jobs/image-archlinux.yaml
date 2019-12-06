@@ -51,7 +51,7 @@
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/archlinux.yaml \
             ${LXD_ARCHITECTURE} 1800 ${WORKSPACE} \
             -o image.architecture=${ARCH} \
-            -o source.url=http://il.us.mirror.archlinuxarm.org
+            -o source.url=http://nj.us.mirror.archlinuxarm.org
 
     properties:
     - build-discarder:
