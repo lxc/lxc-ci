@@ -40,8 +40,6 @@
         values:
         - stable
         - candidate
-        - beta
-        - edge
 
     - axis:
         name: restrict
