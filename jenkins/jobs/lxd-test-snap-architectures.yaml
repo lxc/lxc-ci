@@ -35,6 +35,15 @@
         - stable
 
     - axis:
+        name: core
+        type: user-defined
+        values:
+        - stable
+        - candidate
+        - beta
+        - edge
+
+    - axis:
         name: restrict
         type: slave
         values:
@@ -43,7 +52,7 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        exec sudo /lxc-ci/bin/test-lxd-snapd-container ${architecture} ${track} ${channel}
+        exec sudo /lxc-ci/bin/test-lxd-snapd-container ${architecture} ${core} ${track} ${channel}
 
     properties:
     - build-discarder:
