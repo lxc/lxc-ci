@@ -3,6 +3,8 @@ CNAME="snapd-$(uuidgen)"
 
 ARCH=${1}
 shift
+CORE=${1}
+shift
 
 cleanup() {
     lxc delete --force "${CNAME}"
@@ -44,6 +46,13 @@ apt-get update --yes
 apt-get install --yes snapd fuse
 mkdir -p /lib/modules
 useradd -m -s /bin/bash jenkins
+
+# Install specific core snap channels if requested
+if [ "${CORE}" != "stable" ]; then
+    snap install core --channel=${CORE}
+    snap install core18 --channel=${CORE}
+    snap install snapd --channel=${CORE}
+fi
 
 exit 0
 EOF
