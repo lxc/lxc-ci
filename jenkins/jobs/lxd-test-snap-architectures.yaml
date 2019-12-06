@@ -23,6 +23,7 @@
         values:
         - stable
         - candidate
+        - beta
 
     - axis:
         name: track
