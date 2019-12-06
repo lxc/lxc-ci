@@ -18,6 +18,13 @@
         - s390x
 
     - axis:
+        name: core
+        type: user-defined
+        values:
+        - stable
+        - candidate
+
+    - axis:
         name: track
         type: user-defined
         values:
@@ -33,13 +40,6 @@
         - beta
         - candidate
         - stable
-
-    - axis:
-        name: core
-        type: user-defined
-        values:
-        - stable
-        - candidate
 
     - axis:
         name: restrict
