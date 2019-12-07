@@ -59,6 +59,7 @@
     execution-strategy:
       combination-filter: '
       !(architecture=="s390x" && release == "trusty") &&
+      !(architecture=="i386" && release == "focal") &&
       !(variant == "cloud" && release == "trusty")'
 
     properties:
