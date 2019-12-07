@@ -350,6 +350,9 @@ actions:
       #!/bin/sh
       set -eux
 
+      # inittab if missing
+      [ ! -e "/etc/inittab" ] && cp /usr/share/sysvinit/inittab /etc/inittab
+
       # Fix container shutdown
       sed -i "s#^pf::powerwait.*#pf::powerwait:/sbin/poweroff#" /etc/inittab
 
