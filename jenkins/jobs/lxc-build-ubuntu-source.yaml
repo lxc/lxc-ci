@@ -51,6 +51,7 @@
         - bionic
         - disco
         - eoan
+        - focal
 
     - axis:
         name: restrict
