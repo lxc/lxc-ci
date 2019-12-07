@@ -328,6 +328,7 @@ packages:
         - openssh-client
         - rsync
         - sysv-rc-conf
+        - sysvinit-core
         - vim-tiny
         - wget
       action: install
