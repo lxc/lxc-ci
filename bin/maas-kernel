@@ -28,6 +28,14 @@ case "$1" in
     apt-get dist-upgrade --yes
   ;;
 
+  ubuntu-unstable)
+    echo "===> Installing the current unstable kernel"
+    apt-get update
+    apt-get install software-properties-common --yes
+    apt-add-repository ppa:canonical-kernel-team/unstable --yes
+    apt-get dist-upgrade --yes
+  ;;
+
   daily)
     echo "===> Installing a mainline daily build"
     wget -e robots=off -r --no-parent -A '*all*.deb' -R '*lpae*' -R '*lowlatency*' https://kernel.ubuntu.com/~kernel-ppa/mainline/daily/current/
