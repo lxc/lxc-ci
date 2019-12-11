@@ -13,7 +13,7 @@
         - daily
         - ubuntu
         - ubuntu-proposed
-        - ubuntu-bootstrap
+        - ubuntu-unstable
 
     - axis:
         name: restrict
