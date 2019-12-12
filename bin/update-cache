@@ -18,7 +18,7 @@ trap cleanup EXIT HUP INT TERM
 ifup lxdbr0 >/dev/null 2>&1 || true
 
 # Test image
-git clone https://github.com/mirror/busybox "${TEMP_DIR}/busybox"
+git clone -q https://github.com/mirror/busybox "${TEMP_DIR}/busybox"
 cd "${TEMP_DIR}/busybox"
 make defconfig >/dev/null
 echo CONFIG_STATIC=y >> .config
