@@ -519,21 +519,11 @@ packages:
     - packages:
         - dnssec-anchors
         - haveged
-        - jfsutils
         - ldns
-        - libaio
         - libedit
         - linux-firmware
-        - lvm2
-        - mdadm
         - net-tools
         - openssh
-        - pciutils
-        - reiserfsprogs
-        - s-nail
-        - thin-provisioning-tools
-        - usbutils
-        - xfsprogs
       action: remove
       architectures:
         - aarch64
