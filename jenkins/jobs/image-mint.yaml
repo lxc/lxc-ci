@@ -24,6 +24,7 @@
         - tara
         - tessa
         - tina
+        - tricia
 
     - axis:
         name: variant
@@ -43,7 +44,7 @@
         cd /lxc-ci
 
         suite=xenial
-        if [ "${release}" = "tara" ] || [ "${release}" = "tessa" ] || [ "${release}" = "tina" ]; then
+        if [ "${release}" = "tara" ] || [ "${release}" = "tessa" ] || [ "${release}" = "tina" ] || [ "${release}" = "tricia" ]; then
             suite=bionic
         fi
 
