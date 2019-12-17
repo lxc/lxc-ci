@@ -304,6 +304,7 @@ files:
      - tara
      - tessa
      - tina
+     - tricia
 
  - path: /etc/network/interfaces
    generator: dump
