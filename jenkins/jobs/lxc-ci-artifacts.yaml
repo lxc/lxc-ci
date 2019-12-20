@@ -37,6 +37,10 @@
         values:
         - lxc-priv
 
+    execution-strategy:
+      combination-filter: '
+      !(artifact!="distrobuilder-image" && (architecture!="amd64" && architecture!="i386"))'
+
     builders:
     - shell: |-
         cd /lxc-ci
