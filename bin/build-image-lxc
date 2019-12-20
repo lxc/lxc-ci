@@ -1,0 +1,109 @@
+#!/bin/sh -eu
+export PATH="/snap/bin/:${PATH}"
+
+cleanup() {
+    set +e
+    lxc delete build-lxc-cache -f >/dev/null 2>&1
+
+    exit 0
+}
+trap cleanup EXIT HUP INT TERM
+
+ARCH="$1"
+TARGET="$2"
+
+# Create the container
+lxc init "images:ubuntu/bionic/${ARCH}" build-lxc-cache \
+    -c security.privileged=true -c security.nesting=true
+
+# Start the container
+lxc start build-lxc-cache
+
+# Wait for network
+while ! lxc info build-lxc-cache | grep -q "eth0.*inet.*10\\."; do
+    sleep 5s
+done
+
+sleep 5s
+
+# Install build dependencies
+(
+    cat << EOF
+#!/bin/sh
+set -eux
+
+ARCHIVE="http://us.archive.ubuntu.com/ubuntu"
+if grep -q ports /etc/apt/sources.list; then
+    ARCHIVE="http://us.ports.ubuntu.com/ubuntu-ports"
+fi
+
+# Setup clean sources
+echo force-unsafe-io >> /etc/dpkg/dpkg.cfg
+cat > /etc/apt/sources.list << EOL
+deb \${ARCHIVE} bionic main universe restricted multiverse
+deb \${ARCHIVE} bionic-updates main universe restricted multiverse
+deb \${ARCHIVE} bionic-security main universe restricted multiverse
+deb \${ARCHIVE} bionic-backports main universe restricted multiverse
+EOL
+apt-get update --yes
+
+# Install dependencies
+apt-get install --yes --no-install-recommends \
+    automake autoconf bash-completion build-essential clang debhelper devscripts \
+    dh-apparmor dh-autoreconf dh-systemd docbook2x doxygen fakeroot gcc graphviz \
+    git libapparmor-dev libcap-dev libgnutls28-dev liblua5.2-dev libpam0g-dev \
+    libseccomp-dev libselinux1-dev libtool linux-libc-dev lsb-release \
+    make pkg-config python3-all-dev python3-setuptools unzip
+apt-get clean
+EOF
+) | lxc exec build-lxc-cache -- sh
+
+# Install Android dependencies
+if [ "${ARCH}" = "amd64" ]; then
+    lxc file push deps/android-ndk-linux-x86_64.zip build-lxc-cache/tmp/ndk.zip
+    lxc file push deps/genetlink.h build-lxc-cache/tmp/genetlink.h
+    (
+    cat << EOF
+#!/bin/sh
+set -eux
+
+mkdir -p /build/ndk
+cd /build/ndk/
+
+# Unpack the Android NDK
+unzip -q /tmp/ndk.zip
+mv android-ndk-*/* .
+rmdir android-ndk-*
+rm /tmp/ndk.zip
+
+# Workaround missing header
+mv /tmp/genetlink.h /build/ndk/platforms/android-21/arch-arm/usr/include/linux/genetlink.h
+
+# Get specific libcap source
+git clone git://git.kernel.org/pub/scm/linux/kernel/git/morgan/libcap.git /build/libcap
+cd /build/libcap
+git checkout 0ee94211e95096750ede752acd13b163aa6d5046
+
+# Environment
+export PATH=/build/ndk/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/:\${PATH}
+export CC="arm-linux-androideabi-gcc --sysroot=/build/ndk/platforms/android-21/arch-arm/"
+export DESTDIR=/build/android
+export BUILD_CC=gcc
+
+# Build and install libcap
+cd /build/libcap/libcap/
+make -e LIBATTR=no
+
+cp -P /build/libcap/libcap/libcap.so* /build/ndk/platforms/android-21/arch-arm/usr/lib/
+cp -P /build/libcap/libcap/libcap.a /build/ndk/platforms/android-21/arch-arm/usr/lib/
+cp -P /build/libcap/libcap/include/sys/capability.h /build/ndk/platforms/android-21/arch-arm/usr/include/sys/
+cp -P /build/libcap/libcap/include/uapi/linux/capability.h /build/ndk/platforms/android-21/arch-arm/usr/include/linux/
+EOF
+    ) | lxc exec build-lxc-cache -- sh
+fi
+
+lxc stop build-lxc-cache
+lxc export build-lxc-cache "${TARGET}/build-lxc-cache.tar.xz" --compression xz
+lxc delete -f build-lxc-cache
+
+exit 0

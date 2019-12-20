@@ -1,0 +1,64 @@
+#!/bin/sh -eu
+export PATH="/snap/bin/:${PATH}"
+
+cleanup() {
+    set +e
+    lxc delete build-lxd-cache -f >/dev/null 2>&1
+
+    exit 0
+}
+trap cleanup EXIT HUP INT TERM
+
+ARCH="$1"
+TARGET="$2"
+
+# Create the container
+lxc init "images:ubuntu/bionic/${ARCH}" build-lxd-cache
+
+# Start the container
+lxc start build-lxd-cache
+
+# Wait for network
+while ! lxc info build-lxd-cache | grep -q "eth0.*inet.*10\\."; do
+    sleep 5s
+done
+
+sleep 5s
+
+# Install everything we need to build the cache
+(
+    cat << EOF
+#!/bin/sh
+set -eux
+
+ARCHIVE="http://us.archive.ubuntu.com/ubuntu"
+if grep -q ports /etc/apt/sources.list; then
+    ARCHIVE="http://us.ports.ubuntu.com/ubuntu-ports"
+fi
+
+# Setup clean sources
+echo force-unsafe-io >> /etc/dpkg/dpkg.cfg
+cat > /etc/apt/sources.list << EOL
+deb \${ARCHIVE} bionic main universe restricted multiverse
+deb \${ARCHIVE} bionic-updates main universe restricted multiverse
+deb \${ARCHIVE} bionic-security main universe restricted multiverse
+deb \${ARCHIVE} bionic-backports main universe restricted multiverse
+EOL
+apt-get update --yes
+
+# Install dependencies
+apt-get install --yes --no-install-recommends \
+    git build-essential libtool libuv1-dev make pkg-config tcl \
+    autoconf automake autopoint curl
+apt-get clean
+
+# Build the cache
+git clone https://github.com/lxc/lxc-ci /lxc-ci
+mkdir -p /lxc-ci/build
+cd /lxc-ci/bin
+LXD_GOCACHE=true sh -eux update-cache
+EOF
+) | lxc exec build-lxd-cache -- sh
+
+lxc exec build-lxd-cache -- tar -Jcf - -C /lxc-ci/build cache > "${TARGET}/build-lxd-cache.tar.xz"
+lxc delete -f build-lxd-cache
