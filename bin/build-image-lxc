@@ -103,7 +103,7 @@ EOF
 fi
 
 lxc stop build-lxc-cache
-lxc export build-lxc-cache "${TARGET}/build-lxc-cache.tar.xz" --compression xz
+lxc export build-lxc-cache "${TARGET}/build-lxc-cache.tar.xz"
 lxc delete -f build-lxc-cache
 
 exit 0

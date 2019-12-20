@@ -85,5 +85,5 @@ EOF
 ) | lxc exec build-distrobuilder-cache -- sh
 
 lxc stop build-distrobuilder-cache
-lxc export build-distrobuilder-cache "${TARGET}/build-distrobuilder-cache.tar.xz" --compression xz
+lxc export build-distrobuilder-cache "${TARGET}/build-distrobuilder-cache.tar.xz"
 lxc delete -f build-distrobuilder-cache
