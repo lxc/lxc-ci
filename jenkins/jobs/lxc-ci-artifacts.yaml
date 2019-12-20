@@ -1,0 +1,78 @@
+- job:
+    name: "lxc-ci-artifacts"
+    concurrent: false
+    description: Build cache artifacts for the test runners.
+    node: master
+    project-type: matrix
+
+    axes:
+    - axis:
+        name: architecture
+        type: slave
+        values:
+        - amd64
+        - arm64
+        - armhf
+        - i386
+        - ppc64el
+        - s390x
+
+    - axis:
+        name: artifact
+        type: user-defined
+        values:
+        - distrobuilder-image
+        - lxc-image
+        - lxd-cache
+
+    - axis:
+        name: variant
+        type: user-defined
+        values:
+        - default
+
+    - axis:
+        name: restrict
+        type: slave
+        values:
+        - lxc-priv
+
+    builders:
+    - shell: |-
+        cd /lxc-ci
+        if [ "${artifact}" = "distrobuilder-image" ]; then
+            exec sudo /lxc-ci/bin/build-image-distrobuilder ${architecture} ${WORKSPACE}
+        elif [ "${artifact}" = "lxc-image" ]; then
+            exec sudo /lxc-ci/bin/build-image-lxc ${architecture} ${WORKSPACE}
+        elif [ "${artifact}" = "lxd-cache" ]; then
+            exec sudo /lxc-ci/bin/build-cache ${architecture} ${WORKSPACE}
+        else
+            echo "Bad artifact"
+            exit 1
+        fi
+
+    properties:
+    - build-discarder:
+        num-to-keep: 1
+
+    publishers:
+    - archive:
+        artifacts: "*.tar.xz"
+        only-if-success: true
+
+    - workspace-cleanup:
+        fail-build: false
+
+    - naginator:
+        rerun-unstable-builds: true
+        rerun-matrix-part: true
+        max-failed-builds: 3
+        progressive-delay-increment: 300
+        progressive-delay-maximum: 900
+
+    triggers:
+    - timed: 'H */6 * * *'
+
+    wrappers:
+    - ansicolor:
+        colormap: xterm
