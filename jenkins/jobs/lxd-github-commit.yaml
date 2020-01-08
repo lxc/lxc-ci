@@ -78,7 +78,7 @@
         https://github.com/lxc/lxd {branch} ${{backend}}"
 
     execution-strategy:
-      combination-filter: '!(backend=="zfs" && arch!="amd64") && !(backend=="ceph" && arch!="amd64")'
+      combination-filter: '!(backend=="zfs" && arch!="amd64") && !(backend=="lvm" && arch!="amd64") && !(backend=="ceph" && arch!="amd64")'
 
     properties:
     - build-discarder:
