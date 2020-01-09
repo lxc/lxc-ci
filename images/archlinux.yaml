@@ -467,6 +467,13 @@ files:
       [Network]
       DHCP=ipv4
 
+  - name: networkd-override
+    path: /etc/systemd/system/systemd-networkd.service.d/lxc.conf
+    generator: dump
+    content: |-
+      [Service]
+      BindReadOnlyPaths=/sys
+
 packages:
   manager: pacman
   update: true

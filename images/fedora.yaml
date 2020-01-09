@@ -54,6 +54,17 @@ files:
     variants:
       - default
 
+  - name: networkd-override
+    path: /etc/systemd/system/systemd-networkd.service.d/lxc.conf
+    generator: dump
+    content: |-
+      [Service]
+      BindReadOnlyPaths=/sys
+    variants:
+      - default
+    releases:
+      - 31
+
   - name: override.conf
     path: /etc/systemd/system/NetworkManager.service.d/override.conf
     generator: dump
