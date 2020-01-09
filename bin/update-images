@@ -78,9 +78,9 @@ apt-get update --yes
 
 # Install dependencies
 apt-get install --yes --no-install-recommends \
-    btrfs-progs golang-go git ca-certificates gcc libc6-dev \
+    build-essential btrfs-progs golang-go git ca-certificates gcc libc6-dev \
     debootstrap xz-utils squashfs-tools gpg dirmngr gpg-agent rsync kpartx \
-    subversion patch build-essential gawk libncurses-dev unzip
+    python subversion patch build-essential gawk libncurses-dev unzip
 export PATH=/root/go/bin:\${PATH}
 export GOPATH=/root/go/
 
