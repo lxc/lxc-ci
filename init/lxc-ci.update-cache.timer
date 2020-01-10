@@ -2,8 +2,8 @@
 Description=lxc-ci - Update cache timers
 
 [Timer]
-OnBootSec=1h
-OnUnitActiveSec=1h
+OnBootSec=6h
+OnUnitActiveSec=6h
 
 [Install]
 WantedBy=timers.target
