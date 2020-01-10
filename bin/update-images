@@ -12,6 +12,12 @@ cleanup() {
 }
 trap cleanup EXIT HUP INT TERM
 
+# Avoid conflicting with an in progress build.
+while :; do
+    pgrep build-image || break
+    sleep 5m
+done
+
 HOST="http://jenkins01.srv.mtl.stgraber.net:8080"
 
 build_distrobuilder() {
