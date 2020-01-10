@@ -12,6 +12,11 @@ cleanup() {
 }
 trap cleanup EXIT HUP INT TERM
 
+# Make sure LXD is functional
+lxc delete update-images -f >/dev/null 2>&1 || true
+lxc init update-images --empty --quiet
+lxc delete -f update-images
+
 # Avoid conflicting with an in progress build.
 while :; do
     pgrep build-image || break
