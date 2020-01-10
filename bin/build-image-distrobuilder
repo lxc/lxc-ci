@@ -84,5 +84,5 @@ EOF
 ) | lxc exec build-distrobuilder-cache -- sh
 
 lxc stop build-distrobuilder-cache
-lxc export build-distrobuilder-cache "${TARGET}/build-distrobuilder-cache.tar.xz"
+lxc export build-distrobuilder-cache "${TARGET}/build-distrobuilder-cache.tar.xz" --optimized-storage
 lxc delete -f build-distrobuilder-cache
