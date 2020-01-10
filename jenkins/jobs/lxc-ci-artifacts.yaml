@@ -57,7 +57,7 @@
 
     properties:
     - build-discarder:
-        num-to-keep: 2
+        num-to-keep: 5
 
     publishers:
     - archive:
