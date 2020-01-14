@@ -3,7 +3,7 @@ image:
 
 source:
   downloader: centos-http
-  url: http://centos.mirror.iweb.ca
+  url: https://mirror.dst.ca/centos
   keys:
     # 0X99DB70FAE1D7CE227FB6488205B555B38483C65D
     - |-
@@ -374,6 +374,7 @@ files:
      DHCP_HOSTNAME=`cat /proc/sys/kernel/hostname`
    releases:
     - 8
+    - 8-Stream
 
  - name: ifcfg-eth0.lxd
    path: /etc/sysconfig/network-scripts/ifcfg-eth0
@@ -388,6 +389,7 @@ files:
      DHCP_HOSTNAME=`cat /proc/sys/kernel/hostname`
    releases:
     - 8
+    - 8-Stream
 
  - name: override.conf
    path: /etc/systemd/system/NetworkManager.service.d/override.conf
@@ -491,6 +493,7 @@ packages:
        action: install
        releases:
         - 8
+        - 8-Stream
 
      - packages:
         - cloud-init
