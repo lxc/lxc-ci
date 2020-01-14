@@ -176,6 +176,11 @@ else
     export LXD_SKIP_STATIC=1
 fi
 
+# Disable routed nic tests due to broken liblxc
+if [ -e "test/suites/container_devices_nic_routed.sh" ]; then
+    sed -i "s/network_veth_router/disabled_network_veth_router/g" test/suites/container_devices_nic_routed.sh
+fi
+
 # Run the tests
 cd "test/"
 exec ./main.sh ${LXD_TESTSUITE}
