@@ -3,7 +3,7 @@ image:
 
 source:
   downloader: centos-http
-  url: http://centos.mirror.iweb.ca
+  url: https://mirror.dst.ca/centos
   keys:
     # 0X99DB70FAE1D7CE227FB6488205B555B38483C65D
     - |-
