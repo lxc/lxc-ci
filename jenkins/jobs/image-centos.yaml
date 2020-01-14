@@ -23,6 +23,7 @@
         - 6
         - 7
         - 8
+        - 8-Stream
 
     - axis:
         name: variant
@@ -49,11 +50,11 @@
         [ "${ARCH}" = "ppc64el" ] && ARCH="ppc64le"
 
         EXTRA_ARGS=""
-        if [ "${release}" != "8" ] && ([ "${architecture}" != "amd64" ] && [ "${architecture}" != "i386" ]) || ([ "${architecture}" = "i386" ] && [ "${release}" = "7" ]); then
+        if [ "${release}" != "8" ] && [ "${release}" != "8-Stream" ] && ([ "${architecture}" != "amd64" ] && [ "${architecture}" != "i386" ]) || ([ "${architecture}" = "i386" ] && [ "${release}" = "7" ]); then
             EXTRA_ARGS="-o source.url=http://mirror.math.princeton.edu/pub/centos-altarch/ -o source.skip_verification=true"
         fi
 
-        if [ "${release}" = "8" ]; then
+        if [ "${release}" = "8" ] || [ "${release}" = "8-Stream" ]; then
             EXTRA_ARGS="${EXTRA_ARGS} -o source.variant=boot"
         fi
 
@@ -68,6 +69,7 @@
       !(architecture=="arm64" && release == "6")
       && !(architecture=="armhf" && release != "7")
       && !(architecture=="i386" && release == "8")
+      && !(architecture=="i386" && release == "8-Stream")
       && !(architecture=="ppc64el" && release == "6")'
 
     properties:
