@@ -56,7 +56,7 @@ git clone https://github.com/lxc/lxc-ci /lxc-ci
 mkdir -p /lxc-ci/build
 mount -t tmpfs tmpfs /lxc-ci/build -o size=4G
 cd /lxc-ci/bin
-LXD_GOCACHE=true sh -eux update-cache
+LXD_GOCACHE=true sh -eux build-cache-lxd
 EOF
 ) | lxc exec build-lxd-cache -- sh
 
