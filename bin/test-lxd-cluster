@@ -94,8 +94,8 @@ for i in $(seq "$1"); do
 done
 
 # Wait a minute for things to settle
-echo "==> Waiting 1 minute for cluster to settle"
-sleep 1m
+echo "==> Waiting 5 minutes for cluster to settle"
+sleep 5m
 
 # Validate the cluster
 echo "==> Validating the cluster"
