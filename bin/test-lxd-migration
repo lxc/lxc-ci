@@ -41,6 +41,7 @@ done
 apt install -t "${series}" lxd lxd-client jq --yes
 if [ "${series}" = "trusty-backports" ]; then
     apt install snapd --yes
+    sleep 1m
     snap install core
     snap install core18
     snap install snapd
