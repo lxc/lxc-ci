@@ -43,7 +43,12 @@ for backend in zfs btrfs dir; do
     if [ "${backend}" = "dir" ]; then
         lxc storage create default ${backend} >/dev/null 2>&1 && break
     else
-        lxc storage create default ${backend} size=30GB >/dev/null 2>&1 && break
+        if [ "$(hostname)" = "lantea" ]; then
+            dd if=/dev/zero of=/dev/sde bs=4M count=10
+            lxc storage create default ${backend} source=/dev/sde >/dev/null 2>&1 && break
+        else
+            lxc storage create default ${backend} size=30GB >/dev/null 2>&1 && break
+        fi
     fi
 done
 
