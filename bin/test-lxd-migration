@@ -41,6 +41,9 @@ done
 apt install -t "${series}" lxd lxd-client jq --yes
 if [ "${series}" = "trusty-backports" ]; then
     apt install snapd --yes
+    snap install core
+    snap install core18
+    snap install snapd
 else
     apt install zfsutils-linux thin-provisioning-tools --yes
 fi
