@@ -163,5 +163,7 @@ actions:
       systemctl disable systemd-networkd
       systemctl enable NetworkManager
       systemctl enable cloud-init
+      systemctl enable cloud-config
+      systemctl enable cloud-final
     variants:
       - cloud
