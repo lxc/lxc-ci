@@ -48,9 +48,9 @@ cat << EOF
     "creation_date": $(date +%s),
     "properties": {
         "architecture": "$(uname -m)",
-        "description": "Busybox $(uname -m)",
+        "description": "BusyBox $(uname -m)",
         "name": "busybox-$(uname -m)",
-        "os": "Busybox"
+        "os": "BusyBox"
     },
     "templates": {
         "/template": {
