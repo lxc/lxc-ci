@@ -16,6 +16,14 @@
     - github:
         url: https://github.com/lxc/lxd/
 
+    - groovy-label:
+        script: |-
+            if (binding.getVariables().get("backend") == "ceph") {
+                return "ceph";
+            }
+
+            return null;
+
     - raw:
         !include: ../includes/webhook.yaml.inc
 
@@ -75,12 +83,6 @@
         values:
         - amd64
         - i386
-
-    - axis:
-        name: restrict
-        type: slave
-        values:
-        - lxd-priv
 
     execution-strategy:
       combination-filter: '!(arch=="i386" && backend!="dir") && !(arch=="i386" && compiler!="golang-1.13") && !(backend!="dir" && compiler!="golang-1.13")'

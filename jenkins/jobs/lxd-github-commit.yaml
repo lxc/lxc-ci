@@ -67,12 +67,6 @@
         - amd64
         - i386
 
-    - axis:
-        name: restrict
-        type: slave
-        values:
-        - lxd-priv
-
     builders:
     - shell: exec /usr/bin/script /dev/null -e -q -c "/lxc-ci/bin/build-lxd ${{compiler}}
         https://github.com/lxc/lxd {branch} ${{backend}}"
@@ -86,6 +80,14 @@
 
     - github:
         url: https://github.com/lxc/lxd/
+
+    - groovy-label:
+        script: |-
+            if (binding.getVariables().get("backend") == "ceph") {{
+                return "ceph";
+            }}
+
+            return null;
 
     - raw:
         !include: ../includes/webhook.yaml.inc
