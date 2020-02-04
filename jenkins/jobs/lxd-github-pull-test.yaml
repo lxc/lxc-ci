@@ -29,7 +29,7 @@
 
     - throttle:
         option: project
-        max-total: 2
+        max-total: 4
 
     parameters:
     - string:
