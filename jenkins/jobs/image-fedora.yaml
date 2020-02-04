@@ -31,12 +31,6 @@
         - default
         - cloud
 
-    - axis:
-        name: restrict
-        type: slave
-        values:
-        - lxc-priv
-
     execution-strategy:
       combination-filter: '
       !(architecture=="armhf" && release!="29")'

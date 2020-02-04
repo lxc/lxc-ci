@@ -2,7 +2,7 @@
     name: lxc-build-tarballs
     concurrent: true
     description: Builds the source and manpage tarballs from the provided source.
-    node: lxc-priv && amd64
+    node: amd64
     project-type: freestyle
 
     builders:

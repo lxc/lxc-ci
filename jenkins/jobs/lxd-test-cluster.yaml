@@ -28,12 +28,6 @@
         values:
         - amd64
 
-    - axis:
-        name: restrict
-        type: slave
-        values:
-        - lxd-priv
-
     builders:
     - shell: |-
         cd /lxc-ci

@@ -29,12 +29,6 @@
         - default
         - cloud
 
-    - axis:
-        name: restrict
-        type: slave
-        values:
-        - lxc-priv
-
     execution-strategy:
       combination-filter: '
       !(architecture!="amd64" && architecture!="i386" && variant=="cloud")'

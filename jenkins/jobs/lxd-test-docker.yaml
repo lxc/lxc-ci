@@ -23,7 +23,7 @@
         name: restrict
         type: slave
         values:
-        - lxd-priv
+        - vm
 
     builders:
     - shell: |-

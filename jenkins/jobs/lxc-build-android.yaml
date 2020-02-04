@@ -2,7 +2,7 @@
     name: lxc-build-android
     concurrent: true
     description: Builds an android tarball from the provided source.
-    node: lxc-priv && amd64
+    node: amd64
     project-type: freestyle
 
     builders:

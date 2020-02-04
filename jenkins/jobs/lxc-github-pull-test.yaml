@@ -71,7 +71,7 @@
         name: restrict
         type: slave
         values:
-        - lxc-priv
+        - vm
 
     publishers:
     - archive:

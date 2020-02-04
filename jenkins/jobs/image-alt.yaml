@@ -29,12 +29,6 @@
         values:
         - default
 
-    - axis:
-        name: restrict
-        type: slave
-        values:
-        - lxc-priv
-
     execution-strategy:
       combination-filter: '
       !(architecture=="arm64" && release=="p8")

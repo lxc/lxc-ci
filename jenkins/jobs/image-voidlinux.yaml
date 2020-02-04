@@ -28,12 +28,6 @@
         - default
         - musl
 
-    - axis:
-        name: restrict
-        type: slave
-        values:
-        - lxc-priv
-
     builders:
     - shell: |-
         cd /lxc-ci

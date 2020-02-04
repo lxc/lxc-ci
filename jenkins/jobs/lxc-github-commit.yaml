@@ -42,7 +42,7 @@
         name: restrict
         type: slave
         values:
-        - lxc-priv
+        - vm
 
     builders:
     - shell: |-
