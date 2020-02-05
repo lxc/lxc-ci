@@ -5,6 +5,12 @@ if [ "${LXD_GOCACHE:-}" != "true" ]; then
     exit 0
 fi
 
+# Wait for network
+while :; do
+    ping -W1 -c1 jenkins01.srv.mtl.stgraber.net >/dev/null 2>&1 && break
+    sleep 1
+done
+
 # Download and extract the new cache
 rm -Rf /lxc-ci/build/cache.new
 mkdir -p /lxc-ci/build/cache.new

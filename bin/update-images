@@ -12,6 +12,12 @@ cleanup() {
 }
 trap cleanup EXIT HUP INT TERM
 
+# Wait for network
+while :; do
+    ping -W1 -c1 jenkins01.srv.mtl.stgraber.net >/dev/null 2>&1 && break
+    sleep 1
+done
+
 # Make sure LXD is functional
 lxc delete update-images -f >/dev/null 2>&1 || true
 lxc init update-images --empty --quiet
