@@ -20,7 +20,6 @@
         name: release
         type: user-defined
         values:
-        - 29
         - 30
         - 31
 
