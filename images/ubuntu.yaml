@@ -280,75 +280,75 @@ targets:
           lxc.arch = {{ image.architecture_personality }}
 
 files:
- - path: /etc/hostname
-   generator: hostname
+  - path: /etc/hostname
+    generator: hostname
 
- - path: /etc/hosts
-   generator: hosts
+  - path: /etc/hosts
+    generator: hosts
 
- - path: /etc/resolvconf/resolv.conf.d/original
-   generator: remove
+  - path: /etc/resolvconf/resolv.conf.d/original
+    generator: remove
 
- - path: /etc/resolvconf/resolv.conf.d/tail
-   generator: remove
+  - path: /etc/resolvconf/resolv.conf.d/tail
+    generator: remove
 
- - path: /etc/machine-id
-   generator: remove
+  - path: /etc/machine-id
+    generator: remove
 
- - path: /etc/netplan/10-lxc.yaml
-   generator: dump
-   content: |-
-     network:
-       version: 2
-       ethernets:
-         eth0: {dhcp4: true}
-   releases:
-     - bionic
-     - eoan
-     - focal
+  - path: /etc/netplan/10-lxc.yaml
+    generator: dump
+    content: |-
+      network:
+        version: 2
+        ethernets:
+          eth0: {dhcp4: true}
+    releases:
+      - bionic
+      - eoan
+      - focal
 
- - path: /etc/network/interfaces
-   generator: dump
-   content: |-
-     # This file describes the network interfaces available on your system
-     # and how to activate them. For more information, see interfaces(5).
+  - path: /etc/network/interfaces
+    generator: dump
+    content: |-
+      # This file describes the network interfaces available on your system
+      # and how to activate them. For more information, see interfaces(5).
 
-     # The loopback network interface
-     auto lo
-     iface lo inet loopback
+      # The loopback network interface
+      auto lo
+      iface lo inet loopback
 
-     auto eth0
-     iface eth0 inet dhcp
+      auto eth0
+      iface eth0 inet dhcp
 
-     source /etc/network/interfaces.d/*.cfg
-   releases:
-     - trusty
-     - xenial
+      source /etc/network/interfaces.d/*.cfg
+    releases:
+      - trusty
+      - xenial
 
- - path: /etc/init/lxc-tty.conf
-   generator: upstart-tty
-   releases:
-    - trusty
+  - path: /etc/init/lxc-tty.conf
+    generator: upstart-tty
+    releases:
+      - trusty
 
- - name: meta-data
-   generator: cloud-init
-   variants:
-    - cloud
+  - name: meta-data
+    generator: cloud-init
+    variants:
+      - cloud
 
- - name: network-config
-   generator: cloud-init
-   variants:
-    - cloud
+  - name: network-config
+    generator: cloud-init
+    variants:
+      - cloud
 
- - name: user-data
-   generator: cloud-init
-   variants:
-    - cloud
+  - name: user-data
+    generator: cloud-init
+    variants:
+      - cloud
 
- - name: vendor-data
-   generator: cloud-init
-   variants:
-    - cloud
+  - name: vendor-data
+    generator: cloud-init
+    variants:
+      - cloud
 
 packages:
   manager: apt
@@ -357,18 +357,18 @@ packages:
 
   sets:
     - packages:
-      - apt-transport-https
-      - fuse
-      - language-pack-en
-      - openssh-client
-      - vim
+        - apt-transport-https
+        - fuse
+        - language-pack-en
+        - openssh-client
+        - vim
       action: install
 
     - packages:
-      - cloud-init
+        - cloud-init
       action: install
       variants:
-       - cloud
+        - cloud
 
   repositories:
     - name: sources.list
