@@ -2,14 +2,16 @@
 CNAME="distrobuilder-$(uuidgen)"
 
 # Check arguments
-if [ "${1:-}" = "" ] || [ "${2:-}" = "" ] || [ "${3:-}" = "" ] || [ "${4:-}" = "" ]; then
-    echo "Usage: ${0} <yaml> <architecture> <timeout> <target dir> [flags]"
+if [ "${1:-}" = "" ] || [ "${2:-}" = "" ] || [ "${3:-}" = "" ] || [ "${4:-}" = "" ] || [ "${5:-}" = "" ]; then
+    echo "Usage: ${0} <yaml> <architecture> <type> <timeout> <target dir> [flags]"
     exit 1
 fi
 
 YAML=${1}
 shift
 ARCH=${1}
+shift
+TYPE=${1}
 shift
 TIMEOUT=${1}
 shift

@@ -43,10 +43,9 @@
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/mint.yaml \
-            ${architecture} 3600 ${WORKSPACE} \
+            ${architecture} container 3600 ${WORKSPACE} \
             -o image.architecture=${architecture} \
-            -o image.release=${release} \
-            -o image.variant=${variant} \
+            -o image.release=${release} -o image.variant=${variant} \
             -o source.suite=${suite}
 
     properties:

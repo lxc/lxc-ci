@@ -43,11 +43,9 @@
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/ubuntu.yaml \
-            ${architecture} 3600 ${WORKSPACE} \
-            -o image.architecture=${architecture} \
-            -o image.release=${release} \
-            -o image.variant=${variant} \
-            -o source.url=${ARCHIVE}
+            ${architecture} container 3600 ${WORKSPACE} \
+            -o image.architecture=${architecture} -o image.release=${release} \
+            -o image.variant=${variant} -o source.url=${ARCHIVE}
 
     execution-strategy:
       combination-filter: '

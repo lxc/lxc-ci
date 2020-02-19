@@ -38,10 +38,9 @@
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/kali.yaml \
-            ${LXD_ARCHITECTURE} 1800 ${WORKSPACE} \
+            ${LXD_ARCHITECTURE} container 1800 ${WORKSPACE} \
             -o image.architecture=${architecture} \
-            -o image.release=kali-rolling \
-            -o image.variant=${variant}
+            -o image.release=kali-rolling -o image.variant=${variant}
 
 
     properties:

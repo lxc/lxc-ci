@@ -39,9 +39,8 @@
         [ "${ARCH}" = "amd64" ] && ARCH="generic_64"
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/funtoo.yaml \
-            ${LXD_ARCHITECTURE} 7200 ${WORKSPACE} \
-            -o image.release=${release} \
-            -o image.architecture=${ARCH}
+            ${LXD_ARCHITECTURE} container 7200 ${WORKSPACE} \
+            -o image.release=${release} -o image.architecture=${ARCH}
 
     properties:
     - build-discarder:

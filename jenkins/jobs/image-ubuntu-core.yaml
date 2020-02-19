@@ -29,9 +29,8 @@
     - shell: |-
         cd /lxc-ci
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/ubuntu-core.yaml \
-            ${architecture} 3600 ${WORKSPACE} \
-            -o image.architecture=${architecture} \
-            -o image.release=${release}
+            ${architecture} container 3600 ${WORKSPACE} \
+            -o image.architecture=${architecture} -o image.release=${release}
 
     properties:
     - build-discarder:

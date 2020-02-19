@@ -44,9 +44,8 @@
         [ "${ARCH}" = "i386" ] && ARCH="i686"
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/gentoo.yaml \
-            ${LXD_ARCHITECTURE} 7200 ${WORKSPACE} \
-            -o image.architecture=${ARCH} \
-            -o image.variant=${variant}
+            ${LXD_ARCHITECTURE} container 7200 ${WORKSPACE} \
+            -o image.architecture=${ARCH} -o image.variant=${variant}
 
     properties:
     - build-discarder:

@@ -44,8 +44,8 @@
         [ "${ARCH}" = "ppc64el" ] && ARCH="ppc64le"
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/alt.yaml \
-            ${LXD_ARCHITECTURE} 3600 ${WORKSPACE} -o image.release=${release} \
-            -o image.architecture=${ARCH}
+            ${LXD_ARCHITECTURE} container 3600 ${WORKSPACE} \
+            -o image.release=${release} -o image.architecture=${ARCH}
 
     properties:
     - build-discarder:

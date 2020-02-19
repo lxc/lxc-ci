@@ -33,9 +33,8 @@
 
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/apertis.yaml \
-            ${LXD_ARCHITECTURE} 1800 ${WORKSPACE} \
-            -o image.architecture=${architecture} \
-            -o image.release=${release}
+            ${LXD_ARCHITECTURE} container 1800 ${WORKSPACE} \
+            -o image.architecture=${architecture} -o image.release=${release}
 
     properties:
     - build-discarder:
