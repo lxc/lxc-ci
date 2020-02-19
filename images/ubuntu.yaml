@@ -374,29 +374,21 @@ files:
     generator: cloud-init
     variants:
       - cloud
-    types:
-      - container
 
   - name: network-config
     generator: cloud-init
     variants:
       - cloud
-    types:
-      - container
 
   - name: user-data
     generator: cloud-init
     variants:
       - cloud
-    types:
-      - container
 
   - name: vendor-data
     generator: cloud-init
     variants:
       - cloud
-    types:
-      - container
 
   - name: ext4
     generator: fstab
