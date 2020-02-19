@@ -293,7 +293,7 @@ files:
     generator: remove
 
   - path: /etc/machine-id
-    generator: remove
+    generator: dump
 
   - path: /etc/netplan/10-lxc.yaml
     generator: dump
