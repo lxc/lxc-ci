@@ -34,6 +34,13 @@
         - default
         - cloud
 
+    - axis:
+        name: type
+        type: user-defined
+        values:
+        - container
+        - vm
+
     builders:
     - shell: |-
         cd /lxc-ci
@@ -43,7 +50,7 @@
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/ubuntu.yaml \
-            ${architecture} container 3600 ${WORKSPACE} \
+            ${architecture} ${type} 3600 ${WORKSPACE} \
             -o image.architecture=${architecture} -o image.release=${release} \
             -o image.variant=${variant} -o source.url=${ARCHIVE}
 
@@ -51,7 +58,9 @@
       combination-filter: '
       !(architecture=="s390x" && release == "trusty") &&
       !(architecture=="i386" && release == "focal") &&
-      !(variant == "cloud" && release == "trusty")'
+      !(variant == "cloud" && release == "trusty") &&
+      !(type == "vm" && release == "trusty") &&
+      !(type == "vm" && architecture != "amd64")'
 
     properties:
     - build-discarder:
