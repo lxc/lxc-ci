@@ -64,12 +64,12 @@ cd /root/build/
 SERIAL=\$(date -u +%Y%m%d_%H:%M)
 
 distrobuilder --timeout "${TIMEOUT}" build-dir image.yaml rootfs -o image.serial="\${SERIAL}" "\$@"
+if echo ${TYPE} | grep -q vm; then
+    distrobuilder pack-lxd image.yaml rootfs --vm -o image.serial="\${SERIAL}" "\$@"
+fi
 if echo ${TYPE} | grep -q container; then
     distrobuilder pack-lxc image.yaml rootfs -o image.serial="\${SERIAL}" "\$@"
     distrobuilder pack-lxd image.yaml rootfs -o image.serial="\${SERIAL}" "\$@"
-fi
-if echo ${TYPE} | grep -q vm; then
-    distrobuilder pack-lxd image.yaml rootfs --vm -o image.serial="\${SERIAL}" "\$@"
 fi
 btrfs subvolume delete rootfs/var/lib/machines >/dev/null 2>&1 || true
 rm -Rf rootfs
