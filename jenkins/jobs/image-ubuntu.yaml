@@ -67,7 +67,7 @@
 
     publishers:
     - archive:
-        artifacts: "*.tar.xz,*.squashfs,image.yaml,serial"
+        artifacts: "*.img,*.tar.xz,*.squashfs,image.yaml,serial"
         only-if-success: true
 
     - workspace-cleanup:
