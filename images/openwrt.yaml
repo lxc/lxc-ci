@@ -403,6 +403,20 @@ actions:
       mkdir -p /var/lock
       echo "console::askfirst:/usr/libexec/login.sh" >> /etc/inittab
 
+  - trigger: post-unpack
+    action: |
+      #!/bin/sh
+      mkdir -p /var/lock
+    types:
+     - container
+
+  - trigger: post-unpack
+    action: |
+      #!/bin/sh
+      mkdir -p /var/lock
+    types:
+     - vm
+
 packages:
   manager: opkg
   update: false
