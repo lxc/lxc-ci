@@ -36,6 +36,40 @@ targets:
           lxc.arch = {{ image.architecture_kernel }}
 
 files:
+  - path: /etc/default/grub
+    generator: dump
+    content: |-
+      # Set the recordfail timeout
+      GRUB_RECORDFAIL_TIMEOUT=0
+
+      # Do not wait on grub prompt
+      GRUB_TIMEOUT=0
+
+      # Set the default commandline
+      GRUB_CMDLINE_LINUX_DEFAULT="console=tty1 console=ttyS0"
+
+      # Set the grub console type
+      GRUB_TERMINAL=console
+
+      # Disable os-prober
+      GRUB_DISABLE_OS_PROBER=true
+    types:
+      - vm
+
+  - path: /etc/dracut.conf.d/lxd.conf
+    generator: dump
+    content: |-
+      add_drivers+=virtio_scsi
+    types:
+      - vm
+
+  - generator: fstab
+    types:
+      - vm
+
+  - path: /etc/machine-id
+    generator: dump
+
   - path: /etc/hostname
     generator: hostname
 
@@ -94,6 +128,10 @@ files:
     variants:
       - cloud
 
+  - generator: lxd-agent
+    types:
+     - vm
+
 packages:
   manager: dnf
   update: true
@@ -140,6 +178,15 @@ packages:
       - sssd-client
      action: remove
 
+   - packages:
+     - grub2-efi-x64
+     - kernel
+     - shim
+     - dracut
+     action: install
+     types:
+       - vm
+
 actions:
   - trigger: post-packages
     action: |-
@@ -167,3 +214,31 @@ actions:
       systemctl enable cloud-final
     variants:
       - cloud
+
+  - trigger: post-unpack
+    action: |-
+      # Generate machine-id in order for the kernel stuff to be configured properly
+      systemd-machine-id-setup
+    types:
+      - vm
+
+  - trigger: post-files
+    action: |-
+      #!/bin/sh
+      set -eux
+
+      grub2-mkconfig -o $(readlink -f /etc/grub2-efi.cfg)
+
+      # Regenerate initramfs
+      kver=$(ls /boot/initramfs-*.img | sed -r 's#.*initramfs-(.+)\.img#\1#')
+      dracut --kver "${kver}" -f
+
+      # Unmask all masked unit files
+      for f in $(find /etc/systemd/system -type l); do
+        [[ "$(readlink ${f})" == /dev/null ]] && rm "${f}"
+      done
+
+      # Remove the "Container Image" string as this is going to be am VM
+      sed -i 's/[ ]*(Container Image)//;/^VARIANT/d' /etc/os-release
+    types:
+      - vm
