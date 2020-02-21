@@ -390,6 +390,7 @@ actions:
 
      cp /usr/share/portage/config/repos.conf /usr/share/portage/config/repos.conf.orig
      sed -i "s#hkps://keys.gentoo.org#keyserver.ubuntu.com#g" /usr/share/portage/config/repos.conf
+     sed -ri "s#(sync-uri =) .+#\1 ${RSYNC_MIRROR}#" /usr/share/portage/config/repos.conf
 
      # Patch up /etc/inittab
      if [ -e /etc/inittab ]; then
@@ -411,6 +412,7 @@ actions:
 
      cp /usr/share/portage/config/repos.conf /usr/share/portage/config/repos.conf.orig
      sed -i "s#hkps://keys.gentoo.org#keyserver.ubuntu.com#g" /usr/share/portage/config/repos.conf
+     sed -ri "s#(sync-uri =) .+#\1 ${RSYNC_MIRROR}#" /usr/share/portage/config/repos.conf
    types:
     - containers
     - vm
@@ -451,6 +453,11 @@ actions:
      rc-update add cloud-final default
    variants:
      - cloud
+
+environment:
+  variables:
+    - key: RSYNC_MIRROR
+      value: rsync://rsync.ca.gentoo.org/gentoo-portage/
 
 mappings:
   architecture_map: gentoo
