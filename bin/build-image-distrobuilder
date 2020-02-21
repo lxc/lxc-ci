@@ -75,7 +75,7 @@ apt-get install --yes --no-install-recommends \
     build-essential btrfs-progs golang-go git ca-certificates gcc libc6-dev \
     debootstrap xz-utils squashfs-tools gpg dirmngr gpg-agent rsync kpartx \
     python subversion patch build-essential gawk libncurses-dev unzip \
-    qemu-utils gdisk
+    qemu-utils gdisk dosfstools
 apt-get clean
 export PATH=/root/go/bin:\${PATH}
 export GOPATH=/root/go/
