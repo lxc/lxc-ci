@@ -54,7 +54,7 @@ rm -f /run/dbus/system_bus_socket
 # Build the image
 mkdir /root/build
 if [ "$(uname -m)" = "x86_64" ] || [ "$(uname -m)" = "i686" ]; then
-    if ! echo "${YAML}" | grep -q sabayon; then
+    if ! echo "${YAML}" | grep -q -E "sabayon|gentoo"; then
         mount -t tmpfs tmpfs /root/build -o size=5G,nr_inodes=10000000
     fi
 fi
