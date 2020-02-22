@@ -57,7 +57,7 @@ lxc profile device add default root disk pool=default path=/
 
 # Create the containers
 echo "=> Creating the containers"
-for i in $(lxc image list images: | grep x86_64 | grep "more" | awk '{print $2}'); do
+for i in $(lxc image list images: | grep x86_64 | grep CONTAINER | grep "more" | awk '{print $2}'); do
     name=$(echo "${i}" | sed -e "s/\//-/g" -e "s/\.//g")
     lxc init "images:${i}" "${name}-unpriv" -c security.nesting=true
     lxc init "images:${i}" "${name}-priv" -c security.privileged=true -c security.nesting=true
