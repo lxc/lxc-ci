@@ -434,6 +434,28 @@ packages:
         - grub-efi-amd64-signed
         - shim-signed
       action: install
+      architectures:
+        - amd64
+      types:
+        - vm
+
+    - packages:
+        - grub-efi-arm64-signed
+      action: install
+      architectures:
+        - arm64
+      types:
+        - vm
+
+    - packages:
+        - shim-signed
+      action: install
+      architectures:
+        - arm64
+      releases:
+        - disco
+        - eoan
+        - focal
       types:
         - vm
 
