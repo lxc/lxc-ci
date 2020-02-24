@@ -101,6 +101,7 @@ files:
       BindReadOnlyPaths=/sys
     releases:
       - Sisyphus
+      - p9
 
 packages:
   manager: apt
