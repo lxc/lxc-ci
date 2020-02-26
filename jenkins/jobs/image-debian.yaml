@@ -43,8 +43,13 @@
             LXD_ARCHITECTURE="armhf"
         fi
 
+        TYPE="container"
+        if [ "${architecture}" = "amd64" ] || [ "${architecture}" = "arm64" ]; then
+            TYPE="container,vm"
+        fi
+
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/debian.yaml \
-            ${LXD_ARCHITECTURE} container 1800 ${WORKSPACE} \
+            ${LXD_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
             -o image.architecture=${architecture} \
             -o image.release=${release} -o image.variant=${variant} \
             -o source.url="http://ftp.us.debian.org/debian"
