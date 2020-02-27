@@ -64,12 +64,45 @@ files:
   - path: /etc/hosts
     generator: hosts
 
+  - path: /etc/machine-id
+    generator: dump
+
+  - path: /etc/default/grub
+    generator: dump
+    content: |-
+      # Set the recordfail timeout
+      GRUB_RECORDFAIL_TIMEOUT=0
+
+      # Do not wait on grub prompt
+      GRUB_TIMEOUT=0
+
+      # Set the default commandline
+      GRUB_CMDLINE_LINUX_DEFAULT="console=tty1 console=ttyS0"
+
+      # Set the grub console type
+      GRUB_TERMINAL=console
+
+      GRUB_USE_LINUXEFI="true"
+    types:
+      - vm
+
   - name: ifcfg-eth0
     path: /etc/sysconfig/network/ifcfg-eth0
     generator: dump
     content: |-
       STARTMODE='auto'
       BOOTPROTO='dhcp'
+    types:
+      - container
+
+  - name: ifcfg-enp5s0
+    path: /etc/sysconfig/network/ifcfg-enp5s0
+    generator: dump
+    content: |-
+      STARTMODE='auto'
+      BOOTPROTO='dhcp'
+    types:
+      - vm
 
   - name: meta-data
     generator: cloud-init
@@ -90,6 +123,14 @@ files:
     generator: cloud-init
     variants:
       - cloud
+
+  - generator: fstab
+    types:
+      - vm
+
+  - generator: lxd-agent
+    types:
+      - vm
 
 packages:
   manager: zypper
@@ -129,7 +170,39 @@ packages:
       variants:
        - cloud
 
+    - packages:
+       - grub2-arm64-efi
+      action: install
+      types:
+       - vm
+      architectures:
+       - aarch64
+
+    - packages:
+       - grub2-x86_64-efi
+      action: install
+      types:
+       - vm
+      architectures:
+       - x86_64
+
+    - packages:
+       - kernel-default
+       - shim
+      action: install
+      types:
+       - vm
+
 actions:
+ - trigger: post-unpack
+   action: |-
+     #!/bin/sh
+     set -eux
+
+     systemd-machine-id-setup
+   types:
+     - vm
+
  - trigger: post-packages
    action: |-
      #!/bin/sh
@@ -170,3 +243,23 @@ actions:
      umount -l /etc/resolv.conf || true
      rm /etc/resolv.conf
      ln -sf /var/run/netconfig/resolv.conf /etc/resolv.conf
+
+ - trigger: post-files
+   action: |-
+     #!/bin/sh
+     set -eux
+     umount -l /etc/resolv.conf || true
+     rm /etc/resolv.conf
+     ln -sf /var/run/netconfig/resolv.conf /etc/resolv.conf
+
+     mkinitrd
+     mount -t tmpfs tmpfs /sys/firmware
+     mkdir /sys/firmware/efi
+     grub2-mkconfig -o /boot/grub2/grub.cfg
+     shim-install --no-nvram --removable
+     shim-install --no-nvram
+     grub2-mkconfig -o /boot/grub2/grub.cfg
+     umount /sys/firmware
+     sed -i "s#root=[^ ]*#root=/dev/sda2#g" /boot/grub2/grub.cfg
+   types:
+     - vm
