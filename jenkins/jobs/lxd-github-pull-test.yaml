@@ -22,6 +22,10 @@
                 return "ceph";
             }
 
+            if (binding.getVariables().get("backend") == "random") {
+                return "ceph";
+            }
+
             return null;
 
     - raw:
