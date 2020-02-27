@@ -939,11 +939,6 @@ packages:
 
     - packages:
       - grub-efi
-      action: install
-      types:
-        - vm
-
-    - packages:
       - linux-image-amd64
       action: install
       types:
@@ -952,6 +947,7 @@ packages:
         - amd64
 
     - packages:
+      - grub-efi-arm64
       - linux-image-arm64
       action: install
       types:
