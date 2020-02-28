@@ -939,12 +939,34 @@ packages:
 
     - packages:
       - grub-efi
+      action: install
+      types:
+        - vm
+      architectures:
+        - amd64
+
+    - packages:
+      - linux-image-4.9-amd64
+      action: install
+      types:
+        - vm
+      architectures:
+        - amd64
+      releases:
+        - jessie
+
+    - packages:
       - linux-image-amd64
       action: install
       types:
         - vm
       architectures:
         - amd64
+      releases:
+        - stretch
+        - buster
+        - bullseye
+        - sid
 
     - packages:
       - grub-efi-arm64
@@ -1027,9 +1049,9 @@ actions:
 
       update-grub
       # This will create EFI/BOOT
-      grub-install --target="${TARGET}-efi" --no-nvram --removable
+      grub-install --target="${TARGET}-efi" --no-nvram --removable --modules="part_gpt"
       # This will create EFI/debian
-      grub-install --target="${TARGET}-efi" --no-nvram
+      grub-install --target="${TARGET}-efi" --no-nvram --modules="part_gpt"
       update-grub
       sed -i "s#root=[^ ]*#root=/dev/sda2#g" /boot/grub/grub.cfg
     types:
