@@ -190,7 +190,7 @@ packages:
      - grub2-efi-aa64
      action: install
      architectures:
-       - arm64
+       - aarch64
      types:
        - vm
 
