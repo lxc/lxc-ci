@@ -180,6 +180,21 @@ packages:
 
    - packages:
      - grub2-efi-x64
+     action: install
+     architectures:
+       - amd64
+     types:
+       - vm
+
+   - packages:
+     - grub2-efi-aa64
+     action: install
+     architectures:
+       - arm64
+     types:
+       - vm
+
+   - packages:
      - kernel
      - shim
      - dracut
