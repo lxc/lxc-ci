@@ -457,6 +457,23 @@ files:
     path: /etc/hosts
     generator: hosts
 
+  - path: /etc/default/grub
+    generator: dump
+    content: |-
+      # Set the recordfail timeout
+      GRUB_RECORDFAIL_TIMEOUT=0
+
+      # Do not wait on grub prompt
+      GRUB_TIMEOUT=0
+
+      # Set the default commandline
+      GRUB_CMDLINE_LINUX_DEFAULT="console=tty1 console=ttyS0"
+
+      # Set the grub console type
+      GRUB_TERMINAL=console
+    types:
+      - vm
+
   - name: eth0.network
     path: /etc/systemd/network/eth0.network
     generator: dump
@@ -466,6 +483,20 @@ files:
 
       [Network]
       DHCP=ipv4
+    types:
+      - container
+
+  - name: enp5s0.network
+    path: /etc/systemd/network/enp5s0.network
+    generator: dump
+    content: |-
+      [Match]
+      Name=enp5s0
+
+      [Network]
+      DHCP=ipv4
+    types:
+      - vm
 
   - name: networkd-override
     path: /etc/systemd/system/systemd-networkd.service.d/lxc.conf
@@ -473,6 +504,17 @@ files:
     content: |-
       [Service]
       BindReadOnlyPaths=/sys
+    types:
+      - container
+
+  - name: lxd-agent
+    generator: lxd-agent
+    types:
+      - vm
+
+  - generator: fstab
+    types:
+      - vm
 
 packages:
   manager: pacman
@@ -512,10 +554,26 @@ packages:
       action: install
 
     - packages:
+        - grub
+      action: install
+      types:
+        - vm
+
+    - packages:
+        - linux
+      action: install
+      architectures:
+        - x86_64
+      types:
+        - vm
+
+    - packages:
         - linux-aarch64
       action: remove
       architectures:
         - aarch64
+      types:
+        - container
 
     - packages:
         - linux-armv7
@@ -546,5 +604,23 @@ actions:
       systemctl enable systemd-networkd
       systemctl enable systemd-resolved
 
+  - trigger: post-files
+    action: |-
+      #!/bin/sh
+      set -eux
+
+      TARGET="x86_64"
+      [ "$(uname -m)" = "aarch64" ] && TARGET="arm64"
+
+      grub-install --target="${TARGET}-efi" --efi-directory=/boot/efi --no-nvram --removable
+      grub-install --target="${TARGET}-efi" --efi-directory=/boot/efi --no-nvram
+      grub-mkconfig -o /boot/grub/grub.cfg
+      sed -i "s#root=[^ ]*#root=/dev/sda2#g" /boot/grub/grub.cfg
+
+      # Rebuild initrd
+      sed -i 's#^MODULES=.*#MODULES=(virtio_pci virtio_scsi)#' /etc/mkinitcpio.conf
+      mkinitcpio -p linux
+    types:
+      - vm
 mappings:
   architecture_map: archlinux
