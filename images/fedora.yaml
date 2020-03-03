@@ -182,7 +182,7 @@ packages:
      - grub2-efi-x64
      action: install
      architectures:
-       - amd64
+       - x86_64
      types:
        - vm
 
