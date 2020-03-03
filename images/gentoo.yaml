@@ -414,7 +414,7 @@ actions:
      sed -i "s#hkps://keys.gentoo.org#keyserver.ubuntu.com#g" /usr/share/portage/config/repos.conf
      sed -ri "s#(sync-uri =) .+#\1 ${RSYNC_MIRROR}#" /usr/share/portage/config/repos.conf
    types:
-    - containers
+    - container
     - vm
 
  - trigger: post-packages
@@ -440,7 +440,7 @@ actions:
      rm /usr/share/portage/config/repos.conf
      mv /usr/share/portage/config/repos.conf.orig /usr/share/portage/config/repos.conf
    types:
-    - containers
+    - container
     - vm
 
  - trigger: post-packages
