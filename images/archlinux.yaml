@@ -625,7 +625,7 @@ actions:
       sed -i "s#root=[^ ]*#root=/dev/sda2#g" /boot/grub/grub.cfg
 
       # Rebuild initrd
-      sed -i 's#^MODULES=.*#MODULES=(virtio_pci virtio_scsi)#' /etc/mkinitcpio.conf
+      sed -i 's#^MODULES=.*#MODULES=(virtio_pci virtio_scsi virtio_console)#' /etc/mkinitcpio.conf
       mkinitcpio -p linux
     types:
       - vm
