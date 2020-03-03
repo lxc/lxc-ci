@@ -598,7 +598,6 @@ packages:
       action: remove
       architectures:
         - aarch64
-        - armv7
       types:
         - container
 
