@@ -87,6 +87,22 @@ files:
       DHCP=ipv4
     variants:
       - default
+    types:
+      - container
+
+  - name: enp5s0.network
+    path: /etc/systemd/network/enp5s0.network
+    generator: dump
+    content: |-
+      [Match]
+      Name=enp5s0
+
+      [Network]
+      DHCP=ipv4
+    variants:
+      - default
+    types:
+      - vm
 
   - name: networkd-override
     path: /etc/systemd/system/systemd-networkd.service.d/lxc.conf
@@ -98,6 +114,8 @@ files:
       - default
     releases:
       - 31
+    types:
+      - container
 
   - name: override.conf
     path: /etc/systemd/system/NetworkManager.service.d/override.conf
@@ -107,6 +125,8 @@ files:
       ExecStartPre=-/usr/sbin/ip link set eth0 down
     variants:
       - cloud
+    types:
+      - container
 
   - name: meta-data
     generator: cloud-init
