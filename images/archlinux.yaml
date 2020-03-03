@@ -586,13 +586,21 @@ packages:
         - haveged
         - ldns
         - libedit
-        - linux-firmware
         - net-tools
         - openssh
       action: remove
       architectures:
         - aarch64
         - armv7
+
+    - packages:
+        - linux-firmware
+      action: remove
+      architectures:
+        - aarch64
+        - armv7
+      types:
+        - container
 
 actions:
   - trigger: post-packages
