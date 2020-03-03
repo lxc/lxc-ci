@@ -255,7 +255,9 @@ actions:
 
       # Unmask all masked unit files
       for f in $(find /etc/systemd/system -type l); do
-        [[ "$(readlink ${f})" == /dev/null ]] && rm "${f}"
+        [ "$(readlink ${f})" = "/dev/null" ] && rm "${f}"
       done
+
+      exit 0
     types:
       - vm
