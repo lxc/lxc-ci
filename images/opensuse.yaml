@@ -179,6 +179,7 @@ packages:
        - aarch64
 
     - packages:
+       - shim
        - grub2-x86_64-efi
       action: install
       types:
@@ -188,7 +189,6 @@ packages:
 
     - packages:
        - kernel-default
-       - shim
       action: install
       types:
        - vm
