@@ -261,8 +261,8 @@ actions:
       shim-install --no-nvram --removable
       shim-install --no-nvram
      else
-      grub-install --no-nvram --removable
-      grub-install --no-nvram
+      grub2-install --no-nvram --removable
+      grub2-install --no-nvram
      fi
 
      grub2-mkconfig -o /boot/grub2/grub.cfg
