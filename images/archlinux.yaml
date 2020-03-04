@@ -627,12 +627,10 @@ actions:
       # Rebuild initrd
       sed -i 's#^MODULES=.*#MODULES=(virtio_pci virtio_scsi virtio_console)#' /etc/mkinitcpio.conf
 
-      if [ "${TARGET}" = "x86_64" ]; then
-        mkinitcpio -p linux
-      else
-        mkinitcpio -p linux-$(uname -m)
-      fi
+      sed -i 's#^PRESETS=.*#PRESETS=(default)#' /etc/mkinitcpio.d/*.preset
+      mkinitcpio -P
     types:
       - vm
+
 mappings:
   architecture_map: archlinux
