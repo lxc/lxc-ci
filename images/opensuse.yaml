@@ -95,6 +95,17 @@ files:
     types:
       - container
 
+  - name: ifcfg-eth0
+    path: /etc/sysconfig/network/ifcfg-eth0
+    generator: dump
+    content: |-
+      STARTMODE='auto'
+      BOOTPROTO='dhcp'
+    types:
+      - container
+    releases:
+      - 15.1
+
   - name: ifcfg-enp5s0
     path: /etc/sysconfig/network/ifcfg-enp5s0
     generator: dump
@@ -103,6 +114,8 @@ files:
       BOOTPROTO='dhcp'
     types:
       - vm
+    releases:
+      - tumbleweed
 
   - name: meta-data
     generator: cloud-init
@@ -161,7 +174,7 @@ packages:
     - packages:
        - net-tools
       releases:
-       - "tumbleweed"
+       - tumbleweed
       action: install
 
     - packages:
