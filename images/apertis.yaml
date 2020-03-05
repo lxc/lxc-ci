@@ -1,6 +1,7 @@
 image:
   distribution: Apertis
-  description: Apertis {{ image.architecture }} {{ image.variant }} {{ image.release }} {{ image.serial }}
+  description: |-
+    Apertis {{ image.architecture }} {{ image.variant }} {{ image.release }} {{ image.serial }}
   variant: minimal
 
 source:
@@ -10,76 +11,74 @@ source:
 
 targets:
   lxc:
-    create-message: |
+    create-message: |-
       You just created an {{ image.distribution }} container (release={{ image.release }}, arch={{ image.architecture }})
-
     config:
-      - type: all
-        before: 5
-        content: |-
-          lxc.include = LXC_TEMPLATE_CONFIG/debian.common.conf
+    - type: all
+      before: 5
+      content: |-
+        lxc.include = LXC_TEMPLATE_CONFIG/debian.common.conf
 
-      - type: user
-        before: 5
-        content: |-
-          lxc.include = LXC_TEMPLATE_CONFIG/debian.userns.conf
+    - type: user
+      before: 5
+      content: |-
+        lxc.include = LXC_TEMPLATE_CONFIG/debian.userns.conf
 
-      - type: all
-        after: 4
-        content: |-
-          lxc.include = LXC_TEMPLATE_CONFIG/common.conf
+    - type: all
+      after: 4
+      content: |-
+        lxc.include = LXC_TEMPLATE_CONFIG/common.conf
 
-      - type: user
-        after: 4
-        content: |-
-          lxc.include = LXC_TEMPLATE_CONFIG/userns.conf
+    - type: user
+      after: 4
+      content: |-
+        lxc.include = LXC_TEMPLATE_CONFIG/userns.conf
 
-      - type: all
-        content: |-
-          lxc.arch = {{ image.architecture_personality }}
+    - type: all
+      content: |-
+        lxc.arch = {{ image.architecture_personality }}
 
 files:
- - path: /etc/hostname
-   generator: hostname
+- path: /etc/hostname
+  generator: hostname
 
- - path: /etc/hosts
-   generator: hosts
+- path: /etc/hosts
+  generator: hosts
 
- - path: /etc/machine-id
-   generator: remove
+- path: /etc/machine-id
+  generator: remove
 
- - name: eth0.network
-   path: /etc/systemd/network/eth0.network
-   generator: dump
-   content: |-
-     [Match]
-     Name=eth0
+- name: eth0.network
+  path: /etc/systemd/network/eth0.network
+  generator: dump
+  content: |-
+    [Match]
+    Name=eth0
 
-     [Network]
-     DHCP=ipv4
+    [Network]
+    DHCP=ipv4
 
 packages:
   manager: apt
   update: true
   cleanup: false
-
   sets:
-    - packages:
-        - connman
-      action: remove
+  - packages:
+    - connman
+    action: remove
 
 actions:
-  - trigger: post-packages
-    action: |-
-      #!/bin/sh
-      umount -l /etc/resolv.conf || true
-      rm /etc/resolv.conf
-      ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    umount -l /etc/resolv.conf || true
+    rm /etc/resolv.conf
+    ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
 
 environment:
   variables:
-    - key: TMPDIR
-      set: false
+  - key: TMPDIR
+    set: false
 
 mappings:
   architecture_map: debian
