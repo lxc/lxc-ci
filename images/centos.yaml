@@ -371,7 +371,7 @@ files:
      HOSTNAME=LXC_NAME
      TYPE=Ethernet
      MTU=
-     DHCP_HOSTNAME=`cat /proc/sys/kernel/hostname`
+     DHCP_HOSTNAME=LXC_NAME
    releases:
     - 8
     - 8-Stream
@@ -386,7 +386,7 @@ files:
      HOSTNAME={{ container.name }}
      TYPE=Ethernet
      MTU=
-     DHCP_HOSTNAME=`cat /proc/sys/kernel/hostname`
+     DHCP_HOSTNAME={{ container.name }}
    releases:
     - 8
     - 8-Stream
