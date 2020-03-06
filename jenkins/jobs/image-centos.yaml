@@ -53,8 +53,7 @@
         fi
 
         TYPE="container"
-        if ([ "${architecture}" = "amd64" ] || [ "${architecture}" = "arm64" ]) && \
-            [ "${release}" != "6" ]; then
+        if [ "${architecture}" = "amd64" ] && [ "${release}" != "6" ]; then
             TYPE="container,vm"
         fi
 
