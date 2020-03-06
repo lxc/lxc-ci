@@ -653,12 +653,18 @@ actions:
     #!/bin/sh
     set -eux
 
+    mount -t tmpfs tmpfs /sys/firmware
+    mkdir /sys/firmware/efi
+
     # Regenerate initramfs
     kver=$(ls /boot/initramfs-*.img | sed -r 's#.*initramfs-(.+)\.img#\1#')
     dracut --kver "${kver}" -f
 
     target="$(readlink -f /etc/grub2-efi.cfg)"
     grub2-mkconfig -o "${target}"
+
+    umount /sys/firmware
+
     sed -i "s#root=[^ ]*#root=/dev/sda2#g" "${target}"
   types:
   - vm
