@@ -330,6 +330,7 @@ files:
   releases:
   - 7
   - 8
+  - 8-Stream
 
 - name: ifcfg-eth0
   path: /etc/sysconfig/network-scripts/ifcfg-eth0
@@ -451,6 +452,7 @@ files:
   - vm
   releases:
   - 8
+  - 8-Stream
 
 - generator: fstab
   types:
@@ -578,6 +580,7 @@ packages:
     releases:
     - 7
     - 8
+    - 8-Stream
 
   - packages:
     - grub2-efi-x64
@@ -587,6 +590,7 @@ packages:
     releases:
     - 7
     - 8
+    - 8-Stream
     architectures:
     - x86_64
 
@@ -598,6 +602,7 @@ packages:
     releases:
     - 7
     - 8
+    - 8-Stream
     architectures:
     - aaarch64
 
@@ -625,6 +630,7 @@ actions:
   - vm
   releases:
   - 8
+  - 8-Stream
 
 - trigger: post-unpack
   action: |-
@@ -635,6 +641,7 @@ actions:
   releases:
   - 7
   - 8
+  - 8-Stream
 
 - trigger: post-packages
   action: |-
@@ -670,4 +677,22 @@ actions:
   - vm
   releases:
   - 7
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Regenerate initramfs
+    kver=$(ls /boot/initramfs-*.img | sed -r 's#.*initramfs-(.+)\.img#\1#')
+    dracut --kver "${kver}" -f
+
+    target="$(readlink -f /etc/grub2-efi.cfg)"
+    grub2-mkconfig -o "${target}"
+
+    sed -i "s#root=[^ ]*#root=/dev/sda2#g" "${target}"
+  types:
+  - vm
+  releases:
   - 8
+  - 8-Stream
