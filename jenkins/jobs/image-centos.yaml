@@ -52,8 +52,14 @@
             EXTRA_ARGS="${EXTRA_ARGS} -o source.variant=boot"
         fi
 
+        TYPE="container"
+        if ([ "${architecture}" = "amd64" ] || [ "${architecture}" = "arm64" ]) && \
+            [ "${release}" != "6" ]; then
+            TYPE="container,vm"
+        fi
+
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/centos.yaml \
-            ${LXD_ARCHITECTURE} container 7200 ${WORKSPACE} \
+            ${LXD_ARCHITECTURE} ${TYPE} 7200 ${WORKSPACE} \
             -o image.architecture=${ARCH} -o image.release=${release} \
             -o image.variant=${variant} ${EXTRA_ARGS}
 
@@ -74,7 +80,7 @@
 
     publishers:
     - archive:
-        artifacts: "*.tar.xz,*.squashfs,image.yaml,serial"
+        artifacts: "*.qcow2,*.tar.xz,*.squashfs,image.yaml,serial"
         only-if-success: true
 
     - workspace-cleanup:
