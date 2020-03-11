@@ -363,6 +363,31 @@ files:
   variants:
   - cloud
 
+- generator: lxd-agent
+  types:
+  - vm
+
+- generator: fstab
+  types:
+  - vm
+
+- path: /etc/default/grub
+  generator: dump
+  content: |-
+    GRUB_DISTRIBUTOR="Gentoo"
+    # Set the recordfail timeout
+    GRUB_RECORDFAIL_TIMEOUT=0
+    # Do not wait on grub prompt
+    GRUB_TIMEOUT=0
+    # Set the default commandline
+    GRUB_CMDLINE_LINUX_DEFAULT="console=tty1 console=ttyS0"
+    # Set the grub console type
+    GRUB_TERMINAL=console
+    # Disable os-prober
+    GRUB_DISABLE_OS_PROBER=true
+  types:
+  - vm
+
 packages:
   manager: portage
   update: false
@@ -373,6 +398,15 @@ packages:
     action: install
     variants:
     - cloud
+
+  - packages:
+    - gentoo-kernel-bin
+    - grub
+    - syslog-ng
+    - sys-power/acpid
+    action: install
+    types:
+    - vm
 
 actions:
 - trigger: post-unpack
@@ -411,6 +445,10 @@ actions:
     cp /usr/share/portage/config/repos.conf /usr/share/portage/config/repos.conf.orig
     sed -i "s#hkps://keys.gentoo.org#keyserver.ubuntu.com#g" /usr/share/portage/config/repos.conf
     sed -ri "s#(sync-uri =) .+#\1 ${RSYNC_MIRROR}#" /usr/share/portage/config/repos.conf
+
+    TARGET="amd64"
+    [ "$(uname -m)" = "aarch64" ] && TARGET="arm64"
+    echo ACCEPT_KEYWORDS="~${TARGET}" >> /etc/portage/make.conf
   types:
   - container
   - vm
@@ -451,6 +489,21 @@ actions:
     rc-update add cloud-final default
   variants:
   - cloud
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+    rc-update add syslog-ng boot
+    rc-update add acpid default
+    TARGET="x86_64"
+    [ "$(uname -m)" = "aarch64" ] && TARGET="arm64"
+    grub-install --target=${TARGET}-efi --no-nvram --removable
+    grub-install --target=${TARGET}-efi --no-nvram
+    grub-mkconfig -o /boot/grub/grub.cfg
+    sed -i "s#root=[^ ]*#root=/dev/sda2#g" /boot/grub/grub.cfg
+  types:
+  - vm
 
 environment:
   variables:
