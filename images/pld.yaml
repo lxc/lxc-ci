@@ -3,7 +3,7 @@ image:
 
 source:
   downloader: docker-http
-  url: pldlinux/i686:latest
+# url: pldlinux/i686:latest
 
 targets:
   lxc:
