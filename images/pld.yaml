@@ -1,5 +1,6 @@
 image:
   distribution: pld
+  variant: minimal
 
 source:
   downloader: docker-http
