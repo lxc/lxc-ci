@@ -24,7 +24,7 @@ packages:
   custom-manager:
     refresh:
       cmd: poldek
-      flags: [ --noprogress, --up ]
+      flags: [ -Oparticle_install=no, --noprogress, --up ]
     install:
       cmd: poldek
       flags: [ --noprogress, --noask, -u ]
@@ -33,7 +33,7 @@ packages:
       flags: [ --noprogress, --noask, -e ]
     update:
       cmd: poldek
-      flags: [ --noprogress, --noask, --upgrade-dist ]
+      flags: [ -Oparticle_install=no, --noprogress, --noask, --upgrade-dist ]
     clean:
       cmd: poldek
       flags: [ --clean ]
