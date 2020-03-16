@@ -95,6 +95,12 @@ else
     lxc storage create zfs zfs
     lxc storage create lvm lvm
     lxc storage create btrfs btrfs
+
+    # Custom volumes
+    lxc storage volume create dir foo
+    lxc storage volume create zfs foo
+    lxc storage volume create lvm foo
+    lxc storage volume create btrfs foo
 fi
 
 # Create some containers
