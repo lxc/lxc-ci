@@ -39,6 +39,7 @@ cleanup() {
     fi
 
     echo "==> Removing LXD"
+    umount -l /var/snap/lxd/common/shmounts
     snap remove lxd
     pkill -x -9 lxd
     pkill -x -9 dnsmasq
