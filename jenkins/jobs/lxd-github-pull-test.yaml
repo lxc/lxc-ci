@@ -33,7 +33,7 @@
 
     - throttle:
         option: project
-        max-total: 4
+        max-total: 5
 
     parameters:
     - string:
