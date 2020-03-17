@@ -34,7 +34,7 @@ cleanup() {
         done
 
         for storage in $(lxc storage list | tail -n+3 | grep "^| " | cut -d' ' -f2); do
-            lxc storage delete "${storage}" || true
+            lxc storage delete "${storage}" || reboot
         done
     fi
 
