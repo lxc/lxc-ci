@@ -427,6 +427,15 @@ packages:
     - cloud
 
   - packages:
+    - acpid
+    action: install
+    architectures:
+    - amd64
+    - arm64
+    types:
+    - vm
+
+  - packages:
     - grub-efi-amd64-signed
     - shim-signed
     action: install
