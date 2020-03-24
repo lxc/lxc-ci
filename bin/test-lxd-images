@@ -1,6 +1,9 @@
 #!/bin/sh
 set -eu
 
+TYPE="CONTAINER"
+[ "${1:-""}" = "vm" ] && TYPE="VIRTUAL-MACHINE"
+
 cleanup() {
     echo ""
     if [ "${FAIL}" = "1" ]; then
@@ -55,22 +58,16 @@ done
 lxc storage show default >/dev/null 2>&1 || exit 1
 lxc profile device add default root disk pool=default path=/
 
-# Create the containers
-echo "=> Creating the containers"
-for i in $(lxc image list images: | grep x86_64 | grep CONTAINER | grep "more" | awk '{print $2}'); do
+# Create the instances
+echo "=> Creating the instances"
+for i in $(lxc image list images: | grep x86_64 | grep "${TYPE}" | grep "more" | awk '{print $2}'); do
     name=$(echo "${i}" | sed -e "s/\//-/g" -e "s/\.//g")
-    lxc init "images:${i}" "${name}-unpriv" -c security.nesting=true
-    lxc init "images:${i}" "${name}-priv" -c security.privileged=true -c security.nesting=true
+    if [ "${TYPE}" = "VIRTUAL-MACHINE" ]; then
+        lxc init "images:${i}" "${name}" --vm -c security.secureboot=false
 
-    if [ "${name}" = "voidlinux" ] || [ "${name}" = "voidlinux-musl" ]; then
-        # Workaround weird init system
-        lxc config set "${name}-unpriv" raw.lxc lxc.signal.halt=SIGCONT
-        lxc config set "${name}-priv" raw.lxc lxc.signal.halt=SIGCONT
-    fi
-
-    # Cloud-init testing
-    if echo "${name}" | grep -E -q "cloud$"; then
-        lxc config set "${name}-unpriv" user.user-data "$(cat << EOF
+        # Cloud-init testing
+        if echo "${name}" | grep -E -q "cloud$"; then
+            lxc config set "${name}" user.user-data "$(cat << EOF
 #cloud-config
 write_files:
   - content: "foo\n"
@@ -78,14 +75,26 @@ write_files:
 EOF
 )"
 
-        lxc config set "${name}-unpriv" user.vendor-data "$(cat << EOF
+            lxc config set "${name}" user.vendor-data "$(cat << EOF
 #cloud-config
 bootcmd:
   - "echo bar > /vendor-data"
 EOF
 )"
+        fi
+    else
+        lxc init "images:${i}" "${name}-unpriv" -c security.nesting=true
+        lxc init "images:${i}" "${name}-priv" -c security.privileged=true -c security.nesting=true
 
-        lxc config set "${name}-priv" user.user-data "$(cat << EOF
+        if [ "${name}" = "voidlinux" ] || [ "${name}" = "voidlinux-musl" ]; then
+            # Workaround weird init system
+            lxc config set "${name}-unpriv" raw.lxc lxc.signal.halt=SIGCONT
+            lxc config set "${name}-priv" raw.lxc lxc.signal.halt=SIGCONT
+        fi
+
+        # Cloud-init testing
+        if echo "${name}" | grep -E -q "cloud$"; then
+            lxc config set "${name}-unpriv" user.user-data "$(cat << EOF
 #cloud-config
 write_files:
   - content: "foo\n"
@@ -93,19 +102,35 @@ write_files:
 EOF
 )"
 
-        lxc config set "${name}-priv" user.vendor-data "$(cat << EOF
+            lxc config set "${name}-unpriv" user.vendor-data "$(cat << EOF
 #cloud-config
 bootcmd:
   - "echo bar > /vendor-data"
 EOF
 )"
+
+            lxc config set "${name}-priv" user.user-data "$(cat << EOF
+#cloud-config
+write_files:
+  - content: "foo\n"
+    path: /user-data
+EOF
+)"
+
+            lxc config set "${name}-priv" user.vendor-data "$(cat << EOF
+#cloud-config
+bootcmd:
+  - "echo bar > /vendor-data"
+EOF
+)"
+        fi
     fi
 done
 
 # Start them all
-echo "=> Starting the containers"
+echo "=> Starting the instances"
 COUNT=0
-for url in $(lxc query "/1.0/containers" | jq -r .[]); do
+for url in $(lxc query "/1.0/instances" | jq -r .[]); do
     name=$(echo "${url}" | cut -d/ -f4)
     lxc start "${name}"
 
@@ -117,15 +142,26 @@ for url in $(lxc query "/1.0/containers" | jq -r .[]); do
 done
 
 # Wait for network
-sleep 20
+sleep 1m
 
-# Check that all containers have an IPv4 and IPv6 address
+# Check that all instances have an IPv4 and IPv6 address
 echo "=> Performing network tests"
 FAIL=0
-for url in $(lxc query "/1.0/containers" | jq -r .[]); do
-    address=$(lxc query "${url}/state" | jq -r ".network.eth0.addresses | .[] | select(.scope | contains(\"global\")) | .address")
+for url in $(lxc query "/1.0/instances" | jq -r .[]); do
     name=$(echo "${url}" | cut -d/ -f4)
     echo ""
+
+    # Get the addresses
+    address=$(lxc query "${url}/state" | jq -r ".network.eth0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
+    if [ -z "${address}" ]; then
+        address=$(lxc query "${url}/state" | jq -r ".network.enp5s0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
+    fi
+
+    if [ -z "${address}" ]; then
+        echo "FAIL: No network interface: ${name}"
+        FAIL=1
+        continue
+    fi
 
     # IPv4 address
     if echo "${address}" | grep "\." -q; then
@@ -171,7 +207,7 @@ for url in $(lxc query "/1.0/containers" | jq -r .[]); do
     fi
 done
 
-# Check that all containers can be stopped
+# Check that all instances can be stopped
 echo "=> Performing shutdown test"
 if ! lxc stop --all --timeout=60; then
     FAIL=1
