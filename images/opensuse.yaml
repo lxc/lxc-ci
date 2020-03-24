@@ -102,6 +102,7 @@ files:
     BOOTPROTO='dhcp'
   types:
   - container
+  - vm
   releases:
   - 15.1
 
