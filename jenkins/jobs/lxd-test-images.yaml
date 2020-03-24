@@ -3,12 +3,30 @@
     concurrent: false
     description: Tests all images available at https://images.linuxcontainers.org.
     node: master
-    project-type: freestyle
+    project-type: matrix
+
+    axes:
+    - axis:
+        name: type
+        type: user-defined
+        values:
+        - container
+        - vm
+
+    - axis:
+        name: restrict
+        type: slave
+        values:
+        - master
+
 
     builders:
     - shell: |-
         cd /lxc-ci
-        exec sudo /lxc-ci/bin/maas-run name=lantea bionic ga-18.04 default bin/test-lxd-images
+        exec sudo /lxc-ci/bin/maas-run name=lantea bionic ga-18.04 default bin/test-lxd-images "${type}"
+
+    execution-strategy:
+      sequential: true
 
     properties:
     - build-discarder:
