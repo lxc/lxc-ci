@@ -566,6 +566,14 @@ packages:
     - 8-Stream
 
   - packages:
+    - NetworkManager
+    action: install
+    releases:
+    - 7
+    types:
+    - vm
+
+  - packages:
     - cloud-init
     action: install
     variants:
