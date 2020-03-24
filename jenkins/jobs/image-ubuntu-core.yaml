@@ -60,4 +60,4 @@
 
     wrappers:
     - ansicolor:
-        colormap: xterm
+        colormap: css
