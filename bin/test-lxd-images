@@ -188,7 +188,7 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
     fi
 
     # Cloud-init testing
-    if echo "${name}" | grep -E -q "(cloud-priv|cloud-unpriv)$"; then
+    if echo "${name}" | grep -E -q "\-cloud"; then
         if [ "$(lxc file pull "${name}/user-data" - 2>/dev/null)" = "foo" ]; then
             echo "PASS: cloud-init user-data provisioning: ${name}"
         else
