@@ -141,8 +141,8 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
     fi
 done
 
-# Wait for network
-sleep 1m
+# Wait for things to settle
+sleep 5m
 
 # Check that all instances have an IPv4 and IPv6 address
 echo "=> Performing network tests"
