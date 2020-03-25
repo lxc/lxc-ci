@@ -38,6 +38,13 @@
     - workspace-cleanup:
         fail-build: false
 
+    - naginator:
+        rerun-unstable-builds: true
+        rerun-matrix-part: true
+        max-failed-builds: 3
+        progressive-delay-increment: 300
+        progressive-delay-maximum: 900
+
     triggers:
     - timed: '@daily'
 
