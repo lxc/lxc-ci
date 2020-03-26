@@ -97,6 +97,8 @@ if [ "${kernel}" != "default" ]; then
     echo "==> Installing custom kernel"
     ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "ubuntu@${IP}" sudo sh /dev/stdin "${kernel}" < "bin/maas-kernel" || true
 
+    sleep 30
+
     while :; do
         ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "ubuntu@${IP}" true 2>/dev/null && break
         sleep 5
