@@ -63,7 +63,7 @@ echo "=> Creating the instances"
 for i in $(lxc image list images: | grep x86_64 | grep "${TYPE}" | grep "more" | awk '{print $2}'); do
     name=$(echo "${i}" | sed -e "s/\//-/g" -e "s/\.//g")
     if [ "${TYPE}" = "VIRTUAL-MACHINE" ]; then
-        lxc init "images:${i}" "${name}" --vm -c security.secureboot=false
+        lxc init "images:${i}" "${name}" --vm -c security.secureboot=false -c limits.cpu=4 -c limits.memory=4GB
 
         # Cloud-init testing
         if echo "${name}" | grep -E -q "cloud$"; then
@@ -142,7 +142,7 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
 done
 
 # Wait for things to settle
-sleep 5m
+sleep 1m
 
 # Check that all instances have an IPv4 and IPv6 address
 echo "=> Performing network tests"
