@@ -830,6 +830,9 @@ files:
 - path: /etc/machine-id
   generator: dump
 
+- path: /var/lib/dbus/machine-id
+  generator: remove
+
 - path: /etc/network/interfaces
   generator: dump
   content: |-

@@ -46,6 +46,9 @@ files:
   generator: hosts
 
 - path: /etc/machine-id
+  generator: dump
+
+- path: /var/lib/dbus/machine-id
   generator: remove
 
 - name: eth0.network

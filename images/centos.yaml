@@ -327,10 +327,9 @@ files:
 
 - path: /etc/machine-id
   generator: dump
-  releases:
-  - 7
-  - 8
-  - 8-Stream
+
+- path: /var/lib/dbus/machine-id
+  generator: remove
 
 - name: ifcfg-eth0
   path: /etc/sysconfig/network-scripts/ifcfg-eth0

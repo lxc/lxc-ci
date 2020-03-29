@@ -117,6 +117,9 @@ files:
   - path: /etc/machine-id
     generator: dump
     when: create
+  - path: /var/lib/dbus/machine-id
+    generator: remove
+    when: create
   - name: network
     path: /etc/sysconfig/network
     generator: dump
