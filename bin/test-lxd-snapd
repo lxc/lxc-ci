@@ -166,6 +166,12 @@ EOF
     fi
 fi
 
+# Basic validation of running containers
+for container in $(lxc list --fast | tail -n+3 | grep "^| " | cut -d' ' -f2); do
+    lxc exec "${container}" -- ls /
+    lxc info "${container}"
+done
+
 sleep 10
 lxc list
 
