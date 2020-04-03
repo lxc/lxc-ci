@@ -41,6 +41,7 @@
         - lxc-github-commit
         - lxc-github-commit-stable-2.0
         - lxc-github-commit-stable-3.0
+        - lxc-github-commit-stable-4.0
 
     axes:
     - axis:
