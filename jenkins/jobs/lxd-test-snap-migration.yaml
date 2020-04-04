@@ -40,7 +40,7 @@
         channel=$(echo ${target} | cut -d- -f2)
 
         if [ "${source}" = "trusty-backports" ]; then
-            exec sudo /lxc-ci/bin/maas-run tags=virtual trusty hwe-x default bin/test-lxd-migration "trusty-bacpkorts" "${track}" "${channel}"
+            exec sudo /lxc-ci/bin/maas-run tags=virtual trusty hwe-x default bin/test-lxd-migration "trusty-backports" "${track}" "${channel}"
 
         elif [ "${source}" = "xenial-updates" ]; then
             exec sudo /lxc-ci/bin/maas-run tags=virtual xenial ga-16.04 default bin/test-lxd-migration "xenial-updates" "${track}" "${channel}"
