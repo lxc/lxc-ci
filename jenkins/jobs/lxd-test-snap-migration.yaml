@@ -14,6 +14,9 @@
         - xenial-updates
         - xenial-backports
         - bionic-updates
+        - xenial-updates-hwe
+        - xenial-backports-hwe
+        - bionic-updates-hwe
 
     - axis:
         name: target
@@ -22,6 +25,7 @@
         - latest-edge
         - 2.0-edge
         - 3.0-edge
+        - 4.0-edge
 
     - axis:
         name: restrict
@@ -36,13 +40,24 @@
         channel=$(echo ${target} | cut -d- -f2)
 
         if [ "${source}" = "trusty-backports" ]; then
-        exec sudo /lxc-ci/bin/maas-run tags=virtual trusty hwe-x default bin/test-lxd-migration "${source}" "${track}" "${channel}"
-        elif [ "${source}" = "xenial-updates" ] || [ "${source}" = "xenial-backports" ]; then
-        exec sudo /lxc-ci/bin/maas-run tags=virtual xenial ga-16.04 default bin/test-lxd-migration "${source}" "${track}" "${channel}"
+            exec sudo /lxc-ci/bin/maas-run tags=virtual trusty hwe-x default bin/test-lxd-migration "trusty-bacpkorts" "${track}" "${channel}"
+
+        elif [ "${source}" = "xenial-updates" ]; then
+            exec sudo /lxc-ci/bin/maas-run tags=virtual xenial ga-16.04 default bin/test-lxd-migration "xenial-updates" "${track}" "${channel}"
+        elif [ "${source}" = "xenial-backports" ]; then
+            exec sudo /lxc-ci/bin/maas-run tags=virtual xenial ga-16.04 default bin/test-lxd-migration "xenial-backports" "${track}" "${channel}"
         elif [ "${source}" = "bionic-updates" ]; then
-        exec sudo /lxc-ci/bin/maas-run tags=virtual bionic ga-18.04 default bin/test-lxd-migration "${source}" "${track}" "${channel}"
+            exec sudo /lxc-ci/bin/maas-run tags=virtual bionic ga-18.04 default bin/test-lxd-migration "bionic-updates" "${track}" "${channel}"
+
+        elif [ "${source}" = "xenial-updates-hwe" ]; then
+            exec sudo /lxc-ci/bin/maas-run tags=virtual xenial hwe-16.04 default bin/test-lxd-migration "xenial-updates" "${track}" "${channel}"
+        elif [ "${source}" = "xenial-backports-hwe" ]; then
+            exec sudo /lxc-ci/bin/maas-run tags=virtual xenial hwe-16.04 default bin/test-lxd-migration "xenial-backports" "${track}" "${channel}"
+        elif [ "${source}" = "bionic-updates-hwe" ]; then
+            exec sudo /lxc-ci/bin/maas-run tags=virtual bionic hwe-18.04 default bin/test-lxd-migration "bionic-updates" "${track}" "${channel}"
+
         else
-        exit 1
+            exit 1
         fi
 
     execution-strategy:
