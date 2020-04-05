@@ -109,6 +109,12 @@ launch c2 zfs
 launch c3 lvm
 launch c4 btrfs
 
+# Create some snapshots
+lxc snapshot c1
+lxc snapshot c2
+lxc snapshot c3
+lxc snapshot c4
+
 # Pre-migration listing
 sleep 30
 lxc list
