@@ -405,7 +405,7 @@ files:
   content: |-
     GRUB_RECORDFAIL_TIMEOUT=0
     GRUB_TIMEOUT=0
-    GRUB_CMDLINE_LINUX_DEFAULT="console=tty1 console=ttyS0"
+    GRUB_CMDLINE_LINUX_DEFAULT="${GRUB_CMDLINE_LINUX_DEFAULT} console=tty1 console=ttyS0"
     GRUB_TERMINAL=console
   types:
   - vm
