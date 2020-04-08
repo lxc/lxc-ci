@@ -308,6 +308,8 @@ files:
   - focal
   types:
   - container
+  variants:
+  - default
 
 - path: /etc/network/interfaces
   generator: dump
@@ -342,6 +344,8 @@ files:
   - focal
   types:
   - vm
+  variants:
+  - default
 
 - path: /etc/network/interfaces
   generator: dump

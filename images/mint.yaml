@@ -308,6 +308,8 @@ files:
   - tessa
   - tina
   - tricia
+  variants:
+  - default
 
 - path: /etc/network/interfaces
   generator: dump
