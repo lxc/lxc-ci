@@ -12,6 +12,8 @@ export PATH="${PATH}:/var/lib/snapd/snap/bin:/snap/bin"
 
 RET=1
 cleanup() {
+    REBOOT=0
+
     set +e
     echo "==> Cleaning up"
     for container in $(lxc list --fast | tail -n+3 | grep "^| " | cut -d' ' -f2); do
@@ -34,7 +36,7 @@ cleanup() {
         done
 
         for storage in $(lxc storage list | tail -n+3 | grep "^| " | cut -d' ' -f2); do
-            lxc storage delete "${storage}" || reboot
+            lxc storage delete "${storage}" || REBOOT=1
         done
     fi
 
@@ -52,6 +54,11 @@ cleanup() {
 
     echo ""
     echo "==> Test failed"
+
+    if [ "${REBOOT}" = "1" ]; then
+        reboot
+    fi
+
     exit "${RET}"
 }
 trap cleanup EXIT HUP INT TERM
