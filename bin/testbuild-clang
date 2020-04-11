@@ -1,145 +1,102 @@
-#!/usr/bin/python3 -u
-# Copyright 2014 - Stéphane Graber <stgraber@ubuntu.com>
+#!/bin/sh -eu
+CNAME="lxc-test-$(uuidgen)"
 
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2, as
-# published by the Free Software Foundation.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+# Check arguments
+if [ "${1:-}" = "" ] || [ "${2:-}" = "" ] || [ "${3:-}" = "" ] || [ "${4:-}" = "" ]; then
+    echo "Usage: ${0} <arch> <repository> <branch> <commit>"
+    exit 1
+fi
 
-import sys
-sys.path.insert(0, '.')
+ARCH=${1}
+shift
+REPO=${1}
+shift
+BRANCH=${1}
+shift
+COMMIT=${1}
+shift
 
-import argparse
-import lxc_ci
-import traceback
+cleanup() {
+    lxc delete --force "${CNAME}"
+}
 
-parser = argparse.ArgumentParser(description="clang testbuild")
-parser.add_argument("repository", metavar="REPOSITORY")
-parser.add_argument("branch", metavar="BRANCH")
-parser.add_argument("commit", metavar="COMMIT", default="HEAD")
-parser.add_argument("--builder-dist", metavar="DIST", default="ubuntu")
-parser.add_argument("--builder-release", metavar="RELEASE", default="trusty")
-parser.add_argument("--builder-arch", metavar="RELEASE", default=None)
-parser.add_argument("--use-daily", dest="daily", action="store_true",
-                    default=False)
-args = parser.parse_args()
+trap cleanup EXIT HUP INT TERM
 
-try:
-    build_env = lxc_ci.BuildEnvironment(args.builder_dist,
-                                        args.builder_release,
-                                        args.builder_arch)
-    build_env.setup()
+# Create the container
+lxc copy "cache-lxc-${ARCH}" "${CNAME}"
 
-    if args.daily:
-        build_env.install(["software-properties-common"])
-        build_env.execute(["apt-add-repository",
-                           "ppa:ubuntu-lxc/daily", "-y"])
-        build_env.update()
+# Add loop-control for this test
+lxc config device add "${CNAME}" loop-control unix-char source=/dev/loop-control
 
-    if build_env.install(
-            list(lxc_ci.LXC_BUILD_DEPENDENCIES[args.builder_dist]
-                 ['default'])) != 0:
-        build_env.exit_unstable()
+# Start the container
+lxc start "${CNAME}"
 
-    if build_env.architecture in \
-            lxc_ci.LXC_BUILD_DEPENDENCIES[args.builder_dist]:
-        if build_env.install(
-            list(lxc_ci.LXC_BUILD_DEPENDENCIES[args.builder_dist]
-                 [build_env.architecture])) != 0:
-            build_env.exit_unstable()
+set -x
 
-    if build_env.install(
-            list(lxc_ci.LXC_RUN_DEPENDENCIES[args.builder_dist]
-                 ['default'])) != 0:
-        build_env.exit_unstable()
-
-    if build_env.architecture in \
-            lxc_ci.LXC_RUN_DEPENDENCIES[args.builder_dist]:
-        if build_env.install(
-            list(lxc_ci.LXC_RUN_DEPENDENCIES[args.builder_dist]
-                 [build_env.architecture])) != 0:
-            build_env.exit_unstable()
-
-    build_env.upload("deps/exercise", "/tmp/exercise")
-
-    if build_env.execute(["git",
-                          "clone", args.repository,
-                          "-b", args.branch,
-                          "/build"]) != 0:
-        build_env.exit_unstable()
-
-    if build_env.execute(["git",
-                          "fetch", args.repository,
-                          "+refs/pull/*:refs/remotes/origin/pr/*"],
-                         "/build") != 0:
-        build_env.exit_unstable()
-
-    if build_env.execute(["git", "checkout", args.commit],
-                         "/build") != 0:
-        build_env.exit_unstable()
-
-    if build_env.execute(["./autogen.sh"], "/build/") != 0:
-        build_env.exit_fail()
-
-    if build_env.execute(["env", "CC=clang", "./configure", "--enable-tests",
-                          "--disable-python3",
-                          "--prefix=/usr/", "--sysconfdir=/etc/",
-                          "--localstatedir=/var/"], "/build/") != 0:
-        build_env.exit_fail()
-
-    # Test build
-    if build_env.execute(["make"], "/build/") != 0:
-        build_env.exit_fail()
-
-    # Install everything
-    if build_env.execute(["make", "install"], "/build/") != 0:
-        build_env.exit_fail()
-
-    # Setup networking
-    if build_env.execute("""#!/bin/sh
-ifdown eth0
 (
 cat << EOF
-auto lo
-iface lo inet loopback
-
-auto lxcbr0
-iface lxcbr0 inet dhcp
-    bridge-ports eth0
-EOF
-) > /etc/network/interfaces
-ifup lxcbr0
-
-iptables -I FORWARD -p udp --dport 123 -j REJECT
-""") != 0:
-        build_env.exit_unstable()
-
-    # Fix cgroups
-    if build_env.execute("""#!/bin/sh
-cat /proc/self/cgroup | cut -d: -f2 | while read line; do
-    mountpoint -q /sys/fs/cgroup/${line} && continue
-
-    mkdir -p /sys/fs/cgroup/${line}
-    mount -n -t cgroup -o ${line} cgroup /sys/fs/cgroup/${line}
+#!/bin/sh
+# Wait for network
+while :; do
+    ping -W1 -c1 linuxcontainers.org >/dev/null 2>&1 && break
+    sleep 1
 done
-""") != 0:
-        build_env.exit_unstable()
 
-    # Run the test suite
-    if build_env.execute(["/tmp/exercise"]) != 0:
-        build_env.exit_fail()
+set -eux
 
-    # Success
-    build_env.exit_pass()
+# Create build directories
+mkdir -p /build/source
 
-except Exception or KeyboardInterrupt:
-    traceback.print_exc()
-    build_env.exit_unstable()
+# Get the source
+git clone "${REPO}" -b "${BRANCH}" /build/source
+cd /build/source
+git fetch "${REPO}" "+refs/pull/*:refs/remotes/origin/pr/*"
+git checkout "${COMMIT}"
+
+# Build LXC
+cd /build/source/
+./autogen.sh
+CC=clang ./configure --disable-python3 --enable-tests --prefix=/usr/ --sysconfdir=/etc/ --localstatedir=/var/
+make
+make install
+
+# Prepare for tests
+(
+cat << EOG
+network:
+  version: 2
+  ethernets:
+    eth0:
+      accept-ra: false
+      dhcp4: false
+      dhcp6: false
+  bridges:
+    lxcbr0:
+      accept-ra: true
+      dhcp4: true
+      dhcp6: true
+      interfaces:
+        - eth0
+EOG
+) > /etc/netplan/10-lxc.yaml
+
+netplan generate
+netplan apply
+
+systemctl restart apparmor
+
+# Setup pyhton test
+if [ -e /build/source/src/python-lxc/examples/api_test.py ]; then
+    mkdir -p /usr/share/doc/python3-lxc/examples/
+    cp -p /build/source/src/python-lxc/examples/api_test.py /usr/share/doc/python3-lxc/examples/
+    gzip -9 /usr/share/doc/python3-lxc/examples/api_test.py
+fi
+
+# Run testsuite
+/build/lxc-exercise
+
+exit 0
+EOF
+) | lxc file push - "${CNAME}/root/build.sh" --mode=755
+lxc file push deps/lxc-exercise "${CNAME}/build/lxc-exercise"
+lxc exec "${CNAME}" -- /root/build.sh "$@"
