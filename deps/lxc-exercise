@@ -81,9 +81,6 @@ for testbin in /usr/bin/lxc-test-*; do
 
     # Skip some tests when running in a container
     if [ -f /run/container_type ] || (type systemd-detect-virt >/dev/null 2>&1 && systemd-detect-virt  --container >/dev/null 2>&1); then
-        [ "$testbin" = "/usr/bin/lxc-test-device-add-remove" ] && \
-            ignore "$STRING" && continue
-
         [ "$testbin" = "/usr/bin/lxc-test-reboot" ] && \
             ignore "$STRING" && continue
     fi
