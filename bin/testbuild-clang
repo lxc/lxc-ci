@@ -98,5 +98,5 @@ fi
 exit 0
 EOF
 ) | lxc file push - "${CNAME}/root/build.sh" --mode=755
-lxc file push deps/lxc-exercise "${CNAME}/build/lxc-exercise"
+lxc file push -p deps/lxc-exercise "${CNAME}/build/lxc-exercise"
 lxc exec "${CNAME}" -- /root/build.sh "$@"
