@@ -59,6 +59,9 @@ apt-get install --yes --no-install-recommends \
     wget xz-utils
 
 apt-get clean
+
+# Create build directory
+mkdir -p /build
 EOF
 ) | lxc exec build-lxc-cache -- sh
 
