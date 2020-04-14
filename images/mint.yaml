@@ -302,7 +302,9 @@ files:
     network:
       version: 2
       ethernets:
-        eth0: {dhcp4: true}
+        eth0:
+          dhcp4: true
+          dhcp-identifier: mac
   releases:
   - tara
   - tessa
