@@ -301,7 +301,9 @@ files:
     network:
       version: 2
       ethernets:
-        eth0: {dhcp4: true}
+        eth0:
+          dhcp4: true
+          dhcp-identifier: mac
   releases:
   - bionic
   - eoan
@@ -337,7 +339,9 @@ files:
     network:
       version: 2
       ethernets:
-        enp5s0: {dhcp4: true}
+        enp5s0:
+          dhcp4: true
+          dhcp-identifier: mac
   releases:
   - bionic
   - eoan
