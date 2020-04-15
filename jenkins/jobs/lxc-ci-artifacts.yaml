@@ -59,6 +59,9 @@
     - build-discarder:
         num-to-keep: 5
 
+    - raw:
+        !include: ../includes/webhook.yaml.inc
+
     publishers:
     - archive:
         artifacts: "*.tar.xz"

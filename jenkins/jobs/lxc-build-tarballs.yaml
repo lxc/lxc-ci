@@ -14,6 +14,9 @@
     - build-discarder:
         num-to-keep: 15
 
+    - raw:
+        !include: ../includes/webhook.yaml.inc
+
     parameters:
     - string:
         name: sha1
