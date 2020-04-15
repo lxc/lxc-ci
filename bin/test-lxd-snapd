@@ -178,9 +178,11 @@ for container in $(lxc list --fast | tail -n+3 | grep "^| " | cut -d' ' -f2); do
     lxc exec "${container}" -- ls /
     lxc info "${container}"
 
-    lxc file push /usr/bin/snap "${container}"/tmp/
-    echo foo | lxc file push - "${container}"/tmp/foo
-    [ "$(lxc file pull "${container}"/tmp/foo -)" = "foo" ]
+    if [ "${track}" != "2.0" ]; then
+        lxc file push /usr/bin/snap "${container}"/tmp/
+        echo foo | lxc file push - "${container}"/tmp/foo
+        [ "$(lxc file pull "${container}"/tmp/foo -)" = "foo" ]
+    fi
 done
 
 sleep 10
