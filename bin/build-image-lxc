@@ -14,7 +14,7 @@ TARGET="$2"
 
 # Create the container
 lxc init "images:ubuntu/bionic/${ARCH}" build-lxc-cache \
-    -c security.privileged=true -c security.nesting=true
+    -c security.nesting=true
 
 # Start the container
 lxc start build-lxc-cache
