@@ -536,6 +536,18 @@ actions:
     #!/bin/sh
     set -eux
 
+    # Enable systemd-networkd
+    systemctl enable systemd-networkd
+  releases:
+  - bionic
+  - eoan
+  - focal
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
+
     # Make sure the locale is built and functional
     locale-gen en_US.UTF-8
     update-locale LANG=en_US.UTF-8
