@@ -19,6 +19,8 @@
         type: user-defined
         values:
         - '18.12'
+        - 'v2019.2'
+        - 'v2020.0'
 
     - axis:
         name: variant
