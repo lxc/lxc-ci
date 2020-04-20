@@ -78,9 +78,8 @@ actions:
     rm /etc/resolv.conf
     ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
 
-    ln -s /lib/systemd/system/systemd-networkd.service /etc/systemd/system/multi-user.target.wants/systemd-networkd.service
-    ln -s /lib/systemd/system/systemd-networkd.socket /etc/systemd/system/multi-user.target.wants/systemd-networkd.socket
-    ln -s /lib/systemd/system/systemd-resolved.service /etc/systemd/system/multi-user.target.wants/systemd-resolved.service
+    systemctl enable systemd-networkd.service
+    systemctl enable systemd-resolved.service
 
 environment:
   variables:
