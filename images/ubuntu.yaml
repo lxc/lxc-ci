@@ -418,6 +418,14 @@ files:
   types:
   - vm
 
+- path: /etc/sudoers.d/90-lxd
+  generator: dump
+  content: |-
+    # User rules for ubuntu
+    ubuntu ALL=(ALL) NOPASSWD:ALL
+  variants:
+    - default
+
 packages:
   manager: apt
   update: true
