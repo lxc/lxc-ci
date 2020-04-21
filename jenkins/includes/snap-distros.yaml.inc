@@ -10,6 +10,5 @@
 - ubuntu-14.04
 - ubuntu-16.04
 - ubuntu-18.04
-- ubuntu-19.04
 - ubuntu-core-16
 - ubuntu-core-18
