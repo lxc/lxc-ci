@@ -26,6 +26,7 @@
         - bionic
         - eoan
         - focal
+        - groovy
 
     - axis:
         name: variant
@@ -56,6 +57,7 @@
       combination-filter: '
       !(architecture=="s390x" && release == "trusty") &&
       !(architecture=="i386" && release == "focal") &&
+      !(architecture=="i386" && release == "groovy") &&
       !(variant == "cloud" && release == "trusty")'
 
     properties:
