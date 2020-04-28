@@ -7,7 +7,7 @@
 
     axes:
     - axis:
-        name: architecture
+        name: arch
         type: slave
         values:
         - amd64
@@ -45,7 +45,7 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        exec sudo /lxc-ci/bin/test-lxd-snapd-container ${architecture} ${core} ${track} ${channel}
+        exec sudo /lxc-ci/bin/test-lxd-snapd-container ${arch} ${core} ${track} ${channel}
 
     properties:
     - build-discarder:
@@ -53,6 +53,14 @@
 
     - raw:
         !include: ../includes/webhook.yaml.inc
+
+    - groovy-label:
+        script: |-
+            if (binding.getVariables().get("arch") == "i386") {{
+                return "native-i386";
+            }}
+
+            return null;
 
     publishers:
     - workspace-cleanup:

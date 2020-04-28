@@ -64,6 +64,14 @@
     - raw:
         !include: ../includes/webhook.yaml.inc
 
+    - groovy-label:
+        script: |-
+            if (binding.getVariables().get("arch") == "i386") {{
+                return "native-i386";
+            }}
+
+            return null;
+
     publishers:
     - archive:
         artifacts: "*.tar.gz"
