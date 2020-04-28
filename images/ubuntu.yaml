@@ -308,6 +308,7 @@ files:
   - bionic
   - eoan
   - focal
+  - groovy
   types:
   - container
   variants:
@@ -346,6 +347,7 @@ files:
   - bionic
   - eoan
   - focal
+  - groovy
   types:
   - vm
   variants:
@@ -480,6 +482,7 @@ packages:
     - disco
     - eoan
     - focal
+    - groovy
     types:
     - vm
 
@@ -498,6 +501,7 @@ packages:
     - bionic
     - eoan
     - focal
+    - groovy
     types:
     - vm
 
@@ -550,6 +554,7 @@ actions:
   - bionic
   - eoan
   - focal
+  - groovy
 
 - trigger: post-packages
   action: |-
