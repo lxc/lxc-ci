@@ -23,7 +23,7 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        exec sudo /lxc-ci/bin/maas-run name=lantea bionic ga-18.04 default bin/test-lxd-images "${type}"
+        exec sudo /lxc-ci/bin/maas-run name=lantea focal ga-20.04 default bin/test-lxd-images "${type}"
 
     execution-strategy:
       sequential: true
