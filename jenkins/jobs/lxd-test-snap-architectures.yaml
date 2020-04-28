@@ -56,9 +56,9 @@
 
     - groovy-label:
         script: |-
-            if (binding.getVariables().get("arch") == "i386") {{
+            if (binding.getVariables().get("arch") == "i386") {
                 return "native-i386";
-            }}
+            }
 
             return null;
 
