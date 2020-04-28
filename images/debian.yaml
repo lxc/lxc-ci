@@ -833,6 +833,16 @@ files:
 - path: /var/lib/dbus/machine-id
   generator: remove
 
+- path: /etc/systemd/system/systemd-udevd.service.d/override.conf
+  generator: dump
+  content: |-
+    [Service]
+    OOMScoreAdjust=0
+  type:
+  - container
+  releases:
+  - jessie
+
 - path: /etc/network/interfaces
   generator: dump
   content: |-
@@ -1019,6 +1029,22 @@ packages:
     - buster
     - bullseye
     - sid
+
+  - packages:
+    - udhcpc
+    action: install
+    types:
+    - container
+    releases:
+    - jessie
+
+  - packages:
+    - isc-dhcp-client
+    action: remove
+    types:
+    - container
+    releases:
+    - jessie
 
   repositories:
   - name: sources.list
