@@ -67,6 +67,14 @@
     - raw:
         !include: ../includes/webhook.yaml.inc
 
+    - groovy-label:
+        script: |-
+            if (binding.getVariables().get("architecture") == "i386") {{
+                return "native-amd64";
+            }}
+
+            return null;
+
     publishers:
     - archive:
         artifacts: "*.qcow2,*.tar.xz,*.squashfs,image.yaml,serial"
