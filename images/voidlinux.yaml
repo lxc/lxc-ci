@@ -104,8 +104,9 @@ packages:
   cleanup: true
   sets:
   - packages:
-    - socklog-void
     - cronie
+    - dhclient
+    - socklog-void
     action: install
 
 actions:
@@ -114,10 +115,16 @@ actions:
     #! /bin/sh
     set -eux
 
+    # Create dhclient-eth0 service
+    mkdir /etc/sv/dhclient-eth0/
+    cp /etc/sv/dhclient/run /etc/sv/dhclient-eth0/
+    ln -s /run/runit/supervise.dhclient-eth0 /etc/sv/dhclient-eth0/supervice
+    sed -i "/^exec / s/$/eth0/" /etc/sv/dhclient-eth0/run
+
     # Enable services
     ln -s /etc/sv/socklog-unix /etc/runit/runsvdir/default/
     ln -s /etc/sv/nanoklogd /etc/runit/runsvdir/default/
-    ln -s /etc/sv/dhcpcd-eth0 /etc/runit/runsvdir/default/
+    ln -s /etc/sv/dhclient-eth0 /etc/runit/runsvdir/default/
     ln -s /etc/sv/cronie /etc/runit/runsvdir/default/
     ln -s /etc/sv/agetty-console /etc/runit/runsvdir/default/
 
