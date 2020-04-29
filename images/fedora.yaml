@@ -116,6 +116,7 @@ files:
   - default
   releases:
   - 31
+  - 32
   types:
   - container
 
