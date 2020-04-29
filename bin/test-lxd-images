@@ -209,6 +209,6 @@ done
 
 # Check that all instances can be stopped
 echo "=> Performing shutdown test"
-if ! lxc stop --all --timeout=60; then
+if ! lxc stop --all --timeout=120; then
     FAIL=1
 fi
