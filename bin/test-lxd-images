@@ -209,6 +209,13 @@ done
 
 # Check that all instances can be stopped
 echo "=> Performing shutdown test"
-if ! lxc stop --all --timeout=300; then
-    FAIL=1
-fi
+STOPPED=0
+for i in $(seq 10); do
+    if lxc stop --all --timeout=30 >/dev/null 2>&1; then
+        STOPPED=1
+        break
+    else
+        echo "$(lxc list | grep -c RUNNING) instances still running"
+    fi
+done
+[ "${STOPPED}" = "0" ] && FAIL=1
