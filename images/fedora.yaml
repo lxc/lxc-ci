@@ -280,6 +280,9 @@ actions:
       [ "$(readlink ${f})" = "/dev/null" ] && rm "${f}"
     done
 
+    # Wipe grub environment
+    rm -f /boot/efi/EFI/fedora/grubenv
+
     exit 0
   types:
   - vm
