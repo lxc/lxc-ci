@@ -8,7 +8,6 @@ source:
   # RPM-GPG-KEY-CentOS-6
   - |-
     -----BEGIN PGP PUBLIC KEY BLOCK-----
-    Version: GnuPG v1.4.5 (GNU/Linux)
 
     mQINBE4P06MBEACqn48FZgYkG2QrtUAVDV58H6LpDYEcTcv4CIFSkgs6dJ9TavCW
     NyPBZRpM2R+Rg5eVqlborp7TmktBP/sSsxc8eJ+3P2aQWSWc5ol74Y0OznJUCrBr
@@ -41,7 +40,6 @@ source:
   # RPM-GPG-KEY-CentOS-Security-6
   - |-
     -----BEGIN PGP PUBLIC KEY BLOCK-----
-    Version: GnuPG v1.4.5 (GNU/Linux)
 
     mQINBE4P134BEAC+ho3SNeLTnB4VaQHl1MFnsRHPEseN82AGiusUYlu+MR8pZ90P
     F9Kv97idgKcEhdG7kGrCqGS5DOvLbv5UOyOEeNf9Zd9bvE2MEQ6XWa6IcffeunAp
@@ -74,7 +72,6 @@ source:
   # RPM-GPG-KEY-CentOS-7
   - |-
     -----BEGIN PGP PUBLIC KEY BLOCK-----
-    Version: GnuPG v1.4.5 (GNU/Linux)
 
     mQINBFOn/0sBEADLDyZ+DQHkcTHDQSE0a0B2iYAEXwpPvs67cJ4tmhe/iMOyVMh9
     Yw/vBIF8scm6T/vPN5fopsKiW9UsAhGKg0epC6y5ed+NAUHTEa6pSOdo7CyFDwtn
@@ -107,7 +104,6 @@ source:
   # RPM-GPG-KEY-CentOS-7-aarch64
   - |-
     -----BEGIN PGP PUBLIC KEY BLOCK-----
-    Version: GnuPG v2.0.22 (GNU/Linux)
 
     mQENBFW3h2gBCADPM3WDbdHNnMAB0FPvVRIBjGpkpeWT5rsbMZbk35tCx7MbAhMk
     zcN519xw7DGVLigFd68S3W2Lrde6ioyVQ1SVSJ7z84U4uYUfSa858Dskxxy021Ip
@@ -130,7 +126,6 @@ source:
   # RPM-GPG-KEY-CentOS-SIG-AltArch-Arm32
   - |-
     -----BEGIN PGP PUBLIC KEY BLOCK-----
-    Verson: GnuPG v2.0.22 (GNU/Linux)
 
     mQENBFZYUi8BCADtrzJRu2Q3WGb5ExbmAB8CGWDAbVOTLZBA0bSj+i63LsUDdHkU
     sKpOGEaRPhagB27lkVUMOkcOIodYAbQZDbF788KDxeF4BopORbGXdo14OMEmoVq6
@@ -153,7 +148,6 @@ source:
   # RPM-GPG-KEY-CentOS-SIG-AltArch-7-ppc64
   - |-
     -----BEGIN PGP PUBLIC KEY BLOCK-----
-    Version: GnuPG v2.0.22 (GNU/Linux)
 
     mQENBFZYUWkBCADomwJs4B6eBhhHmkBxaTQBNg2SicdZZWfb9+VArLqZ+Qyez3YQ
     V1Bq2dBaDv2HIpTI8AHyT/KL/VuF1cdmGK8Q+uhqVxbFIP3giuaNHdV+DLx7suid
@@ -176,7 +170,6 @@ source:
   # RPM-GPG-KEY-CentOS-Official
   - |-
     -----BEGIN PGP PUBLIC KEY BLOCK-----
-    Version: GnuPG v2.0.22 (GNU/Linux)
 
     mQINBFzMWxkBEADHrskpBgN9OphmhRkc7P/YrsAGSvvl7kfu+e9KAaU6f5MeAVyn
     rIoM43syyGkgFyWgjZM8/rur7EMPY2yt+2q/1ZfLVCRn9856JqTIq0XRpDUe4nKQ
