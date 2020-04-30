@@ -31,7 +31,7 @@
 
     execution-strategy:
       combination-filter: '
-      !(architecture!="amd64" && architecture!="i386" && variant=="cloud")'
+      !(architecture!="amd64" && variant=="cloud")'
 
     builders:
     - shell: |-
