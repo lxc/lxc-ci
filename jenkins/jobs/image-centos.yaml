@@ -65,6 +65,8 @@
     execution-strategy:
       combination-filter: '
       !(architecture=="arm64" && release == "6")
+      && !(architecture=="arm64" && release == "7")
+      && !(architecture=="ppc64el" && release == "7")
       && !(architecture=="armhf" && release != "7")
       && !(architecture=="i386" && release == "8")
       && !(architecture=="i386" && release == "8-Stream")
