@@ -5,8 +5,8 @@ source:
   downloader: centos-http
   url: http://centos.mirror.iweb.ca
   keys:
-    # RPM-GPG-KEY-CentOS-6
-    - |-
+  # RPM-GPG-KEY-CentOS-6
+  - |-
     -----BEGIN PGP PUBLIC KEY BLOCK-----
     Version: GnuPG v1.4.5 (GNU/Linux)
 
@@ -38,8 +38,8 @@ source:
     =jrWY
     -----END PGP PUBLIC KEY BLOCK-----
 
-    # RPM-GPG-KEY-CentOS-Security-6
-    - |-
+  # RPM-GPG-KEY-CentOS-Security-6
+  - |-
     -----BEGIN PGP PUBLIC KEY BLOCK-----
     Version: GnuPG v1.4.5 (GNU/Linux)
 
@@ -71,8 +71,8 @@ source:
     =yuja
     -----END PGP PUBLIC KEY BLOCK-----
 
-    # RPM-GPG-KEY-CentOS-7
-    - |-
+  # RPM-GPG-KEY-CentOS-7
+  - |-
     -----BEGIN PGP PUBLIC KEY BLOCK-----
     Version: GnuPG v1.4.5 (GNU/Linux)
 
@@ -104,8 +104,8 @@ source:
     =OGYX
     -----END PGP PUBLIC KEY BLOCK-----
 
-    # RPM-GPG-KEY-CentOS-7-aarch64
-    - |-
+  # RPM-GPG-KEY-CentOS-7-aarch64
+  - |-
     -----BEGIN PGP PUBLIC KEY BLOCK-----
     Version: GnuPG v2.0.22 (GNU/Linux)
 
@@ -127,8 +127,8 @@ source:
     =qiwp
     -----END PGP PUBLIC KEY BLOCK-----
 
-    # RPM-GPG-KEY-CentOS-SIG-AltArch-Arm32
-    - |-
+  # RPM-GPG-KEY-CentOS-SIG-AltArch-Arm32
+  - |-
     -----BEGIN PGP PUBLIC KEY BLOCK-----
     Verson: GnuPG v2.0.22 (GNU/Linux)
 
@@ -150,8 +150,8 @@ source:
     =72OZ
     -----END PGP PUBLIC KEY BLOCK-----
 
-    # RPM-GPG-KEY-CentOS-SIG-AltArch-7-ppc64
-    - |-
+  # RPM-GPG-KEY-CentOS-SIG-AltArch-7-ppc64
+  - |-
     -----BEGIN PGP PUBLIC KEY BLOCK-----
     Version: GnuPG v2.0.22 (GNU/Linux)
 
@@ -173,8 +173,8 @@ source:
     =E+yp
     -----END PGP PUBLIC KEY BLOCK-----
 
-    # RPM-GPG-KEY-CentOS-Official
-    - |-
+  # RPM-GPG-KEY-CentOS-Official
+  - |-
     -----BEGIN PGP PUBLIC KEY BLOCK-----
     Version: GnuPG v2.0.22 (GNU/Linux)
 
