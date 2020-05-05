@@ -542,6 +542,8 @@ actions:
     # Create the ubuntu user account
     getent group sudo >/dev/null 2>&1 || groupadd --system sudo
     useradd --create-home -s /bin/bash -G sudo -U ubuntu
+  variants:
+  - default
 
 - trigger: post-packages
   action: |-
