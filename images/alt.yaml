@@ -103,6 +103,12 @@ files:
   - Sisyphus
   - p9
 
+actions:
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
+    mkdir -p /run/lock
+
 packages:
   manager: apt
   update: true
