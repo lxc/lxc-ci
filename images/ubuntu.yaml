@@ -422,6 +422,7 @@ files:
 
 - path: /etc/sudoers.d/90-lxd
   generator: dump
+  mode: 0440
   content: |-
     # User rules for ubuntu
     ubuntu ALL=(ALL) NOPASSWD:ALL
