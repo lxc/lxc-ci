@@ -285,3 +285,16 @@ actions:
     sed -i "s#root=[^ ]*#root=/dev/sda2#g" /boot/grub2/grub.cfg
   types:
   - vm
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # linuxefi and initrdefi don't seem to exist for aarch64.
+    # Instead, we should use linux and initrd.
+    sed -i "s#linuxefi#linux#g;s#initrdefi#initrd#g" /boot/grub2/grub.cfg
+  types:
+  - vm
+  architectures:
+  - aarch64
