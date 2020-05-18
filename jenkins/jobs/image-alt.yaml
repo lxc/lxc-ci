@@ -20,7 +20,6 @@
         type: user-defined
         values:
         - Sisyphus
-        - p8
         - p9
 
     - axis:
@@ -30,9 +29,7 @@
         - default
 
     execution-strategy:
-      combination-filter: '
-      !(architecture=="arm64" && release=="p8")
-      && !(architecture=="ppc64el" && release!="Sisyphus")'
+      combination-filter: '!(architecture=="ppc64el" && release!="Sisyphus")'
 
     builders:
     - shell: |-
