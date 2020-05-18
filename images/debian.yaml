@@ -962,6 +962,7 @@ packages:
     - netbase
     - net-tools
     - openssh-client
+    - procps
     - vim
     action: install
 
