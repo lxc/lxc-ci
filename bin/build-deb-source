@@ -74,18 +74,19 @@ git checkout "${PKG_COMMIT}"
 export DEBEMAIL="lxc-devel@lists.linuxcontainers.org"
 export DEBFULLNAME="LXC snapshot packages"
 version="${PKG_VERSION}~$(date +%Y%m%d-%H%M)"
+version_orig="$(echo $version | cut -d: -f2)"
 
 # Build the dist tarball
 cd /build/source/
 ./autogen.sh
 ./configure
 make dist
-mv *.tar.gz /build/lxc_\${version}.orig.tar.gz
+mv *.tar.gz /build/lxc_\${version_orig}.orig.tar.gz
 rm -Rf /build/source/
 
 mkdir /build/dist
 cd /build/dist
-tar zxf /build/lxc_\${version}.orig.tar.gz --strip 1
+tar zxf /build/lxc_\${version_orig}.orig.tar.gz --strip 1
 cp -R /build/packaging/debian/ /build/dist/debian/
 rm -f debian/changelog
 
