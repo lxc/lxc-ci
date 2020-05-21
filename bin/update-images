@@ -8,7 +8,6 @@ cleanup() {
     lxc delete build-distrobuilder-cache -f >/dev/null 2>&1
     lxc delete build-lxc-cache -f >/dev/null 2>&1
 
-    [ -e /proc/sys/vm/highmem_is_dirtyable ] && echo 0 > /proc/sys/vm/highmem_is_dirtyable
     exit 0
 }
 trap cleanup EXIT HUP INT TERM
@@ -58,7 +57,6 @@ build_lxc() {
     done
 }
 
-[ -e /proc/sys/vm/highmem_is_dirtyable ] && echo 1 > /proc/sys/vm/highmem_is_dirtyable
 build_distrobuilder
 build_lxc
 
