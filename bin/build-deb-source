@@ -74,7 +74,7 @@ git checkout "${PKG_COMMIT}"
 export DEBEMAIL="lxc-devel@lists.linuxcontainers.org"
 export DEBFULLNAME="LXC snapshot packages"
 version="${PKG_VERSION}~$(date +%Y%m%d-%H%M)"
-version_orig="$(echo $version | cut -d: -f2)"
+version_orig="\$(echo \$version | cut -d: -f2)"
 
 # Build the dist tarball
 cd /build/source/
