@@ -111,6 +111,17 @@ files:
   content: |-
     [Service]
     ExecStartPre=-/usr/sbin/ip link set eth0 down
+  variant:
+  - default
+
+- name: override.conf
+  path: /etc/systemd/system/NetworkManager.service.d/override.conf
+  generator: dump
+  content: |-
+    [Service]
+    ExecStartPre=-/usr/sbin/ip link set eth0 up
+  variant:
+  - cloud
 
 - name: network
   path: /etc/sysconfig/network
