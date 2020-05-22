@@ -1035,16 +1035,12 @@ packages:
   - packages:
     - udhcpc
     action: install
-    types:
-    - container
     releases:
     - jessie
 
   - packages:
     - isc-dhcp-client
     action: remove
-    types:
-    - container
     releases:
     - jessie
 
