@@ -187,6 +187,9 @@ targets:
     - type: all
       content: |-
         lxc.arch = {{ image.architecture_personality }}
+  lxd:
+    vm:
+      filesystem: ext4
 
 files:
 - path: /etc/hostname
@@ -194,6 +197,35 @@ files:
 
 - path: /etc/hosts
   generator: hosts
+
+- generator: fstab
+  types:
+  - vm
+
+- generator: lxd-agent
+  types:
+  - vm
+
+- path: /etc/default/grub
+  generator: dump
+  pongo: true
+  content: |-
+    # Set the recordfail timeout
+    GRUB_RECORDFAIL_TIMEOUT=0
+
+    # Do not wait on grub prompt
+    GRUB_TIMEOUT=0
+
+    # Set the default commandline
+    GRUB_CMDLINE_LINUX_DEFAULT="console=tty1 console=ttyS0 modules=sd-mod,usb-storage,{{ lxd.VM.Filesystem }} rootfstype={{ lxd.VM.Filesystem }}"
+
+    # Set the grub console type
+    GRUB_TERMINAL=console
+
+    # Disable os-prober
+    GRUB_DISABLE_OS_PROBER=true
+  types:
+  - vm
 
 - path: /etc/network/interfaces
   generator: dump
@@ -241,6 +273,29 @@ files:
     # Stuff to do before rebooting
     ::shutdown:/sbin/openrc shutdown
 
+- path: /etc/init.d/lxd-agent-9p
+  generator: dump
+  mode: 0755
+  content: |-
+    #!/sbin/openrc-run
+
+    description="LXD - agent - 9p mount"
+    command=/bin/mount
+    command_args="-t 9p config /run/lxd_config/9p -o access=0,trans=virtio"
+
+    depend() {
+      want udev-trigger
+      after udev-trigger
+    }
+
+    start_pre() {
+      /sbin/modprobe 9pnet_virtio || true
+      checkpath -d /run/lxd_config -m 0700
+      checkpath -d /run/lxd_config/9p
+    }
+  types:
+  - vm
+
 - name: meta-data
   generator: cloud-init
   variants:
@@ -276,6 +331,15 @@ packages:
     variants:
     - cloud
 
+  - packages:
+    - gcc
+    - grub-efi
+    - linux-virt
+    - udev
+    action: install
+    types:
+    - vm
+
 actions:
 - trigger: post-packages
   action: |-
@@ -293,6 +357,30 @@ actions:
     for svc_name in networking crond; do
         ln -s /etc/init.d/${svc_name} /etc/runlevels/default/${svc_name}
     done
+  types:
+  - container
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    for svc_name in bootmisc hostname hwclock loadkmap modules networking swap sysctl syslog urandom; do
+        ln -fs /etc/init.d/${svc_name} /etc/runlevels/boot/${svc_name}
+    done
+
+    for svc_name in devfs dmesg hwdrivers mdev udev udev-settle udev-trigger; do
+        ln -fs /etc/init.d/${svc_name} /etc/runlevels/sysinit/${svc_name}
+    done
+
+    target=/boot/grub/grub.cfg
+    grub-mkconfig -o "${target}"
+    sed -i "s#root=[^ ]*#root=/dev/sda2#g" "${target}"
+
+    grub-install --target=x86_64-efi --no-nvram --removable
+    grub-install --target=x86_64-efi --no-nvram
+  types:
+  - vm
 
 mappings:
   architecture_map: alpinelinux
