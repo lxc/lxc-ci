@@ -273,29 +273,6 @@ files:
     # Stuff to do before rebooting
     ::shutdown:/sbin/openrc shutdown
 
-- path: /etc/init.d/lxd-agent-9p
-  generator: dump
-  mode: 0755
-  content: |-
-    #!/sbin/openrc-run
-
-    description="LXD - agent - 9p mount"
-    command=/bin/mount
-    command_args="-t 9p config /run/lxd_config/9p -o access=0,trans=virtio"
-
-    depend() {
-      want udev-trigger
-      after udev-trigger
-    }
-
-    start_pre() {
-      /sbin/modprobe 9pnet_virtio || true
-      checkpath -d /run/lxd_config -m 0700
-      checkpath -d /run/lxd_config/9p
-    }
-  types:
-  - vm
-
 - name: meta-data
   generator: cloud-init
   variants:
