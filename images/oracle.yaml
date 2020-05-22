@@ -111,6 +111,17 @@ files:
   content: |-
     [Service]
     ExecStartPre=-/usr/sbin/ip link set eth0 down
+  variant:
+  - default
+
+- name: override.conf
+  path: /etc/systemd/system/NetworkManager.service.d/override.conf
+  generator: dump
+  content: |-
+    [Service]
+    ExecStartPre=-/usr/sbin/ip link set eth0 up
+  variant:
+  - cloud
 
 - name: network
   path: /etc/sysconfig/network
@@ -182,6 +193,10 @@ files:
   variants:
   - cloud
 
+- name: fstab
+  path: /etc/fstab
+  generator: dump
+
 packages:
   manager: yum
   update: true
@@ -214,6 +229,8 @@ packages:
 
   - packages:
     - cloud-init
+    - hostname
+    - openssh-server
     action: install
     variants:
     - cloud
