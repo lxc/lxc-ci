@@ -193,6 +193,10 @@ files:
   variants:
   - cloud
 
+- name: fstab
+  path: /etc/fstab
+  generator: dump
+
 packages:
   manager: yum
   update: true
@@ -225,6 +229,8 @@ packages:
 
   - packages:
     - cloud-init
+    - hostname
+    - openssh-server
     action: install
     variants:
     - cloud
