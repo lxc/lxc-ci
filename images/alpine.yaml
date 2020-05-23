@@ -354,8 +354,10 @@ actions:
     grub-mkconfig -o "${target}"
     sed -i "s#root=[^ ]*#root=/dev/sda2#g" "${target}"
 
-    grub-install --target=x86_64-efi --no-nvram --removable
-    grub-install --target=x86_64-efi --no-nvram
+    TARGET="x86_64"
+    [ "$(uname -m)" = "aarch64" ] && TARGET="arm64"
+    grub-install --target=${TARGET}-efi --no-nvram --removable
+    grub-install --target=${TARGET}-efi --no-nvram
   types:
   - vm
 
