@@ -446,9 +446,21 @@ actions:
     sed -i "s#hkps://keys.gentoo.org#keyserver.ubuntu.com#g" /usr/share/portage/config/repos.conf
     sed -ri "s#(sync-uri =) .+#\1 ${RSYNC_MIRROR}#" /usr/share/portage/config/repos.conf
 
-    TARGET="amd64"
-    [ "$(uname -m)" = "aarch64" ] && TARGET="arm64"
-    echo ACCEPT_KEYWORDS="~${TARGET}" >> /etc/portage/make.conf
+    machine="$(uname -m)"
+    TARGET=
+
+    case "${machine}" in
+    aarch64)
+      TARGET=arm64 ;;
+    i686)
+      TARGET=x86 ;;
+    ppc*)
+      TARGET=ppc ;;
+    x86_64)
+      TARGET=amd64 ;;
+    esac
+
+    [ -n "${TARGET}" ] && echo ACCEPT_KEYWORDS="~${TARGET}" >> /etc/portage/make.conf
   types:
   - container
   - vm
