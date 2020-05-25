@@ -56,11 +56,23 @@ files:
     ExecStart=
     ExecStart=/usr/lib/systemd/systemd-sysctl  --prefix=/etc/sysctl.d/
 
-- path: /etc/systemd/system/NetworkManager.service.d/override.conf
+- name: network-device-down.service
+  path: /etc/systemd/system/network-device-down.service
   generator: dump
   content: |-
+    [Unit]
+    Description=Turn off network device
+    Before=NetworkManager.service
+
     [Service]
-    ExecStartPre=-/bin/ip -4 link set dev eth0 down
+    ExecStart=-/bin/ip link set eth0 down
+    Type=oneshot
+    RemainAfterExit=true
+
+    [Install]
+    WantedBy=default.target
+  variants:
+  - cloud
 
 - name: meta-data
   generator: cloud-init
@@ -126,6 +138,9 @@ actions:
 
     # Enable cloud-init systemd unit
     systemctl enable cloud-init.service
+
+    systemctl enable network-device-down.service
+
   variants:
   - cloud
 
