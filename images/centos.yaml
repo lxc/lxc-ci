@@ -390,6 +390,10 @@ files:
   - cloud
   types:
   - container
+  releases:
+  - 7
+  - 8
+  - 8-Stream
 
 - name: network
   path: /etc/sysconfig/network
@@ -641,3 +645,7 @@ actions:
   - cloud
   types:
   - container
+  releases:
+  - 7
+  - 8
+  - 8-Stream
