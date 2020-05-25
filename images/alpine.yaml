@@ -309,6 +309,7 @@ packages:
     - cloud
 
   - packages:
+    - acpi
     - gcc
     - grub-efi
     - linux-virt
@@ -342,7 +343,7 @@ actions:
     #!/bin/sh
     set -eux
 
-    for svc_name in bootmisc hostname hwclock loadkmap modules networking swap sysctl syslog urandom; do
+    for svc_name in acpid bootmisc hostname hwclock loadkmap modules networking swap sysctl syslog urandom; do
         ln -fs /etc/init.d/${svc_name} /etc/runlevels/boot/${svc_name}
     done
 
