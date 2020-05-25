@@ -2,7 +2,20 @@
 
 if [ "${1:-}" = "force" ]; then
     for ctn in $(lxc-ls -P /lxc-ci/build/); do lxc-destroy --force -n "${ctn}" -P /lxc-ci/build/; done
-    lxc info >/dev/null 2>&1 && lxc query /1.0/containers | jq -r .[] | cut -d/ -f4- | grep -v ^cache- | xargs -r lxc delete -f
+    if lxc info >/dev/null 2>&1; then
+        lxc query /1.0/containers | jq -r .[] | cut -d/ -f4- | grep -v ^cache- | xargs -r lxc delete -f
+        for entry in $(nsenter --mount=/run/snapd/ns/lxd.mnt ls -1 /var/snap/lxd/common/lxd/storage-pools/default/containers/); do
+            nsenter --mount=/run/snapd/ns/lxd.mnt /snap/lxd/current/bin/btrfs subvol delete "/var/snap/lxd/common/lxd/storage-pools/default/containers/${entry}/.backup"
+            nsenter --mount=/run/snapd/ns/lxd.mnt /snap/lxd/current/bin/btrfs subvol delete "/var/snap/lxd/common/lxd/storage-pools/default/containers/${entry}"
+            nsenter --mount=/run/snapd/ns/lxd.mnt rm -rf "/var/snap/lxd/common/lxd/storage-pools/default/containers/${entry}"
+        done
+
+        lxc query /1.0/images | jq -r .[] | cut -d/ -f4- | xargs -r lxc image delete
+        for entry in $(nsenter --mount=/run/snapd/ns/lxd.mnt ls -1 /var/snap/lxd/common/lxd/storage-pools/default/images/); do
+            nsenter --mount=/run/snapd/ns/lxd.mnt /snap/lxd/current/bin/btrfs subvol delete "/var/snap/lxd/common/lxd/storage-pools/default/images/${entry}"
+            nsenter --mount=/run/snapd/ns/lxd.mnt rm -rf "/var/snap/lxd/common/lxd/storage-pools/default/images/${entry}"
+        done
+    fi
 
     rm -Rf /var/snap/lxd/common/lxd/cache/*
     systemctl reload snap.lxd.daemon
@@ -16,7 +29,7 @@ fi
 grep /lxc-ci/build/ /proc/mounts | awk '{print $2}' | while read -r line; do umount "${line}"; done
 
 for i in $(seq 0 254); do
-    [ -e "/dev/rbd${i}" ] && rbd unmap /dev/rbd${i}
+    [ -e "/dev/rbd${i}" ] && rbd unmap "/dev/rbd${i}"
 done
 
 if which zpool >/dev/null 2>&1; then
