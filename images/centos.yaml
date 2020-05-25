@@ -371,12 +371,23 @@ files:
   types:
   - vm
 
-- name: override.conf
-  path: /etc/systemd/system/NetworkManager.service.d/override.conf
+- name: network-device-down.service
+  path: /etc/systemd/system/network-device-down.service
   generator: dump
   content: |-
+    [Unit]
+    Description=Turn off network device
+    Before=NetworkManager.service
+
     [Service]
-    ExecStartPre=-/usr/sbin/ip link set eth0 down
+    ExecStart=-/usr/sbin/ip link set eth0 down
+    Type=oneshot
+    RemainAfterExit=true
+
+    [Install]
+    WantedBy=default.target
+  variants:
+  - cloud
 
 - name: network
   path: /etc/sysconfig/network
@@ -617,3 +628,12 @@ actions:
   releases:
   - 8
   - 8-Stream
+
+- trigger: post-files
+  action: |-
+    #!/bin/bsh
+    set -eux
+
+    systemctl enable network-device-down.service
+  variants:
+  - cloud

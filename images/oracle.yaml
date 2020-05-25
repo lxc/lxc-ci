@@ -105,22 +105,22 @@ files:
   releases:
   - 8
 
-- name: override.conf
-  path: /etc/systemd/system/NetworkManager.service.d/override.conf
+- name: network-device-down.service
+  path: /etc/systemd/system/network-device-down.service
   generator: dump
   content: |-
-    [Service]
-    ExecStartPre=-/usr/sbin/ip link set eth0 down
-  variant:
-  - default
+    [Unit]
+    Description=Turn off network device
+    Before=NetworkManager.service
 
-- name: override.conf
-  path: /etc/systemd/system/NetworkManager.service.d/override.conf
-  generator: dump
-  content: |-
     [Service]
-    ExecStartPre=-/usr/sbin/ip link set eth0 up
-  variant:
+    ExecStart=-/usr/sbin/ip link set eth0 down
+    Type=oneshot
+    RemainAfterExit=true
+
+    [Install]
+    WantedBy=default.target
+  variants:
   - cloud
 
 - name: network
@@ -261,3 +261,12 @@ actions:
 
     # Disable loginuid in PAM stack
     sed -i '/^session.*pam_loginuid.so/s/^session/# session/' /etc/pam.d/*
+
+- trigger: post-files
+  action: |-
+    #!/bin/bsh
+    set -eux
+
+    systemctl enable network-device-down.service
+  variants:
+  - cloud
