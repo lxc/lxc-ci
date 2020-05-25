@@ -388,6 +388,8 @@ files:
     WantedBy=default.target
   variants:
   - cloud
+  types:
+  - container
 
 - name: network
   path: /etc/sysconfig/network
@@ -631,9 +633,11 @@ actions:
 
 - trigger: post-files
   action: |-
-    #!/bin/bsh
+    #!/bin/sh
     set -eux
 
     systemctl enable network-device-down.service
   variants:
   - cloud
+  types:
+  - container

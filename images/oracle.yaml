@@ -264,7 +264,7 @@ actions:
 
 - trigger: post-files
   action: |-
-    #!/bin/bsh
+    #!/bin/sh
     set -eux
 
     systemctl enable network-device-down.service
