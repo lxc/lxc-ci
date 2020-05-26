@@ -219,4 +219,7 @@ for i in $(seq 10); do
         echo "$(lxc list | grep -c RUNNING) instances still running"
     fi
 done
+
+lxc list
+
 [ "${STOPPED}" = "0" ] && FAIL=1
