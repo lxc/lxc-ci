@@ -70,8 +70,8 @@
         name: compiler
         type: user-defined
         values:
-        - golang-1.10
         - golang-1.13
+        - golang-1.14
         - golang-tip
 
     - axis:

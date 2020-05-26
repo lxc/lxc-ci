@@ -136,7 +136,7 @@ cd /lxc-ci/deps/gimme
 git pull -q
 
 OLD_PATH=${PATH}
-for version in 1.10.8 1.13.6 tip; do
+for version in 1.10.8 1.13.11 1.14.3 tip; do
     ./gimme "${version}" >/dev/null
     if [ "${version}" = "tip" ]; then
         export GOROOT="${TEMP_DIR}/gimme/versions/go"
