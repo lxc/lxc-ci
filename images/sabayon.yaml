@@ -71,8 +71,6 @@ files:
 
     [Install]
     WantedBy=default.target
-  variants:
-  - cloud
 
 - name: meta-data
   generator: cloud-init
@@ -138,11 +136,14 @@ actions:
 
     # Enable cloud-init systemd unit
     systemctl enable cloud-init.service
-
-    systemctl enable network-device-down.service
-
   variants:
   - cloud
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+
+    systemctl enable network-device-down.service
 
 mappings:
   architecture_map: debian
