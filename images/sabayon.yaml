@@ -132,7 +132,7 @@ actions:
     # Create some potentially missing directory
     mkdir -p /etc/local.d
 
-- trigger: post-packages
+- trigger: post-files
   action: |-
     #!/bin/sh
 
