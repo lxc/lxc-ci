@@ -1,0 +1,96 @@
+#!/bin/sh
+set -eu
+
+cleanup() {
+    echo ""
+    if [ "${FAIL}" = "1" ]; then
+        echo "Test failed"
+        exit 1
+    fi
+
+    echo "Test passed"
+    exit 0
+}
+
+FAIL=1
+trap cleanup EXIT HUP INT TERM
+
+# Install LXD
+while :; do
+    [ ! -e /usr/bin/lxd ] && break
+    apt remove --purge lxd lxd-client --yes && break
+done
+snap install lxd --edge
+snap refresh lxd --edge
+lxd waitready --timeout=300
+
+# Configure LXD
+lxc storage create default zfs source=/dev/nvme0n1
+lxc profile device add default root disk path=/ pool=default
+lxc profile device add default eth0 nic nictype=sriov parent=enp7s0 name=eth0
+
+# Launch a few containers
+for i in $(seq 1 4); do
+    lxc launch images:ubuntu/20.04/cloud "c${i}"
+done
+
+# Launch a few VMs
+for i in $(seq 1 4); do
+    lxc init images:ubuntu/20.04/cloud "v${i}" --vm
+    (
+cat << EOF
+version: 2
+ethernets:
+    enp0s4:
+        dhcp4: true
+EOF
+) | lxc config set "v${i}" user.network-config -
+    lxc start "v${i}"
+done
+
+# Wait for things to settle
+sleep 2m
+
+# Check that all instances have an IPv4 and IPv6 address
+echo "=> Performing network tests"
+FAIL=0
+for url in $(lxc query "/1.0/instances" | jq -r .[]); do
+    name=$(echo "${url}" | cut -d/ -f4)
+    echo ""
+
+    # Get the addresses
+    address=$(lxc query "${url}/state" | jq -r ".network.eth0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
+    if [ -z "${address}" ]; then
+        address=$(lxc query "${url}/state" | jq -r ".network.enp0s4.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
+    fi
+
+    if [ -z "${address}" ]; then
+        echo "FAIL: No network interface: ${name}"
+        FAIL=1
+        continue
+    fi
+
+    # IPv4 address
+    if echo "${address}" | grep "\." -q; then
+        echo "PASS: IPv4 address: ${name}"
+    else
+        echo "FAIL: IPv4 address: ${name}"
+        FAIL=1
+    fi
+
+    # IPv6 address
+    if echo "${address}" | grep ":" -q; then
+        echo "PASS: IPv6 address: ${name}"
+    else
+        echo "FAIL: IPv6 address: ${name}"
+        FAIL=1
+    fi
+
+    # DNS resolution
+    if lxc exec "${name}" -- getent hosts linuxcontainers.org >/dev/null 2>&1 || lxc exec "${name}" -- ping -c1 -W1 linuxcontainers.org >/dev/null 2>&1; then
+        echo "PASS: DNS resolution: ${name}"
+    else
+        echo "FAIL: DNS resolution: ${name}"
+        FAIL=1
+    fi
+done
