@@ -79,3 +79,5 @@ lxc exec c1 ykman info
 lxc restart c1
 lxc exec c1 ykman info
 lxc config device remove c1 usb
+
+FAIL=0
