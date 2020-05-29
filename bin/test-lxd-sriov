@@ -15,6 +15,9 @@ cleanup() {
 FAIL=1
 trap cleanup EXIT HUP INT TERM
 
+# Wait for snapd seeding
+sleep 1m
+
 # Install LXD
 while :; do
     [ ! -e /usr/bin/lxd ] && break
