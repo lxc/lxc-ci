@@ -65,7 +65,7 @@ lxc config device remove c1 usb
 
 echo "==> Passing the wrong vendor"
 lxc config device add c1 usb usb vendorid=1051
-~ lxc exec c1 ykman info || false
+lxc exec c1 ykman info || false
 lxc config device remove c1 usb
 
 echo "==> Passing the wrong product"
