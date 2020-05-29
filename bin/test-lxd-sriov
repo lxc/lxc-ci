@@ -24,6 +24,12 @@ snap install lxd --edge
 snap refresh lxd --edge
 lxd waitready --timeout=300
 
+# Enable SR-IOV on nic and bring up
+echo 8 > /sys/class/net/enp7s0/device/sriov_numvfs
+ip link set enp7s0 up
+sleep 10
+ethtool enp7s0
+
 # Configure LXD
 lxc storage create default zfs source=/dev/nvme0n1
 lxc profile device add default root disk path=/ pool=default
