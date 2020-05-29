@@ -12,6 +12,12 @@ case "$1" in
     update-grub
   ;;
 
+  nvidia)
+    echo "===> Installing the NVIDIA driver"
+    apt-get update
+    apt-get install nvidia-utils-440 linux-modules-nvidia-440-generic libnvidia-compute-440 --yes
+  ;;
+
   ubuntu)
     echo "===> Ensuring default kernel is up to date"
     apt-get update

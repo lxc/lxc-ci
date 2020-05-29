@@ -1,0 +1,100 @@
+#!/bin/sh
+set -eu
+
+cleanup() {
+    echo ""
+    if [ "${FAIL}" = "1" ]; then
+        echo "Test failed"
+        exit 1
+    fi
+
+    echo "Test passed"
+    exit 0
+}
+
+FAIL=1
+trap cleanup EXIT HUP INT TERM
+
+# Wait for snapd seeding
+sleep 1m
+
+# Install LXD
+while :; do
+    [ ! -e /usr/bin/lxd ] && break
+    apt remove --purge lxd lxd-client --yes && break
+done
+snap install lxd --edge
+snap install jq
+snap refresh lxd --edge
+lxd waitready --timeout=300
+
+# Check that NVIDIA is installed
+nvidia-smi
+
+# Configure LXD
+lxc storage create default zfs
+lxc profile device add default root disk path=/ pool=default
+lxc network create lxdbr0
+lxc profile device add default eth0 nic network=lxdbr0 name=eth0
+
+# Launch a test container
+echo "==> Launching a test container"
+lxc launch images:ubuntu/20.04/cloud c1
+sleep 10
+
+# Confirm no GPU
+echo "==> Testing with no GPU"
+! lxc exec c1 -- ls -lh /dev/dri/ || false
+
+# Validate with one GPU
+echo "==> Testing with one GPU"
+lxc config device add c1 gpu0 gpu id=0
+[ "$(lxc exec c1 -- ls /dev/dri/ | grep card | wc -l)" = "1" ] || false
+
+# Validate with two GPus
+echo "==> Testing with two GPUs"
+lxc config device add c1 gpu1 gpu id=1
+[ "$(lxc exec c1 -- ls /dev/dri/ | grep card | wc -l)" = "2" ] || false
+
+# Validate with all remove
+echo "==> Testing with no GPU"
+lxc config device remove c1 gpu0
+lxc config device remove c1 gpu1
+[ "$(lxc exec c1 -- ls /dev/dri/ | grep card | wc -l)" = "0" ] || false
+
+# Validate with all GPUs
+echo "==> Testing with all GPUs"
+lxc config device add c1 gpus gpu
+[ "$(lxc exec c1 -- ls /dev/dri/ | grep card | wc -l)" = "3" ] || false
+
+# Test nvidia runtime
+echo "==> Testing nvidia runtime"
+! lxc exec c1 -- nvidia-smi || false
+lxc stop c1
+lxc config set c1 nvidia.runtime true
+lxc start c1
+lxc exec c1 -- nvidia-smi
+
+# Test with PCI addresses
+echo "==> Testing PCI address selection"
+lxc config device remove c1 gpus
+lxc config device add c1 gpu1 gpu pci=0000:fd:07.0
+lxc config device add c1 gpu2 gpu pci=0000:ff:09.0
+[ "$(lxc exec c1 -- ls /dev/dri/ | grep card | wc -l)" = "2" ] || false
+lxc exec c1 -- nvidia-smi
+
+# Test with vendor
+echo "==> Testing PCI vendor selection"
+lxc config device remove c1 gpu1
+lxc config device remove c1 gpu2
+lxc config device add c1 gpus gpu vendorid=10de
+[ "$(lxc exec c1 -- ls /dev/dri/ | grep card | wc -l)" = "2" ] || false
+lxc exec c1 -- nvidia-smi
+
+# Test with vendor and product
+echo "==> Testing PCI vendor and product selection"
+lxc config device remove c1 gpus
+lxc config device add c1 gpus gpu vendorid=1af4 productid=0010
+[ "$(lxc exec c1 -- ls /dev/dri/ | grep card | wc -l)" = "1" ] || false
+
+FAIL=0
