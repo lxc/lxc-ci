@@ -21,6 +21,7 @@ while :; do
     apt remove --purge lxd lxd-client --yes && break
 done
 snap install lxd --edge
+snap install jq
 snap refresh lxd --edge
 lxd waitready --timeout=300
 
