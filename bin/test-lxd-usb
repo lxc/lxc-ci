@@ -1,0 +1,78 @@
+#!/bin/sh
+set -eu
+
+cleanup() {
+    echo ""
+    if [ "${FAIL}" = "1" ]; then
+        echo "Test failed"
+        exit 1
+    fi
+
+    echo "Test passed"
+    exit 0
+}
+
+FAIL=1
+trap cleanup EXIT HUP INT TERM
+
+# Install LXD
+while :; do
+    [ ! -e /usr/bin/lxd ] && break
+    apt remove --purge lxd lxd-client --yes && break
+done
+snap install lxd --edge
+snap install jq
+snap refresh lxd --edge
+lxd waitready --timeout=300
+
+# Configure LXD
+lxc storage create default zfs source=/dev/nvme0n1
+lxc profile device add default root disk path=/ pool=default
+lxc network create lxdbr0
+lxc profile device add default eth0 nic network=lxdbr0 name=eth0
+
+# Launch a test container
+echo "==> Launching a test container"
+lxc launch images:ubuntu/20.04/cloud c1
+sleep 10
+
+echo "==> Installing yubikey tools"
+lxc exec c1 -- apt-get install yubikey-manager --yes
+
+echo "==> Validating as non-working"
+! lxc exec c1 -- ykman info || false
+
+echo "==> Passing all USB devices and validating"
+lxc config device add c1 usb usb
+lxc exec c1 ykman info
+
+echo "==> Removing all devices"
+lxc config device remove c1 usb
+! lxc exec c1 ykman info || false
+
+echo "==> Passing the specific vendor"
+lxc config device add c1 usb usb vendorid=1050
+lxc exec c1 ykman info
+lxc config device remove c1 usb
+
+echo "==> Passing the specific vendor and product"
+lxc config device add c1 usb usb vendorid=1050 productid=0010
+lxc exec c1 ykman info
+lxc config device remove c1 usb
+
+echo "==> Passing the wrong vendor"
+lxc config device add c1 usb usb vendorid=1051
+~ lxc exec c1 ykman info || false
+lxc config device remove c1 usb
+
+echo "==> Passing the wrong product"
+lxc config device add c1 usb usb vendorid=1050 productid=0011
+lxc exec c1 ykman info || false
+lxc config device remove c1 usb
+
+echo "==> Validating working scenario with specific device after reboot"
+lxc config device add c1 usb usb vendorid=1050 productid=0010
+lxc exec c1 ykman info
+lxc restart c1
+lxc exec c1 ykman info
+lxc config device remove c1 usb
