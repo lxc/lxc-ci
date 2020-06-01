@@ -386,8 +386,6 @@ files:
 
     [Install]
     WantedBy=default.target
-  variants:
-  - cloud
   types:
   - container
   releases:
@@ -641,8 +639,6 @@ actions:
     set -eux
 
     systemctl enable network-device-down.service
-  variants:
-  - cloud
   types:
   - container
   releases:
