@@ -21,6 +21,7 @@
         type: user-defined
         values:
         - ascii
+        - beowulf
 
     - axis:
         name: variant
