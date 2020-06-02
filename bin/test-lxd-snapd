@@ -153,20 +153,7 @@ if [ "${track}" != "2.0" ]; then
     fi
 
     if [ "${ID}" != "centos" ] && modprobe -q -n rbd; then
-        (
-cat << EOF
-[global]
-	fsid = fdb2bd9e-0ae7-4ff4-bfca-f0e38fb53372
-	mon_host = [2001:470:b0f8:1015:5054:ff:fe5e:ea44],[2001:470:b0f8:1015:5054:ff:fe0a:750f],[2001:470:b0f8:1015:5054:ff:fe5e:4c7b]
-EOF
-        ) > /var/snap/lxd/common/ceph/ceph.conf
-
-        (
-cat << EOF
-[client.admin]
-	key = AQAtBRVeIgztHhAAeBlwDB99WuQGEHwjESc3Hg==
-EOF
-        ) > /var/snap/lxd/common/ceph/ceph.client.admin.keyring
+        curl http://canonical-lxd.stgraber.org/config/ceph-snap.sh | sh -eu
 
         lxc storage create test-ceph ceph "ceph.osd.pool_name=$(mktemp -u snaptest-XXX)" volume.size=25MB ceph.osd.pg_num=1
         lxc launch images:alpine/edge -s test-ceph ceph
