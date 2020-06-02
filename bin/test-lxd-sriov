@@ -40,23 +40,54 @@ lxc profile device add default root disk path=/ pool=default
 lxc profile device add default eth0 nic nictype=sriov parent=enp7s0 name=eth0
 
 # Launch a few containers
-for i in $(seq 1 4); do
-    lxc launch images:ubuntu/20.04/cloud "c${i}"
-done
+echo "==> Container on default VLAN"
+lxc init images:ubuntu/20.04/cloud c1
+lxc start c1
+
+echo "==> Container on default VLAN with filtering"
+lxc init images:ubuntu/20.04/cloud c2
+lxc config device override c2 eth0 security.mac_filtering=true
+lxc start c2
+
+echo "==> Container on alternate VLAN"
+lxc init images:ubuntu/20.04/cloud c3
+lxc config device override c3 eth0 vlan=1017
+lxc start c3
+
+echo "==> Container on alternate VLAN with filtering"
+lxc init images:ubuntu/20.04/cloud c4
+lxc config device override c4 eth0 vlan=1017 security.mac_filtering=true
+lxc start c4
 
 # Launch a few VMs
-for i in $(seq 1 4); do
-    lxc init images:ubuntu/20.04/cloud "v${i}" --vm
-    (
+lxc profile create vm
+(
 cat << EOF
 version: 2
 ethernets:
     enp0s4:
         dhcp4: true
 EOF
-) | lxc config set "v${i}" user.network-config -
-    lxc start "v${i}"
-done
+) | lxc profile set vm user.network-config -
+
+echo "==> VM on default VLAN"
+lxc init images:ubuntu/20.04/cloud v1 --vm --profile default --profile vm
+lxc start v1
+
+echo "==> VM on default VLAN with filtering"
+lxc init images:ubuntu/20.04/cloud v2 --vm --profile default --profile vm
+lxc config device override v2 eth0 security.mac_filtering=true
+lxc start v2
+
+echo "==> VM on alternate VLAN"
+lxc init images:ubuntu/20.04/cloud v3 --vm --profile default --profile vm
+lxc config device override v3 eth0 vlan=1017
+lxc start v3
+
+echo "==> VM on alternate VLAN with filtering"
+lxc init images:ubuntu/20.04/cloud v4 --vm --profile default --profile vm
+lxc config device override v4 eth0 vlan=1017 security.mac_filtering=true
+lxc start v4
 
 # Wait for things to settle
 sleep 2m
@@ -104,3 +135,5 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
         FAIL=1
     fi
 done
+
+lxc list
