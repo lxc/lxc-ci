@@ -16,7 +16,7 @@ while :; do
     TMPFILE=$(mktemp)
 
     set +e
-    maas maas machines allocate "${1}" > "${TMPFILE}" 2>&1
+    maas maas machines allocate arch=amd64 "${1}" > "${TMPFILE}" 2>&1
     RET=$?
     if [ "${RET}" = "2" ]; then
         echo "===> System is currently busy, trying again in 60s"
