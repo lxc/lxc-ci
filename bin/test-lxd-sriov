@@ -60,32 +60,22 @@ lxc config device override c4 eth0 vlan=1017 security.mac_filtering=true
 lxc start c4
 
 # Launch a few VMs
-lxc profile create vm
-(
-cat << EOF
-version: 2
-ethernets:
-    enp0s4:
-        dhcp4: true
-EOF
-) | lxc profile set vm user.network-config -
-
 echo "==> VM on default VLAN"
-lxc init images:ubuntu/20.04/cloud v1 --vm --profile default --profile vm
+lxc init images:ubuntu/20.04/cloud v1 --vm
 lxc start v1
 
 echo "==> VM on default VLAN with filtering"
-lxc init images:ubuntu/20.04/cloud v2 --vm --profile default --profile vm
+lxc init images:ubuntu/20.04/cloud v2 --vm
 lxc config device override v2 eth0 security.mac_filtering=true
 lxc start v2
 
 echo "==> VM on alternate VLAN"
-lxc init images:ubuntu/20.04/cloud v3 --vm --profile default --profile vm
+lxc init images:ubuntu/20.04/cloud v3 --vm
 lxc config device override v3 eth0 vlan=1017
 lxc start v3
 
 echo "==> VM on alternate VLAN with filtering"
-lxc init images:ubuntu/20.04/cloud v4 --vm --profile default --profile vm
+lxc init images:ubuntu/20.04/cloud v4 --vm
 lxc config device override v4 eth0 vlan=1017 security.mac_filtering=true
 lxc start v4
 
