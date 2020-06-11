@@ -92,7 +92,7 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
     # Get the addresses
     address=$(lxc query "${url}/state" | jq -r ".network.eth0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
     if [ -z "${address}" ]; then
-        address=$(lxc query "${url}/state" | jq -r ".network.enp0s4.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
+        address=$(lxc query "${url}/state" | jq -r ".network.enp5s0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
     fi
 
     if [ -z "${address}" ]; then
