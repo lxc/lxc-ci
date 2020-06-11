@@ -859,6 +859,24 @@ files:
     source /etc/network/interfaces.d/*.cfg
   types:
   - container
+  variants:
+  - default
+
+- path: /etc/network/interfaces
+  generator: dump
+  content: |-
+    # This file describes the network interfaces available on your system
+    # and how to activate them. For more information, see interfaces(5).
+
+    # The loopback network interface
+    auto lo
+    iface lo inet loopback
+
+    source /etc/network/interfaces.d/*.cfg
+  types:
+  - container
+  variants:
+  - cloud
 
 - path: /etc/network/interfaces
   generator: dump
@@ -969,6 +987,7 @@ packages:
 
   - packages:
     - cloud-init
+    - openresolv
     action: install
     variants:
     - cloud
