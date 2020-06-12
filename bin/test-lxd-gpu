@@ -65,7 +65,7 @@ lxc config device remove c1 gpu1
 # Validate with all GPUs
 echo "==> Testing with all GPUs"
 lxc config device add c1 gpus gpu
-[ "$(lxc exec c1 -- ls /dev/dri/ | grep card | wc -l)" = "2" ] || false
+[ "$(lxc exec c1 -- ls /dev/dri/ | grep card | wc -l)" = "3" ] || false
 
 # Test nvidia runtime
 echo "==> Testing nvidia runtime"
@@ -78,8 +78,8 @@ lxc exec c1 -- nvidia-smi
 # Test with PCI addresses
 echo "==> Testing PCI address selection"
 lxc config device remove c1 gpus
-lxc config device add c1 gpu1 gpu pci=0000:00:05.0
-lxc config device add c1 gpu2 gpu pci=0000:00:07.0
+lxc config device add c1 gpu1 gpu pci=0000:07:00.0
+lxc config device add c1 gpu2 gpu pci=0000:08:00.0
 [ "$(lxc exec c1 -- ls /dev/dri/ | grep card | wc -l)" = "2" ] || false
 lxc exec c1 -- nvidia-smi
 
@@ -94,7 +94,7 @@ lxc exec c1 -- nvidia-smi
 # Test with vendor and product
 echo "==> Testing PCI vendor and product selection"
 lxc config device remove c1 gpus
-lxc config device add c1 gpus gpu vendorid=10de productid=1287
-[ "$(lxc exec c1 -- ls /dev/dri/ | grep card | wc -l)" = "2" ] || false
+lxc config device add c1 gpus gpu vendorid=1af4 productid=0010
+[ "$(lxc exec c1 -- ls /dev/dri/ | grep card | wc -l)" = "1" ] || false
 
 FAIL=0
