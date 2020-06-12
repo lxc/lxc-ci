@@ -80,12 +80,12 @@ cp /var/snap/lxd/common/lxd/server.crt ~/snap/lxd/current/.config/lxc/servercert
 # Get user credentials
 curl http://canonical-lxd.stgraber.org/config/rbac-test.user -o /var/snap/bhttp/common/rbac-test.user
 bhttp --cookiefile /var/snap/bhttp/common/rbac-user --agent /var/snap/bhttp/common/rbac-test.user https://services.stgraber.org/rbac/api/rbac/v1/service/registerable || true
-cp /var/snap/bhttp/common/rbac-user snap/lxd/current/.config/lxc/jars/rbac-user
+cp /var/snap/bhttp/common/rbac-user ~/snap/lxd/current/.config/lxc/jars/rbac-user
 
 # Get admin credentials
 curl http://canonical-lxd.stgraber.org/config/rbac-test.admin -o /var/snap/bhttp/common/rbac-test.admin
 bhttp --cookiefile /var/snap/bhttp/common/rbac-admin --agent /var/snap/bhttp/common/rbac-test.admin https://services.stgraber.org/rbac/api/rbac/v1/service/registerable || true
-cp /var/snap/bhttp/common/rbac-admin snap/lxd/current/.config/lxc/jars/rbac-admin
+cp /var/snap/bhttp/common/rbac-admin ~/snap/lxd/current/.config/lxc/jars/rbac-admin
 
 # Validate access
 echo "==> Confirming basic API access"
