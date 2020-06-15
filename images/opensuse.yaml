@@ -170,8 +170,15 @@ packages:
     - systemd-sysvinit
     - tar
     - which
+    action: install
+
+  - packages:
     - xz
     action: install
+    architectures:
+    - aarch64
+    - x86_64
+    - i686
 
   - packages:
     - net-tools
