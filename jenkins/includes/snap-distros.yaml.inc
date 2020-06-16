@@ -2,8 +2,8 @@
 - centos-7
 - debian-buster
 - debian-stretch
-- fedora-29
-- fedora-30
+- fedora-31
+- fedora-32
 - manjaro
 - opensuse-15.1
 - opensuse-tumbleweed
