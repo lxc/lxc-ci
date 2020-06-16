@@ -1,5 +1,6 @@
 - archlinux
 - centos-7
+- centos-8
 - debian-buster
 - debian-stretch
 - fedora-31
@@ -10,5 +11,6 @@
 - ubuntu-14.04
 - ubuntu-16.04
 - ubuntu-18.04
+- ubuntu-20.04
 - ubuntu-core-16
 - ubuntu-core-18
