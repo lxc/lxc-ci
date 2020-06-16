@@ -1070,6 +1070,18 @@ packages:
       {% if image.release != "sid" and image.release != "bullseye" and not (image.release == "wheezy" and image.architecture_mapped == "powerpc") and not (image.release == "wheezy" and image.architecture_mapped == "s390x") %}deb http://security.debian.org/debian-security {{ image.release }}/updates main{% endif %}
 
 actions:
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    cat /etc/resolv.conf > /tmp/resolv.conf
+    umount -l /etc/resolv.conf || true
+    mv /tmp/resolv.conf /etc/
+
+  variants:
+  - cloud
+
 - trigger: post-packages
   action: |-
     #!/bin/sh
