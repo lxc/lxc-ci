@@ -43,7 +43,7 @@ EOL
 apt-get update --yes
 
 # Install dependencies
-apt-get install --yes snapd fuse
+apt-get install --yes snapd fuse curl
 mkdir -p /lib/modules
 useradd -m -s /bin/bash jenkins
 
