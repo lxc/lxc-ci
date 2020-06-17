@@ -47,6 +47,9 @@ apt-get install --yes snapd fuse
 mkdir -p /lib/modules
 useradd -m -s /bin/bash jenkins
 
+# Configure to use the proxy
+curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh
+
 # Install specific core snap channels if requested
 if [ "${CORE}" != "stable" ]; then
     snap install core --channel=${CORE}

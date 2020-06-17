@@ -1,6 +1,12 @@
 #!/bin/sh
 set -eu
 
+# Wait for snapd seeding
+sleep 1m
+
+# Configure to use the proxy
+curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh
+
 # Install dependencies
 snap install go --classic
 apt-add-repository ppa:ubuntu-lxc/daily --yes

@@ -60,6 +60,9 @@ if [ "${LXD_BACKEND}" = "ceph" ]; then
     curl http://canonical-lxd.stgraber.org/config/ceph.sh | sh -eu
 fi
 
+# Configure to use the proxy
+curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh
+
 # Install LXD snap
 snap install lxd --edge
 snap stop lxd
