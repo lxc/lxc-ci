@@ -1,2 +1,12 @@
 #!/bin/sh
+while :; do
+    if systemctl --failed | grep -q lxc-ci; then
+        echo "==> Some required units in failed state"
+        sleep 1m
+        continue
+    fi
+
+    break
+done
+
 touch /run/lxc-ci.ready
