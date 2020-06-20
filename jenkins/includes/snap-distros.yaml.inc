@@ -14,3 +14,4 @@
 - ubuntu-20.04
 - ubuntu-core-16
 - ubuntu-core-18
+- ubuntu-core-20
