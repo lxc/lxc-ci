@@ -8,7 +8,6 @@
 - manjaro
 - opensuse-15.1
 - opensuse-tumbleweed
-- ubuntu-14.04
 - ubuntu-16.04
 - ubuntu-18.04
 - ubuntu-20.04
