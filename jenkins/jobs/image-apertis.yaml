@@ -18,7 +18,7 @@
         name: release
         type: user-defined
         values:
-        - 'v2019.3'
+        - 'v2019.2'
         - 'v2020.0'
 
     - axis:
