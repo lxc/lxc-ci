@@ -72,16 +72,15 @@ apt-get update --yes
 
 # Install dependencies
 apt-get install --yes --no-install-recommends \
-    build-essential btrfs-progs golang-go git ca-certificates gcc libc6-dev \
-    debootstrap xz-utils squashfs-tools gpg dirmngr gpg-agent rsync kpartx \
-    python subversion patch build-essential gawk libncurses-dev unzip \
-    qemu-utils gdisk dosfstools
+    build-essential btrfs-progs git ca-certificates gcc libc6-dev debootstrap \
+    xz-utils squashfs-tools gpg dirmngr gpg-agent rsync kpartx python \
+    subversion patch build-essential gawk libncurses-dev unzip qemu-utils \
+    gdisk dosfstools snapd
 apt-get clean
-export PATH=/root/go/bin:\${PATH}
-export GOPATH=/root/go/
+export PATH=/snap/bin:\${PATH}
 
 # Install distrobuilder
-go get -v -x github.com/lxc/distrobuilder/distrobuilder
+snap install distrobuilder --classic --edge
 EOF
 ) | lxc exec build-distrobuilder-cache -- sh
 
