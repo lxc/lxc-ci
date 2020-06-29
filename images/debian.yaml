@@ -878,6 +878,18 @@ files:
   variants:
   - cloud
 
+- path: /etc/network/interfaces.d/lxd.cfg
+  generator: dump
+  content: |-
+    auto eth0
+    iface eth0 inet dhcp
+  types:
+  - container
+  variants:
+  - cloud
+  releases:
+  - jessie
+
 - path: /etc/network/interfaces
   generator: dump
   content: |-
