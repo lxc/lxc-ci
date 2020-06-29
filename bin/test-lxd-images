@@ -149,6 +149,7 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
 done
 
 # Wait for things to settle
+lxc list
 sleep 1m
 
 # Check that all instances have an IPv4 and IPv6 address
@@ -167,6 +168,12 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
     if [ -z "${address}" ]; then
         echo "FAIL: No network interface: ${name}"
         FAIL=1
+        continue
+    fi
+
+    # FIXME: Skip CentOS 8 VMs due to bad kernel
+    if [ "${TYPE}" = "VIRTUAL-MACHINE" ] && echo "${name}" | grep -q "^centos-8"; then
+        echo "SKIP: CentOS 8 has a broken kernel"
         continue
     fi
 
