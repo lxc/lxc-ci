@@ -51,6 +51,9 @@
             -o image.release=${release} -o image.variant=${variant} \
             -o source.suite=${suite}
 
+    execution-strategy:
+      combination-filter: '!(architecture=="i386" && release == "ulyana")'
+
     properties:
     - build-discarder:
         num-to-keep: 2
