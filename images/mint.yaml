@@ -310,6 +310,7 @@ files:
   - tessa
   - tina
   - tricia
+  - ulyana
   variants:
   - default
 
@@ -419,6 +420,7 @@ actions:
   - tessa
   - tina
   - tricia
+  - ulyana
 
 - trigger: post-packages
   action: |-
