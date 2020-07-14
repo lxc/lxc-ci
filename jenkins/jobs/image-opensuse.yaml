@@ -21,6 +21,7 @@
         type: user-defined
         values:
         - "15.1"
+        - "15.2"
         - "tumbleweed"
 
     - axis:
