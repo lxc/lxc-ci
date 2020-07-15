@@ -833,16 +833,6 @@ files:
 - path: /var/lib/dbus/machine-id
   generator: remove
 
-- path: /etc/systemd/system/systemd-udevd.service.d/override.conf
-  generator: dump
-  content: |-
-    [Service]
-    OOMScoreAdjust=0
-  type:
-  - container
-  releases:
-  - jessie
-
 - path: /etc/network/interfaces
   generator: dump
   content: |-
@@ -878,18 +868,6 @@ files:
   variants:
   - cloud
 
-- path: /etc/network/interfaces.d/lxd.cfg
-  generator: dump
-  content: |-
-    auto eth0
-    iface eth0 inet dhcp
-  types:
-  - container
-  variants:
-  - cloud
-  releases:
-  - jessie
-
 - path: /etc/network/interfaces
   generator: dump
   content: |-
@@ -911,25 +889,6 @@ files:
   - buster
   - bullseye
   - sid
-
-- path: /etc/network/interfaces
-  generator: dump
-  content: |-
-    # This file describes the network interfaces available on your system
-    # and how to activate them. For more information, see interfaces(5).
-
-    # The loopback network interface
-    auto lo
-    iface lo inet loopback
-
-    auto eth0
-    iface eth0 inet dhcp
-
-    source /etc/network/interfaces.d/*
-  types:
-  - vm
-  releases:
-  - jessie
 
 - path: /etc/default/grub.d/50-lxd.cfg
   generator: dump
@@ -1022,16 +981,6 @@ packages:
     - amd64
 
   - packages:
-    - linux-image-4.9-amd64
-    action: install
-    types:
-    - vm
-    architectures:
-    - amd64
-    releases:
-    - jessie
-
-  - packages:
     - linux-image-amd64
     action: install
     types:
@@ -1062,18 +1011,6 @@ packages:
     - buster
     - bullseye
     - sid
-
-  - packages:
-    - udhcpc
-    action: install
-    releases:
-    - jessie
-
-  - packages:
-    - isc-dhcp-client
-    action: remove
-    releases:
-    - jessie
 
   repositories:
   - name: sources.list
@@ -1157,7 +1094,6 @@ actions:
   types:
   - vm
   releases:
-  - jessie
   - stretch
 
 mappings:
