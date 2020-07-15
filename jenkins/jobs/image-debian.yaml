@@ -22,7 +22,6 @@
         name: release
         type: user-defined
         values:
-        - jessie
         - stretch
         - buster
         - bullseye
@@ -53,13 +52,6 @@
             -o image.architecture=${architecture} \
             -o image.release=${release} -o image.variant=${variant} \
             -o source.url="http://ftp.us.debian.org/debian"
-
-    execution-strategy:
-      combination-filter: '
-      !(architecture=="arm64" && release=="jessie")
-      && !(architecture=="arm64" && release=="jessie")
-      && !(architecture=="ppc64el" && release=="jessie")
-      && !(architecture=="s390x" && release=="jessie")'
 
     properties:
     - build-discarder:
