@@ -350,7 +350,6 @@ files:
           dhcp-identifier: mac
   releases:
   - bionic
-  - eoan
   - focal
   - groovy
   types:
@@ -389,7 +388,6 @@ files:
           dhcp-identifier: mac
   releases:
   - bionic
-  - eoan
   - focal
   - groovy
   types:
@@ -599,7 +597,6 @@ actions:
     systemctl enable systemd-networkd
   releases:
   - bionic
-  - eoan
   - focal
   - groovy
 
