@@ -19,7 +19,7 @@
         type: user-defined
         values:
         - 'v2019.3'
-        - 'v2020.0'
+        - 'v2020.1'
 
     - axis:
         name: variant
