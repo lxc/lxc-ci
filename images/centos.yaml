@@ -365,6 +365,14 @@ files:
   - vm
   releases:
   - 8
+
+- path: /etc/dracut.conf.d/lxd.conf
+  generator: dump
+  content: |-
+    add_drivers+="virtio_scsi virtio_console sd_mod"
+  types:
+  - vm
+  releases:
   - 8-Stream
 
 - generator: fstab
