@@ -134,5 +134,9 @@ actions:
         touch /etc/sv/agetty-tty${tty}/down
     done
 
+    # This ensures that the container performs a shutdown when receiving SIGCONT.
+    # Runit will only perform a shutdown if /etc/runit/stopit has mode 100, and /etc/runit/reboot has mode 0.
+    sed -ri 's#install -m000 /dev/null /run/runit/stopit#install -m100 /dev/null /run/runit/stopit#' /etc/runit/1
+
 mappings:
   architecture_map: voidlinux
