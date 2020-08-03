@@ -484,10 +484,15 @@ actions:
     #!/bin/sh
     set -eux
 
-    rm /usr/bin/gpg2
-    mv /usr/bin/gpg2.real /usr/bin/gpg2
-    rm /usr/share/portage/config/repos.conf
-    mv /usr/share/portage/config/repos.conf.orig /usr/share/portage/config/repos.conf
+    if [ -f /usr/bin/gpg2.real ]; then
+      rm /usr/bin/gpg2
+      mv /usr/bin/gpg2.real /usr/bin/gpg2
+    fi
+
+    if [ -f /usr/share/portage/config/repos.conf.orig ]; then
+      rm /usr/share/portage/config/repos.conf
+      mv /usr/share/portage/config/repos.conf.orig /usr/share/portage/config/repos.conf
+    fi
   types:
   - container
   - vm
