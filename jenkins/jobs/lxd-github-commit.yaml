@@ -24,7 +24,7 @@
               - zfs
               - lvm
             go:
-              - golang-1.10
+              - golang-1.13
               - golang-1.14
               - golang-tip
 
@@ -38,7 +38,7 @@
               - lvm
               - ceph
             go:
-              - golang-1.10
+              - golang-1.13
               - golang-1.14
               - golang-tip
 
