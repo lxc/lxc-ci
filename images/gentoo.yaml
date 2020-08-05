@@ -469,7 +469,6 @@ actions:
       TARGET=arm ;;
     esac
 
-    echo ACCEPT_KEYWORDS="~${TARGET}" >> /etc/portage/make.conf
   types:
   - container
   - vm
