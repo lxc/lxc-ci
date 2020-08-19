@@ -28,7 +28,7 @@ while :; do
 done
 snap install lxd --edge
 snap install jq
-snap refresh lxd --edge
+snap refresh lxd --channel=latest/edge
 lxd waitready --timeout=300
 
 # Enable SR-IOV on nic and bring up
