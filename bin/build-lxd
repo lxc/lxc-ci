@@ -166,6 +166,9 @@ if [ "$(uname -m)" != "x86_64" ]; then
     unset LXD_CEPH_CLUSTER
 fi
 
+# Enable dqlite engine V2 (TODO: drop this once V2 is the default)
+export DQLITE_ENGINE_V2=1
+
 # Run the unit tests
 if [ "${LXD_BACKEND}" = "dir" ]; then
     echo "==> UNIT BEGIN: all tests"
