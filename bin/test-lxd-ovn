@@ -53,7 +53,7 @@ lxc network create lxdbr0 \
     ipv6.address=fd42:4242:4242:1010::1/64 ipv6.nat=true \
     ipv6.ovn.ranges=fd42:4242:4242:1010::200-fd42:4242:4242:1010::254
 
-lxc network create ovn-virtual-network parent=lxdbr0 --type=ovn
+lxc network create ovn-virtual-network network=lxdbr0 --type=ovn
 
 # Test
 set +x
