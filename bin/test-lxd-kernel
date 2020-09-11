@@ -11,16 +11,16 @@ curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh
 snap install go --classic
 apt-add-repository ppa:ubuntu-lxc/daily --yes
 apt-get dist-upgrade --yes
-apt-get install libudev-dev liblxc-dev libacl1-dev libuv1-dev tcl libcap-dev dh-autoreconf build-essential acl attr easy-rsa ebtables jq pkg-config socat sqlite3 dnsmasq-base dnsutils --yes
+apt-get install libudev-dev liblxc-dev libacl1-dev libuv1-dev tcl libsqlite3-dev libcap-dev dh-autoreconf build-essential acl attr easy-rsa ebtables jq pkg-config socat sqlite3 dnsmasq-base dnsutils --yes
 apt-get remove --purge uidmap --yes
 rm -f /etc/subuid* /etc/subgid*
 snap remove lxd
 
 # Environment
 export GOPATH=/root/go
-export CGO_CFLAGS="-I/root/go/deps/sqlite/ -I/root/go/deps/libco/ -I/root/go/deps/raft/include/ -I/root/go/deps/dqlite/include/"
-export CGO_LDFLAGS="-L/root/go/deps/sqlite/.libs/ -L/root/go/deps/libco/ -L/root/go/deps/raft/.libs -L/root/go/deps/dqlite/.libs/"
-export LD_LIBRARY_PATH="/root/go/deps/sqlite/.libs/:/root/go/deps/libco/:/root/go/deps/raft/.libs/:/root/go/deps/dqlite/.libs/"
+export CGO_CFLAGS="-I/root/go/deps/raft/include/ -I/root/go/deps/dqlite/include/"
+export CGO_LDFLAGS="-L/root/go/deps/raft/.libs -L/root/go/deps/dqlite/.libs/"
+export LD_LIBRARY_PATH="/root/go/deps/raft/.libs/:/root/go/deps/dqlite/.libs/"
 export PATH=${PATH}:/root/go/bin
 
 # Build LXD

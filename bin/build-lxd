@@ -88,9 +88,9 @@ echo "==> ENVIRONMENT BEGIN"
 # Clustering
 if [ -e "lxd/cluster" ]; then
     echo "===> Setting up for LXD clustering"
-    export CGO_CFLAGS="-I/lxc-ci/build/cache/sqlite/ -I/lxc-ci/build/cache/libco/ -I/lxc-ci/build/cache/raft/include/ -I/lxc-ci/build/cache/dqlite/include/"
-    export CGO_LDFLAGS="-L/lxc-ci/build/cache/sqlite/.libs/ -L/lxc-ci/build/cache/libco/ -L/lxc-ci/build/cache/raft/.libs/ -L/lxc-ci/build/cache/dqlite/.libs/"
-    export LD_LIBRARY_PATH="/lxc-ci/build/cache/sqlite/.libs/:/lxc-ci/build/cache/libco/:/lxc-ci/build/cache/raft/.libs/:/lxc-ci/build/cache/dqlite/.libs/"
+    export CGO_CFLAGS="-I/lxc-ci/build/cache/raft/include/ -I/lxc-ci/build/cache/dqlite/include/"
+    export CGO_LDFLAGS="-L/lxc-ci/build/cache/raft/.libs/ -L/lxc-ci/build/cache/dqlite/.libs/"
+    export LD_LIBRARY_PATH="/lxc-ci/build/cache/raft/.libs/:/lxc-ci/build/cache/dqlite/.libs/"
 fi
 
 # Networking
@@ -165,9 +165,6 @@ ln -s in-hostnetns /usr/local/bin/rbd
 if [ "$(uname -m)" != "x86_64" ]; then
     unset LXD_CEPH_CLUSTER
 fi
-
-# Enable dqlite engine V2 (TODO: drop this once V2 is the default)
-export DQLITE_ENGINE_V2=1
 
 # Run the unit tests
 if [ "${LXD_BACKEND}" = "dir" ]; then
