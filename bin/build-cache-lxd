@@ -79,32 +79,6 @@ rm -rf "${TEMP_DIR}/image"
 cd "${TEMP_DIR}"
 
 # Clustering bits
-git clone -q https://github.com/canonical/sqlite "${TEMP_DIR}/sqlite"
-cd "${TEMP_DIR}/sqlite"
-git log -1 --format=format:%ci%n | sed -e 's/ [-+].*$//;s/ /T/;s/^/D /' > manifest
-git log -1 --format=format:%H > manifest.uuid
-./configure --enable-debug --enable-replication >/dev/null 2>&1
-make >/dev/null 2>&1
-cd "${TEMP_DIR}"
-
-git clone -q https://github.com/canonical/libco "${TEMP_DIR}/libco"
-cd "${TEMP_DIR}/libco"
-gcc -c -Wall -fpic libco.c >/dev/null 2>&1
-gcc -shared -o libco.so libco.o >/dev/null 2>&1
-ar rcs libco.a libco.o >/dev/null 2>&1
-cat > libco.pc <<EOF
-prefix=/usr
-libdir=\${prefix}/lib/$(dpkg-architecture -qDEB_HOST_MULTIARCH)
-includedir=\${prefix}/include
-
-Name: libco
-Description: Cooperative multithreading library written in C89C
-Version: 18
-Libs: -L\${libdir} -lco
-Cflags: -I\${includedir}
-EOF
-cd "${TEMP_DIR}"
-
 git clone -q https://github.com/canonical/raft "${TEMP_DIR}/raft"
 cd "${TEMP_DIR}/raft"
 autoreconf -i >/dev/null 2>&1
@@ -114,9 +88,9 @@ cd "${TEMP_DIR}"
 
 git clone -q https://github.com/canonical/dqlite "${TEMP_DIR}/dqlite"
 cd "${TEMP_DIR}/dqlite"
-export PKG_CONFIG_PATH="${TEMP_DIR}/sqlite:${TEMP_DIR}/libco:${TEMP_DIR}/raft"
-export CFLAGS="-I${TEMP_DIR}/sqlite -I${TEMP_DIR}/libco -I${TEMP_DIR}/raft/include"
-export LDFLAGS="-L${TEMP_DIR}/sqlite/.libs -L${TEMP_DIR}/libco -L${TEMP_DIR}/raft/.libs"
+export PKG_CONFIG_PATH="${TEMP_DIR}/raft"
+export CFLAGS="-I${TEMP_DIR}/raft/include"
+export LDFLAGS="-L${TEMP_DIR}/raft/.libs"
 autoreconf -i >/dev/null 2>&1
 ./configure --enable-debug >/dev/null 2>&1
 make >/dev/null 2>&1
@@ -172,8 +146,6 @@ mkdir -p /lxc-ci/build/cache.new
 rm -Rf "${TEMP_DIR}/go/pkg" "${TEMP_DIR}/go/bin"
 mv "${TEMP_DIR}/gimme" /lxc-ci/build/cache.new/gimme
 mv "${TEMP_DIR}/go" /lxc-ci/build/cache.new/go
-mv "${TEMP_DIR}/sqlite" /lxc-ci/build/cache.new/sqlite
-mv "${TEMP_DIR}/libco" /lxc-ci/build/cache.new/libco
 mv "${TEMP_DIR}/raft" /lxc-ci/build/cache.new/raft
 mv "${TEMP_DIR}/dqlite" /lxc-ci/build/cache.new/dqlite
 mv "${TEMP_DIR}/testimage.tar.xz" /lxc-ci/build/cache.new/testimage.tar.xz

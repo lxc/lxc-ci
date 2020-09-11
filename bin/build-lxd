@@ -88,9 +88,9 @@ echo "==> ENVIRONMENT BEGIN"
 # Clustering
 if [ -e "lxd/cluster" ]; then
     echo "===> Setting up for LXD clustering"
-    export CGO_CFLAGS="-I/lxc-ci/build/cache/sqlite/ -I/lxc-ci/build/cache/libco/ -I/lxc-ci/build/cache/raft/include/ -I/lxc-ci/build/cache/dqlite/include/"
-    export CGO_LDFLAGS="-L/lxc-ci/build/cache/sqlite/.libs/ -L/lxc-ci/build/cache/libco/ -L/lxc-ci/build/cache/raft/.libs/ -L/lxc-ci/build/cache/dqlite/.libs/"
-    export LD_LIBRARY_PATH="/lxc-ci/build/cache/sqlite/.libs/:/lxc-ci/build/cache/libco/:/lxc-ci/build/cache/raft/.libs/:/lxc-ci/build/cache/dqlite/.libs/"
+    export CGO_CFLAGS="-I/lxc-ci/build/cache/raft/include/ -I/lxc-ci/build/cache/dqlite/include/"
+    export CGO_LDFLAGS="-L/lxc-ci/build/cache/raft/.libs/ -L/lxc-ci/build/cache/dqlite/.libs/"
+    export LD_LIBRARY_PATH="/lxc-ci/build/cache/raft/.libs/:/lxc-ci/build/cache/dqlite/.libs/"
 fi
 
 # Networking
