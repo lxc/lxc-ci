@@ -64,12 +64,12 @@ lxc init images:ubuntu/20.04 u1
 lxc config device add u1 eth0 nic network=lxdbr0 name=eth0
 lxc start u1
 
-echo "==> Launching a first test container on lxdbr0"
+echo "==> Launching a first test container on ovn-virtual-network"
 lxc init images:ubuntu/20.04 u2
 lxc config device add u2 eth0 nic network=ovn-virtual-network name=eth0
 lxc start u2
 
-echo "==> Launching a second test container on lxdbr0"
+echo "==> Launching a second test container on ovn-virtual-network"
 lxc init images:ubuntu/20.04 u3
 lxc config device add u3 eth0 nic network=ovn-virtual-network name=eth0
 lxc start u3
