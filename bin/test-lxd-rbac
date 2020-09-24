@@ -130,6 +130,9 @@ for role in admin operator user auditor; do
 done
 echo ""
 
+# Give a tiny bit of time for RBAC to send its notifications...
+sleep 30
+
 # Switch to RBAC remote
 lxc remote switch rbac-user
 
