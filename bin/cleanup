@@ -47,3 +47,11 @@ fi
 if which pvscan >/dev/null 2>&1; then
     pvscan --cache
 fi
+
+if [ -d /etc/lvm/backup/ ]; then
+    find /etc/lvm/backup -type f -delete
+fi
+
+if [ -d /etc/lvm/archive/ ]; then
+    find /etc/lvm/archive -type f -delete
+fi
