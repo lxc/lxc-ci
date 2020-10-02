@@ -131,7 +131,8 @@ done
 echo ""
 
 # Give a tiny bit of time for RBAC to send its notifications...
-sleep 30
+echo "==> Waiting for RBAC notification"
+sleep 2m
 
 # Switch to RBAC remote
 lxc remote switch rbac-user
