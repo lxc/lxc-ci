@@ -36,11 +36,10 @@ apt install ovn-host ovn-central --yes
 
 # Configure OVN
 set -x
-IP=$(ip -4 route get 8.8.8.8 | grep src | cut -d' ' -f7)
 ovs-vsctl set open_vswitch . \
   external_ids:ovn-remote=unix:/var/run/ovn/ovnsb_db.sock \
   external_ids:ovn-encap-type=geneve \
-  external_ids:ovn-encap-ip=${IP}
+  external_ids:ovn-encap-ip=127.0.0.1
 
 # Configure LXD
 lxc storage create default zfs
@@ -53,14 +52,17 @@ lxc network create lxdbr0 \
     ipv6.address=fd42:4242:4242:1010::1/64 ipv6.nat=true \
     ipv6.ovn.ranges=fd42:4242:4242:1010::200-fd42:4242:4242:1010::254
 
-lxc network create ovn-virtual-network network=lxdbr0 --type=ovn
+# Create OVN network without specifying uplink parent network (check default selection works).
+lxc network create ovn-virtual-network --type=ovn
 
 # Test
 set +x
 lxc network list
+lxc project switch default
 
 echo "==> Launching a test container on lxdbr0"
 lxc init images:ubuntu/20.04 u1
+FINGERPRINT="$(lxc image ls -cf --format=csv)"
 lxc config device add u1 eth0 nic network=lxdbr0 name=eth0
 lxc start u1
 
@@ -109,6 +111,26 @@ lxc exec u3 -- ping -c1 -6 "${U1_IPV6}"
 echo "==> DNS resolution on OVN"
 lxc exec u3 -- ping -c1 -4 u2.lxd
 lxc exec u3 -- ping -c1 -6 u2.lxd
+
+echo "===> Testing project restrictions"
+lxc project create testovn -c features.networks=true -c restricted=true
+
+# Test we cannot create network in restricted project with no defined uplinks.
+! lxc network create ovn-virtual-network --project testovn
+
+# Test we can create network with a single restricted uplink network defined without specfiying it (or type).
+lxc project set testovn restricted.networks.uplinks=lxdbr0
+lxc network create ovn-virtual-network --project testovn
+lxc network delete ovn-virtual-network --project testovn
+
+# Test we have to specify uplink network if multiple are allowed.
+lxc network create lxdbr1 --project default
+lxc project set testovn restricted.networks.uplinks=lxdbr0,lxdbr1
+! lxc network create ovn-virtual-network --project testovn
+lxc network create ovn-virtual-network network=lxdbr0 --project testovn
+lxc network delete ovn-virtual-network --project testovn
+lxc project delete testovn
+lxc network delete lxdbr1 --project default
 
 echo "===> Testing projects"
 lxc project create testovn -c features.networks=true -c limits.networks=1
@@ -184,5 +206,13 @@ lxc delete -f u2 u3
 # Delete OVN network in project and parent in default project.
 lxc network delete ovn-virtual-network
 lxc network delete lxdbr0 --project default
+
+lxc image delete "${FINGERPRINT}" --project testovn
+lxc image delete "${FINGERPRINT}" --project default
+lxc profile device remove default root --project testovn
+lxc profile device remove default root --project default
+lxc storage delete default
+lxc project switch default
+lxc project delete testovn
 
 FAIL=0
