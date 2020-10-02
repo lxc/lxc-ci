@@ -36,11 +36,10 @@ apt install ovn-host ovn-central --yes
 
 # Configure OVN
 set -x
-IP=$(ip -4 route get 8.8.8.8 | grep src | cut -d' ' -f7)
 ovs-vsctl set open_vswitch . \
   external_ids:ovn-remote=unix:/var/run/ovn/ovnsb_db.sock \
   external_ids:ovn-encap-type=geneve \
-  external_ids:ovn-encap-ip=${IP}
+  external_ids:ovn-encap-ip=127.0.0.1
 
 # Configure LXD
 lxc storage create default zfs
