@@ -53,9 +53,8 @@
         values:
         - xenial
         - bionic
-        - disco
-        - eoan
         - focal
+        - groovy
 
     - axis:
         name: restrict
