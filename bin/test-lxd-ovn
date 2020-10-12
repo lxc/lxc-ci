@@ -96,10 +96,6 @@ echo "==> lxdbr0 to OVN gateway"
 lxc exec u1 -- ping -c1 -4 10.10.10.200
 lxc exec u1 -- ping -c1 -6 fd42:4242:4242:1010::200
 
-echo "==> OVN to internet"
-lxc exec u2 -- ping -c1 -4 linuxcontainers.org
-lxc exec u2 -- ping -c1 -6 linuxcontainers.org
-
 echo "==> OVN to OVN"
 lxc exec u2 -- ping -c1 -4 "${U3_IPV4}"
 lxc exec u2 -- ping -c1 -6 "${U3_IPV6}"
@@ -111,6 +107,14 @@ lxc exec u3 -- ping -c1 -6 "${U1_IPV6}"
 echo "==> DNS resolution on OVN"
 lxc exec u3 -- ping -c1 -4 u2.lxd
 lxc exec u3 -- ping -c1 -6 u2.lxd
+
+echo "==> OVN to lxdbr0"
+lxc exec u2 -- ping -c1 10.10.10.1
+lxc exec u2 -- ping -c1 fd42:4242:4242:1010::1
+
+echo "==> OVN to internet"
+lxc exec u2 -- ping -c1 -4 linuxcontainers.org
+lxc exec u2 -- ping -c1 -6 linuxcontainers.org
 
 echo "===> Testing project restrictions"
 lxc project create testovn -c features.networks=true -c restricted=true
@@ -168,10 +172,6 @@ echo "==> lxdbr0 to OVN gateway in project testovn"
 lxc exec u1 --project default -- ping -c1 -4 10.10.10.201
 lxc exec u1 --project default -- ping -c1 -6 fd42:4242:4242:1010::201
 
-echo "==> OVN to internet in project testovn"
-lxc exec u2 -- ping -c1 -4 linuxcontainers.org
-lxc exec u2 -- ping -c1 -6 linuxcontainers.org
-
 echo "==> OVN to OVN in project testovn"
 lxc exec u2 -- ping -c1 -4 "${U3_IPV4}"
 lxc exec u2 -- ping -c1 -6 "${U3_IPV6}"
@@ -183,6 +183,14 @@ lxc exec u3 -- ping -c1 -6 "${U1_IPV6}"
 echo "==> DNS resolution on OVN in project testovn"
 lxc exec u3 -- ping -c1 -4 u2.lxd
 lxc exec u3 -- ping -c1 -6 u2.lxd
+
+echo "==> OVN to lxdbr0 in project testovn"
+lxc exec u2 -- ping -c1 10.10.10.1
+lxc exec u2 -- ping -c1 fd42:4242:4242:1010::1
+
+echo "==> OVN to internet in project testovn"
+lxc exec u2 -- ping -c1 -4 linuxcontainers.org
+lxc exec u2 -- ping -c1 -6 linuxcontainers.org
 
 echo "===> Check network in use protection from deletion"
 # Delete instances in default project first.
