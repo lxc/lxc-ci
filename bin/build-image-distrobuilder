@@ -81,7 +81,9 @@ export PATH=/snap/bin:\${PATH}
 
 # Install distrobuilder
 snap install snapd || true
+snap install snapd || true
 snap install distrobuilder --classic --edge
+snap refresh
 EOF
 ) | lxc exec build-distrobuilder-cache -- sh
 
