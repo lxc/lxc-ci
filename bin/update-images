@@ -54,10 +54,10 @@ build_lxc() {
 
     for arch in ${LXC_ARCHES}; do
         lxc delete -f build-lxc-cache >/dev/null 2>&1 || true
-        rm -f /tmp/build-lxd-cache
-        curl -s "${HOST}/job/lxc-ci-artifacts/architecture=${arch},artifact=lxc-image,restrict=vm,variant=default/lastSuccessfulBuild/artifact/build-lxc-cache.tar.xz" -o /tmp/build-lxd-cache
-        lxc import --quiet /tmp/build-lxd-cache
-        rm -f /tmp/build-lxd-cache
+        rm -f /tmp/build-lxc-cache
+        curl -s "${HOST}/job/lxc-ci-artifacts/architecture=${arch},artifact=lxc-image,restrict=vm,variant=default/lastSuccessfulBuild/artifact/build-lxc-cache.tar.xz" -o /tmp/build-lxc-cache
+        lxc import --quiet /tmp/build-lxc-cache
+        rm -f /tmp/build-lxc-cache
         lxc delete -f "cache-lxc-${arch}" >/dev/null 2>&1 || true
         lxc move build-lxc-cache "cache-lxc-${arch}"
     done
