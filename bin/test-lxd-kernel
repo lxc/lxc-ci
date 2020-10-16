@@ -40,35 +40,4 @@ ln -sf /usr/sbin/ebtables-legacy /etc/alternatives/ebtables
 # Run tests
 cd /root/go/src/github.com/lxc/lxd/test
 uname -a
-
-# Wrap test script
-(
-cat << EOF
-#!/bin/sh
-set -eu
-
-# Remount /proc
-umount -l /proc
-mount -t proc proc /proc
-
-# Remount /sys
-mount --move /sys /mnt
-mount -t sysfs sysfs /sys
-mount --move /mnt/fs/cgroup /sys/fs/cgroup
-mount --move /mnt/kernel/security /sys/kernel/security
-umount -l /mnt
-
-# Setup separate locking
-mkdir -p /run/lock
-mount -t tmpfs tmpfs /run/lock
-
-# Setup the network
-ip link set lo up
-ip link add lxdbr0 up type bridge
-
-exec ./main.sh
-EOF
-) > /tmp/lxd-test.$$
-chmod +x /tmp/lxd-test.$$
-
-LXD_SKIP_STATIC=1 LXD_OFFLINE=0 LXD_TMPFS=1 LXD_VERBOSE=1 time -p unshare -m -n /tmp/lxd-test.$$
+LXD_SKIP_STATIC=1 LXD_OFFLINE=0 LXD_TMPFS=1 LXD_VERBOSE=1 time -p ./main.sh
