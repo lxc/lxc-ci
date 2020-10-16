@@ -142,7 +142,7 @@ lxc project switch testovn
 lxc profile device add default root disk path=/ pool=default
 
 # Create network inside project with same name and subnet as network in default project.
-lxc network create ovn-virtual-network network=lxdbr0 --type=ovn ipv4.address="$(lxc network get ovn-virtual-network ipv4.address --project default)" ipv6.address="$(lxc network get ovn-virtual-network ipv6.address --project default)"
+lxc network create ovn-virtual-network network=lxdbr0 --type=ovn ipv4.address="$(lxc network get ovn-virtual-network ipv4.address --project default)" ipv4.nat=true ipv6.address="$(lxc network get ovn-virtual-network ipv6.address --project default)" ipv6.nat=true
 
 # Test we cannot exceed specified project limits for networks.
 ! lxc network create ovn-virtual-network-toomany network=lxdbr0 --type=ovn
