@@ -98,7 +98,7 @@ echo "==> OVN to OVN"
 lxc exec u2 -- ping -c1 -4 "${U3_IPV4}"
 lxc exec u2 -- ping -c1 -6 "${U3_IPV6}"
 
-echo "==> OVN to lxdbr0"
+echo "==> OVN to lxdbr0 instance"
 lxc exec u3 -- ping -c1 -4 "${U1_IPV4}"
 lxc exec u3 -- ping -c1 -6 "${U1_IPV6}"
 
@@ -106,7 +106,7 @@ echo "==> DNS resolution on OVN"
 lxc exec u3 -- ping -c1 -4 u2.lxd
 lxc exec u3 -- ping -c1 -6 u2.lxd
 
-echo "==> OVN to lxdbr0"
+echo "==> OVN to lxdbr0 gateway"
 lxc exec u2 -- ping -c1 10.10.10.1
 lxc exec u2 -- ping -c1 fd42:4242:4242:1010::1
 
@@ -174,7 +174,7 @@ echo "==> OVN to OVN in project testovn"
 lxc exec u2 -- ping -c1 -4 "${U3_IPV4}"
 lxc exec u2 -- ping -c1 -6 "${U3_IPV6}"
 
-echo "==> OVN to lxdbr0 in project testovn"
+echo "==> OVN to lxdbr0 instance in project testovn"
 lxc exec u3 -- ping -c1 -4 "${U1_IPV4}"
 lxc exec u3 -- ping -c1 -6 "${U1_IPV6}"
 
@@ -182,7 +182,7 @@ echo "==> DNS resolution on OVN in project testovn"
 lxc exec u3 -- ping -c1 -4 u2.lxd
 lxc exec u3 -- ping -c1 -6 u2.lxd
 
-echo "==> OVN to lxdbr0 in project testovn"
+echo "==> OVN to lxdbr0 gateway in project testovn"
 lxc exec u2 -- ping -c1 10.10.10.1
 lxc exec u2 -- ping -c1 fd42:4242:4242:1010::1
 
