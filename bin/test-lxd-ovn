@@ -1,5 +1,5 @@
 #!/bin/sh
-set -eu
+set -eux
 
 cleanup() {
     echo ""
@@ -35,7 +35,6 @@ lxd waitready --timeout=300
 apt install ovn-host ovn-central --yes
 
 # Configure OVN
-set -x
 ovs-vsctl set open_vswitch . \
   external_ids:ovn-remote=unix:/var/run/ovn/ovnsb_db.sock \
   external_ids:ovn-encap-type=geneve \
@@ -56,7 +55,6 @@ lxc network create lxdbr0 \
 lxc network create ovn-virtual-network --type=ovn
 
 # Test
-set +x
 lxc network list
 lxc project switch default
 
