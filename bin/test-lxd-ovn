@@ -1,5 +1,5 @@
 #!/bin/sh
-set -eu
+set -eux
 
 cleanup() {
     echo ""
@@ -35,7 +35,6 @@ lxd waitready --timeout=300
 apt install ovn-host ovn-central --yes
 
 # Configure OVN
-set -x
 ovs-vsctl set open_vswitch . \
   external_ids:ovn-remote=unix:/var/run/ovn/ovnsb_db.sock \
   external_ids:ovn-encap-type=geneve \
@@ -56,7 +55,6 @@ lxc network create lxdbr0 \
 lxc network create ovn-virtual-network --type=ovn
 
 # Test
-set +x
 lxc network list
 lxc project switch default
 
@@ -100,7 +98,7 @@ echo "==> OVN to OVN"
 lxc exec u2 -- ping -c1 -4 "${U3_IPV4}"
 lxc exec u2 -- ping -c1 -6 "${U3_IPV6}"
 
-echo "==> OVN to lxdbr0"
+echo "==> OVN to lxdbr0 instance"
 lxc exec u3 -- ping -c1 -4 "${U1_IPV4}"
 lxc exec u3 -- ping -c1 -6 "${U1_IPV6}"
 
@@ -108,7 +106,7 @@ echo "==> DNS resolution on OVN"
 lxc exec u3 -- ping -c1 -4 u2.lxd
 lxc exec u3 -- ping -c1 -6 u2.lxd
 
-echo "==> OVN to lxdbr0"
+echo "==> OVN to lxdbr0 gateway"
 lxc exec u2 -- ping -c1 10.10.10.1
 lxc exec u2 -- ping -c1 fd42:4242:4242:1010::1
 
@@ -118,6 +116,7 @@ lxc exec u2 -- ping -c1 -6 linuxcontainers.org
 
 echo "===> Testing project restrictions"
 lxc project create testovn -c features.networks=true -c restricted=true
+lxc profile device add default root disk path=/ pool=default --project testovn
 
 # Test we cannot create network in restricted project with no defined uplinks.
 ! lxc network create ovn-virtual-network --project testovn
@@ -133,8 +132,44 @@ lxc project set testovn restricted.networks.uplinks=lxdbr0,lxdbr1
 ! lxc network create ovn-virtual-network --project testovn
 lxc network create ovn-virtual-network network=lxdbr0 --project testovn
 lxc network delete ovn-virtual-network --project testovn
-lxc project delete testovn
 lxc network delete lxdbr1 --project default
+
+# Test physical uplink with external IPs
+ip link add dummy0 type dummy
+lxc network create dummy --type=physical --project default \
+    parent=dummy0 \
+    ipv4.gateway=192.0.2.1/24 \
+    ipv6.gateway=2001:db8:1:1::1/64 \
+    ipv4.ovn.ranges=192.0.2.10-192.0.2.19 \
+    ipv4.routes=198.51.100.0/24 \
+    ipv6.routes=2001:db8:1:2::/64 \
+    dns.nameservers=192.0.2.53
+
+# Test using external subnets using physical uplink.
+lxc project set testovn restricted.networks.uplinks=dummy
+lxc network create ovn-virtual-network --type=ovn --project testovn network=dummy \
+    ipv4.address=198.51.100.1/24 \
+    ipv6.address=2001:db8:1:2::1/64 \
+    ipv4.nat=false \
+    ipv6.nat=false
+
+lxc init images:ubuntu/20.04 u1 --project testovn
+lxc config device add u1 eth0 nic network=ovn-virtual-network name=eth0 --project testovn
+lxc start u1 --project testovn
+
+# Test external IPs allocated and published using dnat.
+sleep 5
+U1_EXT_IPV4="$(lxc list u1 --project testovn -c4 --format=csv | cut -d' ' -f1)"
+U1_EXT_IPV6="$(lxc list u1 --project testovn -c6 --format=csv | cut -d' ' -f1)"
+ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "${U1_EXT_IPV4},${U1_EXT_IPV4},dnat_and_snat"
+ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "${U1_EXT_IPV6},${U1_EXT_IPV6},dnat_and_snat"
+
+lxc delete -f u1 --project testovn
+lxc network delete ovn-virtual-network --project testovn
+lxc image delete "${FINGERPRINT}" --project testovn
+lxc project delete testovn
+lxc network delete dummy --project default
+ip link delete dummy0
 
 echo "===> Testing projects"
 lxc project create testovn -c features.networks=true -c limits.networks=1
@@ -142,7 +177,10 @@ lxc project switch testovn
 lxc profile device add default root disk path=/ pool=default
 
 # Create network inside project with same name and subnet as network in default project.
-lxc network create ovn-virtual-network network=lxdbr0 --type=ovn ipv4.address="$(lxc network get ovn-virtual-network ipv4.address --project default)" ipv4.nat=true ipv6.address="$(lxc network get ovn-virtual-network ipv6.address --project default)" ipv6.nat=true
+lxc network create ovn-virtual-network network=lxdbr0 --type=ovn \
+    ipv4.address="$(lxc network get ovn-virtual-network ipv4.address --project default)" \
+    ipv4.nat=true ipv6.address="$(lxc network get ovn-virtual-network ipv6.address --project default)" \
+    ipv6.nat=true
 
 # Test we cannot exceed specified project limits for networks.
 ! lxc network create ovn-virtual-network-toomany network=lxdbr0 --type=ovn
@@ -176,7 +214,7 @@ echo "==> OVN to OVN in project testovn"
 lxc exec u2 -- ping -c1 -4 "${U3_IPV4}"
 lxc exec u2 -- ping -c1 -6 "${U3_IPV6}"
 
-echo "==> OVN to lxdbr0 in project testovn"
+echo "==> OVN to lxdbr0 instance in project testovn"
 lxc exec u3 -- ping -c1 -4 "${U1_IPV4}"
 lxc exec u3 -- ping -c1 -6 "${U1_IPV6}"
 
@@ -184,7 +222,7 @@ echo "==> DNS resolution on OVN in project testovn"
 lxc exec u3 -- ping -c1 -4 u2.lxd
 lxc exec u3 -- ping -c1 -6 u2.lxd
 
-echo "==> OVN to lxdbr0 in project testovn"
+echo "==> OVN to lxdbr0 gateway in project testovn"
 lxc exec u2 -- ping -c1 10.10.10.1
 lxc exec u2 -- ping -c1 fd42:4242:4242:1010::1
 
