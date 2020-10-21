@@ -81,8 +81,6 @@ lxc list
 echo "==> Testing connectivity"
 U1_IPV4="$(lxc list u1 -c4 --format=csv | cut -d' ' -f1)"
 U1_IPV6="$(lxc list u1 -c6 --format=csv | cut -d' ' -f1)"
-U2_IPV4="$(lxc list u2 -c4 --format=csv | cut -d' ' -f1)"
-U2_IPV6="$(lxc list u2 -c6 --format=csv | cut -d' ' -f1)"
 U3_IPV4="$(lxc list u3 -c4 --format=csv | cut -d' ' -f1)"
 U3_IPV6="$(lxc list u3 -c6 --format=csv | cut -d' ' -f1)"
 
@@ -119,7 +117,7 @@ lxc project create testovn -c features.networks=true -c restricted=true
 lxc profile device add default root disk path=/ pool=default --project testovn
 
 # Test we cannot create network in restricted project with no defined uplinks.
-! lxc network create ovn-virtual-network --project testovn
+! lxc network create ovn-virtual-network --project testovn || false
 
 # Test we can create network with a single restricted uplink network defined without specfiying it (or type).
 lxc project set testovn restricted.networks.uplinks=lxdbr0
@@ -129,7 +127,7 @@ lxc network delete ovn-virtual-network --project testovn
 # Test we have to specify uplink network if multiple are allowed.
 lxc network create lxdbr1 --project default
 lxc project set testovn restricted.networks.uplinks=lxdbr0,lxdbr1
-! lxc network create ovn-virtual-network --project testovn
+! lxc network create ovn-virtual-network --project testovn || false
 lxc network create ovn-virtual-network network=lxdbr0 --project testovn
 lxc network delete ovn-virtual-network --project testovn
 lxc network delete lxdbr1 --project default
@@ -183,7 +181,7 @@ lxc network create ovn-virtual-network network=lxdbr0 --type=ovn \
     ipv6.nat=true
 
 # Test we cannot exceed specified project limits for networks.
-! lxc network create ovn-virtual-network-toomany network=lxdbr0 --type=ovn
+! lxc network create ovn-virtual-network-toomany network=lxdbr0 --type=ovn || false
 
 echo "==> Launching a first test container on testovn project ovn-virtual-network"
 lxc init images:ubuntu/20.04 u2
@@ -201,8 +199,6 @@ lxc list
 
 echo "==> Testing connectivity"
 
-U2_IPV4="$(lxc list u2 -c4 --format=csv | cut -d' ' -f1)"
-U2_IPV6="$(lxc list u2 -c6 --format=csv | cut -d' ' -f1)"
 U3_IPV4="$(lxc list u3 -c4 --format=csv | cut -d' ' -f1)"
 U3_IPV6="$(lxc list u3 -c6 --format=csv | cut -d' ' -f1)"
 
@@ -235,16 +231,16 @@ echo "===> Check network in use protection from deletion"
 lxc delete -f u1 u2 u3 --project default
 
 # Check we cannot delete lxdbr0 (as it is parent of OVN networks).
-! lxc network delete lxdbr0 --project default
+! lxc network delete lxdbr0 --project default || false
 
 # Delete OVN network in default project.
 lxc network delete ovn-virtual-network --project default
 
 # Check we cannot delete lxdbr0 (as it is still parent of OVN network in project).
-! lxc network delete lxdbr0 --project default
+! lxc network delete lxdbr0 --project default || false
 
 # Check we cannot delete OVN network in project due to instances using it.
-! lxc network delete ovn-virtual-network
+! lxc network delete ovn-virtual-network || false
 
 # Remove instances using OVN network in project.
 lxc delete -f u2 u3
