@@ -26,6 +26,7 @@
         - bionic
         - focal
         - groovy
+        - hirsute
 
     - axis:
         name: variant
@@ -57,6 +58,7 @@
       !(architecture=="s390x" && release == "trusty") &&
       !(architecture=="i386" && release == "focal") &&
       !(architecture=="i386" && release == "groovy") &&
+      !(architecture=="i386" && release == "hirsute") &&
       !(variant == "cloud" && release == "trusty")'
 
     properties:

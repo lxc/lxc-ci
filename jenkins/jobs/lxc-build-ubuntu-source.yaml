@@ -55,6 +55,7 @@
         - bionic
         - focal
         - groovy
+        - hirsute
 
     - axis:
         name: restrict
