@@ -322,14 +322,11 @@ actions:
       sed -i -e '/wait_for_user/d' -e '/Press Enter to/d' /etc/rc.d/init.d/rc
     fi
 
-    # initpkg
-    for pkg in shadow netconfig7 eudev openssh; do
+    # remove initpkg that do not execute on containers
+    for pkg in shadow netconfig7 eudev openssh pkgtools7; do
       rm -f "/var/log/initpkg/${pkg}"
     done
-
-    for pkg in /var/log/initpkg/*; do
-      sh ${pkg}
-    done
+    ( cd /sbin ; mv installer_new installer )
 
 mappings:
   architecture_map: plamolinux
