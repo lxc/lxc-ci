@@ -114,9 +114,6 @@ files:
     BindReadOnlyPaths=/sys
   variants:
   - default
-  releases:
-  - 31
-  - 32
   types:
   - container
 
