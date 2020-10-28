@@ -161,6 +161,26 @@ U1_EXT_IPV4="$(lxc list u1 --project testovn -c4 --format=csv | cut -d' ' -f1)"
 U1_EXT_IPV6="$(lxc list u1 --project testovn -c6 --format=csv | cut -d' ' -f1)"
 ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "${U1_EXT_IPV4},${U1_EXT_IPV4},dnat_and_snat"
 ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "${U1_EXT_IPV6},${U1_EXT_IPV6},dnat_and_snat"
+lxc stop -f u1 --project testovn
+
+# Test external IPs routed to OVN NIC.
+lxc network set ovn-virtual-network --project testovn \
+    ipv4.address=auto \
+    ipv6.address=auto \
+    ipv4.nat=true \
+    ipv6.nat=true
+
+! lxc config device set u1 eth0 ipv4.routes.external=198.51.100.0/24 --project testovn || false
+! lxc config device set u1 eth0 ipv6.routes.external=2001:db8:1:2::/64 --project testovn || false
+lxc config device set u1 eth0 ipv4.routes.external=198.51.100.0/26 --project testovn
+lxc config device set u1 eth0 ipv6.routes.external=2001:db8:1:2::/122 --project testovn
+lxc start u1 --project testovn
+ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat
+ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "198.51.100.0,198.51.100.0,dnat_and_snat"
+ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "198.51.100.63,198.51.100.63,dnat_and_snat"
+ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "2001:db8:1:2::,2001:db8:1:2::,dnat_and_snat"
+ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "2001:db8:1:2::3f,2001:db8:1:2::3f,dnat_and_snat"
+ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l | grep 132
 
 lxc delete -f u1 --project testovn
 lxc network delete ovn-virtual-network --project testovn
