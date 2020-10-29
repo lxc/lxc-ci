@@ -152,7 +152,7 @@ actions:
       # uninstall needless systemd-units
       rpm -q systemd-units >/dev/null && rpm -e systemd-units --nodeps --noscripts
 
-      ln -s /bin/ip /sbin/ip
+      [ ! -e /sbin/ip ] && ln -s /bin/ip /sbin/ip
 
       # cleanup
       rpm -e localedb-src
