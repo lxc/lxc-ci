@@ -298,6 +298,17 @@ actions:
     #!/bin/sh
     set -eux
 
+    sed -ri 's#^options .+#options $kernelopts#g' /boot/loader/entries/*
+  types:
+  - vm
+  releases:
+  - 33
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
     systemctl enable network-device-down.service
   variants:
   - cloud
