@@ -151,6 +151,13 @@ lxc network create ovn-virtual-network --type=ovn --project testovn network=dumm
     ipv4.nat=false \
     ipv6.nat=false
 
+# Check network external subnet overlap.
+! lxc network create ovn-virtual-network2 --type=ovn --project default network=dummy \
+    ipv4.address=198.51.100.1/26 \
+    ipv6.address=2001:db8:1:2::1/122 \
+    ipv4.nat=false \
+    ipv6.nat=false || false
+
 lxc init images:ubuntu/20.04 u1 --project testovn
 lxc config device add u1 eth0 nic network=ovn-virtual-network name=eth0 --project testovn
 lxc start u1 --project testovn
@@ -170,10 +177,20 @@ lxc network set ovn-virtual-network --project testovn \
     ipv4.nat=true \
     ipv6.nat=true
 
+# Check external routes are ensured to be within uplink's external routes.
 ! lxc config device set u1 eth0 ipv4.routes.external=198.51.100.0/24 --project testovn || false
 ! lxc config device set u1 eth0 ipv6.routes.external=2001:db8:1:2::/64 --project testovn || false
 lxc config device set u1 eth0 ipv4.routes.external=198.51.100.0/26 --project testovn
 lxc config device set u1 eth0 ipv6.routes.external=2001:db8:1:2::/122 --project testovn
+
+# Check NIC external route overlap detection.
+lxc init images:ubuntu/20.04 u2 --project testovn
+lxc config device add u2 eth0 nic network=ovn-virtual-network name=eth0 --project testovn
+! lxc config device set u2 eth0 ipv4.routes.external=198.51.100.1/32 --project testovn || false
+! lxc config device set u2 eth0 ipv6.routes.external=2001:db8:1:2::1/128 --project testovn || false
+lxc delete -f u2 --project testovn
+
+# Check DNAT rules get added when starting instance port with external routes.
 lxc start u1 --project testovn
 ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat
 ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "198.51.100.0,198.51.100.0,dnat_and_snat"
