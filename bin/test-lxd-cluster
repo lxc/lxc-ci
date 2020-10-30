@@ -61,6 +61,11 @@ for i in $(seq "$1"); do
         lxc exec "${PREFIX}-$i" -- lxc config set cluster.https_address "${CLUSTER_IP}:8443"
         lxc exec "${PREFIX}-$i" -- lxc config set core.trust_password "cluster"
         lxc exec "${PREFIX}-$i" -- lxc cluster enable "${PREFIX}-$i"
+        lxc exec "${PREFIX}-$i" -- lxc network create lxdfan0 bridge.mode=fan
+        lxc exec "${PREFIX}-$i" -- lxc storage create default dir
+        lxc exec "${PREFIX}-$i" -- lxc profile device add default root disk path=/ pool=default
+        lxc exec "${PREFIX}-$i" -- lxc profile device add default eth0 nic name=eth0 network=lxdfan0
+        lxc exec "${PREFIX}-$i" -- lxc network show lxdfan0
         CLUSTER_CRT=$(lxc file pull "${PREFIX}-$i"/var/snap/lxd/common/lxd/cluster.crt - | sed ':a;N;$!ba;s/\n/\n\n/g')
     else
         MEMBER_IP=$(lxc exec "${PREFIX}-$i" -- ip -4 addr show dev eth0 scope global | grep inet | cut -d' ' -f6 | cut -d/ -f1)
@@ -84,6 +89,20 @@ done
 echo "==> Validating the cluster"
 lxc exec "${PREFIX}-1" -- lxc info
 lxc exec "${PREFIX}-1" -- lxc cluster list
+
+# Test fan networking (intra fan from container and host, as well as external NAT comms)
+echo "==> Test fan networking"
+lxc exec "${PREFIX}-1" -- lxc launch images:ubuntu/focal u1
+lxc exec "${PREFIX}-1" -- lxc launch images:ubuntu/focal u2
+
+echo "==> Wait for addresses"
+sleep 10
+lxc exec "${PREFIX}-1" -- lxc list
+
+U2_IPV4="$(lxc exec ${PREFIX}-1 -- lxc list u2 -c4 --format=csv | cut -d' ' -f1)"
+lxc exec "${PREFIX}-1" -- lxc exec u1 -- ping -c1 -4 linuxcontainers.org
+lxc exec "${PREFIX}-1" -- lxc exec u1 -- ping -c1 "${U2_IPV4}"
+lxc exec "${PREFIX}-1" -- ping -c1 "${U2_IPV4}"
 
 # Upgrade the cluster
 echo "==> Upgrading the cluster"
