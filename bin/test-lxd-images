@@ -159,12 +159,6 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
     name=$(echo "${url}" | cut -d/ -f4)
     echo ""
 
-    # FIXME: Skip CentOS 8 VMs due to bad kernel
-    if [ "${TYPE}" = "VIRTUAL-MACHINE" ] && echo "${name}" | grep -q "^centos-8"; then
-        echo "SKIP: CentOS 8 has a broken kernel"
-        continue
-    fi
-
     # FIXME: Skip CentOS 7 VMs due to racy agent
     if [ "${TYPE}" = "VIRTUAL-MACHINE" ] && echo "${name}" | grep -q "^centos-7"; then
         echo "SKIP: CentOS 7 has an unstable agent"
