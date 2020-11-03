@@ -113,7 +113,11 @@ shift
 shift
 shift
 echo "==> Running the job"
-scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "${script}" "ubuntu@${IP}:test-script"
+if echo "${IP}" | grep -q ":"; then
+    scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "${script}" "ubuntu@[${IP}]:test-script"
+else
+    scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "${script}" "ubuntu@${IP}:test-script"
+fi
 ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "ubuntu@${IP}" sudo sh test-script "$@"
 
 if [ -n "${WORKSPACE:-}" ]; then
