@@ -13,6 +13,12 @@ case "$i" in
         update-grub
       ;;
 
+      swapaccount)
+        echo "===> CGroup2"
+        echo 'GRUB_CMDLINE_LINUX="${GRUB_CMDLINE_LINUX} swapaccount=1"' > /etc/default/grub.d/99-cgroup-swap.cfg
+        update-grub
+      ;;
+
       iommu)
         echo "===> Enabling iommu"
         echo 'GRUB_CMDLINE_LINUX="${GRUB_CMDLINE_LINUX} iommu=pt intel_iommu=on"' > /etc/default/grub.d/99-iommu.cfg
