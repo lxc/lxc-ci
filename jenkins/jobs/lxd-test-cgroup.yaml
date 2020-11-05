@@ -1,0 +1,53 @@
+- job:
+    name: "lxd-test-cgroup"
+    concurrent: false
+    description: Test CGroup limits on various kernels.
+    node: master
+    project-type: matrix
+
+    axes:
+    - axis:
+        name: kernel
+        type: user-defined
+        values:
+        - default
+        - swapaccount
+        - ubuntu-proposed
+        - ubuntu-unstable
+
+    - axis:
+        name: restrict
+        type: slave
+        values:
+        - master
+
+    builders:
+    - shell: |-
+        set -e
+        cd /lxc-ci
+        sudo -E /lxc-ci/bin/maas-run tags=virtual focal ga-20.04 ${kernel} bin/test-lxd-kernel
+
+    properties:
+    - build-discarder:
+        num-to-keep: 30
+
+    - raw:
+        !include: ../includes/webhook.yaml.inc
+
+    publishers:
+    - workspace-cleanup:
+        fail-build: false
+
+    - naginator:
+        rerun-unstable-builds: true
+        rerun-matrix-part: true
+        max-failed-builds: 3
+        progressive-delay-increment: 300
+        progressive-delay-maximum: 900
+
+    triggers:
+    - timed: '@daily'
+
+    wrappers:
+    - ansicolor:
+        colormap: css
