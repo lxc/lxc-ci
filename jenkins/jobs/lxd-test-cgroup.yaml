@@ -12,8 +12,6 @@
         values:
         - default
         - swapaccount
-        - ubuntu-proposed
-        - ubuntu-unstable
 
     - axis:
         name: restrict
