@@ -1,0 +1,185 @@
+#!/bin/sh
+set -eu
+
+cleanup() {
+    echo ""
+    if [ "${FAIL}" = "1" ]; then
+        echo "Test failed"
+        exit 1
+    fi
+
+    echo "Test passed"
+    exit 0
+}
+
+FAIL=1
+trap cleanup EXIT HUP INT TERM
+
+# Wait for snapd seeding
+sleep 1m
+
+# Configure to use the proxy
+curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh
+
+# Install LXD
+while :; do
+    [ ! -e /usr/bin/lxd ] && break
+    apt remove --purge lxd lxd-client --yes && break
+done
+snap install lxd --edge
+snap install jq
+snap refresh lxd --channel=latest/edge
+lxd waitready --timeout=300
+apt-get install iperf3 --yes
+
+# Configure LXD
+lxd init --auto
+set -x
+
+# Start a container with no limits
+echo "=> Start a container with no limits"
+lxc launch images:ubuntu/20.04 c1
+
+echo "==> Validate default values"
+[ "$(lxc exec c1 -- nproc)" = "$(nproc)" ]
+[ "$(lxc exec c1 -- grep ^MemTotal /proc/meminfo)" = "$(grep ^MemTotal /proc/meminfo)" ]
+if [ -e "/sys/fs/cgroup/memory/memory.memsw.limit_in_bytes" ]; then
+    [ "$(lxc exec c1 -- grep ^SwapTotal /proc/meminfo)" = "$(grep ^SwapTotal /proc/meminfo)" ]
+else
+    [ "$(lxc exec c1 -- grep ^SwapTotal /proc/meminfo)" = "SwapTotal:             0 kB" ]
+fi
+[ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu/cpu.shares)" = "1024" ]
+[ "$(lxc exec c1 -- cat /sys/fs/cgroup/pids/pids.max)" = "max" ]
+[ "$(lxc exec c1 -- cat /sys/fs/cgroup/memory/memory.swappiness)" = "$(cat /sys/fs/cgroup/memory/memory.swappiness)" ]
+[ "$(lxc exec c1 -- cat /sys/fs/cgroup/net_prio/net_prio.ifpriomap)" = "$(cat /sys/fs/cgroup/net_prio/net_prio.ifpriomap)" ]
+
+echo "==> Testing CPU limits"
+lxc config set c1 limits.cpu=2
+[ "$(lxc exec c1 -- nproc)" = "2" ]
+
+lxc config set c1 limits.cpu=200
+[ "$(lxc exec c1 -- nproc)" = "$(nproc)" ]
+
+lxc config set c1 limits.cpu=0,2
+[ "$(lxc exec c1 -- nproc)" = "2" ]
+
+lxc config set c1 limits.cpu=2-2
+[ "$(lxc exec c1 -- nproc)" = "1" ]
+
+lxc config unset c1 limits.cpu
+[ "$(lxc exec c1 -- nproc)" = "$(nproc)" ]
+
+lxc config set c1 limits.cpu.priority 5
+[ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu/cpu.shares)" = "1019" ]
+
+lxc config unset c1 limits.cpu.priority
+[ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu/cpu.shares)" = "1024" ]
+
+lxc config set c1 limits.cpu.allowance 10%
+[ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu/cpu.shares)" = "124" ]
+
+lxc config set c1 limits.cpu.allowance 10ms/100ms
+[ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu/cpu.shares)" = "1024" ]
+[ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu/cpu.cfs_period_us)" = "100000" ]
+[ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu/cpu.cfs_quota_us)" = "10000" ]
+lxc config unset c1 limits.cpu.allowance
+
+echo "==> Testing memory limits"
+lxc config set c1 limits.memory=2GiB
+[ "$(lxc exec c1 -- grep ^MemTotal /proc/meminfo)" = "MemTotal:        2097152 kB" ]
+if [ -e "/sys/fs/cgroup/memory/memory.memsw.limit_in_bytes" ]; then
+    [ "$(lxc exec c1 -- grep ^SwapTotal /proc/meminfo)" = "SwapTotal:       2097152 kB" ]
+else
+    [ "$(lxc exec c1 -- grep ^SwapTotal /proc/meminfo)" = "SwapTotal:             0 kB" ]
+fi
+
+lxc config set c1 limits.memory.swap=false
+[ "$(lxc exec c1 -- cat /sys/fs/cgroup/memory/memory.swappiness)" = "0" ]
+[ "$(lxc exec c1 -- grep ^SwapTotal /proc/meminfo)" = "SwapTotal:             0 kB" ]
+
+lxc config set c1 limits.memory.swap=true
+lxc config set c1 limits.memory.swap.priority=5
+# swappiness is 60 (default) - 10 (maximum deduction) + 5 (priority)
+[ "$(lxc exec c1 -- cat /sys/fs/cgroup/memory/memory.swappiness)" = "55" ]
+
+if [ -e "/sys/fs/cgroup/memory/memory.memsw.limit_in_bytes" ]; then
+    lxc config set c1 limits.memory 128MiB
+    [ "$(lxc exec c1 -- grep ^MemTotal /proc/meminfo)" = "MemTotal:         131072 kB" ]
+
+    lxc exec c1 -- mkdir -p /tmp/dd
+    lxc exec c1 -- mount -t tmpfs tmpfs /tmp/dd -o size=2G
+    lxc exec c1 -- dd if=/dev/zero of=/tmp/dd/blob bs=4M count=16
+    dmesg -c >/dev/null 2>&1
+    # shellcheck disable=SC2251
+    ! lxc exec c1 -- dd if=/dev/zero of=/tmp/dd/blob bs=4M count=64
+    dmesg | grep -q "Memory cgroup out of memory: Killed process"
+    dmesg -c >/dev/null 2>&1
+
+    # shellcheck disable=SC2251
+    ! lxc stop c1 --force
+    lxc start c1
+    lxc config set c1 limits.memory.enforce soft
+    lxc exec c1 -- mkdir -p /tmp/dd
+    lxc exec c1 -- mount -t tmpfs tmpfs /tmp/dd -o size=2G
+    dmesg -c >/dev/null 2>&1
+    lxc exec c1 -- dd if=/dev/zero of=/tmp/dd/blob bs=4M count=64
+    dmesg | grep -q "Memory cgroup out of memory: Killed process" && false
+    dmesg -c >/dev/null 2>&1
+
+    # shellcheck disable=SC2251
+    ! lxc stop c1 --force
+    lxc config unset c1 limits.memory
+    lxc config unset c1 limits.memory.enforce
+    lxc start c1
+fi
+
+echo "==> Testing process limits"
+lxc config set c1 limits.processes=2000
+[ "$(lxc exec c1 -- cat /sys/fs/cgroup/pids/pids.max)" = "2000" ]
+
+echo "==> Testing network limits"
+lxc config set c1 limits.network.priority=10
+lxc exec c1 -- grep -q "10$" /sys/fs/cgroup/net_prio/net_prio.ifpriomap
+
+lxc restart c1 --force
+sleep 10s
+IP=$(lxc network get lxdbr0 ipv4.address | cut -d/ -f1)
+lxc exec c1 -- apt-get install iperf3 --yes
+
+iperf3 -s -D
+lxc exec c1 -- iperf3 -c "${IP}" -J > iperf.json
+E1=$(($(jq .end.sum_sent.bits_per_second < iperf.json | cut -d. -f1)/1024/1024))
+lxc exec c1 -- iperf3 -R -c "${IP}" -J > iperf.json
+I1=$(($(jq .end.sum_sent.bits_per_second < iperf.json | cut -d. -f1)/1024/1024))
+echo "Throughput before limits: ${E1}Mbps / ${I1}Mbps"
+
+lxc config device override c1 eth0 limits.egress=50Mbit limits.ingress=200Mbit
+lxc exec c1 -- iperf3 -c "${IP}" -J > iperf.json
+E2=$(($(jq .end.sum_sent.bits_per_second < iperf.json | cut -d. -f1)/1024/1024))
+lxc exec c1 -- iperf3 -R -c "${IP}" -J > iperf.json
+I2=$(($(jq .end.sum_sent.bits_per_second < iperf.json | cut -d. -f1)/1024/1024))
+echo "Throughput after limits: ${E2}Mbps / ${I2}Mbps"
+[ "${E2}" -lt "50" ]
+[ "${E2}" -lt "200" ]
+
+pkill -9 iperf3
+lxc config device set c1 eth0 limits.egress= limits.ingress=
+
+echo "==> Testing disk limits"
+if [ -e /sys/fs/cgroup/blkio/blkio.weight ]; then
+    lxc config set c1 limits.disk.priority=5
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/blkio/blkio.weight)" = "500" ]
+fi
+
+lxc config device override c1 root limits.read=10iops limits.write=20iops
+lxc exec c1 -- grep -q "10$" /sys/fs/cgroup/blkio/blkio.throttle.read_iops_device
+lxc exec c1 -- grep -q "20$" /sys/fs/cgroup/blkio/blkio.throttle.write_iops_device
+
+lxc config device set c1 root limits.read=10MB limits.write=20MB
+lxc exec c1 -- grep -q "10000000$" /sys/fs/cgroup/blkio/blkio.throttle.read_bps_device
+lxc exec c1 -- grep -q "20000000$" /sys/fs/cgroup/blkio/blkio.throttle.write_bps_device
+
+lxc config device set c1 root limits.read= limits.write=
+
+set +x
+FAIL=0
