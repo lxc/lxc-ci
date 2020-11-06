@@ -181,5 +181,11 @@ lxc exec c1 -- grep -q "20000000$" /sys/fs/cgroup/blkio/blkio.throttle.write_bps
 
 lxc config device set c1 root limits.read= limits.write=
 
+echo "==> Testing the freezer"
+lxc pause c1
+! lxc exec c1 || false
+grep "^State:.*D" "/proc/$(lxc info c1 | grep Pid | cut -d' ' -f2)/status"
+lxc start c1
+
 set +x
 FAIL=0
