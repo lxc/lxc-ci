@@ -183,7 +183,7 @@ lxc config device set c1 root limits.read= limits.write=
 
 echo "==> Testing the freezer"
 lxc pause c1
-! lxc exec c1 || false
+! lxc exec c1 bash || false
 grep "^State:.*D" "/proc/$(lxc info c1 | grep Pid | cut -d' ' -f2)/status"
 lxc start c1
 
