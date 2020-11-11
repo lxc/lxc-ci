@@ -43,15 +43,31 @@ lxc launch images:ubuntu/20.04 c1
 echo "==> Validate default values"
 [ "$(lxc exec c1 -- nproc)" = "$(nproc)" ]
 [ "$(lxc exec c1 -- grep ^MemTotal /proc/meminfo)" = "$(grep ^MemTotal /proc/meminfo)" ]
-if [ -e "/sys/fs/cgroup/memory/memory.memsw.limit_in_bytes" ]; then
+if [ -e "/sys/fs/cgroup/memory/memory.memsw.limit_in_bytes" ] || [ -e "/sys/fs/cgroup/memory.swap.max" ]; then
     [ "$(lxc exec c1 -- grep ^SwapTotal /proc/meminfo)" = "$(grep ^SwapTotal /proc/meminfo)" ]
 else
     [ "$(lxc exec c1 -- grep ^SwapTotal /proc/meminfo)" = "SwapTotal:             0 kB" ]
 fi
-[ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu/cpu.shares)" = "1024" ]
-[ "$(lxc exec c1 -- cat /sys/fs/cgroup/pids/pids.max)" = "max" ]
-[ "$(lxc exec c1 -- cat /sys/fs/cgroup/memory/memory.swappiness)" = "$(cat /sys/fs/cgroup/memory/memory.swappiness)" ]
-[ "$(lxc exec c1 -- cat /sys/fs/cgroup/net_prio/net_prio.ifpriomap)" = "$(cat /sys/fs/cgroup/net_prio/net_prio.ifpriomap)" ]
+
+if [ -e "/sys/fs/cgroup/cpu" ]; then
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu/cpu.shares)" = "1024" ]
+else
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu.weight)" = "100" ]
+fi
+
+if [ -e "/sys/fs/cgroup/pids" ]; then
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/pids/pids.max)" = "max" ]
+else
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/pids.max)" = "max" ]
+fi
+
+if [ -e "/sys/fs/cgroup/memory" ]; then
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/memory/memory.swappiness)" = "$(cat /sys/fs/cgroup/memory/memory.swappiness)" ]
+fi
+
+if [ -e "/sys/fs/cgroup/net_prio" ]; then
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/net_prio/net_prio.ifpriomap)" = "$(cat /sys/fs/cgroup/net_prio/net_prio.ifpriomap)" ]
+fi
 
 echo "==> Testing CPU limits"
 lxc config set c1 limits.cpu=2
@@ -70,39 +86,58 @@ lxc config unset c1 limits.cpu
 [ "$(lxc exec c1 -- nproc)" = "$(nproc)" ]
 
 lxc config set c1 limits.cpu.priority 5
-[ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu/cpu.shares)" = "1019" ]
+if [ -e "/sys/fs/cgroup/cpu" ]; then
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu/cpu.shares)" = "1019" ]
+else
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu.weight)" = "95" ]
+fi
 
 lxc config unset c1 limits.cpu.priority
-[ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu/cpu.shares)" = "1024" ]
+if [ -e "/sys/fs/cgroup/cpu" ]; then
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu/cpu.shares)" = "1024" ]
+else
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu.weight)" = "100" ]
+fi
 
 lxc config set c1 limits.cpu.allowance 10%
-[ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu/cpu.shares)" = "124" ]
+if [ -e "/sys/fs/cgroup/cpu" ]; then
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu/cpu.shares)" = "102" ]
+else
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu.weight)" = "10" ]
+fi
 
 lxc config set c1 limits.cpu.allowance 10ms/100ms
-[ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu/cpu.shares)" = "1024" ]
-[ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu/cpu.cfs_period_us)" = "100000" ]
-[ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu/cpu.cfs_quota_us)" = "10000" ]
+if [ -e "/sys/fs/cgroup/cpu" ]; then
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu/cpu.shares)" = "1024" ]
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu/cpu.cfs_period_us)" = "100000" ]
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu/cpu.cfs_quota_us)" = "10000" ]
+else
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu.weight)" = "100" ]
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/cpu.max)" = "10000 100000" ]
+fi
 lxc config unset c1 limits.cpu.allowance
 
 echo "==> Testing memory limits"
 lxc config set c1 limits.memory=2GiB
 [ "$(lxc exec c1 -- grep ^MemTotal /proc/meminfo)" = "MemTotal:        2097152 kB" ]
-if [ -e "/sys/fs/cgroup/memory/memory.memsw.limit_in_bytes" ]; then
+if [ -e "/sys/fs/cgroup/memory/memory.memsw.limit_in_bytes" ] || [ -e "/sys/fs/cgroup/memory.swap.max" ]; then
     [ "$(lxc exec c1 -- grep ^SwapTotal /proc/meminfo)" = "SwapTotal:       2097152 kB" ]
 else
     [ "$(lxc exec c1 -- grep ^SwapTotal /proc/meminfo)" = "SwapTotal:             0 kB" ]
 fi
 
-lxc config set c1 limits.memory.swap=false
-[ "$(lxc exec c1 -- cat /sys/fs/cgroup/memory/memory.swappiness)" = "0" ]
-[ "$(lxc exec c1 -- grep ^SwapTotal /proc/meminfo)" = "SwapTotal:             0 kB" ]
+if [ -e "/sys/fs/cgroup/memory" ]; then
+    lxc config set c1 limits.memory.swap=false
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/memory/memory.swappiness)" = "0" ]
+    [ "$(lxc exec c1 -- grep ^SwapTotal /proc/meminfo)" = "SwapTotal:             0 kB" ]
 
-lxc config set c1 limits.memory.swap=true
-lxc config set c1 limits.memory.swap.priority=5
-# swappiness is 60 (default) - 10 (maximum deduction) + 5 (priority)
-[ "$(lxc exec c1 -- cat /sys/fs/cgroup/memory/memory.swappiness)" = "55" ]
+    lxc config set c1 limits.memory.swap=true
+    lxc config set c1 limits.memory.swap.priority=5
+    # swappiness is 60 (default) - 10 (maximum deduction) + 5 (priority)
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/memory/memory.swappiness)" = "55" ]
+fi
 
-if [ -e "/sys/fs/cgroup/memory/memory.memsw.limit_in_bytes" ]; then
+if [ -e "/sys/fs/cgroup/memory/memory.memsw.limit_in_bytes" ] || [ -e "/sys/fs/cgroup/memory.swap.max" ]; then
     lxc config set c1 limits.memory 128MiB
     [ "$(lxc exec c1 -- grep ^MemTotal /proc/meminfo)" = "MemTotal:         131072 kB" ]
 
@@ -135,11 +170,18 @@ fi
 
 echo "==> Testing process limits"
 lxc config set c1 limits.processes=2000
-[ "$(lxc exec c1 -- cat /sys/fs/cgroup/pids/pids.max)" = "2000" ]
+if [ -e "/sys/fs/cgroup/pids" ]; then
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/pids/pids.max)" = "2000" ]
+else
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/pids.max)" = "2000" ]
+fi
 
 echo "==> Testing network limits"
-lxc config set c1 limits.network.priority=10
-lxc exec c1 -- grep -q "10$" /sys/fs/cgroup/net_prio/net_prio.ifpriomap
+if [ -e "/sys/fs/cgroup/net_prio" ]; then
+    # NOTE: No such thing as net_prio under cgroup2
+    lxc config set c1 limits.network.priority=10
+    lxc exec c1 -- grep -q "10$" /sys/fs/cgroup/net_prio/net_prio.ifpriomap
+fi
 
 lxc restart c1 --force
 sleep 10s
@@ -166,25 +208,36 @@ pkill -9 iperf3
 lxc config device set c1 eth0 limits.egress= limits.ingress=
 
 echo "==> Testing disk limits"
-if [ -e /sys/fs/cgroup/blkio/blkio.weight ]; then
+if [ -e /sys/fs/cgroup/init.scope/io.weight ]; then
+    lxc config set c1 limits.disk.priority=5
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/io.weight)" = "default 500" ]
+elif [ -e /sys/fs/cgroup/blkio/blkio.weight ]; then
     lxc config set c1 limits.disk.priority=5
     [ "$(lxc exec c1 -- cat /sys/fs/cgroup/blkio/blkio.weight)" = "500" ]
 fi
 
+
 lxc config device override c1 root limits.read=10iops limits.write=20iops
-lxc exec c1 -- grep -q "10$" /sys/fs/cgroup/blkio/blkio.throttle.read_iops_device
-lxc exec c1 -- grep -q "20$" /sys/fs/cgroup/blkio/blkio.throttle.write_iops_device
+if [ -e /sys/fs/cgroup/init.scope/io.max ]; then
+    lxc exec c1 -- grep -q "riops=10 wiops=20" /sys/fs/cgroup/io.max
+else
+    lxc exec c1 -- grep -q "10$" /sys/fs/cgroup/blkio/blkio.throttle.read_iops_device
+    lxc exec c1 -- grep -q "20$" /sys/fs/cgroup/blkio/blkio.throttle.write_iops_device
+fi
 
 lxc config device set c1 root limits.read=10MB limits.write=20MB
-lxc exec c1 -- grep -q "10000000$" /sys/fs/cgroup/blkio/blkio.throttle.read_bps_device
-lxc exec c1 -- grep -q "20000000$" /sys/fs/cgroup/blkio/blkio.throttle.write_bps_device
+if [ -e /sys/fs/cgroup/init.scope/io.max ]; then
+    lxc exec c1 -- grep -q "rbps=10000000 wbps=20000000" /sys/fs/cgroup/io.max
+else
+    lxc exec c1 -- grep -q "10000000$" /sys/fs/cgroup/blkio/blkio.throttle.read_bps_device
+    lxc exec c1 -- grep -q "20000000$" /sys/fs/cgroup/blkio/blkio.throttle.write_bps_device
+fi
 
 lxc config device set c1 root limits.read= limits.write=
 
 echo "==> Testing the freezer"
 lxc pause c1
 ! lxc exec c1 bash || false
-grep "^State:.*D" "/proc/$(lxc info c1 | grep Pid | cut -d' ' -f2)/status"
 lxc start c1
 
 set +x
