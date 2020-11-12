@@ -2,7 +2,10 @@
 cd /lxc-ci
 
 # Update the repository
-git pull -q
+for i in $(seq 10); do
+    git pull -q && break
+    sleep 30
+done
 
 # Update the init scripts
 cd init
