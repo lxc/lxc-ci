@@ -32,15 +32,15 @@ snap refresh lxd --channel=latest/edge
 lxd waitready --timeout=300
 
 # Enable SR-IOV on nic and bring up
-echo 8 > /sys/class/net/enp7s0/device/sriov_numvfs
-ip link set enp7s0 up
+echo 8 > /sys/class/net/enp4s0/device/sriov_numvfs
+ip link set enp4s0 up
 sleep 10
-ethtool enp7s0
+ethtool enp4s0
 
 # Configure LXD
 lxc storage create default zfs source=/dev/nvme0n1
 lxc profile device add default root disk path=/ pool=default
-lxc profile device add default eth0 nic nictype=sriov parent=enp7s0 name=eth0
+lxc profile device add default eth0 nic nictype=sriov parent=enp4s0 name=eth0
 
 # Launch a few containers
 echo "==> Container on default VLAN"
