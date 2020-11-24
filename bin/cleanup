@@ -17,6 +17,9 @@ if [ "${1:-}" = "force" ]; then
         done
     fi
 
+    nsenter --mount=/run/snapd/ns/lxd.mnt /snap/lxd/current/bin/btrfs quota disable /var/snap/lxd/common/lxd/storage-pools/default/
+    nsenter --mount=/run/snapd/ns/lxd.mnt /snap/lxd/current/bin/btrfs quota enable /var/snap/lxd/common/lxd/storage-pools/default/
+
     rm -Rf /var/snap/lxd/common/lxd/cache/*
     systemctl reload snap.lxd.daemon
 fi
