@@ -134,6 +134,9 @@ umount -l /mnt
 mkdir -p /run/lock
 mount -t tmpfs tmpfs /run/lock
 
+# Setup separate tmpfs
+mount -t tmpfs tmpfs /tmp
+
 # Setup the network
 ip link set lo up
 ip link add lxdbr0 up type bridge
