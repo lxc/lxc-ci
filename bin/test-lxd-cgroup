@@ -141,12 +141,12 @@ if [ -e "/sys/fs/cgroup/memory/memory.memsw.limit_in_bytes" ] || [ -e "/sys/fs/c
     lxc config set c1 limits.memory 128MiB
     [ "$(lxc exec c1 -- grep ^MemTotal /proc/meminfo)" = "MemTotal:         131072 kB" ]
 
-    lxc exec c1 -- mkdir -p /tmp/dd
-    lxc exec c1 -- mount -t tmpfs tmpfs /tmp/dd -o size=2G
-    lxc exec c1 -- dd if=/dev/zero of=/tmp/dd/blob bs=4M count=16
+    lxc exec c1 -- mkdir -p /root/dd
+    lxc exec c1 -- mount -t tmpfs tmpfs /root/dd -o size=2G
+    lxc exec c1 -- dd if=/dev/zero of=/root/dd/blob bs=4M count=16
     dmesg -c >/dev/null 2>&1
     # shellcheck disable=SC2251
-    ! lxc exec c1 -- dd if=/dev/zero of=/tmp/dd/blob bs=4M count=64
+    ! lxc exec c1 -- dd if=/dev/zero of=/root/dd/blob bs=4M count=64
     dmesg | grep -q "Memory cgroup out of memory: Killed process"
     dmesg -c >/dev/null 2>&1
 
@@ -154,10 +154,10 @@ if [ -e "/sys/fs/cgroup/memory/memory.memsw.limit_in_bytes" ] || [ -e "/sys/fs/c
     ! lxc stop c1 --force
     lxc start c1
     lxc config set c1 limits.memory.enforce soft
-    lxc exec c1 -- mkdir -p /tmp/dd
-    lxc exec c1 -- mount -t tmpfs tmpfs /tmp/dd -o size=2G
+    lxc exec c1 -- mkdir -p /root/dd
+    lxc exec c1 -- mount -t tmpfs tmpfs /root/dd -o size=2G
     dmesg -c >/dev/null 2>&1
-    lxc exec c1 -- dd if=/dev/zero of=/tmp/dd/blob bs=4M count=64
+    lxc exec c1 -- dd if=/dev/zero of=/root/dd/blob bs=4M count=64
     dmesg | grep -q "Memory cgroup out of memory: Killed process" && false
     dmesg -c >/dev/null 2>&1
 
