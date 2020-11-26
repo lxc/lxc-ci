@@ -70,18 +70,29 @@ cleanup() {
 trap cleanup EXIT HUP INT TERM
 
 # Deploy the machine
-echo "==> Deploying ${2}"
-maas maas machine deploy "${system_id}" "distro_series=${2}" "hwe_kernel=${3}" >/dev/null
+# shellcheck disable=SC2034
+for i in $(seq 3); do
+    echo "==> Deploying ${2}"
+    maas maas machine deploy "${system_id}" "distro_series=${2}" "hwe_kernel=${3}" >/dev/null
 
-# Wait for the deployment to complete
-while :; do
-    [ "$(maas maas machine read "${system_id}" | jq -r .status_name)" = "Deployed" ] && break
-    if [ "$(maas maas machine read "${system_id}" | jq -r .status_name)" = "Failed deployment" ]; then
-         echo "==> Failed to deploy"
-         exit 1
-    fi
-    sleep 30
+    # Wait for the deployment to complete
+    FAIL=0
+    while :; do
+        [ "$(maas maas machine read "${system_id}" | jq -r .status_name)" = "Deployed" ] && break
+
+        if [ "$(maas maas machine read "${system_id}" | jq -r .status_name)" = "Failed deployment" ]; then
+            FAIL=1
+            echo "==> Failed to deploy"
+            break
+        fi
+
+        sleep 30
+    done
+
+    [ "${FAIL}" = 0 ] && break
 done
+
+[ "${FAIL}" = 1 ] && exit 1
 
 # Wait for SSH
 echo "==> Waiting for SSH to respond"
