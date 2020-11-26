@@ -70,13 +70,14 @@ cleanup() {
 trap cleanup EXIT HUP INT TERM
 
 # Deploy the machine
+FAIL=1
 # shellcheck disable=SC2034
 for i in $(seq 3); do
-    FAIL=0
     echo "==> Deploying ${2}"
     maas maas machine deploy "${system_id}" "distro_series=${2}" "hwe_kernel=${3}" >/dev/null || continue
 
     # Wait for the deployment to complete
+    FAIL=0
     while :; do
         [ "$(maas maas machine read "${system_id}" | jq -r .status_name)" = "Deployed" ] && break
 
