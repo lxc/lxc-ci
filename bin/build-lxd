@@ -154,14 +154,17 @@ mount -t tmpfs tmpfs /usr/local/bin
 (
 cat << EOE
 #!/bin/sh
-set -eu
-exec ip netns exec hostns /usr/bin/\\\$(basename \\\$0) "\\\$@"
+for arg in "\\\$@"; do
+    if [ "\\\${arg}" = "map" ] || [ "\\\${arg}" = "unmap" ]; then
+        exec ip netns exec hostns /usr/bin/\\\$(basename \\\$0) "\\\$@"
+    fi
+done
+exec /usr/bin/\\\$(basename \\\$0) "\\\$@"
 EOE
 ) > /usr/local/bin/in-hostnetns
 chmod +x /usr/local/bin/in-hostnetns
 
 # Setup ceph
-ln -s in-hostnetns /usr/local/bin/ceph
 ln -s in-hostnetns /usr/local/bin/rbd
 
 # Disable CEPH on non-amd64
