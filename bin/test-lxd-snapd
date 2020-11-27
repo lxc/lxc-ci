@@ -152,7 +152,7 @@ if [ "${track}" != "2.0" ]; then
         lxc launch images:alpine/edge -s test-lvm lvm
     fi
 
-    if [ "${ID}" != "ubuntu-core" ] && [ "${VERSION_ID}" != "16.04" ] && [ "${ID}" != "centos" ] && modprobe -q -n rbd; then
+    if [ "${ID}" != "ubuntu-core" ] && [ "${VERSION_ID:-""}" != "16.04" ] && [ "${ID}" != "centos" ] && modprobe -q -n rbd; then
         curl http://canonical-lxd.stgraber.org/config/ceph-snap.sh | sh -eu
 
         lxc storage create test-ceph ceph "ceph.osd.pool_name=$(mktemp -u snaptest-XXX)" volume.size=25MB ceph.osd.pg_num=1
