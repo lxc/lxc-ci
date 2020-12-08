@@ -126,8 +126,8 @@ do
                 dstPoolDriver=lvm # Use something different when testing ZFS.
         fi
 
-        lxc storage create "${poolName}"2 "${dstPoolDriver}" size=20GB
-        lxc copy v1 v2 -s "${poolName}"2
+        lxc storage create "${poolName}2" "${dstPoolDriver}" size=20GB
+        lxc copy v1 v2 -s "${poolName}2"
         lxc start v2
         sleep 90
         lxc info v2
@@ -138,7 +138,7 @@ do
 
         echo "==> Grow above default volume size and copy to different storage pool"
         lxc config device override v1 root size=11GB
-        lxc copy v1 v2 -s "${poolName}"2
+        lxc copy v1 v2 -s "${poolName}2"
         lxc start v2
         sleep 90
         lxc info v2
@@ -171,7 +171,7 @@ do
         lxc profile delete vmsmall
 
         echo "==> Deleting storage pool"
-        lxc storage delete "${poolName}"2
+        lxc storage delete "${poolName}2"
         lxc storage delete "${poolName}"
 done
 
