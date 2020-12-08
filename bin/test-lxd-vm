@@ -12,7 +12,7 @@ cleanup() {
     exit 0
 }
 
-poolDriverList="${1:-dir btrfs lvm zfs}"
+poolDriverList="${1:-dir btrfs lvm zfs ceph}"
 FAIL=1
 trap cleanup EXIT HUP INT TERM
 
@@ -39,19 +39,23 @@ lxd waitready --timeout=300
 lxc network create lxdbr0
 lxc profile device add default eth0 nic network=lxdbr0
 
+poolName="vmpool$$"
+
 for poolDriver in $poolDriverList
 do
         echo "==> Create storage pool using driver ${poolDriver}"
         if [ "${poolDriver}" = "dir" ]; then
-                lxc storage create vmpool "${poolDriver}"
+                lxc storage create "${poolName}" "${poolDriver}"
+        elif [ "${poolDriver}" = "ceph" ]; then
+                lxc storage create "${poolName}" "${poolDriver}" source="${poolName}"
         else
-                lxc storage create vmpool "${poolDriver}" size=20GB
+                lxc storage create "${poolName}" "${poolDriver}" size=20GB
         fi
 
         echo "==> Create VM and boot"
-        lxc init images:ubuntu/20.04/cloud v1 --vm -s vmpool
+        lxc init images:ubuntu/20.04/cloud v1 --vm -s "${poolName}"
         lxc start v1
-        sleep 60
+        sleep 90
         lxc info v1
 
         echo "==> Checking VM root disk size is 10GB"
@@ -62,7 +66,7 @@ do
         lxc config get v1 volatile.root.apply_quota | grep 11GB
         lxc stop -f v1
         lxc start v1
-        sleep 60
+        sleep 90
 
         echo "==> Checking VM root disk size is 11GB"
         lxc exec v1 -- df -B1000000000 | grep sda2 | grep 11
@@ -74,10 +78,10 @@ do
         lxc delete -f v1
 
         echo "==> Change volume.size on pool and create VM"
-        lxc storage set vmpool volume.size 6GB
-        lxc init images:ubuntu/20.04/cloud v1 --vm -s vmpool
+        lxc storage set "${poolName}" volume.size 6GB
+        lxc init images:ubuntu/20.04/cloud v1 --vm -s "${poolName}"
         lxc start v1
-        sleep 60
+        sleep 90
         lxc info v1
 
         echo "==> Checking VM root disk size is 6GB"
@@ -85,14 +89,14 @@ do
 
         echo "==> Deleting VM and reset pool volume.size"
         lxc delete -f v1
-        lxc storage unset vmpool volume.size
+        lxc storage unset "${poolName}" volume.size
 
         if [ "${poolDriver}" = "lvm" ]; then
                 echo "==> Change volume.block.filesystem on pool and create VM"
-                lxc storage set vmpool volume.block.filesystem xfs
-                lxc init images:ubuntu/20.04/cloud v1 --vm -s vmpool
+                lxc storage set "${poolName}" volume.block.filesystem xfs
+                lxc init images:ubuntu/20.04/cloud v1 --vm -s "${poolName}"
                 lxc start v1
-                sleep 60
+                sleep 90
                 lxc info v1
 
                 echo "==> Checking VM config disk filesyste is XFS"
@@ -101,15 +105,15 @@ do
 
                 echo "==> Deleting VM"
                 lxc delete -f v1
-                lxc storage unset vmpool volume.block.filesystem
+                lxc storage unset "${poolName}" volume.block.filesystem
         fi
 
         echo "==> Create VM from profile with small disk size"
         lxc profile copy default vmsmall
-        lxc profile device add vmsmall root disk pool=vmpool path=/ size=7GB
+        lxc profile device add vmsmall root disk pool="${poolName}" path=/ size=7GB
         lxc init images:ubuntu/20.04/cloud v1 --vm -p vmsmall
         lxc start v1
-        sleep 60
+        sleep 90
         lxc info v1
 
         echo "==> Checking VM root disk size is 7GB"
@@ -122,21 +126,21 @@ do
                 dstPoolDriver=lvm # Use something different when testing ZFS.
         fi
 
-        lxc storage create vmpool2 "${dstPoolDriver}" size=20GB
-        lxc copy v1 v2 -s vmpool2
+        lxc storage create "${poolName}2" "${dstPoolDriver}" size=20GB
+        lxc copy v1 v2 -s "${poolName}2"
         lxc start v2
-        sleep 60
+        sleep 90
         lxc info v2
 
         echo "==> Checking copied VM root disk size is 7GB"
         lxc exec v2 -- df -B1000000000 | grep sda2 | grep 7
         lxc delete -f v2
 
-        echo "==> Grow above default voume size and copy to different storage pool"
+        echo "==> Grow above default volume size and copy to different storage pool"
         lxc config device override v1 root size=11GB
-        lxc copy v1 v2 -s vmpool2
+        lxc copy v1 v2 -s "${poolName}2"
         lxc start v2
-        sleep 60
+        sleep 90
         lxc info v2
 
         echo "==> Checking copied VM root disk size is 11GB"
@@ -146,16 +150,16 @@ do
         echo "==> Publishing larger VM"
         lxc publish v1 --alias vmbig
         lxc delete -f v1
-        lxc storage set vmpool volume.size 9GB
+        lxc storage set "${poolName}" volume.size 9GB
 
         echo "==> Check VM create fails when image larger than volume.size"
-        ! lxc init vmbig v1 --vm -s vmpool || false
+        ! lxc init vmbig v1 --vm -s "${poolName}" || false
 
         echo "==> Check VM create succeeds when no volume.size set"
-        lxc storage unset vmpool volume.size
-        lxc init vmbig v1 --vm -s vmpool
+        lxc storage unset "${poolName}" volume.size
+        lxc init vmbig v1 --vm -s "${poolName}"
         lxc start v1
-        sleep 60
+        sleep 90
         lxc info v1
 
         echo "==> Checking new VM root disk size is 11GB"
@@ -167,8 +171,8 @@ do
         lxc profile delete vmsmall
 
         echo "==> Deleting storage pool"
-        lxc storage delete vmpool2
-        lxc storage delete vmpool
+        lxc storage delete "${poolName}2"
+        lxc storage delete "${poolName}"
 done
 
 FAIL=0
