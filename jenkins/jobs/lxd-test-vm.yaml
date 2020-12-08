@@ -35,6 +35,7 @@
     - raw:
         !include: ../includes/webhook.yaml.inc
 
+    publishers:
     - workspace-cleanup:
         fail-build: false
 
