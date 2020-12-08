@@ -55,7 +55,7 @@ do
         echo "==> Create VM and boot"
         lxc init images:ubuntu/20.04/cloud v1 --vm -s "${poolName}"
         lxc start v1
-        sleep 60
+        sleep 90
         lxc info v1
 
         echo "==> Checking VM root disk size is 10GB"
@@ -66,7 +66,7 @@ do
         lxc config get v1 volatile.root.apply_quota | grep 11GB
         lxc stop -f v1
         lxc start v1
-        sleep 60
+        sleep 90
 
         echo "==> Checking VM root disk size is 11GB"
         lxc exec v1 -- df -B1000000000 | grep sda2 | grep 11
@@ -81,7 +81,7 @@ do
         lxc storage set "${poolName}" volume.size 6GB
         lxc init images:ubuntu/20.04/cloud v1 --vm -s "${poolName}"
         lxc start v1
-        sleep 60
+        sleep 90
         lxc info v1
 
         echo "==> Checking VM root disk size is 6GB"
@@ -96,7 +96,7 @@ do
                 lxc storage set "${poolName}" volume.block.filesystem xfs
                 lxc init images:ubuntu/20.04/cloud v1 --vm -s "${poolName}"
                 lxc start v1
-                sleep 60
+                sleep 90
                 lxc info v1
 
                 echo "==> Checking VM config disk filesyste is XFS"
@@ -113,7 +113,7 @@ do
         lxc profile device add vmsmall root disk pool="${poolName}" path=/ size=7GB
         lxc init images:ubuntu/20.04/cloud v1 --vm -p vmsmall
         lxc start v1
-        sleep 60
+        sleep 90
         lxc info v1
 
         echo "==> Checking VM root disk size is 7GB"
@@ -129,7 +129,7 @@ do
         lxc storage create "${poolName}"2 "${dstPoolDriver}" size=20GB
         lxc copy v1 v2 -s "${poolName}"2
         lxc start v2
-        sleep 60
+        sleep 90
         lxc info v2
 
         echo "==> Checking copied VM root disk size is 7GB"
@@ -140,7 +140,7 @@ do
         lxc config device override v1 root size=11GB
         lxc copy v1 v2 -s "${poolName}"2
         lxc start v2
-        sleep 60
+        sleep 90
         lxc info v2
 
         echo "==> Checking copied VM root disk size is 11GB"
@@ -159,7 +159,7 @@ do
         lxc storage unset "${poolName}" volume.size
         lxc init vmbig v1 --vm -s "${poolName}"
         lxc start v1
-        sleep 60
+        sleep 90
         lxc info v1
 
         echo "==> Checking new VM root disk size is 11GB"
