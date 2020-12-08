@@ -20,7 +20,6 @@
         name: release
         type: user-defined
         values:
-        - 6
         - 7
         - 8
         - 8-Stream
@@ -53,7 +52,7 @@
         fi
 
         TYPE="container"
-        if [ "${architecture}" = "amd64" ] && [ "${release}" != "6" ]; then
+        if [ "${architecture}" = "amd64" ]; then
             TYPE="container,vm"
         fi
 
@@ -64,13 +63,11 @@
 
     execution-strategy:
       combination-filter: '
-      !(architecture=="arm64" && release == "6")
-      && !(architecture=="arm64" && release == "7")
+      !(architecture=="arm64" && release == "7")
       && !(architecture=="ppc64el" && release == "7")
       && !(architecture=="armhf" && release != "7")
       && !(architecture=="i386" && release == "8")
-      && !(architecture=="i386" && release == "8-Stream")
-      && !(architecture=="ppc64el" && release == "6")'
+      && !(architecture=="i386" && release == "8-Stream")'
 
     properties:
     - build-discarder:
