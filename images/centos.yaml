@@ -585,7 +585,7 @@ actions:
     set -eux
 
     # Enable the centosplus repo which has a kernel with 9p support
-    sed -i 's/^enabled=0/enabled=1/' /etc/yum.repos.d/CentOS-centosplus.repo
+    sed -i 's/^enabled=0/enabled=1/' /etc/yum.repos.d/CentOS-Linux-Plus.repo
   types:
   - vm
   releases:
