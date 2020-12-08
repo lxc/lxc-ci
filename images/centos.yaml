@@ -259,7 +259,6 @@ files:
     MTU=
     DHCP_HOSTNAME=LXC_NAME
   releases:
-  - 6
   - 7
   types:
   - container
@@ -295,7 +294,6 @@ files:
     MTU=
     DHCP_HOSTNAME={{ container.name }}
   releases:
-  - 6
   - 7
 
 - name: ifcfg-eth0.lxd
@@ -415,41 +413,6 @@ files:
   content: |-
     NETWORKING=yes
     HOSTNAME={{ container.name }}
-
-- name: lxc-sysinit
-  path: /etc/init/lxc-sysinit.conf
-  generator: dump
-  content: |-
-    start on startup
-    env container
-
-    pre-start script
-        if [ "x$container" != "xlxc" -a "x$container" != "xlibvirt" ]; then
-            stop;
-        fi
-
-        rm -f /var/lock/subsys/*
-        rm -f /var/run/*.pid
-        [ -e /etc/mtab ] || ln -s /proc/mounts /etc/mtab
-        mkdir -p /dev/shm
-        mount -t tmpfs -o nosuid,nodev tmpfs /dev/shm
-
-        initctl start tty TTY=console
-        telinit 3
-        exit 0
-    end script
-  releases:
-  - 6
-
-- name: sigpwr.conf
-  path: /etc/init/power-status-changed.conf
-  generator: dump
-  content: |-
-    start on power-status-changed
-
-    exec /sbin/shutdown -h now "SIGPWR received"
-  releases:
-  - 6
 
 - name: meta-data
   generator: cloud-init
