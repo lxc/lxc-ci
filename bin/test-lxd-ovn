@@ -132,7 +132,7 @@ lxc network create ovn-virtual-network network=lxdbr0 --project testovn
 lxc network delete ovn-virtual-network --project testovn
 lxc network delete lxdbr1 --project default
 
-# Test physical uplink with external IPs
+# Test physical uplink with external IPs.
 ip link add dummy0 type dummy
 lxc network create dummy --type=physical --project default \
     parent=dummy0 \
