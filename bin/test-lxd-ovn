@@ -217,7 +217,7 @@ ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | gr
 ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "2001:db8:1:2::3f,2001:db8:1:2::3f,dnat_and_snat"
 ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l | grep 132
 
-lxc delete -f u1 --project testovn
+lxc stop -f u1 --project testovn
 
 # Check NAT rules got cleaned up.
 natRulesAfter=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
@@ -225,6 +225,21 @@ if [ "$natRulesBefore" -ne "$natRulesAfter" ]; then
     echo "NAT rules left over. Started with ${natRulesBefore} now have ${natRulesAfter}"
     false
 fi
+
+# Check routed ingress mode allows larger subnets and doesn't add DNAT rules.
+lxc network set dummy ovn.ingress_mode=routed
+lxc config device set u1 eth0 ipv4.routes.external=198.51.100.0/24 --project testovn
+lxc config device set u1 eth0 ipv6.routes.external=2001:db8:1:2::/64 --project testovn
+lxc start u1 --project testovn
+
+# Check no NAT rules got added.
+natRulesAfter=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
+if [ "$natRulesBefore" -ne "$natRulesAfter" ]; then
+    echo "NAT rules got added in routed ingress mode. Started with ${natRulesBefore} now have ${natRulesAfter}"
+    false
+fi
+
+lxc delete -f u1 --project testovn
 
 lxc network delete ovn-virtual-network --project testovn
 lxc image delete "${FINGERPRINT}" --project testovn
