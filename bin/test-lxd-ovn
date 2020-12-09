@@ -132,7 +132,7 @@ lxc network create ovn-virtual-network network=lxdbr0 --project testovn
 lxc network delete ovn-virtual-network --project testovn
 lxc network delete lxdbr1 --project default
 
-# Test physical uplink with external IPs
+# Test physical uplink with external IPs.
 ip link add dummy0 type dummy
 lxc network create dummy --type=physical --project default \
     parent=dummy0 \
@@ -160,6 +160,10 @@ lxc network create ovn-virtual-network --type=ovn --project testovn network=dumm
 
 lxc init images:ubuntu/20.04 u1 --project testovn
 lxc config device add u1 eth0 nic network=ovn-virtual-network name=eth0 --project testovn
+
+# Record NAT rules count before u1 started.
+natRulesBefore=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
+
 lxc start u1 --project testovn
 
 # Test external IPs allocated and published using dnat.
@@ -170,6 +174,13 @@ ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | gr
 ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "${U1_EXT_IPV6},${U1_EXT_IPV6},dnat_and_snat"
 lxc stop -f u1 --project testovn
 
+# Check NAT rules got cleaned up.
+natRulesAfter=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
+if [ "$natRulesBefore" -ne "$natRulesAfter" ]; then
+    echo "NAT rules left over. Started with ${natRulesBefore} now have ${natRulesAfter}"
+    false
+fi
+
 # Test external IPs routed to OVN NIC.
 lxc network set ovn-virtual-network --project testovn \
     ipv4.address=auto \
@@ -177,9 +188,16 @@ lxc network set ovn-virtual-network --project testovn \
     ipv4.nat=true \
     ipv6.nat=true
 
-# Check external routes are ensured to be within uplink's external routes.
+# Record NAT rules count before u1 started again.
+natRulesBefore=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
+
+# Check external routes are not too big (when using l2proxy uplink ingress mode).
 ! lxc config device set u1 eth0 ipv4.routes.external=198.51.100.0/24 --project testovn || false
 ! lxc config device set u1 eth0 ipv6.routes.external=2001:db8:1:2::/64 --project testovn || false
+
+# Check external routes are ensured to be within uplink's external routes.
+! lxc config device set u1 eth0 ipv4.routes.external=203.0.113.0/26 --project testovn || false
+! lxc config device set u1 eth0 ipv6.routes.external=2001:db8:2:2::/122  --project testovn || false
 lxc config device set u1 eth0 ipv4.routes.external=198.51.100.0/26 --project testovn
 lxc config device set u1 eth0 ipv6.routes.external=2001:db8:1:2::/122 --project testovn
 
@@ -199,7 +217,30 @@ ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | gr
 ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "2001:db8:1:2::3f,2001:db8:1:2::3f,dnat_and_snat"
 ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l | grep 132
 
+lxc stop -f u1 --project testovn
+
+# Check NAT rules got cleaned up.
+natRulesAfter=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
+if [ "$natRulesBefore" -ne "$natRulesAfter" ]; then
+    echo "NAT rules left over. Started with ${natRulesBefore} now have ${natRulesAfter}"
+    false
+fi
+
+# Check routed ingress mode allows larger subnets and doesn't add DNAT rules.
+lxc network set dummy ovn.ingress_mode=routed
+lxc config device set u1 eth0 ipv4.routes.external=198.51.100.0/24 --project testovn
+lxc config device set u1 eth0 ipv6.routes.external=2001:db8:1:2::/64 --project testovn
+lxc start u1 --project testovn
+
+# Check no NAT rules got added.
+natRulesAfter=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
+if [ "$natRulesBefore" -ne "$natRulesAfter" ]; then
+    echo "NAT rules got added in routed ingress mode. Started with ${natRulesBefore} now have ${natRulesAfter}"
+    false
+fi
+
 lxc delete -f u1 --project testovn
+
 lxc network delete ovn-virtual-network --project testovn
 lxc image delete "${FINGERPRINT}" --project testovn
 lxc project delete testovn
