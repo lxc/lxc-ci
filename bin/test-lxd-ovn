@@ -151,12 +151,28 @@ lxc network create ovn-virtual-network --type=ovn --project testovn network=dumm
     ipv4.nat=false \
     ipv6.nat=false
 
-# Check network external subnet overlap.
+# Check network external subnet overlap is prevented.
 ! lxc network create ovn-virtual-network2 --type=ovn --project default network=dummy \
     ipv4.address=198.51.100.1/26 \
+    ipv4.nat=false || false
+
+! lxc network create ovn-virtual-network2 --type=ovn --project default network=dummy \
     ipv6.address=2001:db8:1:2::1/122 \
-    ipv4.nat=false \
     ipv6.nat=false || false
+
+# Check network external subnet overlap check relaxation when uplink has anycast routed ingress mode enabled.
+lxc network set dummy ovn.ingress_mode=routed ipv4.routes.anycast=true ipv6.routes.anycast=true --project default
+
+lxc network create ovn-virtual-network2 --type=ovn --project default network=dummy \
+    ipv4.address=198.51.100.1/26 \
+    ipv4.nat=false \
+    ipv6.address=2001:db8:1:2::1/122 \
+    ipv6.nat=false
+
+lxc network delete ovn-virtual-network2 --project default
+lxc network unset dummy ovn.ingress_mode --project default
+lxc network unset dummy ipv4.routes.anycast --project default
+lxc network unset dummy ipv6.routes.anycast --project default
 
 lxc init images:ubuntu/20.04 u1 --project testovn
 lxc config device add u1 eth0 nic network=ovn-virtual-network name=eth0 --project testovn
@@ -206,7 +222,15 @@ lxc init images:ubuntu/20.04 u2 --project testovn
 lxc config device add u2 eth0 nic network=ovn-virtual-network name=eth0 --project testovn
 ! lxc config device set u2 eth0 ipv4.routes.external=198.51.100.1/32 --project testovn || false
 ! lxc config device set u2 eth0 ipv6.routes.external=2001:db8:1:2::1/128 --project testovn || false
+
+# Check NIC external route overlap check relaxation when uplink has anycast routed ingress mode enabled.
+lxc network set dummy ovn.ingress_mode=routed ipv4.routes.anycast=true ipv6.routes.anycast=true --project default
+lxc config device set u2 eth0 ipv4.routes.external=198.51.100.1/32 --project testovn
+lxc config device set u2 eth0 ipv6.routes.external=2001:db8:1:2::1/128 --project testovn
 lxc delete -f u2 --project testovn
+lxc network unset dummy ovn.ingress_mode --project default
+lxc network unset dummy ipv4.routes.anycast --project default
+lxc network unset dummy ipv6.routes.anycast --project default
 
 # Check DNAT rules get added when starting instance port with external routes.
 lxc start u1 --project testovn
