@@ -1,7 +1,6 @@
-- ajkavanagh
-- ChrisMacNaughton
-- hallyn
-- javacruft
-- rockstar
+- albertodonato
+- bjornt
+- d0ugal
+- ltrager
+- sparkiegeek
 - stgraber
-- zulcss
