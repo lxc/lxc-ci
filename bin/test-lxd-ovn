@@ -240,6 +240,19 @@ if [ "$natRulesBefore" -ne "$natRulesAfter" ]; then
 fi
 
 lxc delete -f u1 --project testovn
+lxc network unset dummy ovn.ingress_mode
+
+# Set custom domain to allow identification of DHCP options.
+lxc network set ovn-virtual-network dns.domain=testdhcp --project testovn
+
+# Look for DHCP options mentioning our testdhcp domain name, there should be two.
+ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep testdhcp | wc -l | grep 2
+
+# Check DHCP can be disabled.
+lxc network set ovn-virtual-network ipv4.dhcp=false ipv6.dhcp=false --project testovn
+
+# Look for DHCP options mentioning our testdhcp domain name, there shouldn't be any.
+ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep testdhcp | wc -l | grep 0
 
 lxc network delete ovn-virtual-network --project testovn
 lxc image delete "${FINGERPRINT}" --project testovn
