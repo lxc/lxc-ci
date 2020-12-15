@@ -399,6 +399,18 @@ files:
   - 8
   - 8-Stream
 
+- name: override.conf
+  path: /etc/systemd/system/NetworkManager.service.d/override.conf
+  generator: dump
+  content: |-
+    [Service]
+    ExecStartPost=/usr/sbin/dhclient
+
+  types:
+  - container
+  releases:
+  - 8-Stream
+
 - name: network
   path: /etc/sysconfig/network
   generator: dump
