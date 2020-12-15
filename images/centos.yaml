@@ -399,15 +399,11 @@ files:
   - 8
   - 8-Stream
 
-- name: override.conf
-  path: /etc/systemd/system/NetworkManager.service.d/override.conf
+- name: 86-nm-unmanaged.rules
+  path: /etc/udev/rules.d/86-nm-unmanaged.rules
   generator: dump
   content: |-
-    [Service]
-    ExecStartPost=/usr/sbin/dhclient
-
-  types:
-  - container
+    ENV{ID_NET_DRIVER}=="veth", ENV{NM_UNMANAGED}="0"
   releases:
   - 8-Stream
 
