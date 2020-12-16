@@ -102,6 +102,7 @@ files:
     TYPE=Ethernet
     MTU=
     DHCP_HOSTNAME=`cat /proc/sys/kernel/hostname`
+    IPV6INIT=yes
   releases:
   - 8
 
