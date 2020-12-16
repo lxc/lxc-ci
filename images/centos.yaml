@@ -307,6 +307,7 @@ files:
     TYPE=Ethernet
     MTU=
     DHCP_HOSTNAME={{ container.name }}
+    IPV6INIT=yes
   releases:
   - 8
   - 8-Stream
