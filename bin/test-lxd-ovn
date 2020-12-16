@@ -272,7 +272,28 @@ lxc network set ovn-virtual-network dns.domain=testdhcp --project testovn
 # Look for DHCP options mentioning our testdhcp domain name, there should be two.
 ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep testdhcp | wc -l | grep 2
 
-# Check DHCP can be disabled.
+# Only enable IPv6 DHCP.
+lxc init images:ubuntu/20.04 u1 --project testovn
+lxc network set ovn-virtual-network ipv4.dhcp=false ipv6.dhcp=true --project testovn
+
+# Look for DHCP options mentioning our testdhcp domain name, there should be one.
+ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep testdhcp | wc -l | grep 1
+
+# Check container can start with IPv4 DHCP disabled.
+lxc start u1 --project testovn
+lxc stop -f u1 --project testovn
+
+# Only enable IPv4 DHCP.
+lxc network set ovn-virtual-network ipv4.dhcp=true ipv6.dhcp=false --project testovn
+
+# Look for DHCP options mentioning our testdhcp domain name, there should be one.
+ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep testdhcp | wc -l | grep 1
+
+# Check container can start with IPv6 DHCP disabled.
+lxc start u1 --project testovn
+lxc delete -f u1 --project testovn
+
+# Disable both IPv4 and IPv6 DHCP.
 lxc network set ovn-virtual-network ipv4.dhcp=false ipv6.dhcp=false --project testovn
 
 # Look for DHCP options mentioning our testdhcp domain name, there shouldn't be any.
