@@ -397,7 +397,7 @@ lxc network create dummy --type=physical \
     ipv6.gateway=2001:db8:1:1::1/64 \
     ipv4.ovn.ranges=192.0.2.10-192.0.2.19
 lxc network create ovn-virtual-network --type=ovn network=dummy
-bridge link show dummybr0 | wc -l | grep 1 # Check we have one port connected to the uplink bridge.
+bridge link show dev dummybr0 | wc -l | grep 1 # Check we have one port connected to the uplink bridge.
 ovs-vsctl list-br | grep ovn | wc  -l | grep 1 # Check we have one OVS bridge.
 ovnIPv4="$(lxc network get ovn-virtual-network volatile.network.ipv4.address)"
 ovnIPv6="$(lxc network get ovn-virtual-network volatile.network.ipv6.address)"
@@ -405,7 +405,7 @@ ping -c1 -4 "${ovnIPv4}" # Check IPv4 connectivity over dummy bridge to OVN rout
 ping -c1 -6 "${ovnIPv6}" # Check IPv6 connectivity over dummy bridge to OVN router.
 lxc network delete ovn-virtual-network
 lxc network delete dummy
-bridge link show dummybr0 | wc -l | grep 0 # Check the port is removed from the uplink bridge.
+bridge link show dev dummybr0 | wc -l | grep 0 # Check the port is removed from the uplink bridge.
 ovs-vsctl list-br | grep ovn | wc  -l | grep 0 # Check the OVS bridge is removed.
 ip link delete dummybr0 # Remove dummy uplink bridge.
 
