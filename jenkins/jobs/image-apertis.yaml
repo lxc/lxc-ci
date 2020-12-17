@@ -18,8 +18,8 @@
         name: release
         type: user-defined
         values:
-        - 'v2019.4'
-        - 'v2020.2'
+        - 'v2019.5'
+        - 'v2020.3'
 
     - axis:
         name: variant
