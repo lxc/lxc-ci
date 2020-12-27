@@ -311,6 +311,7 @@ files:
   - tina
   - tricia
   - ulyana
+  - ulyssa
   variants:
   - default
 
@@ -421,6 +422,7 @@ actions:
   - tina
   - tricia
   - ulyana
+  - ulyssa
 
 - trigger: post-packages
   action: |-
