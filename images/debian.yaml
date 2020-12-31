@@ -958,6 +958,7 @@ packages:
 
   - packages:
     - cloud-init
+    - gpg
     - resolvconf
     action: install
     variants:
