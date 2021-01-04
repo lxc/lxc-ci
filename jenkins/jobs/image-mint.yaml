@@ -42,7 +42,7 @@
         suite=xenial
         if [ "${release}" = "tara" ] || [ "${release}" = "tessa" ] || [ "${release}" = "tina" ] || [ "${release}" = "tricia" ]; then
             suite=bionic
-        elif [ "${release}" = "ulyana" ]; then
+        elif [ "${release}" = "ulyana" ] || [ "${release}" = "ulyssa" ]; then
             suite=focal
         fi
 
