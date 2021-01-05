@@ -241,6 +241,22 @@ ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | gr
 ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "2001:db8:1:2::3f,2001:db8:1:2::3f,dnat_and_snat"
 ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l | grep 132
 
+# Add internal static route to instance NIC.
+lxc config device set u1 eth0 ipv4.routes=203.0.113.1/32 ipv6.routes=2001:db8:2:2::1/128 --project testovn
+
+# Check static routes get added when starting intance port with external and internal routes, and that they remain
+# when the network is modified while the instance NIC is running.
+ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "198.51.100.0/26,"
+ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "2001:db8:1:2::/122,"
+ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "203.0.113.1,"
+ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "2001:db8:2:2::1,"
+lxc network set ovn-virtual-network --project testovn ipv4.dhcp=false
+ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "198.51.100.0/26,"
+ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "2001:db8:1:2::/122,"
+ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "203.0.113.1,"
+ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "2001:db8:2:2::1,"
+lxc network unset ovn-virtual-network --project testovn ipv4.dhcp
+
 lxc stop -f u1 --project testovn
 
 # Check NAT rules got cleaned up.
@@ -311,10 +327,9 @@ lxc project switch testovn
 lxc profile device add default root disk path=/ pool=default
 
 # Create network inside project with same name and subnet as network in default project.
-lxc network create ovn-virtual-network network=lxdbr0 --type=ovn \
-    ipv4.address="$(lxc network get ovn-virtual-network ipv4.address --project default)" \
-    ipv4.nat=true ipv6.address="$(lxc network get ovn-virtual-network ipv6.address --project default)" \
-    ipv6.nat=true
+ lxc network create ovn-virtual-network network=lxdbr0 --type=ovn \
+    ipv4.address="$(lxc network get ovn-virtual-network ipv4.address --project default)" ipv4.nat=true \
+    ipv6.address="$(lxc network get ovn-virtual-network ipv6.address --project default)" ipv6.nat=true
 
 # Test we cannot exceed specified project limits for networks.
 ! lxc network create ovn-virtual-network-toomany network=lxdbr0 --type=ovn || false
