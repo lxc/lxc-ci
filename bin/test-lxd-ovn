@@ -160,6 +160,12 @@ lxc network create ovn-virtual-network --type=ovn --project testovn network=dumm
     ipv6.address=2001:db8:1:2::1/122 \
     ipv6.nat=false || false
 
+# Check uplink dns.nameservers changes are applied to dependent OVN networks.
+ovn-nbctl --format=csv --bare --column=options find dhcp_option cidr=198.51.100.0/24 | grep dns_server={192.0.2.53}
+lxc network set dummy dns.nameservers=192.0.2.54 --project default
+ovn-nbctl --format=csv --bare --column=options find dhcp_option cidr=198.51.100.0/24 | grep dns_server={192.0.2.54}
+lxc network set dummy dns.nameservers=192.0.2.53 --project default
+
 # Check network external subnet overlap check relaxation when uplink has anycast routed ingress mode enabled.
 lxc network set dummy ovn.ingress_mode=routed ipv4.routes.anycast=true ipv6.routes.anycast=true --project default
 
@@ -232,7 +238,7 @@ lxc network unset dummy ovn.ingress_mode --project default
 lxc network unset dummy ipv4.routes.anycast --project default
 lxc network unset dummy ipv6.routes.anycast --project default
 
-# Check DNAT rules get added when starting instance port with external routes.
+# Check DNAT_AND_SNAT rules get added when starting instance port with external routes.
 lxc start u1 --project testovn
 ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat
 ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "198.51.100.0,198.51.100.0,dnat_and_snat"
@@ -256,6 +262,23 @@ ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_sta
 ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "203.0.113.1,"
 ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "2001:db8:2:2::1,"
 lxc network unset ovn-virtual-network --project testovn ipv4.dhcp
+
+# Check DNAT_AND_SNAT NAT rules get removed when switching to routed ingress mode.
+natRulesBeforeRouted=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
+lxc network set dummy ovn.ingress_mode=routed
+natRulesAfterRouted=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
+if [ "$natRulesAfterRouted" -ne "4" ]; then
+    echo "NAT rules left over after switching to routed ingress mode. Expecting 4. Started with ${natRulesBeforeRouted} now have ${natRulesAfterRouted}"
+    false
+fi
+
+# Check DNAT_AND_SNAT rules are re-added when switching to l2proxy ingress mode.
+lxc network unset dummy ovn.ingress_mode
+natRulesAfterL2proxy=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
+if [ "$natRulesBeforeRouted" -ne "$natRulesAfterL2proxy" ]; then
+    echo "NAT rules not restored after switching to l2proxy ingress mode. Started with ${natRulesBeforeRouted} now have ${natRulesAfterL2proxy}"
+    false
+fi
 
 lxc stop -f u1 --project testovn
 
