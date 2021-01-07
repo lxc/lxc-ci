@@ -53,7 +53,9 @@
             -o source.suite=${suite}
 
     execution-strategy:
-      combination-filter: '!(architecture=="i386" && release == "ulyana")'
+      combination-filter: '
+      !(architecture=="i386" && release == "ulyana")
+      && !(architecture=="i386" && release == "ulyssa")'
 
     properties:
     - build-discarder:
