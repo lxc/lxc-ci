@@ -362,5 +362,14 @@ actions:
   types:
   - vm
 
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    setup-cloud-init
+  variants:
+  - cloud
+
 mappings:
   architecture_map: alpinelinux
