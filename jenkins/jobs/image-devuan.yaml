@@ -15,6 +15,7 @@
         - armel
         - armhf
         - i386
+        - ppc64el
 
     - axis:
         name: release
