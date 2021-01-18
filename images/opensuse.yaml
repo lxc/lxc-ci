@@ -158,6 +158,14 @@ files:
   release:
   - 15.2
 
+- path: /etc/fstab
+  generator: dump
+  content: "# empty fstab to silence cloud-init warnings"
+  types:
+  - container
+  variants:
+  - cloud
+
 packages:
   manager: zypper
   update: true
@@ -198,6 +206,7 @@ packages:
 
   - packages:
     - cloud-init
+    - cloud-init-config-suse
     action: install
     variants:
     - cloud
@@ -266,7 +275,7 @@ actions:
     set -eux
 
     # Enable the cloud-init systemd service
-    systemctl enable cloud-init.service
+    systemctl enable cloud-init.service cloud-config.service cloud-final.service
   variants:
   - cloud
 
