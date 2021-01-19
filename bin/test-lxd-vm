@@ -165,8 +165,12 @@ do
         echo "==> Checking new VM root disk size is 11GB"
         lxc exec v1 -- df -B1000000000 | grep sda2 | grep 11
 
+        echo "===> Renaming VM"
+        lxc stop -f v1
+        lxc rename v1 v1renamed
+
         echo "==> Deleting VM, vmbig image and vmsmall profile"
-        lxc delete -f v1
+        lxc delete -f v1renamed
         lxc image delete vmbig
         lxc profile delete vmsmall
 
