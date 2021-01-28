@@ -1,6 +1,5 @@
 - albertodonato
 - bjornt
-- d0ugal
 - ltrager
 - sparkiegeek
 - stgraber
