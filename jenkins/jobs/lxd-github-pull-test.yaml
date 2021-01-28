@@ -71,7 +71,7 @@
         type: user-defined
         values:
         - golang-1.13
-        - golang-1.14
+        - golang-1.15
         - golang-tip
 
     - axis:
@@ -93,7 +93,7 @@
         - i386
 
     execution-strategy:
-      combination-filter: '!(arch=="i386" && backend!="dir") && !(arch=="i386" && compiler!="golang-1.14") && !(backend!="dir" && compiler!="golang-1.14")'
+      combination-filter: '!(arch=="i386" && backend!="dir") && !(arch=="i386" && compiler!="golang-1.15") && !(backend!="dir" && compiler!="golang-1.15")'
 
     publishers:
       - archive:
