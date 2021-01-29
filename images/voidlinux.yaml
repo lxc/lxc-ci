@@ -110,6 +110,18 @@ packages:
     action: install
 
 actions:
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # This fixes an issue with newer glibc versions and xbps.
+    # It's important that xbps is updated before glibc.
+    [ -e /lib64 ] || ln -f lib /lib64
+    echo ignorepkg=glibc > /etc/xbps.d/glibc.conf
+  variant:
+  - default
+
 - trigger: post-packages
   action: |-
     #! /bin/sh
@@ -137,6 +149,15 @@ actions:
     # This ensures that the container performs a shutdown when receiving SIGCONT.
     # Runit will only perform a shutdown if /etc/runit/stopit has mode 100, and /etc/runit/reboot has mode 0.
     sed -ri 's#install -m000 /dev/null /run/runit/stopit#install -m100 /dev/null /run/runit/stopit#' /etc/runit/1
+
+- trigger: post-packages
+  action: |-
+    #! /bin/sh
+    set -eux
+
+    rm -f /etc/xbps.d/glibc.conf
+  variants:
+  - default
 
 mappings:
   architecture_map: voidlinux
