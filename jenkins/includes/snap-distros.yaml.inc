@@ -6,7 +6,6 @@
 - fedora-31
 - fedora-32
 - manjaro
-- opensuse-15.1
 - opensuse-15.2
 - opensuse-tumbleweed
 - ubuntu-16.04
