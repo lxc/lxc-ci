@@ -107,7 +107,6 @@ files:
   - container
   - vm
   releases:
-  - 15.1
   - 15.2
 
 - name: ifcfg-enp5s0
@@ -264,7 +263,6 @@ actions:
     # Have the sysconfig network renderer support openSUSE Leap
     sed -i "s|'opensuse'|'opensuse-leap'|" $(find /usr -wholename '*/cloudinit/net/sysconfig.py')
   releases:
-  - 15.1
   - 15.2
   variants:
   - cloud
