@@ -515,6 +515,33 @@ files:
   types:
   - vm
 
+- name: meta-data
+  generator: cloud-init
+  variants:
+  - cloud
+  architectures:
+  - x86_64
+
+- name: network-config
+  generator: cloud-init
+  variants:
+  - cloud
+  architectures:
+  - x86_64
+- name: user-data
+  generator: cloud-init
+  variants:
+  - cloud
+  architectures:
+  - x86_64
+
+- name: vendor-data
+  generator: cloud-init
+  variants:
+  - cloud
+  architectures:
+  - x86_64
+
 packages:
   manager: pacman
   update: true
@@ -550,6 +577,14 @@ packages:
     - vi
     - which
     action: install
+
+  - packages:
+    - cloud-init
+    action: install
+    variants:
+    - cloud
+    architectures:
+    - x86_64
 
   - packages:
     - grub
@@ -629,6 +664,17 @@ actions:
     mkinitcpio -P
   types:
   - vm
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    systemctl enable cloud-init.service
+  variants:
+  - cloud
+  architectures:
+  - x86_64
 
 mappings:
   architecture_map: archlinux

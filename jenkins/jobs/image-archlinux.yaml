@@ -25,6 +25,7 @@
         type: user-defined
         values:
         - default
+        - cloud
 
     builders:
     - shell: |-
@@ -44,13 +45,17 @@
         if [ "${ARCH}" = "x86_64" ]; then
             exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/archlinux.yaml \
                 ${LXD_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
-                -o image.architecture=${ARCH}
+                -o image.architecture=${ARCH} -o image.variant=${variant}
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/archlinux.yaml \
             ${LXD_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
             -o image.architecture=${ARCH} \
             -o source.url=http://os.archlinuxarm.org
+
+    execution-strategy:
+      combination-filter: '
+      !(architecture != "amd64" && variant == "cloud")'
 
     properties:
     - build-discarder:
