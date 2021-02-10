@@ -63,7 +63,7 @@ do
 
         echo "==> Increasing VM root disk size for next boot"
         lxc config device set v1 root size=11GB
-        lxc config get v1 volatile.root.apply_quota | grep 11GB
+        lxc config get v1 volatile.root.apply_quota | grep true
         lxc stop -f v1
         lxc start v1
         sleep 90
