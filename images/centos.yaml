@@ -392,6 +392,36 @@ files:
   - 8
   - 8-Stream
 
+- name: lxd-agent-workaround.service
+  path: /etc/systemd/system/lxd-agent-workaround.service
+  generator: dump
+  content: |-
+    [Unit]
+    Description=LXD - agent (centos workaround)
+    Before=lxd-agent.service
+
+    [Service]
+    Type=oneshot
+    ExecStart=-/bin/mkdir /run/lxd_agent
+
+    [Install]
+    WantedBy=multi-user.target
+  types:
+  - vm
+  releases:
+  - 7
+
+- name: lxd-agent.override
+  path: /etc/systemd/system/lxd-agent.service.d/lxd.conf
+  generator: dump
+  content: |-
+    [Service]
+    WorkingDirectory=/run/lxd_agent
+  types:
+  - vm
+  releases:
+  - 7
+
 - name: 86-nm-unmanaged.rules
   path: /etc/udev/rules.d/86-nm-unmanaged.rules
   generator: dump
@@ -609,6 +639,9 @@ actions:
     umount /sys/firmware
 
     sed -i "s#root=[^ ]*#root=/dev/sda2#g" "${target}"
+
+    # Workaround for broken systemd in centos7
+    systemctl enable lxd-agent-workaround.service
   types:
   - vm
   releases:
