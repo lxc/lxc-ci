@@ -41,6 +41,7 @@ ovs-vsctl set open_vswitch . \
   external_ids:ovn-encap-ip=127.0.0.1
 
 # Configure LXD
+lxc project switch default
 lxc storage create default zfs
 lxc profile device add default root disk path=/ pool=default
 
@@ -53,10 +54,7 @@ lxc network create lxdbr0 \
 
 # Create OVN network without specifying uplink parent network (check default selection works).
 lxc network create ovn-virtual-network --type=ovn
-
-# Test
-lxc network list
-lxc project switch default
+lxc network list | grep ovn-virtual-network
 
 echo "==> Launching a test container on lxdbr0"
 lxc init images:ubuntu/20.04 u1
