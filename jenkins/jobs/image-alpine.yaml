@@ -56,7 +56,7 @@
 
     execution-strategy:
       combination-filter: '
-      !(variant=="cloud" && release != "3.13") &&
+      !(variant=="cloud" && release != "3.13" && release != "edge") &&
       !(variant=="cloud" && architecture == "s390x")'
 
     properties:
