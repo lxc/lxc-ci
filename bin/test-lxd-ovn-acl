@@ -196,7 +196,6 @@ lxc network acl rule add ingress-ping ingress action=allow protocol=icmp6 source
 ! lxc exec c2 -- ping -c1 -6 c1.lxd || false
 ! lxc exec c1 -- ping -c1 -4 c2.lxd || false
 ! lxc exec c1 -- ping -c1 -6 c2.lxd || false
-lxc network acl delete test-empty-group --project default
 
 # Cleanup.
 lxc delete -f c1
@@ -206,6 +205,7 @@ lxc network delete ovn0 --project default
 lxc network delete lxdbr0 --project default
 lxc network acl delete lxdbr0-ping --project default
 lxc network acl delete ingress-ping --project default
+lxc network acl delete test-empty-group --project default
 lxc profile device remove default root --project default
 lxc storage delete default --project default
 lxc project switch default
