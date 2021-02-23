@@ -369,6 +369,7 @@ packages:
     - apt-transport-https
     - fuse
     - language-pack-en
+    - linuxmint-keyring
     - openssh-client
     - vim
     action: install
@@ -392,13 +393,7 @@ actions:
   action: |-
     #!/bin/sh
     set -eux
-
     apt-key adv --keyserver keyserver.ubuntu.com --recv 0xA6616109451BBBF2
-    apt-get update
-    apt-get install -y --allow-unauthenticated linuxmint-keyring
-    apt-get dist-upgrade -y --allow-unauthenticated || true
-    apt-get -f install -y
-    apt-get dist-upgrade -y --allow-unauthenticated
 
 - trigger: post-update
   action: |-
