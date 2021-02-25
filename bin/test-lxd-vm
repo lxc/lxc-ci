@@ -148,6 +148,10 @@ do
         lxc delete -f v2
 
         echo "==> Publishing larger VM"
+        lxc start v1 # Start to ensure cloud-init grows filesystem before publish.
+        sleep 90
+        lxc info v1
+        lxc stop -f v1
         lxc publish v1 --alias vmbig
         lxc delete -f v1
         lxc storage set "${poolName}" volume.size 9GB
