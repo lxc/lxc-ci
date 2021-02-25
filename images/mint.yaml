@@ -366,6 +366,16 @@ packages:
     early: true
 
   - packages:
+    - libgtk-3-common
+    action: install
+    early: true
+    releases:
+    - sarah
+    - serena
+    - sonya
+    - sylvia
+
+  - packages:
     - apt-transport-https
     - fuse
     - language-pack-en
