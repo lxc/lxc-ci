@@ -59,7 +59,8 @@ lxc network acl create lxdbr0-ping
 lxc network acl rule add lxdbr0-ping egress action=allow protocol=icmp4 destination=10.10.10.1/32
 lxc network acl rule add lxdbr0-ping egress action=allow protocol=icmp6 destination=fd42:4242:4242:1010::1/128
 
-ovn-nbctl list port_group | grep -c lxd | grep 0 # Don't expect any OVN port groups to be created yet.
+# Don't expect any OVN port groups to be created yet.
+ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 0
 
 # Create OVN network with ACL, but without specifying uplink parent network (check default selection works).
 lxc network create ovn0 --type=ovn \
@@ -69,22 +70,28 @@ lxc network create ovn0 --type=ovn \
 
 ! lxc network acl delete lxdbr0-ping || false # Can't delete ACL while in use.
 
-ovn-nbctl list port_group | grep -c lxd | grep 1 # Expect 1 LXD related port group to exist
+# Expect 3 LXD related port groups to exist (network port group, ACL port group, and per-ACL-per-network port group).
+ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 3
 
 # Delete network to clean up OVN ACL port group.
 lxc network delete ovn0
-ovn-nbctl list port_group | grep -c lxd | grep 0 # Expect the unused OVN port group to be cleaned up.
+
+# Expect the unused OVN port groups to be cleaned up.
+ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 0
 
 # Re-create network with no ACLS.
 lxc network create ovn0 --type=ovn \
     ipv4.address=10.10.11.1/24 ipv4.nat=true \
     ipv6.address=fd42:4242:4242:1011::1/64 ipv6.nat=true
 
-ovn-nbctl list port_group | grep -c lxd | grep 0 # Don't expect any OVN port groups to be created yet.
+# Expect 1 port group (the network port group) to exist.
+ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 1
 
 # Assign ACL to OVN network.
 lxc network set ovn0 security.acls=lxdbr0-ping
-ovn-nbctl list port_group | grep -c lxd | grep 1 # Expect 1 LXD related port group to exist now its assigned.
+
+# Expect 3 LXD related port groups to exist now its assigned (network port group, ACL port group, and per-ACL-per-network port group).
+ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 3
 
 # Add ovn0 NIC to default profile.
 lxc profile device add default eth0 nic network=ovn0
@@ -122,26 +129,40 @@ ping -c1 -6 fd42:4242:4242:1010::2
 # Test assigning same ACL to NIC directly and unassigning from network.
 lxc config device override c1 eth0 security.acls=lxdbr0-ping
 lxc network unset ovn0 security.acls
-ovn-nbctl list port_group | grep -c lxd | grep 1 # Check ACL is still assigned.
+
+# Check ACL port groups still exists.
+ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 3
 
 # Test unassigning ACL from NIC and check OVN port group is cleaned up.
 lxc config device unset c1 eth0 security.acls
-ovn-nbctl list port_group | grep -c lxd | grep 0 # Expect the unused OVN port group to be cleaned up.
+
+# Expect the unused OVN port group to be cleaned up after unassignment from NIC (leaving just network port group).
+ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 1
 
 # Test assigning ACL to stopped instance NIC and check OVN port group isn't created until start time.
 lxc stop -f c1
 lxc config device set c1 eth0 security.acls=lxdbr0-ping
-ovn-nbctl list port_group | grep -c lxd | grep 0 # Don't expect any OVN port groups to be created yet.
+
+# Don't expect any more OVN port groups to be created yet (just network port group).
+ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 1
+
 lxc start c1
-ovn-nbctl list port_group | grep -c lxd | grep 1 # Expect 1 LXD related port group to exist now its started.
+
+# Expect 3 LXD related port group to exist now its started (network port group, ACL port group, and per-ACL-per-network port group).
+ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 3
 
 # Test delete instance and check unused OVN port group is cleaned up.
 lxc delete -f c1
-ovn-nbctl list port_group | grep -c lxd | grep 0 # Expect the unused OVN port group to be cleaned up.
+
+# Expect the unused OVN port groups to be cleaned up (leaving just network port group)..
+ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 1
 
 # Create container with network assigned ACL and NIC specific ACL too. Check both sets of rules are applied.
 lxc network set ovn0 ipv6.dhcp.stateful=true security.acls=lxdbr0-ping
-ovn-nbctl list port_group | grep -c lxd | grep 1 # Expect 1 LXD related port group to exist now its assigned.
+
+# Expect 3 LXD related port group to exist now its assigned (network port group, ACL port group, and per-ACL-per-network port group).
+ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 3
+
 lxc init images:ubuntu/20.04 c1
 lxc config device override c1 eth0 ipv4.address=10.10.11.2 ipv6.address=fd42:4242:4242:1011::2
 lxc start c1
@@ -158,10 +179,14 @@ lxc list
 lxc network acl create ingress-ping
 lxc network acl rule add ingress-ping ingress action=allow protocol=icmp4
 lxc network acl rule add ingress-ping ingress action=allow protocol=icmp6
-ovn-nbctl list port_group | grep -c lxd | grep 1 # Expect 1 LXD related port group to exist now new one not assigned.
+
+# Expect 3 LXD related port group to exist as new ACL not assigned to anything yet.
+ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 3
 
 lxc config device set c1 eth0 security.acls=ingress-ping
-ovn-nbctl list port_group | grep -c lxd | grep 2 # Expect 2 LXD related port groups to exist now new one is assigned.
+
+# Expect 5 LXD related port group to exist now new ACL is assigned (will add new ACL port group and new per-ACL-per-network port group).
+ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 5
 
 lxc exec c2 -- ping -c1 -4 10.10.11.2
 lxc exec c2 -- ping -c1 -6 fd42:4242:4242:1011::2
@@ -194,11 +219,15 @@ lxc exec c1 -- ping -c1 -6 c2.lxd
 lxc network acl create test-empty-group
 lxc network acl rule remove ingress-ping ingress action=allow protocol=icmp4 source=ingress-ping
 lxc network acl rule remove ingress-ping ingress action=allow protocol=icmp6 source=ingress-ping
-ovn-nbctl list port_group | grep -c lxd | grep 2 # Expect 2 LXD related port groups to exist as new one not assigned.
+
+# Expect 5 LXD related port groups to exist as new one not assigned.
+ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 5
 
 lxc network acl rule add ingress-ping ingress action=allow protocol=icmp4 source=test-empty-group
 lxc network acl rule add ingress-ping ingress action=allow protocol=icmp6 source=test-empty-group
-ovn-nbctl list port_group | grep -c lxd | grep 3 # Expect 3 LXD related port groups to exist as new one now used by ACL that is assigned.
+
+# Expect 6 LXD related port groups to exist as new one now used by ACL that is assigned.
+ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 6
 
 ! lxc exec c2 -- ping -c1 -4 c1.lxd || false
 ! lxc exec c2 -- ping -c1 -6 c1.lxd || false
@@ -208,12 +237,18 @@ ovn-nbctl list port_group | grep -c lxd | grep 3 # Expect 3 LXD related port gro
 # Cleanup.
 lxc delete -f c1
 lxc delete -f c2
-ovn-nbctl list port_group | grep -c lxd | grep 1 # Expect ingress-ping and test-empty-group to have been removed.
+
+# Expect ingress-ping and test-empty-groups to have been removed.
+ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 3
 
 lxc profile device remove default eth0 --project default
 lxc network delete ovn0 --project default
-ovn-nbctl list port_group | wc -l | grep 0 # Expect all OVN port groups to be cleaned up.
-ovn-nbctl list acl | wc -l | grep 0 # Expect all OVN ACLs to be cleaned up.
+
+# Expect all OVN port groups to be cleaned up.
+ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 0
+
+# Expect all OVN ACLs to be cleaned up.
+ovn-nbctl list acl | wc -l | grep 0
 
 lxc network delete lxdbr0 --project default
 lxc network acl delete lxdbr0-ping --project default
