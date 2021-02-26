@@ -51,7 +51,7 @@
 
     builders:
     - shell: |-
-        cd /lxc
+        cd /lxc-ci
         exec sudo /lxc-ci/bin/testbuild-${{compiler}} ${{arch}} https://github.com/lxc/lxc {branch} ${{GIT_COMMIT}}
 
     properties:

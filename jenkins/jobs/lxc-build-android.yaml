@@ -7,7 +7,7 @@
 
     builders:
     - shell: |-
-        cd /lxc
+        cd /lxc-ci
         exec sudo /lxc-ci/bin/build-android amd64 https://github.com/lxc/lxc master ${sha1} ${WORKSPACE}
 
     properties:

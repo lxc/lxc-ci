@@ -7,7 +7,7 @@
 
     builders:
     - shell: |-
-        cd /lxc
+        cd /lxc-ci
         exec sudo /lxc-ci/bin/build-deb-source amd64 https://github.com/lxc/lxc master ${sha1} https://github.com/lxc/lxc-pkg-ubuntu ${pkg_branch} HEAD ubuntu ${release} ${pkg_version} ${WORKSPACE}
 
     properties:
