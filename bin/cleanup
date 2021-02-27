@@ -1,7 +1,6 @@
 #!/bin/sh
 
 if [ "${1:-}" = "force" ]; then
-    for ctn in $(lxc-ls -P /lxc-ci/build/); do lxc-destroy --force -n "${ctn}" -P /lxc-ci/build/; done
     if lxc info >/dev/null 2>&1; then
         lxc query /1.0/containers | jq -r .[] | cut -d/ -f4- | grep -v ^cache- | xargs -r lxc delete -f
         for entry in $(nsenter --mount=/run/snapd/ns/lxd.mnt ls -1 /var/snap/lxd/common/lxd/storage-pools/default/containers/ | grep -v ^cache); do
