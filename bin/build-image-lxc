@@ -86,6 +86,18 @@ rm /tmp/ndk.zip
 # Workaround missing header
 mv /tmp/genetlink.h /build/ndk/platforms/android-21/arch-arm/usr/include/linux/genetlink.h
 
+# Cleanup ndk
+for i in /build/ndk/platforms/android-*; do [ "\$(echo \$i | sed "s/.*\///g")" != "android-21" ] && rm -rf \$i; done
+for i in /build/ndk/toolchains/*; do [ "\$(echo \$i | sed "s/.*\///g")" != "arm-linux-androideabi-4.9" ] && rm -rf \$i; done
+rm -rf /build/ndk/build/
+rm -rf /build/ndk/CHANGELOG.md
+rm -rf /build/ndk/ndk-*
+rm -rf /build/ndk/prebuilt
+rm -rf /build/ndk/python-packages/
+rm -rf /build/ndk/shader-tools/
+rm -rf /build/ndk/source.properties
+rm -rf /build/ndk/sources
+
 # Get specific libcap source
 git clone git://git.kernel.org/pub/scm/linux/kernel/git/morgan/libcap.git /build/libcap
 cd /build/libcap
