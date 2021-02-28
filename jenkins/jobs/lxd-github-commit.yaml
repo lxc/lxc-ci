@@ -79,6 +79,7 @@
         type: slave
         values:
         - amd64
+        - arm64
         - i386
 
     builders:
@@ -86,7 +87,7 @@
         https://github.com/lxc/lxd {branch} ${{backend}}"
 
     execution-strategy:
-      combination-filter: '!(backend=="zfs" && arch!="amd64") && !(backend=="lvm" && arch!="amd64") && !(backend=="ceph" && arch!="amd64") && !(compiler=="golang-tip" && arch=="i386")'
+      combination-filter: '!(backend=="zfs" && arch=="i386") && !(backend=="lvm" && arch=="i386") && !(backend=="ceph" && arch=="i386")'
 
     properties:
     - build-discarder:
