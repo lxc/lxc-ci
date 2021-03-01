@@ -68,7 +68,6 @@ EOF
 # Install Android dependencies
 if [ "${ARCH}" = "amd64" ]; then
     lxc file push deps/android-ndk-linux-x86_64.zip build-lxc-cache/root/ndk.zip
-    lxc file push deps/genetlink.h build-lxc-cache/root/genetlink.h
     (
     cat << EOF
 #!/bin/sh
@@ -82,9 +81,6 @@ unzip -q /root/ndk.zip
 mv android-ndk-*/* .
 rmdir android-ndk-*
 rm /root/ndk.zip
-
-# Workaround missing header
-mv /root/genetlink.h /build/ndk/platforms/android-21/arch-arm/usr/include/linux/genetlink.h
 
 # Cleanup ndk
 for i in /build/ndk/platforms/android-*; do [ "\$(echo \$i | sed "s/.*\///g")" != "android-21" ] && rm -rf \$i; done
