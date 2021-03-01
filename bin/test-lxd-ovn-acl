@@ -126,6 +126,29 @@ ping -c1 -6 fd42:4242:4242:1010::2
 ! lxc exec c1 -- ping -c1 -4 c2.lxd || false
 ! lxc exec c1 -- ping -c1 -6 c2.lxd || false
 
+# Check default rule action is reject (disable acl, install dig in c1, then re-enable acl).
+lxc network unset ovn0 security.acls
+lxc exec c1 -- apt install dnsutils -y
+lxc network set ovn0 security.acls=lxdbr0-ping
+lxc exec c1 -- dig @10.10.11.3 +tcp +timeout=1 lxdbr0.test | grep "refused"
+lxc exec c1 -- dig @fd42:4242:4242:1010::2 +tcp +timeout=1 lxdbr0.test | grep "refused"
+lxc exec c1 -- ping -c1 -4 10.10.11.3 | grep "Host Unreachable"
+lxc exec c1 -- ping -c1 -6 fd42:4242:4242:1010::2 | grep "Administratively prohibited"
+
+# Check setting default rule action to drop takes effect.
+lxc network acl set lxdbr0-ping default.action=drop
+lxc exec c1 -- dig @10.10.11.3 +tcp +timeout=1 lxdbr0.test | grep "timed out"
+lxc exec c1 -- dig @fd42:4242:4242:1010::2 +tcp +timeout=1 lxdbr0.test | grep "timed out"
+! lxc exec c1 -- ping -c1 -4 10.10.11.3 || false
+! lxc exec c1 -- ping -c1 -6 fd42:4242:4242:1010::2 || false
+
+# Check setting default rule action to reject takes effect. Same as if unspecified.
+lxc network acl set lxdbr0-ping default.action=reject
+lxc exec c1 -- dig @10.10.11.3 +tcp +timeout=1 -p 5053 lxdbr0.test | grep "refused"
+lxc exec c1 -- dig @fd42:4242:4242:1010::2 +tcp +timeout=1 -p 5053 lxdbr0.test | grep "refused"
+lxc exec c1 -- ping -c1 -4 c2.lxd | grep "Host Unreachable"
+lxc exec c1 -- ping -c1 -6 c2.lxd| grep "Administratively prohibited"
+
 # Test assigning same ACL to NIC directly and unassigning from network.
 lxc config device override c1 eth0 security.acls=lxdbr0-ping
 lxc network unset ovn0 security.acls
