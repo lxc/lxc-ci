@@ -90,10 +90,11 @@
         type: slave
         values:
         - amd64
+        - arm64
         - i386
 
     execution-strategy:
-      combination-filter: '!(arch=="i386" && backend!="dir") && !(arch=="i386" && compiler!="golang-1.15") && !(backend!="dir" && compiler!="golang-1.15")'
+      combination-filter: '!(arch!="amd64" && backend!="dir")'
 
     publishers:
       - archive:
