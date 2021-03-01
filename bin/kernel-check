@@ -6,7 +6,7 @@ if [ "${DAILY_REBOOT:-}" != "true" ]; then
 fi
 
 dmesg | grep -q "Out of memory" && reboot
-dmesg | grep -q "btrfs.*forced readonly" && reboot
+dmesg | grep -q "BTRFS.*forced readonly" && reboot
 dmesg | grep -q "WARNING: CPU:.*queue_work" && reboot
 dmesg | grep -q "blocked for more than 120 seconds" && reboot
 dmesg | grep -q "ceph.*tid.*pool does not exist" && reboot
