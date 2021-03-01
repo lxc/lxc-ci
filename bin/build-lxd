@@ -39,23 +39,19 @@ mkdir -p "${TMPDIR}"
 chmod 1777 "${TMPDIR}"
 
 # Setup Go
-echo "===> Copying a pre-built Go compiler"
-
-mkdir -p "${TEST_DIR}/go"
-export GOROOT=${TEST_DIR}/go/golang/
-export PATH=${GOROOT}/bin:$PATH
-
+echo "===> Setting up Go compiler"
 if [ "${GO_VERSION}" = "golang-tip" ]; then
-    cp -Ra /lxc-ci/build/cache/gimme/versions/go/ "${GOROOT}"
+    export PATH="/snap/go_tip/current/bin/:${PATH}"
 else
-    cp -Ra /lxc-ci/build/cache/gimme/versions/go*"${GO_VERSION#golang-}"*/ "${GOROOT}"
+    VER=$(echo ${GO_VERSION} | sed "s/\.//g")
+    export PATH="/snap/go_${VER}/current/bin/:${PATH}"
 fi
 
 # Setup build environment
 echo "===> Setting up environment variables"
 mkdir -p "${TEST_DIR}/go"
 export GOPATH=${TEST_DIR}/go
-export PATH=${PATH}:${GOPATH}/bin
+export PATH=${GOPATH}/bin:${PATH}
 export GO111MODULE=off
 
 # Setup dependencies
