@@ -15,10 +15,8 @@ cleanup() {
 
 trap cleanup EXIT HUP INT TERM
 
-ifup lxdbr0 >/dev/null 2>&1 || true
-
-# Test image
-git clone -q https://github.com/mirror/busybox "${TEMP_DIR}/busybox" -b 1_32_0
+# Build the test image
+git clone -q https://github.com/mirror/busybox "${TEMP_DIR}/busybox" -b 1_33_0
 cd "${TEMP_DIR}/busybox"
 make defconfig >/dev/null
 echo CONFIG_STATIC=y >> .config
@@ -78,7 +76,7 @@ tar -C . -Jcf "${TEMP_DIR}/testimage.tar.xz" *
 rm -rf "${TEMP_DIR}/image"
 cd "${TEMP_DIR}"
 
-# Clustering bits
+# Build the clustering bits
 git clone -q https://github.com/canonical/raft "${TEMP_DIR}/raft"
 cd "${TEMP_DIR}/raft"
 autoreconf -i >/dev/null 2>&1
@@ -96,29 +94,15 @@ autoreconf -i >/dev/null 2>&1
 make >/dev/null 2>&1
 cd "${TEMP_DIR}"
 
-# Setup the gimme cache
-[ "$(arch)" != "i686" ] || export GIMME_ARCH=x86
-export GIMME_ENV_PREFIX="${TEMP_DIR}/gimme/envs/"
-export GIMME_VERSION_PREFIX="${TEMP_DIR}/gimme/versions/"
+# Build the Go cache and binaries
 export GOPATH="${TEMP_DIR}/go"
 export GOCACHE="${GOPATH}/pkg"
 export GO111MODULE=off
 
-[ ! -d /lxc-ci/deps/gimme ] && git clone -q https://github.com/travis-ci/gimme /lxc-ci/deps/gimme
-
-cd /lxc-ci/deps/gimme
-git pull -q
-
 OLD_PATH=${PATH}
-for version in 1.13.15 1.14.14 1.15.7 master; do
-    ./gimme "${version}" >/dev/null
-    if [ "${version}" = "tip" ]; then
-        export GOROOT="${TEMP_DIR}/gimme/versions/go"
-    else
-        goroot="$(readlink -f "${TEMP_DIR}/gimme/versions/go${version}"*)"
-        export GOROOT="${goroot}"
-    fi
-    export PATH="${GOROOT}/bin:${OLD_PATH}"
+for version in 1.13 1.14 1.15 1.16 tip; do
+    VER=$(echo $version | sed "s/\.//g")
+    export PATH="/snap/go_${VER}/current/bin:${OLD_PATH}"
 
     go get github.com/rogpeppe/godeps >/dev/null || true
     go get github.com/tsenart/deadcode >/dev/null || true
@@ -134,8 +118,7 @@ done
 cd "${TEMP_DIR}"
 
 # Setup the Go cache
-# shellcheck disable=SC1090
-. "${TEMP_DIR}"/gimme/envs/go1.15*.env 2>/dev/null
+export PATH="/snap/go_tip/current/bin:${OLD_PATH}"
 mkdir -p "${TEMP_DIR}/go"
 export GOPATH=${TEMP_DIR}/go
 go get -d -t github.com/lxc/lxd/... >/dev/null || echo "Failed to download LXD dependencies"
@@ -144,7 +127,6 @@ go get -d -t github.com/lxc/lxd/... >/dev/null || echo "Failed to download LXD d
 rm -Rf /lxc-ci/build/cache.new
 mkdir -p /lxc-ci/build/cache.new
 rm -Rf "${TEMP_DIR}/go/pkg" "${TEMP_DIR}/go/bin"
-mv "${TEMP_DIR}/gimme" /lxc-ci/build/cache.new/gimme
 mv "${TEMP_DIR}/go" /lxc-ci/build/cache.new/go
 mv "${TEMP_DIR}/raft" /lxc-ci/build/cache.new/raft
 mv "${TEMP_DIR}/dqlite" /lxc-ci/build/cache.new/dqlite

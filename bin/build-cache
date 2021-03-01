@@ -48,8 +48,16 @@ apt-get update --yes
 # Install dependencies
 apt-get install --yes --no-install-recommends \
     git build-essential libtool libuv1-dev libsqlite3-dev make pkg-config tcl \
-    autoconf automake autopoint curl
+    autoconf automake autopoint curl snapd
 apt-get clean
+
+# Setup snapd
+snap set system experimental.parallel-instances=true
+snap install go_113 --channel=1.13 --unaliased --classic
+snap install go_114 --channel=1.14 --unaliased --classic
+snap install go_115 --channel=1.15 --unaliased --classic
+snap install go_116 --channel=1.16 --unaliased --classic
+snap install go_tip --channel=latest/edge --unaliased --classic
 
 # Build the cache
 git clone https://github.com/lxc/lxc-ci /lxc-ci
