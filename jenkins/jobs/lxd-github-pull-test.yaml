@@ -94,7 +94,7 @@
         - i386
 
     execution-strategy:
-      combination-filter: '!(arch!="amd64" && backend!="dir")'
+      combination-filter: '!(arch=="i386" && backend!="dir") && !(backend!="dir" && compiler!="golang-1.15")'
 
     publishers:
       - archive:
