@@ -43,7 +43,7 @@ echo "===> Setting up Go compiler"
 if [ "${GO_VERSION}" = "golang-tip" ]; then
     export PATH="/snap/go_tip/current/bin/:${PATH}"
 else
-    VER=$(echo ${GO_VERSION} | sed "s/\.//g")
+    VER=$(echo ${GO_VERSION} | cut -d- -f2 | sed "s/\.//g")
     export PATH="/snap/go_${VER}/current/bin/:${PATH}"
 fi
 
