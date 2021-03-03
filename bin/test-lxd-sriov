@@ -42,27 +42,8 @@ lxc storage create default zfs source=/dev/nvme0n1
 lxc profile device add default root disk path=/ pool=default
 lxc profile device add default eth0 nic nictype=sriov parent=enp4s0 name=eth0
 
-# Launch a few containers
-echo "==> Container on default VLAN"
-lxc init images:ubuntu/20.04/cloud c1
-lxc start c1
-
-echo "==> Container on default VLAN with filtering"
-lxc init images:ubuntu/20.04/cloud c2
-lxc config device override c2 eth0 security.mac_filtering=true
-lxc start c2
-
-echo "==> Container on alternate VLAN"
-lxc init images:ubuntu/20.04/cloud c3
-lxc config device override c3 eth0 vlan=1017
-lxc start c3
-
-echo "==> Container on alternate VLAN with filtering"
-lxc init images:ubuntu/20.04/cloud c4
-lxc config device override c4 eth0 vlan=1017 security.mac_filtering=true
-lxc start c4
-
 # Launch a few VMs
+# Do this first before containers to ensure VF free search handles VFs unbound from host.
 echo "==> VM on default VLAN"
 lxc init images:ubuntu/20.04/cloud v1 --vm
 lxc start v1
@@ -81,6 +62,26 @@ echo "==> VM on alternate VLAN with filtering"
 lxc init images:ubuntu/20.04/cloud v4 --vm
 lxc config device override v4 eth0 vlan=1017 security.mac_filtering=true
 lxc start v4
+
+# Launch a few instances
+echo "==> Container on default VLAN"
+lxc init images:ubuntu/20.04/cloud c1
+lxc start c1
+
+echo "==> Container on default VLAN with filtering"
+lxc init images:ubuntu/20.04/cloud c2
+lxc config device override c2 eth0 security.mac_filtering=true
+lxc start c2
+
+echo "==> Container on alternate VLAN"
+lxc init images:ubuntu/20.04/cloud c3
+lxc config device override c3 eth0 vlan=1017
+lxc start c3
+
+echo "==> Container on alternate VLAN with filtering"
+lxc init images:ubuntu/20.04/cloud c4
+lxc config device override c4 eth0 vlan=1017 security.mac_filtering=true
+lxc start c4
 
 # Wait for things to settle
 sleep 2m
