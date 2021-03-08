@@ -268,7 +268,7 @@ lxc network acl delete test-empty-group
 # Check only network level port group exists.
 ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 1
 
-# Test using #external and #internal classifiers.
+# Test using external and internal reserved classifiers.
 lxc network acl create icmp
 lxc network set ovn0 security.acls=icmp
 ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 3
@@ -277,20 +277,31 @@ ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep
 ! lxc exec c1 -- ping -c1 -4 10.10.10.1 || false
 ! lxc exec c1 -- ping -c1 -4 c2.lxd || false
 
-# Allow external pings and test works and that internal ping still blocked.
+# Allow external pings and test works and that internal ping still blocked (using deprecated subject).
 lxc network acl rule add icmp egress destination='#external' action=allow protocol=icmp4
 lxc exec c1 -- ping -c1 -4 10.10.10.1
 ! lxc exec c1 -- ping -c1 -4 c2.lxd || false
+lxc network acl rule remove icmp egress destination='#external' action=allow protocol=icmp4
 
-# Allow egress internal pings and test works.
+# Allow external pings and test works and that internal ping still blocked (using current subject).
+lxc network acl rule add icmp egress destination='@external' action=allow protocol=icmp4
+lxc exec c1 -- ping -c1 -4 10.10.10.1
+! lxc exec c1 -- ping -c1 -4 c2.lxd || false
+
+# Allow egress internal pings and test works (using deprecated subject).
 lxc network acl rule add icmp egress destination='#internal' action=allow protocol=icmp4
 lxc exec c1 -- ping -c1 -4 c2.lxd
-
 lxc network acl rule remove icmp egress destination='#internal' action=allow protocol=icmp4
+
+# Allow egress internal pings and test works (using current subject).
+lxc network acl rule add icmp egress destination='@internal' action=allow protocol=icmp4
+lxc exec c1 -- ping -c1 -4 c2.lxd
+
+lxc network acl rule remove icmp egress destination='@internal' action=allow protocol=icmp4
 ! lxc exec c1 -- ping -c1 -4 c2.lxd || false
 
 # Allow ingress internal pings and test works.
-lxc network acl rule add icmp ingress source='#internal' action=allow protocol=icmp4
+lxc network acl rule add icmp ingress source='@internal' action=allow protocol=icmp4
 lxc exec c1 -- ping -c1 -4 c2.lxd
 
 # Create new network with ingress ACL and check network port grpup and per-ACL-per-network are created.
