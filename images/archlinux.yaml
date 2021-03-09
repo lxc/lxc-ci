@@ -670,7 +670,7 @@ actions:
     #!/bin/sh
     set -eux
 
-    systemctl enable cloud-init.service
+    systemctl enable cloud-init-local.service cloud-init.service cloud-config.service cloud-final.service
   variants:
   - cloud
   architectures:
