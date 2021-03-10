@@ -115,6 +115,14 @@ actions:
     #!/bin/sh
     set -eux
 
+    xbps-install -y -S
+    xbps-install -y -u xbps || true
+
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
+    set -eux
+
     # This fixes an issue with newer glibc versions and xbps.
     # It's important that xbps is updated before glibc.
     [ -e /lib64 ] || ln -s lib /lib64
