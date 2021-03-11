@@ -1,7 +1,9 @@
 - brauner
 - freeekanayaka
 - hallyn
+- MathieuBordere
 - mikemccracken
+- monstermunchkin
 - stgraber
 - tomponline
 - tych0
