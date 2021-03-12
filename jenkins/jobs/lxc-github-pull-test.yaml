@@ -73,6 +73,7 @@
         type: slave
         values:
         - amd64
+        - arm64
         - i386
 
     - axis:
