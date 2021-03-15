@@ -464,9 +464,6 @@ files:
             control: auto{% else %}{{ config_get("user.network-config", "") }}{% endif %}
   variants:
   - cloud
-  releases:
-  - 8
-  - 8-Stream
 
 - name: user-data
   generator: cloud-init
