@@ -54,6 +54,7 @@ lxc network create lxdbr0 \
 
 # Create OVN network without specifying uplink parent network (check default selection works).
 lxc network create ovn-virtual-network --type=ovn
+sleep 2
 lxc network list | grep ovn-virtual-network
 
 echo "==> Launching a test container on lxdbr0"
@@ -348,9 +349,10 @@ lxc project switch testovn
 lxc profile device add default root disk path=/ pool=default
 
 # Create network inside project with same name and subnet as network in default project.
- lxc network create ovn-virtual-network network=lxdbr0 --type=ovn \
+lxc network create ovn-virtual-network network=lxdbr0 --type=ovn \
     ipv4.address="$(lxc network get ovn-virtual-network ipv4.address --project default)" ipv4.nat=true \
     ipv6.address="$(lxc network get ovn-virtual-network ipv6.address --project default)" ipv6.nat=true
+sleep 2
 
 # Test we cannot exceed specified project limits for networks.
 ! lxc network create ovn-virtual-network-toomany network=lxdbr0 --type=ovn || false
@@ -375,8 +377,8 @@ U3_IPV4="$(lxc list u3 -c4 --format=csv | cut -d' ' -f1)"
 U3_IPV6="$(lxc list u3 -c6 --format=csv | cut -d' ' -f1)"
 
 echo "==> lxdbr0 to OVN gateway in project testovn"
-lxc exec u1 --project default -- ping -c1 -4 10.10.10.201
-lxc exec u1 --project default -- ping -c1 -6 fd42:4242:4242:1010::201
+lxc exec u1 --project default -- ping -c1 -w5 -4 10.10.10.201
+lxc exec u1 --project default -- ping -c1 -w5 -6 fd42:4242:4242:1010::201
 
 echo "==> OVN to OVN in project testovn"
 lxc exec u2 -- ping -c1 -4 "${U3_IPV4}"
@@ -433,6 +435,7 @@ lxc network create dummy --type=physical \
     ipv6.gateway=2001:db8:1:1::1/64 \
     ipv4.ovn.ranges=192.0.2.10-192.0.2.19
 lxc network create ovn-virtual-network --type=ovn network=dummy
+sleep 2
 bridge link show | grep dummybr0 | wc -l | grep 1 # Check we have one port connected to the uplink bridge.
 ovs-vsctl list-br | grep ovn | wc  -l | grep 1 # Check we have one OVS bridge.
 ovnIPv4="$(lxc network get ovn-virtual-network volatile.network.ipv4.address)"
@@ -456,6 +459,7 @@ lxc network create dummy --type=physical \
     ipv6.gateway=2001:db8:1:1::1/64 \
     ipv4.ovn.ranges=192.0.2.10-192.0.2.19
 lxc network create ovn-virtual-network --type=ovn network=dummy
+sleep 2
 ovs-vsctl list-ports dummybr0 | grep patch-lxd-net | wc -l | grep 1 # Check bridge has an OVN patch port connected.
 ovnIPv4="$(lxc network get ovn-virtual-network volatile.network.ipv4.address)"
 ovnIPv6="$(lxc network get ovn-virtual-network volatile.network.ipv6.address)"
