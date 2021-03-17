@@ -22,6 +22,7 @@ export CGO_CFLAGS="-I/root/go/deps/raft/include/ -I/root/go/deps/dqlite/include/
 export CGO_LDFLAGS="-L/root/go/deps/raft/.libs -L/root/go/deps/dqlite/.libs/"
 export LD_LIBRARY_PATH="/root/go/deps/raft/.libs/:/root/go/deps/dqlite/.libs/"
 export PATH=${PATH}:/root/go/bin
+export GO111MODULE=off
 
 # Build LXD
 cd /root
