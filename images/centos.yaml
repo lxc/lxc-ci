@@ -452,6 +452,13 @@ files:
 
 - name: network-config
   generator: cloud-init
+  variants:
+  - cloud
+  releases:
+  - 7
+
+- name: network-config
+  generator: cloud-init
   content: |-
     {% if config_get("user.network-config", "") == "" %}version: 1
     config:
@@ -464,6 +471,9 @@ files:
             control: auto{% else %}{{ config_get("user.network-config", "") }}{% endif %}
   variants:
   - cloud
+  releases:
+  - 8
+  - 8-Stream
 
 - name: user-data
   generator: cloud-init
