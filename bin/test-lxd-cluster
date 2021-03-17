@@ -38,7 +38,7 @@ EOF
 ) | lxc file push - "${PREFIX}-1"/etc/apt/sources.list
 
 lxc exec "${PREFIX}-1" -- apt-get update
-lxc exec "${PREFIX}-1" -- apt-get install snapd fuse --yes
+lxc exec "${PREFIX}-1" -- apt-get install snapd fuse curl --yes
 lxc exec "${PREFIX}-1" -- sh -c "curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh"
 lxc exec "${PREFIX}-1" -- snap install lxd --channel="$2"
 
