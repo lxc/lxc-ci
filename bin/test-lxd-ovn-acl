@@ -156,11 +156,48 @@ lxc exec c1 -- ping -c1 -6 c2.lxd| grep "Administratively prohibited"
 lxc config device override c1 eth0 security.acls=lxdbr0-ping
 lxc network unset ovn0 security.acls
 
-# Check only c1 has per-NIC ACL rule.
-ovn-nbctl list acl | grep -c 'match.*instance.*eth0' | grep 2
-
 # Check ACL port groups still exists.
 ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 3
+
+# Check only c1 has per-NIC ACL rules.
+ovn-nbctl list acl | grep -c 'match.*instance.*eth0' | grep 2
+lxc config device unset c1 eth0 security.acls
+
+# Check removing ACLs removes default per-NIC ACL rules.
+ovn-nbctl list acl | grep -c 'match.*instance.*eth0' | grep 0
+
+# Check assigning first ACL to a network adds per-NIC ACL rules to c1 and c2.
+lxc network set ovn0 security.acls=lxdbr0-ping
+ovn-nbctl list acl | grep -c 'match.*instance.*eth0' | grep 4
+lxc network set ovn0 security.acls.default.ingress.logged=true
+ovn-nbctl list acl | grep -c 'name.*eth0-ingress' | grep 2
+lxc network set ovn0 security.acls.default.egress.logged=true
+ovn-nbctl list acl | grep -c 'name.*eth0-egress' | grep 2
+lxc network unset ovn0 security.acls
+ovn-nbctl list acl | grep -c 'match.*instance.*eth0' | grep 0
+ovn-nbctl list acl | grep -c 'name.*eth0-ingress' | grep 0
+ovn-nbctl list acl | grep -c 'name.*eth0-egress' | grep 0
+lxc config device set c1 eth0 security.acls=lxdbr0-ping
+ovn-nbctl list acl | grep -c 'match.*instance.*eth0' | grep 2
+ovn-nbctl list acl | grep -c 'name.*eth0-ingress' | grep 1
+ovn-nbctl list acl | grep -c 'name.*eth0-egress' | grep 1
+lxc network set ovn0 security.acls.default.ingress.logged=false
+lxc network set ovn0 security.acls.default.egress.logged=false
+ovn-nbctl list acl | grep -c 'match.*instance.*eth0' | grep 2
+ovn-nbctl list acl | grep -c 'name.*eth0-ingress' | grep 0
+ovn-nbctl list acl | grep -c 'name.*eth0-egress' | grep 0
+lxc config device set c1 eth0 security.acls.default.ingress.logged=true
+lxc config device set c1 eth0 security.acls.default.egress.logged=true
+ovn-nbctl list acl | grep -c 'name.*eth0-ingress' | grep 1
+ovn-nbctl list acl | grep -c 'name.*eth0-egress' | grep 1
+lxc network unset ovn0 security.acls.default.ingress.logged
+lxc network unset ovn0 security.acls.default.egress.logged
+ovn-nbctl list acl | grep -c 'name.*eth0-ingress' | grep 1
+ovn-nbctl list acl | grep -c 'name.*eth0-egress' | grep 1
+lxc config device unset c1 eth0 security.acls.default.ingress.logged
+lxc config device unset c1 eth0 security.acls.default.egress.logged
+ovn-nbctl list acl | grep -c 'name.*eth0-ingress' | grep 0
+ovn-nbctl list acl | grep -c 'name.*eth0-egress' | grep 0
 
 # Test c1's default ingress rule defaults to reject by querying from c2 (which now has no ACLs applied).
 lxc exec c2 -- apt install dnsutils -y
