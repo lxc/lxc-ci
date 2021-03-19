@@ -2,101 +2,126 @@
 [ -e /lxc-ci/etc/config ] && . /lxc-ci/etc/config
 
 if [ "${1:-}" = "" ] || [ "${2:-}" = "" ] || [ "${3:-}" = "" ] || [ "${4:-}" = "" ] || [ "${5:-}" = "" ]; then
-    echo "Usage: $0 <filter> <series> <kernel> <script> [args...]"
+    echo "Usage: $0 <filter> <series> <kernel> <pre-boot> <script> [args...]" >&2
     exit 1
 fi
 
 # Login to maas
-echo "==> Connecting to MAAS"
+echo "==> Connecting to MAAS" >&2
 maas login maas "${MAAS_URL}" "${MAAS_API}" >/dev/null
 
-# Allocate a machine
-echo "==> Allocating a machine"
-while :; do
-    TMPFILE=$(mktemp)
-
-    set +e
-    maas maas machines allocate arch=amd64 "${1}" > "${TMPFILE}" 2>&1
-    RET=$?
-    if [ "${RET}" = "2" ]; then
-        echo "===> System is currently busy, trying again in 60s"
-        sleep 60
-        continue
-    elif [ "${RET}" != "0" ]; then
-        echo "==> Failed to allocate"
-        cat "${TMPFILE}"
-        rm "${TMPFILE}"
-    fi
-    set -e
-
-    break
-done
-
-system_id=$(jq -r .system_id < "${TMPFILE}")
-
-# Release on exit
-RET=1
-cleanup() {
-    set +e
-
-    echo "==> Releasing the machine"
-    maas maas machine release "${system_id}" >/dev/null
+allocate() {
+    # Allocate a machine (architecture, filter)
+    echo "==> Allocating a machine" >&2
     while :; do
-        status=$(maas maas machine read "${system_id}" | jq -r .status_name)
-        if [ "${status}" = "Releasing failed" ]; then
-            maas maas machine release "${system_id}" >/dev/null
-            sleep 5
-            continue
-        fi
+        TMPFILE=$(mktemp)
 
-        if [ "${status}" = "Releasing" ]; then
-            sleep 5
+        set +e
+        maas maas machines allocate arch="${1}" "${2}" > "${TMPFILE}" 2>&1
+        RET=$?
+        if [ "${RET}" = "2" ]; then
+            echo "===> System is currently busy, trying again in 60s" >&2
+            sleep 60
             continue
+        elif [ "${RET}" != "0" ]; then
+            echo "==> Failed to allocate" >&2
+            cat "${TMPFILE}"
+            rm "${TMPFILE}"
+            return 1
         fi
+        set -e
 
+        echo "==> Allocated machine: $(jq -r .hostname < "${TMPFILE}")" >&2
+        jq -r .system_id < "${TMPFILE}"
         break
     done
 
-    if [ "${RET}" = "0" ]; then
-        echo ""
-        echo "==> Test passed"
-        exit 0
-    fi
-
-    echo ""
-    echo "==> Test failed"
-    exit ${RET}
+    return 0
 }
-trap cleanup EXIT HUP INT TERM
 
-# Deploy the machine
-FAIL=1
-# shellcheck disable=SC2034
-for i in $(seq 3); do
-    echo "==> Deploying ${2}"
-    maas maas machine deploy "${system_id}" "distro_series=${2}" "hwe_kernel=${3}" >/dev/null || continue
+status() {
+    # Get the status of the machine (system_id)
+    maas maas machine read "${1}" | jq -r .status_name
+}
+
+deploy() {
+    # Deploy an image on the machine (systemd_id, distribution, kernel)
+    echo "==> Deploying ${2} with kernel ${3}" >&2
+    maas maas machine deploy "${1}" "distro_series=${2}" "hwe_kernel=${3}" >/dev/null
 
     # Wait for the deployment to complete
     FAIL=0
     while :; do
-        [ "$(maas maas machine read "${system_id}" | jq -r .status_name)" = "Deployed" ] && break
+        status=$(status "${1}")
+        [ "${status}" = "Deployed" ] && break
 
-        if [ "$(maas maas machine read "${system_id}" | jq -r .status_name)" = "Failed deployment" ]; then
+
+        if [ "${status}" = "Failed deployment" ]; then
             FAIL=1
-            echo "==> Failed to deploy"
-            break
+            echo "==> Failed to deploy" >&2
+            return 1
         fi
 
         sleep 30
     done
 
-    [ "${FAIL}" = 0 ] && break
-done
+    return 0
+}
 
+# Release on exit
+RET=1
+system_id=
+cleanup() {
+    # Release the macine
+    set +e
+
+    if [ -n "${system_id}" ]; then
+        echo "==> Releasing the machine" >&2
+        maas maas machine release "${system_id}" >/dev/null
+        while :; do
+            status=$(status "${system_id}")
+            if [ "${status}" = "Releasing failed" ]; then
+                maas maas machine release "${system_id}" >/dev/null
+                sleep 5
+                continue
+            fi
+
+            if [ "${status}" = "Releasing" ]; then
+                sleep 5
+                continue
+            fi
+
+            break
+        done
+    fi
+
+    if [ "${RET}" = "0" ]; then
+        echo "" >&2
+        echo "==> Test passed" >&2
+        exit 0
+    fi
+
+    echo "" >&2
+    echo "==> Test failed" >&2
+    exit ${RET}
+}
+trap cleanup EXIT HUP INT TERM
+
+# Allocate a machine
+system_id=$(allocate "amd64" "${1}")
+
+# Deploy the macine
+FAIL=1
+
+# shellcheck disable=SC2034
+for i in $(seq 3); do
+    deploy "${system_id}" "${2}" "${3}" && FAIL=0 && break
+done
 [ "${FAIL}" = 1 ] && exit 1
 
+
 # Wait for SSH
-echo "==> Waiting for SSH to respond"
+echo "==> Waiting for SSH to respond" >&2
 IP=$(maas maas machine read "${system_id}" | jq .ip_addresses[] -r | grep ":" | head -1)
 while :; do
     ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "ubuntu@${IP}" true 2>/dev/null && break
@@ -106,7 +131,7 @@ done
 # Setup custom kernel
 kernel=${4}
 if [ "${kernel}" != "default" ]; then
-    echo "==> Installing custom kernel"
+    echo "==> Installing custom kernel: ${4}" >&2
     ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "ubuntu@${IP}" sudo sh /dev/stdin "${kernel}" < "bin/maas-kernel" || true
 
     sleep 30
@@ -124,7 +149,7 @@ shift
 shift
 shift
 shift
-echo "==> Running the job"
+echo "==> Running the job" >&2
 if echo "${IP}" | grep -q ":"; then
     scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "${script}" "ubuntu@[${IP}]:test-script"
 else
