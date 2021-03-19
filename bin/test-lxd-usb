@@ -32,7 +32,7 @@ snap refresh lxd --channel=latest/edge
 lxd waitready --timeout=300
 
 # Configure LXD
-lxc storage create default zfs source=/dev/nvme0n1
+lxc storage create default zfs source=/dev/nvme0n1p3
 lxc profile device add default root disk path=/ pool=default
 lxc network create lxdbr0
 lxc profile device add default eth0 nic network=lxdbr0 name=eth0

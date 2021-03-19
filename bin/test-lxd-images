@@ -53,8 +53,8 @@ for backend in zfs btrfs dir; do
     if [ "${backend}" = "dir" ]; then
         lxc storage create default ${backend} >/dev/null 2>&1 && break
     else
-        if [ "$(hostname)" = "lantea" ]; then
-            zpool create nvme -m none /dev/nvme0n1 /dev/nvme1n1
+        if [ "$(hostname)" = "lantea" ] || [ "$(hostname)" = "adora" ]; then
+            zpool create nvme -m none /dev/nvme0n1p3
             lxc storage create default ${backend} source=nvme/lxd >/dev/null 2>&1 && break
         else
             lxc storage create default ${backend} size=30GB >/dev/null 2>&1 && break
