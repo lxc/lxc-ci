@@ -15,6 +15,7 @@
         - lxc-build-android
         predefined-parameters: |-
           sha1=${sha1}
+        restrict-matrix-project: '(arch=="amd64" && compiler=="gcc")'
 
     properties:
     - build-discarder:
