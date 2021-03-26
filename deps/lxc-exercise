@@ -68,7 +68,8 @@ EOF
 fi
 
 # Override the GPG server
-sed -i '/^DOWNLOAD_URL=$/a DOWNLOAD_KEYSERVER="hkp://keyserver.ubuntu.com:80"' /usr/share/lxc/templates/lxc-download
+sed -i "s/^DOWNLOAD_VALIDATE.*/DOWNLOAD_VALIDATE=\"false\"/" /usr/share/lxc/templates/lxc-download
+export DOWNLOAD_KEYSERVER="hkp://keyserver.ubuntu.com:80"
 
 # The actual tests
 ## Default testsuite
