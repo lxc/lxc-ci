@@ -109,7 +109,6 @@
           pkg_branch=ppa-daily
           upload_target=lxc-git-{branch}
           branch={branch}
-        restrict-matrix-project: '(arch=="amd64" && compiler=="gcc")'
     scm:
     - git:
         branches:
