@@ -29,6 +29,23 @@ case "$i" in
         echo "===> Installing the NVIDIA driver"
         apt-get update
         apt-get install nvidia-utils-440 linux-modules-nvidia-440-generic libnvidia-compute-440 --yes
+
+        echo "blacklist nouveau" > /etc/modprobe.d/blacklist-nouveau.conf
+        echo "options nouveau modeset=0" >> /etc/modprobe.d/blacklist-nouveau.conf
+        sudo update-initramfs -u
+      ;;
+
+      nvidia-vgpu)
+        echo "===> Installing the NVIDIA vGPU driver"
+        apt-get update
+        apt-get install build-essential --yes
+        curl http://canonical-lxd.stgraber.org/nvidia/v12.2-beta/nvidia-vgpu-kvm.run -o /root/nvidia-vgpu-kvm.run
+        chmod +x nvidia-vgpu-kvm.run
+        ./nvidia-vgpu-kvm.run -q -s
+
+        echo "blacklist nouveau" > /etc/modprobe.d/blacklist-nouveau.conf
+        echo "options nouveau modeset=0" >> /etc/modprobe.d/blacklist-nouveau.conf
+        sudo update-initramfs -u
       ;;
 
       ubuntu)
