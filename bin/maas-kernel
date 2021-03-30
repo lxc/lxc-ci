@@ -42,6 +42,19 @@ case "$i" in
         sudo update-initramfs -u
       ;;
 
+      amd-vgpu)
+        echo "===> Installing the AMD vGPU driver"
+
+        apt-get update
+        apt-get install build-essential --yes
+        git clone https://github.com/kasperlewau/MxGPU-Virtualization
+        (cd MxGPU-Virtualization && ./gim.sh)
+        depmod -a
+
+        echo "blacklist amdgpu" > /etc/modprobe.d/blacklist-amdgpu.conf
+        sudo update-initramfs -u
+      ;;
+
       nvidia-vgpu)
         echo "===> Installing the NVIDIA vGPU driver"
 
