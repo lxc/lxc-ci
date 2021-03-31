@@ -1,0 +1,73 @@
+#!/bin/sh
+set -eu
+
+cleanup() {
+    echo ""
+    if [ "${FAIL}" = "1" ]; then
+        echo "Test failed"
+        exit 1
+    fi
+
+    echo "Test passed"
+    exit 0
+}
+
+FAIL=1
+trap cleanup EXIT HUP INT TERM
+
+# Wait for snapd seeding
+sleep 1m
+
+# Configure to use the proxy
+curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh
+
+# Install LXD
+while :; do
+    [ ! -e /usr/bin/lxd ] && break
+    apt remove --purge lxd lxd-client --yes && break
+done
+snap install lxd --edge
+snap install jq
+snap refresh lxd --channel=latest/edge
+lxd waitready --timeout=300
+
+# Configure LXD
+lxc storage create default zfs
+lxc profile device add default root disk path=/ pool=default
+lxc network create lxdbr0
+lxc profile device add default eth0 nic network=lxdbr0 name=eth0
+
+if [ "${1}" = "nvidia" ]; then
+    # Enable SR-IOV
+    /usr/lib/nvidia/sriov-manage -e ALL
+
+    # Confirm GPU is online
+    nvidia-smi
+fi
+
+# LXD resource API
+lxc info --resources
+
+# Launch test containers
+for i in $(seq 1 10); do
+    lxc init images:ubuntu/20.04/cloud "v${i}" --vm -c security.secureboot=false
+    if [ "${1}" = "nvidia" ]; then
+        lxc config device add "v${i}" vgpu gpu gputype=mdev pci=0000:09:00.0 mdev=nvidia-468
+    fi
+    lxc start "v${i}"
+done
+
+# Wait for them to start and list
+sleep 30
+lxc list
+
+if [ "${1}" = "nvidia" ]; then
+    # Validate NVIDIA vGPU
+    lxc exec v10 -- apt-get install build-essential wget pciutils --yes
+    lxc exec v10 -- wget -6 http://canonical-lxd.stgraber.org/nvidia/v12.2-beta/nvidia-vgpu-kvm.run
+    lxc exec v10 -- chmod +x nvidia-vgpu-kvm.run
+    lxc exec v10 -- /root/nvidia-vgpu-kvm.run -q -s
+    lxc exec v10 -- nvidia-smi
+fi
+
+FAIL=0

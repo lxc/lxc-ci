@@ -3,12 +3,46 @@
     concurrent: false
     description: Tests GPU passthrough for containers
     node: master
-    project-type: freestyle
+    project-type: matrix
+
+    axes:
+    - axis:
+        name: platform
+        type: user-defined
+        values:
+        - nvidia
+
+    - axis:
+        name: target
+        type: user-defined
+        values:
+        - container
+        - vm
+
+    - axis:
+        name: restrict
+        type: slave
+        values:
+        - master
 
     builders:
     - shell: |-
         cd /lxc-ci
-        exec sudo /lxc-ci/bin/maas-run name=vm12 focal ga-20.04 nvidia bin/test-lxd-gpu
+        if [ "${platform}" = "nvidia" ] && [ "${target}" = "container" ]; then
+            exec sudo /lxc-ci/bin/maas-run name=vm12 focal ga-20.04 nvidia bin/test-lxd-gpu-container
+        fi
+
+        if [ "${platform}" = "nvidia" ] && [ "${target}" = "vm" ]; then
+            exec sudo /lxc-ci/bin/maas-run name=argos focal ga-20.04 iommu,nvidia-vgpu bin/test-lxd-gpu-vm nvidia
+        fi
+
+        if [ "${platform}" = "amd" ] && [ "${target}" = "vm" ]; then
+            exec sudo /lxc-ci/bin/maas-run name=lantea focal ga-20.04 iommu,amd-vgpu bin/test-lxd-gpu-vm amd
+        fi
+
+    execution-strategy:
+      combination-filter: '
+      !(platform=="amd")'
 
     properties:
     - build-discarder:

@@ -52,23 +52,23 @@ echo "==> Testing with no GPU"
 # Validate with one GPU
 echo "==> Testing with one GPU"
 lxc config device add c1 gpu0 gpu id=0
-[ "$(lxc exec c1 -- ls /dev/dri/ | grep card | wc -l)" = "1" ] || false
+[ "$(lxc exec c1 -- ls /dev/dri/ | grep -c card)" = "1" ] || false
 
 # Validate with two GPus
 echo "==> Testing with two GPUs"
 lxc config device add c1 gpu1 gpu id=1
-[ "$(lxc exec c1 -- ls /dev/dri/ | grep card | wc -l)" = "2" ] || false
+[ "$(lxc exec c1 -- ls /dev/dri/ | grep -c card)" = "2" ] || false
 
 # Validate with all remove
 echo "==> Testing with no GPU"
 lxc config device remove c1 gpu0
 lxc config device remove c1 gpu1
-[ "$(lxc exec c1 -- ls /dev/dri/ | grep card | wc -l)" = "0" ] || false
+[ "$(lxc exec c1 -- ls /dev/dri/ | grep -c card)" = "0" ] || false
 
 # Validate with all GPUs
 echo "==> Testing with all GPUs"
 lxc config device add c1 gpus gpu
-[ "$(lxc exec c1 -- ls /dev/dri/ | grep card | wc -l)" = "3" ] || false
+[ "$(lxc exec c1 -- ls /dev/dri/ | grep -c card)" = "3" ] || false
 
 # Test nvidia runtime
 echo "==> Testing nvidia runtime"
@@ -83,7 +83,7 @@ echo "==> Testing PCI address selection"
 lxc config device remove c1 gpus
 lxc config device add c1 gpu1 gpu pci=0000:07:00.0
 lxc config device add c1 gpu2 gpu pci=0000:08:00.0
-[ "$(lxc exec c1 -- ls /dev/dri/ | grep card | wc -l)" = "2" ] || false
+[ "$(lxc exec c1 -- ls /dev/dri/ | grep -c card)" = "2" ] || false
 lxc exec c1 -- nvidia-smi
 
 # Test with vendor
@@ -91,13 +91,13 @@ echo "==> Testing PCI vendor selection"
 lxc config device remove c1 gpu1
 lxc config device remove c1 gpu2
 lxc config device add c1 gpus gpu vendorid=10de
-[ "$(lxc exec c1 -- ls /dev/dri/ | grep card | wc -l)" = "2" ] || false
+[ "$(lxc exec c1 -- ls /dev/dri/ | grep -c card)" = "2" ] || false
 lxc exec c1 -- nvidia-smi
 
 # Test with vendor and product
 echo "==> Testing PCI vendor and product selection"
 lxc config device remove c1 gpus
 lxc config device add c1 gpus gpu vendorid=1af4 productid=0010
-[ "$(lxc exec c1 -- ls /dev/dri/ | grep card | wc -l)" = "1" ] || false
+[ "$(lxc exec c1 -- ls /dev/dri/ | grep -c card)" = "1" ] || false
 
 FAIL=0
