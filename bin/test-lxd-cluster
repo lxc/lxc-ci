@@ -99,7 +99,7 @@ echo "==> Wait for addresses"
 sleep 10
 lxc exec "${PREFIX}-1" -- lxc list
 
-U2_IPV4="$(lxc exec ${PREFIX}-1 -- lxc list u2 -c4 --format=csv | cut -d' ' -f1)"
+U2_IPV4="$(lxc exec "${PREFIX}-1" -- lxc list u2 -c4 --format=csv | cut -d' ' -f1)"
 lxc exec "${PREFIX}-1" -- lxc exec u1 -- ping -c1 "${U2_IPV4}"
 lxc exec "${PREFIX}-1" -- ping -c1 "${U2_IPV4}"
 
