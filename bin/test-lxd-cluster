@@ -9,12 +9,22 @@ fi
 # Deploy the cluster
 echo "==> Deploying the cluster"
 
+print_log() {
+    echo "==> Start log file ${1}"
+    log_file="${1}.log"
+    lxc file pull "${1}/var/snap/lxd/common/lxd/logs/lxd.log" "${log_file}" || true
+    cat "${log_file}" || true
+    echo "<== End log file ${1}"
+    rm -f "${log_file}"
+}
+
 # Cleanup on shutdown
 SIZE="$1"
 cleanup() {
     # Delete the cluster
     echo "==> Deleting the cluster"
     for i in $(seq "${SIZE}"); do
+        print_log "${PREFIX}-$i"
         lxc delete --force "${PREFIX}-$i"
     done
 }
