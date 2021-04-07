@@ -62,7 +62,7 @@ deploy() {
             return 1
         fi
 
-        sleep 30
+        sleep 2m
     done
 
     return 0
