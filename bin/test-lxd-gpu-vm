@@ -43,6 +43,9 @@ if [ "${1}" = "nvidia" ]; then
 
     # Confirm GPU is online
     nvidia-smi
+
+    # Disable MIG if enabled
+    nvidia-smi -mig 0
 fi
 
 # LXD resource API
