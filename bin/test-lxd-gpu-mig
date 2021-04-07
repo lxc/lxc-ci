@@ -73,8 +73,8 @@ lxc start nvidia-mig4
 lxc exec nvidia-mig4 -- nvidia-smi
 
 lxc stop nvidia-mig4
-lxc config device add nvidia-mig4 gpu1 gpu gputype=mig mig.gi=5 mig.ci=0 vendorid=10de vendorid=20f1
-lxc config device add nvidia-mig4 gpu2 gpu gputype=mig mig.gi=5 mig.ci=1 vendorid=10de vendorid=20f1
+lxc config device add nvidia-mig4 gpu1 gpu gputype=mig mig.gi=5 mig.ci=0 vendorid=10de productid=20f1
+lxc config device add nvidia-mig4 gpu2 gpu gputype=mig mig.gi=5 mig.ci=1 vendorid=10de productid=20f1
 lxc start nvidia-mig4
 lxc exec nvidia-mig4 -- nvidia-smi
 
