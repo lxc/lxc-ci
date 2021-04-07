@@ -17,6 +17,7 @@
         type: user-defined
         values:
         - container
+        - mig
         - vm
 
     - axis:
@@ -30,6 +31,10 @@
         cd /lxc-ci
         if [ "${platform}" = "nvidia" ] && [ "${target}" = "container" ]; then
             exec sudo /lxc-ci/bin/maas-run name=vm12 focal ga-20.04 nvidia bin/test-lxd-gpu-container
+        fi
+
+        if [ "${platform}" = "nvidia" ] && [ "${target}" = "mig" ]; then
+            exec sudo /lxc-ci/bin/maas-run name=argos focal ga-20.04 nvidia bin/test-lxd-gpu-mig
         fi
 
         if [ "${platform}" = "nvidia" ] && [ "${target}" = "vm" ]; then
