@@ -8,9 +8,9 @@
               !include: ../includes/admins/cgmanager.yaml.inc
 
         - "{repo}-github-pull-target":
-            repo: crio-lxc
+            repo: lxci
             admins:
-              !include: ../includes/admins/crio-lxc.yaml.inc
+              !include: ../includes/admins/lxci.yaml.inc
 
         - "{repo}-github-pull-target":
             repo: distrobuilder
