@@ -11,7 +11,7 @@
             repo: lxcri
             branch: main
             admins:
-              !include: ../includes/admins/lxci.yaml.inc
+              !include: ../includes/admins/lxcri.yaml.inc
 
         - "{repo}-github-pull-target":
             repo: distrobuilder
