@@ -401,6 +401,8 @@ actions:
     #!/bin/sh
     mkdir -p /var/lock
     echo "console::askfirst:/usr/libexec/login.sh" >> /etc/inittab
+  architectures:
+  - amd64
 
 packages:
   manager: opkg
