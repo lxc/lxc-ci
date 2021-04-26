@@ -43,6 +43,9 @@
         - candidate
         - stable
 
+    execution-strategy:
+      combination-filter: '!(architecture=="i386" && track=="latest" && channel=="edge")'
+
     builders:
     - shell: |-
         cd /lxc-ci
