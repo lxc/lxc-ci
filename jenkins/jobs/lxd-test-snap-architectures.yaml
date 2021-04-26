@@ -44,7 +44,9 @@
         - stable
 
     execution-strategy:
-      combination-filter: '!(arch=="i386" && track=="latest" && channel=="edge")'
+      combination-filter: '
+        !(arch=="i386" && track=="latest" && channel=="edge") &&
+        !(arch=="i386" && track=="4.0" && channel=="edge")'
 
     builders:
     - shell: |-
