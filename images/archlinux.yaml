@@ -497,15 +497,6 @@ files:
   types:
   - vm
 
-- name: networkd-override
-  path: /etc/systemd/system/systemd-networkd.service.d/lxc.conf
-  generator: dump
-  content: |-
-    [Service]
-    BindReadOnlyPaths=/sys
-  types:
-  - container
-
 - name: lxd-agent
   generator: lxd-agent
   types:
