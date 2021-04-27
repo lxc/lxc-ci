@@ -314,6 +314,7 @@ actions:
   - vm
   releases:
   - 33
+  - 34
 
 - trigger: post-files
   action: |-
