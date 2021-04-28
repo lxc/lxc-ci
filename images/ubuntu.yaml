@@ -353,6 +353,7 @@ files:
   - focal
   - groovy
   - hirsute
+  - impish
   types:
   - container
   variants:
@@ -392,6 +393,7 @@ files:
   - focal
   - groovy
   - hirsute
+  - impish
   types:
   - vm
   variants:
@@ -529,6 +531,7 @@ packages:
     - focal
     - groovy
     - hirsute
+    - impish
     types:
     - vm
 
@@ -549,6 +552,7 @@ packages:
     - focal
     - groovy
     - hirsute
+    - impish
     types:
     - vm
 
@@ -604,6 +608,7 @@ actions:
   - focal
   - groovy
   - hirsute
+  - impish
 
 - trigger: post-packages
   action: |-
