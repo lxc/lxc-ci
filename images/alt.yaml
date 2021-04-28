@@ -93,6 +93,16 @@ files:
     [Network]
     DHCP=ipv4
 
+- name: networkd-override
+  path: /etc/systemd/system/systemd-networkd.service.d/lxc.conf
+  generator: dump
+  content: |-
+    [Service]
+    BindReadOnlyPaths=/sys
+  releases:
+  - Sisyphus
+  - p9
+
 actions:
 - trigger: post-unpack
   action: |-
