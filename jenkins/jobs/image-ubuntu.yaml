@@ -27,6 +27,7 @@
         - focal
         - groovy
         - hirsute
+        - impish
 
     - axis:
         name: variant
@@ -59,6 +60,7 @@
       !(architecture=="i386" && release == "focal") &&
       !(architecture=="i386" && release == "groovy") &&
       !(architecture=="i386" && release == "hirsute") &&
+      !(architecture=="i386" && release == "impish") &&
       !(variant == "cloud" && release == "trusty")'
 
     properties:
