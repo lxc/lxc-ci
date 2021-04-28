@@ -99,6 +99,15 @@ actions:
     #!/bin/sh
     mkdir -p /run/lock
 
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    systemctl mask systemd-journald-audit.socket
+  types:
+  - containers
+
 packages:
   manager: apt
   update: true

@@ -650,6 +650,15 @@ actions:
     # Disable loginuid in PAM stack
     sed -i '/^session.*pam_loginuid.so/s/^session/# session/' /etc/pam.d/*
 
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    systemctl mask systemd-journald-audit.socket
+  types:
+  - containers
+
 - trigger: post-files
   action: |-
     #!/bin/sh
