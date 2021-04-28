@@ -106,6 +106,19 @@ files:
   types:
   - vm
 
+- name: networkd-override
+  path: /etc/systemd/system/systemd-networkd.service.d/lxc.conf
+  generator: dump
+  content: |-
+    [Service]
+    BindReadOnlyPaths=/sys
+  variants:
+  - default
+  types:
+  - container
+  releases:
+  - 32
+
 - name: network-device-down.service
   path: /etc/systemd/system/network-device-down.service
   generator: dump
