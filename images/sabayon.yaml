@@ -130,6 +130,15 @@ actions:
     # Create some potentially missing directory
     mkdir -p /etc/local.d
 
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    systemctl mask systemd-journald-audit.socket
+  types:
+  - containers
+
 - trigger: post-files
   action: |-
     #!/bin/sh
