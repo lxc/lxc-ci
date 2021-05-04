@@ -56,13 +56,13 @@ nvidia-smi
 
 # Launch test containers
 lxc init images:ubuntu/20.04 nvidia-mig1 -c nvidia.runtime=true
-lxc config device add nvidia-mig1 gpu0 gpu gputype=mig mig.gi=5 mig.ci=0 pci=09:00.0
+lxc config device add nvidia-mig1 gpu0 gpu gputype=mig mig.gi=5 mig.ci=0 pci=0a:00.0
 lxc init images:ubuntu/20.04 nvidia-mig2 -c nvidia.runtime=true
-lxc config device add nvidia-mig2 gpu0 gpu gputype=mig mig.gi=5 mig.ci=1 pci=09:00.0
+lxc config device add nvidia-mig2 gpu0 gpu gputype=mig mig.gi=5 mig.ci=1 pci=0a:00.0
 lxc init images:ubuntu/20.04 nvidia-mig3 -c nvidia.runtime=true
-lxc config device add nvidia-mig3 gpu0 gpu gputype=mig mig.gi=7 mig.ci=0 pci=09:00.0
+lxc config device add nvidia-mig3 gpu0 gpu gputype=mig mig.gi=7 mig.ci=0 pci=0a:00.0
 lxc init images:ubuntu/20.04 nvidia-mig4 -c nvidia.runtime=true
-lxc config device add nvidia-mig4 gpu0 gpu gputype=mig mig.gi=13 mig.ci=0 pci=09:00.0
+lxc config device add nvidia-mig4 gpu0 gpu gputype=mig mig.gi=13 mig.ci=0 pci=0a:00.0
 lxc start nvidia-mig1
 lxc exec nvidia-mig1 -- nvidia-smi
 lxc start nvidia-mig2
