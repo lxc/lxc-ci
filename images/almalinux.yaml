@@ -323,18 +323,6 @@ actions:
 - trigger: post-unpack
   action: |-
     #!/bin/sh
-    set -eux
-
-    # Enable the centosplus repo which has a kernel with 9p support
-    sed -i 's/^enabled=0/enabled=1/' /etc/yum.repos.d/CentOS-Linux-Plus.repo
-  types:
-  - vm
-  releases:
-  - 8
-
-- trigger: post-unpack
-  action: |-
-    #!/bin/sh
     # Generate machine-id in order for the kernel stuff to be configured properly
     systemd-machine-id-setup
   types:
