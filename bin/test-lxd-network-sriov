@@ -1,6 +1,9 @@
 #!/bin/sh
 set -eu
 
+storageDevice="/dev/nvme0n1p3"
+parentNIC="enp10s0"
+
 cleanup() {
     echo ""
     if [ "${FAIL}" = "1" ]; then
@@ -32,15 +35,15 @@ snap refresh lxd --channel=latest/edge
 lxd waitready --timeout=300
 
 # Enable SR-IOV on nic and bring up
-echo 8 > /sys/class/net/enp10s0/device/sriov_numvfs
-ip link set enp10s0 up
+echo 8 > "/sys/class/net/${parentNIC}/device/sriov_numvfs"
+ip link set "${parentNIC}" up
 sleep 10
-ethtool enp10s0
+ethtool "${parentNIC}"
 
 # Configure LXD
-lxc storage create default zfs source=/dev/nvme0n1p3
+lxc storage create default zfs source="${storageDevice}"
 lxc profile device add default root disk path=/ pool=default
-lxc profile device add default eth0 nic nictype=sriov parent=enp10s0 name=eth0
+lxc profile device add default eth0 nic nictype=sriov parent="${parentNIC}" name=eth0
 
 # Launch a few VMs
 # Do this first before containers to ensure VF free search handles VFs unbound from host.
@@ -131,3 +134,12 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
 done
 
 lxc list
+
+for url in $(lxc query "/1.0/instances" | jq -r .[]); do
+    name=$(echo "${url}" | cut -d/ -f4)
+    lxc delete -f "${name}"
+done
+
+lxc profile device remove default eth0
+lxc profile device remove default root
+lxc storage delete default
