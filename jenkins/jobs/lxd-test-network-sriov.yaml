@@ -1,5 +1,5 @@
 - job:
-    name: "lxd-test-sriov"
+    name: "lxd-test-network-sriov"
     concurrent: false
     description: Tests SR-IOV for containers and VMs
     node: master
@@ -8,7 +8,7 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        exec sudo /lxc-ci/bin/maas-run name=lantea focal ga-20.04 iommu bin/test-lxd-sriov
+        exec sudo /lxc-ci/bin/maas-run name=lantea focal ga-20.04 iommu bin/test-lxd-network-sriov
 
     properties:
     - build-discarder:
