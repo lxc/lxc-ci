@@ -1,14 +1,14 @@
 - job:
-    name: "lxd-test-sriov"
+    name: "lxd-test-network-ovn"
     concurrent: false
-    description: Tests SR-IOV for containers and VMs
+    description: Tests OVN integration with LXD
     node: master
     project-type: freestyle
 
     builders:
     - shell: |-
         cd /lxc-ci
-        exec sudo /lxc-ci/bin/maas-run name=lantea focal ga-20.04 iommu bin/test-lxd-sriov
+        exec sudo /lxc-ci/bin/maas-run tags=virtual focal ga-20.04 default bin/test-lxd-network-ovn
 
     properties:
     - build-discarder:

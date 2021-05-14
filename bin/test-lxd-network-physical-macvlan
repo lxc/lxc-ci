@@ -1,6 +1,9 @@
 #!/bin/sh
 set -eu
 
+storageDevice="/dev/nvme0n1p3"
+parentNIC="enp10s0"
+
 cleanup() {
     echo ""
     if [ "${FAIL}" = "1" ]; then
@@ -32,56 +35,37 @@ snap refresh lxd --channel=latest/edge
 lxd waitready --timeout=300
 
 # Enable SR-IOV on nic and bring up
-echo 8 > /sys/class/net/enp10s0/device/sriov_numvfs
-ip link set enp10s0 up
+echo 7 > "/sys/class/net/${parentNIC}/device/sriov_numvfs"
+ip link set "${parentNIC}" up
 sleep 10
-ethtool enp10s0
+ethtool "${parentNIC}"
+ip a
 
 # Configure LXD
-lxc storage create default zfs source=/dev/nvme0n1p3
+lxc storage create default zfs source="${storageDevice}"
 lxc profile device add default root disk path=/ pool=default
-lxc profile device add default eth0 nic nictype=sriov parent=enp10s0 name=eth0
 
-# Launch a few VMs
-# Do this first before containers to ensure VF free search handles VFs unbound from host.
-echo "==> VM on default VLAN"
-lxc init images:ubuntu/20.04/cloud v1 --vm
-lxc start v1
+# Launch instances with physical NICs
+echo "==> VM on default VLAN with physical"
+lxc init images:ubuntu/20.04/cloud v1-physical --vm
+lxc config device add v1-physical eth0 nic nictype=physical parent="${parentNIC}v0" name=eth0
+lxc start v1-physical
 
-echo "==> VM on default VLAN with filtering"
-lxc init images:ubuntu/20.04/cloud v2 --vm
-lxc config device override v2 eth0 security.mac_filtering=true
-lxc start v2
+echo "==> Container on default VLAN with physical"
+lxc init images:ubuntu/20.04/cloud c1-physical
+lxc config device add c1-physical eth0 nic nictype=physical parent="${parentNIC}v1" name=eth0
+lxc start c1-physical
 
-echo "==> VM on alternate VLAN"
-lxc init images:ubuntu/20.04/cloud v3 --vm
-lxc config device override v3 eth0 vlan=1017
-lxc start v3
+# Launch instances with macvlan NICs
+echo "==> VM on default VLAN with macvlan"
+lxc init images:ubuntu/20.04/cloud v1-macvlan --vm
+lxc config device add v1-macvlan eth0 nic nictype=macvlan parent="${parentNIC}" name=eth0
+lxc start v1-macvlan
 
-echo "==> VM on alternate VLAN with filtering"
-lxc init images:ubuntu/20.04/cloud v4 --vm
-lxc config device override v4 eth0 vlan=1017 security.mac_filtering=true
-lxc start v4
-
-# Launch a few instances
-echo "==> Container on default VLAN"
-lxc init images:ubuntu/20.04/cloud c1
-lxc start c1
-
-echo "==> Container on default VLAN with filtering"
-lxc init images:ubuntu/20.04/cloud c2
-lxc config device override c2 eth0 security.mac_filtering=true
-lxc start c2
-
-echo "==> Container on alternate VLAN"
-lxc init images:ubuntu/20.04/cloud c3
-lxc config device override c3 eth0 vlan=1017
-lxc start c3
-
-echo "==> Container on alternate VLAN with filtering"
-lxc init images:ubuntu/20.04/cloud c4
-lxc config device override c4 eth0 vlan=1017 security.mac_filtering=true
-lxc start c4
+echo "==> Container on default VLAN with macvlan"
+lxc init images:ubuntu/20.04/cloud c1-macvlan
+lxc config device add c1-macvlan eth0 nic nictype=macvlan parent="${parentNIC}" name=eth0
+lxc start c1-macvlan
 
 # Wait for things to settle
 sleep 2m
@@ -131,3 +115,11 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
 done
 
 lxc list
+
+for url in $(lxc query "/1.0/instances" | jq -r .[]); do
+    name=$(echo "${url}" | cut -d/ -f4)
+    lxc delete -f "${name}"
+done
+
+lxc profile device remove default root
+lxc storage delete default

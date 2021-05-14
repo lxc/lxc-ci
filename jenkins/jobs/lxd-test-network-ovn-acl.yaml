@@ -1,0 +1,36 @@
+- job:
+    name: "lxd-test-network-ovn-acl"
+    concurrent: false
+    description: Tests OVN ACL integration with LXD
+    node: master
+    project-type: freestyle
+
+    builders:
+    - shell: |-
+        cd /lxc-ci
+        exec sudo /lxc-ci/bin/maas-run tags=virtual focal ga-20.04 default bin/test-lxd-network-ovn-acl
+
+    properties:
+    - build-discarder:
+        num-to-keep: 3
+
+    - raw:
+        !include: ../includes/webhook.yaml.inc
+
+    publishers:
+    - workspace-cleanup:
+        fail-build: false
+
+    - naginator:
+        rerun-unstable-builds: true
+        rerun-matrix-part: true
+        max-failed-builds: 3
+        progressive-delay-increment: 300
+        progressive-delay-maximum: 900
+
+    triggers:
+    - timed: '@daily'
+
+    wrappers:
+    - ansicolor:
+        colormap: css

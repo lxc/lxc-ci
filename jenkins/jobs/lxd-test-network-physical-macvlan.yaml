@@ -1,14 +1,14 @@
 - job:
-    name: "lxd-test-ovn"
+    name: "lxd-test-network-physical-macvlan"
     concurrent: false
-    description: Tests OVN integration with LXD
+    description: Tests physical and macvlan NICs for containers and VMs
     node: master
     project-type: freestyle
 
     builders:
     - shell: |-
         cd /lxc-ci
-        exec sudo /lxc-ci/bin/maas-run tags=virtual focal ga-20.04 default bin/test-lxd-ovn
+        exec sudo /lxc-ci/bin/maas-run name=lantea focal ga-20.04 iommu bin/test-lxd-network-physical-macvlan
 
     properties:
     - build-discarder:
