@@ -48,12 +48,12 @@ lxc profile device add default root disk path=/ pool=default
 # Launch instances with physical NICs
 echo "==> VM on default VLAN with physical"
 lxc init images:ubuntu/20.04/cloud v1-physical --vm
-lxc config device add v1-physical eth0 nic nictype=physical parent="${parentNIC}v0" name=eth0
+lxc config device add v1-physical eth0 nic nictype=physical parent="${parentNIC}v1" name=eth0
 lxc start v1-physical
 
 echo "==> Container on default VLAN with physical"
 lxc init images:ubuntu/20.04/cloud c1-physical
-lxc config device add c1-physical eth0 nic nictype=physical parent="${parentNIC}v1" name=eth0
+lxc config device add c1-physical eth0 nic nictype=physical parent="${parentNIC}v2" name=eth0
 lxc start c1-physical
 
 # Launch instances with macvlan NICs
