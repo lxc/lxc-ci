@@ -1,14 +1,14 @@
 - job:
-    name: "lxd-test-ovn"
+    name: "lxd-test-network-ovn-acl"
     concurrent: false
-    description: Tests OVN integration with LXD
+    description: Tests OVN ACL integration with LXD
     node: master
     project-type: freestyle
 
     builders:
     - shell: |-
         cd /lxc-ci
-        exec sudo /lxc-ci/bin/maas-run tags=virtual focal ga-20.04 default bin/test-lxd-ovn
+        exec sudo /lxc-ci/bin/maas-run tags=virtual focal ga-20.04 default bin/test-lxd-network-ovn-acl
 
     properties:
     - build-discarder:
