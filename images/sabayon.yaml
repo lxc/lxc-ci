@@ -3,7 +3,7 @@ image:
 
 source:
   downloader: sabayon-http
-  url: http://cross-lfs.sabayonlinux.org/iso/daily
+  url: http://dl.sabayon.org/iso/daily
 
 environment:
   clear_defaults: true
