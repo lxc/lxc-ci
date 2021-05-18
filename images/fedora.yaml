@@ -118,6 +118,7 @@ files:
   - container
   releases:
   - 32
+  - 33
 
 - name: network-device-down.service
   path: /etc/systemd/system/network-device-down.service
