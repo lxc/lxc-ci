@@ -140,6 +140,28 @@ files:
   types:
   - container
 
+- name: network-connection-activate.service
+  path: /etc/systemd/system/network-connection-activate.service
+  generator: dump
+  content: |-
+    [Unit]
+    Description=Activate connection
+    After=NetworkManager-wait-online.service
+
+    [Service]
+    ExecStart=-/usr/bin/nmcli c up "System eth0"
+    Type=oneshot
+    RemainAfterExit=true
+
+    [Install]
+    WantedBy=default.target
+  variants:
+  - cloud
+  types:
+  - container
+  releases:
+  - 34
+
 - name: meta-data
   generator: cloud-init
   variants:
@@ -338,3 +360,16 @@ actions:
   - cloud
   types:
   - container
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    systemctl enable network-connection-activate.service
+  variants:
+  - cloud
+  types:
+  - container
+  releases:
+  - 34
