@@ -296,15 +296,6 @@ actions:
     rm /etc/resolv.conf
     ln -sf /var/run/netconfig/resolv.conf /etc/resolv.conf
 
-- trigger: post-packages
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    systemctl mask systemd-journald-audit.socket
-  types:
-  - containers
-
 - trigger: post-files
   action: |-
     #!/bin/sh
