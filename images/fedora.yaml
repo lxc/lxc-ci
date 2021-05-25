@@ -318,7 +318,7 @@ actions:
     # Remove the "Container Image" string as this is going to be am VM
     sed -i 's/[ ]*(Container Image)//;/^VARIANT/d' /etc/os-release
 
-    target="$(readlink -f /etc/grub2-efi.cfg)"
+    target=/boot/efi/EFI/fedora/grub.cfg
     grub2-mkconfig -o "${target}"
     sed -i "s#root=[^ ]*#root=/dev/sda2#g" "${target}"
 
