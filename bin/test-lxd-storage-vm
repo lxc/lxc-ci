@@ -58,6 +58,11 @@ do
         sleep 90
         lxc info v1
 
+        echo "==> Check config drive is readonly"
+        # Check 9p config drive share is exported readonly.
+        lxc exec v1 -- mount -t 9p config /srv
+        ! lxc exec v1 -- touch /srv/lxd-test || false
+
         echo "==> Checking VM root disk size is 10GB"
         lxc exec v1 -- df -B1000000000 | grep sda2 | grep 10
 
