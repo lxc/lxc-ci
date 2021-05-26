@@ -74,6 +74,64 @@ do
         echo "==> Check VM shrink is blocked"
         ! lxc config device set v1 root size=10GB || false
 
+        echo "==> Checking additional disk device support"
+        lxc stop -f v1
+        # Create directory with a file for directory disk tests.
+        mkdir "/tmp/lxd-test-${poolName}"
+        touch "/tmp/lxd-test-${poolName}/lxd-test"
+
+        # Create empty block file for block disk tests.
+        truncate -s 5m "/tmp/lxd-test-${poolName}/lxd-test-block"
+
+        # Add disks
+        lxc config device add v1 dir1rw disk source="/tmp/lxd-test-${poolName}" path="/srv/rw"
+        lxc config device add v1 dir1ro disk source="/tmp/lxd-test-${poolName}" path="/srv/ro" readonly=true
+        lxc config device add v1 block1ro disk source="/tmp/lxd-test-${poolName}/lxd-test-block" readonly=true
+        lxc config device add v1 block1rw disk source="/tmp/lxd-test-${poolName}/lxd-test-block"
+        lxc start v1
+        sleep 90
+
+        # Check there is only 1 mount for each directory disk and that it is mounted with the appropriate options.
+        lxc exec v1 -- mount | grep '/srv/rw type' -c | grep 1
+        lxc exec v1 -- mount | grep '/srv/ro type' -c | grep 1
+
+        # RW disks should use virtiofs when used with the snap.
+        lxc exec v1 -- mount | grep 'lxd_dir1rw on /srv/rw type virtiofs (rw,relatime)'
+
+        # RO disks should use 9p due to limitations of virtiofs.
+        lxc exec v1 -- mount | grep 'lxd_dir1ro on /srv/ro type 9p (ro,relatime,sync,dirsync,access=client,trans=virtio)'
+
+        # Check UID/GID are correct.
+        lxc exec v1 -- stat -c '%u:%g' /srv/rw | grep '0:0'
+        lxc exec v1 -- stat -c '%u:%g' /srv/ro | grep '0:0'
+
+        # Remount the readonly disk as rw inside VM and check that the disk is still readonly at the LXD layer.
+        lxc exec v1 -- mount -oremount,rw /srv/ro
+        lxc exec v1 -- mount | grep 'lxd_dir1ro on /srv/ro type 9p (rw,relatime,sync,dirsync,access=client,trans=virtio)'
+        ! lxc exec v1 -- touch /srv/ro/lxd-test-ro || false
+        ! lxc exec v1 -- mkdir /srv/ro/lxd-test-ro || false
+        ! lxc exec v1 -- rm /srv/ro/lxd-test.txt || false
+        ! lxc exec v1 -- chmod 777 /srv/ro || false
+
+        # Check writable disk is writable.
+        lxc exec v1 -- touch /srv/rw/lxd-test-rw
+        stat -c '%u:%g' "/tmp/lxd-test-${poolName}/lxd-test-rw" | grep "0:0"
+        lxc exec v1 -- rm /srv/rw/lxd-test-rw
+        lxc exec v1 -- rm /srv/rw/lxd-test
+
+        # Check block disks are available.
+        lxc exec v1 -- stat -c "%F" /dev/sdb | grep "block special file"
+        lxc exec v1 -- stat -c "%F" /dev/sdc | grep "block special file"
+
+        # Check the rw driver accepts writes and the ro does not.
+        ! lxc exec v1 -- dd if=/dev/urandom of=/dev/sdb bs=512 count=2 || false
+        lxc exec v1 -- dd if=/dev/urandom of=/dev/sdc bs=512 count=2
+
+        # Remove temporary directory (should now be empty aside from block file).
+        lxc stop -f v1
+        rm "/tmp/lxd-test-${poolName}/lxd-test-block"
+        rmdir "/tmp/lxd-test-${poolName}"
+
         echo "==> Deleting VM"
         lxc delete -f v1
 
