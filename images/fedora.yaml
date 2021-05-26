@@ -117,7 +117,6 @@ files:
   types:
   - container
   releases:
-  - 32
   - 33
 
 - name: network-device-down.service
@@ -347,7 +346,6 @@ actions:
   types:
   - vm
   releases:
-  - 33
   - 34
 
 - trigger: post-files
