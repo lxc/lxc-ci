@@ -58,6 +58,11 @@ do
         sleep 90
         lxc info v1
 
+        echo "==> Check config drive is readonly"
+        # Check 9p config drive share is exported readonly.
+        lxc exec v1 -- mount -t 9p config /srv
+        ! lxc exec v1 -- touch /srv/lxd-test || false
+
         echo "==> Checking VM root disk size is 10GB"
         lxc exec v1 -- df -B1000000000 | grep sda2 | grep 10
 
@@ -95,10 +100,10 @@ do
         lxc exec v1 -- mount | grep '/srv/rw type' -c | grep 1
         lxc exec v1 -- mount | grep '/srv/ro type' -c | grep 1
 
-        # RW disks should use virtiofs when used with the snap.
+        # RW disks should use virtio-fs when used with the snap.
         lxc exec v1 -- mount | grep 'lxd_dir1rw on /srv/rw type virtiofs (rw,relatime)'
 
-        # RO disks should use 9p due to limitations of virtiofs.
+        # RO disks should use 9p due to limitations of virtio-fs.
         lxc exec v1 -- mount | grep 'lxd_dir1ro on /srv/ro type 9p (ro,relatime,sync,dirsync,access=client,trans=virtio)'
 
         # Check UID/GID are correct.
