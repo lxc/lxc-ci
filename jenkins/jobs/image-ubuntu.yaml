@@ -39,9 +39,9 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        ARCHIVE="http://us.archive.ubuntu.com/ubuntu"
+        ARCHIVE="http://archive.ubuntu.com/ubuntu"
         if [ "${architecture}" != "amd64" ] && [ "${architecture}" != "i386" ]; then
-            ARCHIVE="http://us.ports.ubuntu.com/ubuntu-ports"
+            ARCHIVE="http://ports.ubuntu.com/ubuntu-ports"
         fi
 
         TYPE="container"
