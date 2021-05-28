@@ -202,48 +202,6 @@ files:
   types:
   - vm
 
-- name: network-device-down.service
-  path: /etc/systemd/system/network-device-down.service
-  generator: dump
-  content: |-
-    [Unit]
-    Description=Turn off network device
-    Before=NetworkManager.service
-
-    [Service]
-    ExecStart=-/usr/sbin/ip link set eth0 down
-    Type=oneshot
-    RemainAfterExit=true
-
-    [Install]
-    WantedBy=default.target
-  types:
-  - container
-  releases:
-  - 8
-
-- name: network-device-down.service
-  path: /etc/systemd/system/network-device-down.service
-  generator: dump
-  content: |-
-    [Unit]
-    Description=Turn off network device
-    Before=NetworkManager.service
-
-    [Service]
-    ExecStart=-/usr/sbin/ip link set eth0 down
-    Type=oneshot
-    RemainAfterExit=true
-
-    [Install]
-    WantedBy=default.target
-  types:
-  - container
-  releases:
-  - 7
-  variants:
-  - cloud
-
 - name: lxd-agent-workaround.service
   path: /etc/systemd/system/lxd-agent-workaround.service
   generator: dump
@@ -448,15 +406,6 @@ actions:
     # Disable loginuid in PAM stack
     sed -i '/^session.*pam_loginuid.so/s/^session/# session/' /etc/pam.d/*
 
-- trigger: post-packages
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    systemctl mask systemd-journald-audit.socket
-  types:
-  - containers
-
 - trigger: post-files
   action: |-
     #!/bin/sh
@@ -500,28 +449,4 @@ actions:
   - vm
   releases:
   - 8
-
-- trigger: post-files
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    systemctl enable network-device-down.service
-  types:
-  - container
-  releases:
-  - 8
-
-- trigger: post-files
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    systemctl enable network-device-down.service
-  types:
-  - container
-  releases:
-  - 7
-  variants:
-  - cloud
 
