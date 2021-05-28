@@ -236,12 +236,6 @@ packages:
     - vm
 
   - packages:
-    - kernel-plus
-    action: install
-    types:
-    - vm
-
-  - packages:
     - kernel
     action: install
     types:
