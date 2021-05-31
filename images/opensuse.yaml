@@ -190,6 +190,12 @@ packages:
     action: install
 
   - packages:
+    - libdevmapper1_03
+    action: install
+    architectures:
+    - ppc64le
+
+  - packages:
     - xz
     action: install
     architectures:
