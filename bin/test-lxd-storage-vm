@@ -124,6 +124,15 @@ do
         ! lxc exec v1 -- rm /srv/ro/lxd-test.txt || false
         ! lxc exec v1 -- chmod 777 /srv/ro || false
 
+        ## Mount the readonly disk as rw inside VM using 9p and check the disk is still readonly at the LXD layer.
+        lxc exec v1 -- mkdir /srv/ro9p
+        lxc exec v1 -- mount -t 9p lxd_dir1ro /srv/ro9p
+        lxc exec v1 -- mount | grep 'lxd_dir1ro on /srv/ro9p type 9p (rw,relatime,sync,dirsync,access=client,trans=virtio)'
+        ! lxc exec v1 -- touch /srv/ro9p/lxd-test-ro || false
+        ! lxc exec v1 -- mkdir /srv/ro9p/lxd-test-ro || false
+        ! lxc exec v1 -- rm /srv/ro9p/lxd-test.txt || false
+        ! lxc exec v1 -- chmod 777 /srv/ro9p || false
+
         # Check writable disk is writable.
         lxc exec v1 -- touch /srv/rw/lxd-test-rw
         stat -c '%u:%g' "/tmp/lxd-test-${poolName}/lxd-test-rw" | grep "0:0"
