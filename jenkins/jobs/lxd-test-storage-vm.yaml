@@ -1,5 +1,5 @@
 - job:
-    name: "lxd-test-storage"
+    name: "lxd-test-storage-vm"
     concurrent: false
     description: Run VM storage tests on physical hardware.
     node: master
