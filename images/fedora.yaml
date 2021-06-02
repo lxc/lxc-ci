@@ -282,4 +282,5 @@ actions:
   types:
   - vm
   releases:
+  - 33
   - 34
