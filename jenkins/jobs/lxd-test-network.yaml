@@ -1,14 +1,14 @@
 - job:
-    name: "lxd-test-network-physical-macvlan"
+    name: "lxd-test-network"
     concurrent: false
-    description: Tests physical and macvlan NICs for containers and VMs
+    description: Tests bridged, macvlan, physical and sriov NICs for containers and VMs
     node: master
     project-type: freestyle
 
     builders:
     - shell: |-
         cd /lxc-ci
-        exec sudo /lxc-ci/bin/maas-run name=lantea focal ga-20.04 iommu bin/test-lxd-network-physical-macvlan
+        exec sudo /lxc-ci/bin/maas-run name=lantea focal ga-20.04 iommu bin/test-lxd-network
 
     properties:
     - build-discarder:
