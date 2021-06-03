@@ -71,6 +71,7 @@ lxc start c1-macvlan
 sleep 2m
 
 # Check that all instances have an IPv4 and IPv6 address
+networkTests() {
 echo "=> Performing network tests"
 FAIL=0
 for url in $(lxc query "/1.0/instances" | jq -r .[]); do
@@ -113,9 +114,55 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
         FAIL=1
     fi
 done
+}
+
+networkTests
+lxc list
+
+# Hot unplug the NICs and check they are removed
+lxc config device remove v1-physical eth0
+! lxc exec v1-physical -- ip a show enp5s0 || false
+lxc config device remove c1-physical eth0
+! lxc exec c1-physical -- ip a show eth0 || false
+lxc config device remove v1-macvlan eth0
+! lxc exec v1-macvlan -- ip a show enp5s0 || false
+lxc config device remove c1-macvlan eth0
+! lxc exec c1-macvlan -- ip a show eth0 || false
 
 lxc list
 
+# Hot plug the NICs back
+lxc config device add v1-physical eth0 nic nictype=physical parent="${parentNIC}v1" name=eth0
+lxc config device add c1-physical eth0 nic nictype=physical parent="${parentNIC}v2" name=eth0
+lxc config device add v1-macvlan eth0 nic nictype=macvlan parent="${parentNIC}" name=eth0
+lxc config device add c1-macvlan eth0 nic nictype=macvlan parent="${parentNIC}" name=eth0
+
+# Wait for DHCP
+sleep 10
+
+# Check the IPs are re-added
+lxc list
+networkTests
+
+# Remove macvlan instances
+lxc delete -f v1-macvlan
+lxc delete -f c1-macvlan
+
+# Check bridged NIC type works
+lxc network create lxdbr0
+lxc config device remove v1-physical eth0
+lxc config device remove c1-physical eth0
+lxc config device add v1-physical eth0 nic network=lxdbr0 name=eth0
+lxc config device add c1-physical eth0 nic network=lxdbr0 name=eth0
+
+# Wait for DHCP
+sleep 10
+
+# Check the IPs are re-added
+lxc list
+networkTests
+
+# Cleanup
 for url in $(lxc query "/1.0/instances" | jq -r .[]); do
     name=$(echo "${url}" | cut -d/ -f4)
     lxc delete -f "${name}"
@@ -123,3 +170,4 @@ done
 
 lxc profile device remove default root
 lxc storage delete default
+lxc network delete lxdbr0
