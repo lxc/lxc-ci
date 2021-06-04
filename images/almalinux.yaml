@@ -1,6 +1,5 @@
 image:
   distribution: almalinux
-  release: 8
 
 source:
   downloader: almalinux-http
@@ -74,6 +73,16 @@ targets:
       You just created a {{ image.description }} container.
     config:
     - type: all
+      before: 5
+      content: |-
+        lxc.include = LXC_TEMPLATE_CONFIG/almalinux.common.conf
+
+    - type: user
+      before: 5
+      content: |-
+        lxc.include = LXC_TEMPLATE_CONFIG/almalinux.userns.conf
+
+    - type: all
       after: 4
       content: |-
         lxc.include = LXC_TEMPLATE_CONFIG/common.conf
@@ -114,8 +123,6 @@ files:
     TYPE=Ethernet
     MTU=
     DHCP_HOSTNAME=LXC_NAME
-  releases:
-  - 8
   types:
   - container
 
@@ -131,8 +138,6 @@ files:
     MTU=
     DHCP_HOSTNAME={{ container.name }}
     IPV6INIT=yes
-  releases:
-  - 8
   types:
   - container
 
@@ -147,8 +152,6 @@ files:
     TYPE=Ethernet
     MTU=
     DHCP_HOSTNAME={{ container.name }}
-  releases:
-  - 8
   types:
   - vm
 
@@ -174,32 +177,16 @@ files:
     add_drivers+="virtio_scsi virtio_console sd_mod"
   types:
   - vm
-  releases:
-  - 8
 
 - generator: fstab
   types:
   - vm
 
-- name: network-device-down.service
-  path: /etc/systemd/system/network-device-down.service
+- name: 86-nm-unmanaged.rules
+  path: /etc/udev/rules.d/86-nm-unmanaged.rules
   generator: dump
   content: |-
-    [Unit]
-    Description=Turn off network device
-    Before=NetworkManager.service
-
-    [Service]
-    ExecStart=-/usr/sbin/ip link set eth0 down
-    Type=oneshot
-    RemainAfterExit=true
-
-    [Install]
-    WantedBy=default.target
-  types:
-  - container
-  releases:
-  - 8
+    ENV{ID_NET_DRIVER}=="veth", ENV{NM_UNMANAGED}="0"
 
 - name: network
   path: /etc/sysconfig/network
@@ -235,8 +222,6 @@ files:
             control: auto{% else %}{{ config_get("user.network-config", "") }}{% endif %}
   variants:
   - cloud
-  releases:
-  - 8
 
 - name: user-data
   generator: cloud-init
@@ -274,8 +259,6 @@ packages:
   - packages:
     - NetworkManager
     action: install
-    releases:
-    - 8
 
   - packages:
     - cloud-init
@@ -288,24 +271,18 @@ packages:
     action: install
     types:
     - vm
-    releases:
-    - 8
 
   - packages:
     - kernel
     action: install
     types:
     - vm
-    releases:
-    - 8
 
   - packages:
     - grub2-efi-x64
     action: install
     types:
     - vm
-    releases:
-    - 8
     architectures:
     - x86_64
 
@@ -314,8 +291,6 @@ packages:
     action: install
     types:
     - vm
-    releases:
-    - 8
     architectures:
     - aaarch64
 
@@ -327,8 +302,6 @@ actions:
     systemd-machine-id-setup
   types:
   - vm
-  releases:
-  - 8
 
 - trigger: post-packages
   action: |-
@@ -366,16 +339,3 @@ actions:
     sed -i "s#root=[^ ]*#root=/dev/sda2#g" "${target}"
   types:
   - vm
-  releases:
-  - 8
-
-- trigger: post-files
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    systemctl enable network-device-down.service
-  types:
-  - container
-  releases:
-  - 8
