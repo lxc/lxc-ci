@@ -7,3 +7,5 @@
 - stgraber
 - tomponline
 - tych0
+- masnax
+- sdeziel
