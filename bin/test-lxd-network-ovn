@@ -57,6 +57,10 @@ lxc network create ovn-virtual-network --type=ovn
 sleep 2
 lxc network list | grep ovn-virtual-network
 
+echo "==> Check host connectivity to linuxcontainers.org"
+ping -c1 -4 -W5 linuxcontainers.org
+ping -c1 -6 -W5 linuxcontainers.org
+
 echo "==> Launching a test container on lxdbr0"
 lxc init images:ubuntu/20.04 u1
 FINGERPRINT="$(lxc image ls -cf --format=csv)"
