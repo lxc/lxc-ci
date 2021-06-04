@@ -106,39 +106,6 @@ files:
   types:
   - vm
 
-- name: networkd-override
-  path: /etc/systemd/system/systemd-networkd.service.d/lxc.conf
-  generator: dump
-  content: |-
-    [Service]
-    BindReadOnlyPaths=/sys
-  variants:
-  - default
-  types:
-  - container
-  releases:
-  - 32
-
-- name: network-device-down.service
-  path: /etc/systemd/system/network-device-down.service
-  generator: dump
-  content: |-
-    [Unit]
-    Description=Turn off network device
-    Before=NetworkManager.service
-
-    [Service]
-    ExecStart=-/usr/sbin/ip link set eth0 down
-    Type=oneshot
-    RemainAfterExit=true
-
-    [Install]
-    WantedBy=default.target
-  variants:
-  - cloud
-  types:
-  - container
-
 - name: meta-data
   generator: cloud-init
   variants:
@@ -270,15 +237,6 @@ actions:
   variants:
   - cloud
 
-- trigger: post-packages
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    systemctl mask systemd-journald-audit.socket
-  types:
-  - containers
-
 - trigger: post-unpack
   action: |-
     #!/bin/sh
@@ -295,7 +253,7 @@ actions:
     # Remove the "Container Image" string as this is going to be am VM
     sed -i 's/[ ]*(Container Image)//;/^VARIANT/d' /etc/os-release
 
-    target="$(readlink -f /etc/grub2-efi.cfg)"
+    target=/boot/efi/EFI/fedora/grub.cfg
     grub2-mkconfig -o "${target}"
     sed -i "s#root=[^ ]*#root=/dev/sda2#g" "${target}"
 
@@ -326,14 +284,3 @@ actions:
   releases:
   - 33
   - 34
-
-- trigger: post-files
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    systemctl enable network-device-down.service
-  variants:
-  - cloud
-  types:
-  - container

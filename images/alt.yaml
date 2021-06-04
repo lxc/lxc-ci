@@ -93,30 +93,11 @@ files:
     [Network]
     DHCP=ipv4
 
-- name: networkd-override
-  path: /etc/systemd/system/systemd-networkd.service.d/lxc.conf
-  generator: dump
-  content: |-
-    [Service]
-    BindReadOnlyPaths=/sys
-  releases:
-  - Sisyphus
-  - p9
-
 actions:
 - trigger: post-unpack
   action: |-
     #!/bin/sh
     mkdir -p /run/lock
-
-- trigger: post-packages
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    systemctl mask systemd-journald-audit.socket
-  types:
-  - containers
 
 packages:
   manager: apt

@@ -1,35 +1,18 @@
 - job:
-    name: "lxd-test-kernel"
+    name: "lxd-test-network"
     concurrent: false
-    description: Run the LXD testsuite against various kernels.
+    description: Tests bridged, macvlan, physical and sriov NICs for containers and VMs
     node: master
-    project-type: matrix
-
-    axes:
-    - axis:
-        name: kernel
-        type: user-defined
-        values:
-        - daily
-        - ubuntu
-        - ubuntu-proposed
-        - ubuntu-unstable
-
-    - axis:
-        name: restrict
-        type: slave
-        values:
-        - master
+    project-type: freestyle
 
     builders:
     - shell: |-
-        set -e
         cd /lxc-ci
-        sudo -E /lxc-ci/bin/maas-run tags=physical hirsute ga-21.04 ${kernel} bin/test-lxd-kernel
+        exec sudo /lxc-ci/bin/maas-run name=lantea focal ga-20.04 iommu bin/test-lxd-network
 
     properties:
     - build-discarder:
-        num-to-keep: 30
+        num-to-keep: 3
 
     - raw:
         !include: ../includes/webhook.yaml.inc

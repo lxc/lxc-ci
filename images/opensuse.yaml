@@ -190,6 +190,12 @@ packages:
     action: install
 
   - packages:
+    - libdevmapper1_03
+    action: install
+    architectures:
+    - ppc64le
+
+  - packages:
     - xz
     action: install
     architectures:
@@ -295,15 +301,6 @@ actions:
     umount -l /etc/resolv.conf || true
     rm /etc/resolv.conf
     ln -sf /var/run/netconfig/resolv.conf /etc/resolv.conf
-
-- trigger: post-packages
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    systemctl mask systemd-journald-audit.socket
-  types:
-  - containers
 
 - trigger: post-files
   action: |-

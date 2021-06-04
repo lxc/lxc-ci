@@ -1,0 +1,192 @@
+#!/bin/sh
+set -eu
+
+storageDevice="/dev/nvme0n1p3"
+parentNIC="enp10s0"
+
+cleanup() {
+    echo ""
+    if [ "${FAIL}" = "1" ]; then
+        echo "Test failed"
+        exit 1
+    fi
+
+    echo "Test passed"
+    exit 0
+}
+
+FAIL=1
+trap cleanup EXIT HUP INT TERM
+
+# Wait for snapd seeding
+sleep 1m
+
+# Configure to use the proxy
+curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh
+
+# Install LXD
+while :; do
+    [ ! -e /usr/bin/lxd ] && break
+    apt remove --purge lxd lxd-client --yes && break
+done
+snap install lxd --edge
+snap install jq
+snap refresh lxd --channel=latest/edge
+lxd waitready --timeout=300
+
+# Enable SR-IOV on nic and bring up
+echo 7 > "/sys/class/net/${parentNIC}/device/sriov_numvfs"
+ip link set "${parentNIC}" up
+sleep 10
+ethtool "${parentNIC}"
+ip a
+
+# Configure LXD
+lxc storage create default zfs source="${storageDevice}"
+lxc profile device add default root disk path=/ pool=default
+
+# Launch instances with physical NICs
+echo "==> VM on default VLAN with physical"
+lxc init images:ubuntu/20.04/cloud v1-physical --vm
+lxc config device add v1-physical eth0 nic nictype=physical parent="${parentNIC}v1" name=eth0
+lxc start v1-physical
+
+echo "==> Container on default VLAN with physical"
+lxc init images:ubuntu/20.04/cloud c1-physical
+lxc config device add c1-physical eth0 nic nictype=physical parent="${parentNIC}v2" name=eth0
+lxc start c1-physical
+
+# Launch instances with macvlan NICs
+echo "==> VM on default VLAN with macvlan"
+lxc init images:ubuntu/20.04/cloud v1-macvlan --vm
+lxc config device add v1-macvlan eth0 nic nictype=macvlan parent="${parentNIC}" name=eth0
+lxc start v1-macvlan
+
+echo "==> Container on default VLAN with macvlan"
+lxc init images:ubuntu/20.04/cloud c1-macvlan
+lxc config device add c1-macvlan eth0 nic nictype=macvlan parent="${parentNIC}" name=eth0
+lxc start c1-macvlan
+
+# Launch instances with sriov NICs
+echo "==> VM on default VLAN with sriov"
+lxc init images:ubuntu/20.04/cloud v1-sriov --vm
+lxc config device add v1-sriov eth0 nic nictype=sriov parent="${parentNIC}" name=eth0
+lxc start v1-sriov
+
+echo "==> Container on default VLAN with sriov"
+lxc init images:ubuntu/20.04/cloud c1-sriov
+lxc config device add c1-sriov eth0 nic nictype=sriov parent="${parentNIC}" name=eth0
+lxc start c1-sriov
+
+# Wait for things to settle
+sleep 2m
+
+# Check that all instances have an IPv4 and IPv6 address
+networkTests() {
+echo "=> Performing network tests"
+FAIL=0
+for url in $(lxc query "/1.0/instances" | jq -r .[]); do
+    name=$(echo "${url}" | cut -d/ -f4)
+    echo ""
+
+    # Get the addresses
+    address=$(lxc query "${url}/state" | jq -r ".network.eth0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
+    if [ -z "${address}" ]; then
+        address=$(lxc query "${url}/state" | jq -r ".network.enp5s0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
+    fi
+
+    if [ -z "${address}" ]; then
+        echo "FAIL: No network interface: ${name}"
+        FAIL=1
+        continue
+    fi
+
+    # IPv4 address
+    if echo "${address}" | grep "\." -q; then
+        echo "PASS: IPv4 address: ${name}"
+    else
+        echo "FAIL: IPv4 address: ${name}"
+        FAIL=1
+    fi
+
+    # IPv6 address
+    if echo "${address}" | grep ":" -q; then
+        echo "PASS: IPv6 address: ${name}"
+    else
+        echo "FAIL: IPv6 address: ${name}"
+        FAIL=1
+    fi
+
+    # DNS resolution
+    if lxc exec "${name}" -- getent hosts linuxcontainers.org >/dev/null 2>&1 || lxc exec "${name}" -- ping -c1 -W1 linuxcontainers.org >/dev/null 2>&1; then
+        echo "PASS: DNS resolution: ${name}"
+    else
+        echo "FAIL: DNS resolution: ${name}"
+        FAIL=1
+    fi
+done
+}
+
+networkTests
+lxc list
+
+# Hot unplug the NICs and check they are removed
+lxc config device remove v1-physical eth0
+! lxc exec v1-physical -- ip a show enp5s0 || false
+lxc config device remove c1-physical eth0
+! lxc exec c1-physical -- ip a show eth0 || false
+lxc config device remove v1-macvlan eth0
+! lxc exec v1-macvlan -- ip a show enp5s0 || false
+lxc config device remove c1-macvlan eth0
+! lxc exec c1-macvlan -- ip a show eth0 || false
+lxc config device remove v1-sriov eth0
+! lxc exec v1-sriov -- ip a show enp5s0 || false
+lxc config device remove c1-sriov eth0
+! lxc exec c1-sriov -- ip a show eth0 || false
+
+lxc list
+
+# Hot plug the NICs back
+lxc config device add v1-physical eth0 nic nictype=physical parent="${parentNIC}v1" name=eth0
+lxc config device add c1-physical eth0 nic nictype=physical parent="${parentNIC}v2" name=eth0
+lxc config device add v1-macvlan eth0 nic nictype=macvlan parent="${parentNIC}" name=eth0
+lxc config device add c1-macvlan eth0 nic nictype=macvlan parent="${parentNIC}" name=eth0
+lxc config device add v1-sriov eth0 nic nictype=sriov parent="${parentNIC}" name=eth0
+lxc config device add c1-sriov eth0 nic nictype=sriov parent="${parentNIC}" name=eth0
+
+# Wait for DHCP
+sleep 10
+
+# Check the IPs are re-added
+lxc list
+networkTests
+
+# Remove instances, leaving one VM and container for bridge hotplug test
+lxc delete -f v1-macvlan
+lxc delete -f c1-macvlan
+lxc delete -f v1-sriov
+lxc delete -f c1-sriov
+
+# Check bridged NIC type works
+lxc network create lxdbr0
+lxc config device remove v1-physical eth0
+lxc config device remove c1-physical eth0
+lxc config device add v1-physical eth0 nic network=lxdbr0 name=eth0
+lxc config device add c1-physical eth0 nic network=lxdbr0 name=eth0
+
+# Wait for DHCP
+sleep 10
+
+# Check the IPs are re-added
+lxc list
+networkTests
+
+# Cleanup
+for url in $(lxc query "/1.0/instances" | jq -r .[]); do
+    name=$(echo "${url}" | cut -d/ -f4)
+    lxc delete -f "${name}"
+done
+
+lxc profile device remove default root
+lxc storage delete default
+lxc network delete lxdbr0

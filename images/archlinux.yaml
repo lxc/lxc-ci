@@ -635,15 +635,6 @@ actions:
     systemctl enable systemd-networkd
     systemctl enable systemd-resolved
 
-- trigger: post-packages
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    systemctl mask systemd-journald-audit.socket
-  types:
-  - containers
-
 - trigger: post-files
   action: |-
     #!/bin/sh

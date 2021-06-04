@@ -1,7 +1,7 @@
 - job:
-    name: "image-fedora"
+    name: "image-springdalelinux"
     concurrent: false
-    description: Fedora images for LXC and LXD.
+    description: Springdale Linux images for LXC and LXD.
     node: master
     project-type: matrix
 
@@ -11,17 +11,13 @@
         type: slave
         values:
         - amd64
-        - arm64
-        - armhf
-        - ppc64el
-        - s390x
 
     - axis:
         name: release
         type: user-defined
         values:
-        - 33
-        - 34
+        - 7
+        - 8
 
     - axis:
         name: variant
@@ -30,11 +26,6 @@
         - default
         - cloud
 
-    execution-strategy:
-      combination-filter: '
-      !(architecture=="armhf" && release!="29") &&
-      !(architecture == "ppc64el" && release == "34")'
-
     builders:
     - shell: |-
         cd /lxc-ci
@@ -42,17 +33,11 @@
 
         ARCH=${architecture}
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
-        [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
-        [ "${ARCH}" = "armhf" ] && ARCH="armhfp"
-        [ "${ARCH}" = "ppc64el" ] && ARCH="ppc64le"
 
         TYPE="container"
-        if [ "${architecture}" = "amd64" ] || [ "${architecture}" = "arm64" ]; then
-            TYPE="container,vm"
-        fi
 
-        exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/fedora.yaml \
-            ${LXD_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
+        exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/springdalelinux.yaml \
+            ${LXD_ARCHITECTURE} ${TYPE} 7200 ${WORKSPACE} \
             -o image.architecture=${ARCH} -o image.release=${release} \
             -o image.variant=${variant}
 

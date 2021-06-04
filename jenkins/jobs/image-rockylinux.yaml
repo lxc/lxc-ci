@@ -1,7 +1,7 @@
 - job:
-    name: "image-fedora"
+    name: "image-rockylinux"
     concurrent: false
-    description: Fedora images for LXC and LXD.
+    description: Rocky Linux images for LXC and LXD.
     node: master
     project-type: matrix
 
@@ -12,16 +12,12 @@
         values:
         - amd64
         - arm64
-        - armhf
-        - ppc64el
-        - s390x
 
     - axis:
         name: release
         type: user-defined
         values:
-        - 33
-        - 34
+        - 8
 
     - axis:
         name: variant
@@ -29,11 +25,6 @@
         values:
         - default
         - cloud
-
-    execution-strategy:
-      combination-filter: '
-      !(architecture=="armhf" && release!="29") &&
-      !(architecture == "ppc64el" && release == "34")'
 
     builders:
     - shell: |-
@@ -43,18 +34,18 @@
         ARCH=${architecture}
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
         [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
-        [ "${ARCH}" = "armhf" ] && ARCH="armhfp"
-        [ "${ARCH}" = "ppc64el" ] && ARCH="ppc64le"
+
+        EXTRA_ARGS="-o source.variant=boot"
 
         TYPE="container"
-        if [ "${architecture}" = "amd64" ] || [ "${architecture}" = "arm64" ]; then
+        if [ "${architecture}" = "amd64" ]; then
             TYPE="container,vm"
         fi
 
-        exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/fedora.yaml \
-            ${LXD_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
+        exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/rockylinux.yaml \
+            ${LXD_ARCHITECTURE} ${TYPE} 7200 ${WORKSPACE} \
             -o image.architecture=${ARCH} -o image.release=${release} \
-            -o image.variant=${variant}
+            -o image.variant=${variant} ${EXTRA_ARGS}
 
     properties:
     - build-discarder:

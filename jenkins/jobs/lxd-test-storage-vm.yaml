@@ -1,18 +1,36 @@
 - job:
-    name: "lxd-test-sriov"
+    name: "lxd-test-storage-vm"
     concurrent: false
-    description: Tests SR-IOV for containers and VMs
+    description: Run VM storage tests on physical hardware.
     node: master
-    project-type: freestyle
+    project-type: matrix
+
+    axes:
+    - axis:
+        name: backend
+        type: user-defined
+        values:
+        - dir
+        - zfs
+        - btrfs
+        - lvm
+        - ceph
+
+    - axis:
+        name: restrict
+        type: slave
+        values:
+        - master
 
     builders:
     - shell: |-
+        set -e
         cd /lxc-ci
-        exec sudo /lxc-ci/bin/maas-run name=lantea focal ga-20.04 iommu bin/test-lxd-sriov
+        sudo -E /lxc-ci/bin/maas-run tags=physical focal ga-20.04 default bin/test-lxd-storage-vm "${backend}"
 
     properties:
     - build-discarder:
-        num-to-keep: 3
+        num-to-keep: 30
 
     - raw:
         !include: ../includes/webhook.yaml.inc

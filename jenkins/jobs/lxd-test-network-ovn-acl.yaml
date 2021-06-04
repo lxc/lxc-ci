@@ -1,36 +1,18 @@
 - job:
-    name: "lxd-test-vm"
+    name: "lxd-test-network-ovn-acl"
     concurrent: false
-    description: Run VM tests on physical hardware.
+    description: Tests OVN ACL integration with LXD
     node: master
-    project-type: matrix
-
-    axes:
-    - axis:
-        name: backend
-        type: user-defined
-        values:
-        - dir
-        - zfs
-        - btrfs
-        - lvm
-        - ceph
-
-    - axis:
-        name: restrict
-        type: slave
-        values:
-        - master
+    project-type: freestyle
 
     builders:
     - shell: |-
-        set -e
         cd /lxc-ci
-        sudo -E /lxc-ci/bin/maas-run tags=physical focal ga-20.04 default bin/test-lxd-vm "${backend}"
+        exec sudo /lxc-ci/bin/maas-run tags=virtual focal ga-20.04 default bin/test-lxd-network-ovn-acl
 
     properties:
     - build-discarder:
-        num-to-keep: 30
+        num-to-keep: 3
 
     - raw:
         !include: ../includes/webhook.yaml.inc

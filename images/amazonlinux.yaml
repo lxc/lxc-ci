@@ -1,48 +1,42 @@
 image:
-  distribution: Apertis
-  description: |-
-    Apertis {{ image.architecture }} {{ image.variant }} {{ image.release }} {{ image.serial }}
-  variant: minimal
+  distribution: amazonlinux
 
 source:
-  downloader: apertis-http
-  url: https://images.apertis.org
-  variant: release
+  downloader: rootfs-http
+  url: https://cdn.amazonlinux.com/os-images/{{ image.release }}/container/amzn2-container-raw-{{ image.release }}-x86_64.tar.xz
 
 targets:
   lxc:
-    create-message: |-
-      You just created an {{ image.distribution }} container (release={{ image.release }}, arch={{ image.architecture }})
+    create-message: |
+      You just created a {{ image.description }} container.
     config:
     - type: all
       before: 5
       content: |-
-        lxc.include = LXC_TEMPLATE_CONFIG/debian.common.conf
-
+        lxc.include = LXC_TEMPLATE_CONFIG/rocky.common.conf
     - type: user
       before: 5
       content: |-
-        lxc.include = LXC_TEMPLATE_CONFIG/debian.userns.conf
-
+        lxc.include = LXC_TEMPLATE_CONFIG/rocky.userns.conf
     - type: all
       after: 4
       content: |-
         lxc.include = LXC_TEMPLATE_CONFIG/common.conf
-
     - type: user
       after: 4
       content: |-
         lxc.include = LXC_TEMPLATE_CONFIG/userns.conf
-
     - type: all
       content: |-
-        lxc.arch = {{ image.architecture_personality }}
+        lxc.arch = {{ image.architecture_kernel }}
 
 files:
-- path: /etc/hostname
+- name: hostname
+  path: /etc/hostname
   generator: hostname
 
-- path: /etc/hosts
+- name: hosts
+  path: /etc/hosts
   generator: hosts
 
 - path: /etc/machine-id
@@ -62,13 +56,16 @@ files:
     DHCP=ipv4
 
 packages:
-  manager: apt
+  manager: yum
   update: true
-  cleanup: false
+  cleanup: true
   sets:
   - packages:
-    - connman
-    action: remove
+    - iproute
+    - systemd
+    - systemd-networkd
+    - systemd-resolved
+    action: install
 
 actions:
 - trigger: post-packages
@@ -77,14 +74,9 @@ actions:
     umount -l /etc/resolv.conf || true
     rm /etc/resolv.conf
     ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+    cp -R /etc/skel/.bash* /root/
 
-    systemctl enable systemd-networkd.service
-    systemctl enable systemd-resolved.service
+    systemctl enable systemd-resolved
+    systemctl enable systemd-networkd
 
-environment:
-  variables:
-  - key: TMPDIR
-    set: false
-
-mappings:
-  architecture_map: debian
+    rm -rf /var/cache/yum

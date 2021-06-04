@@ -90,8 +90,8 @@ EOF
 )"
         fi
     else
-        lxc init "images:${i}" "${name}-unpriv" -c security.nesting=true
-        lxc init "images:${i}" "${name}-priv" -c security.privileged=true -c security.nesting=true
+        lxc init "images:${i}" "${name}-unpriv"
+        lxc init "images:${i}" "${name}-priv" -c security.privileged=true
 
         if [ "${name}" = "voidlinux" ] || [ "${name}" = "voidlinux-musl" ]; then
             # Workaround weird init system
