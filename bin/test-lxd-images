@@ -194,7 +194,19 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
     fi
 
     # DNS resolution
-    if lxc exec "${name}" -- getent hosts linuxcontainers.org >/dev/null 2>&1 || lxc exec "${name}" -- ping -c1 -W1 linuxcontainers.org >/dev/null 2>&1; then
+    DNS=0
+    for i in $(seq 3); do
+        if lxc exec "${name}" -- getent hosts linuxcontainers.org >/dev/null 2>&1; then
+            DNS=1
+            break
+        fi
+
+        if lxc exec "${name}" -- ping -c1 -W1 linuxcontainers.org >/dev/null 2>&1; then
+            DNS=1
+            break
+        fi
+    done
+    if [ "${DNS}" = "1" ]; then
         echo "PASS: DNS resolution: ${name}"
     else
         echo "FAIL: DNS resolution: ${name}"
