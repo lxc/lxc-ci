@@ -473,6 +473,19 @@ actions:
   - container
   - vm
 
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Remove this directory, as it should actually be a file
+    rm -rf /etc/portage/package.use
+
+    # Fix cloud-init requirement
+    echo '*/* PYTHON_TARGETS: python3_7 python3_8' > /etc/portage/package.use
+  variants:
+  - cloud
+
 - trigger: post-packages
   action: |-
     #!/bin/sh
