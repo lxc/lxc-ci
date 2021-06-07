@@ -161,7 +161,7 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
 
     # FIXME: Skip CentOS 7 VMs due to racy agent
     if [ "${TYPE}" = "VIRTUAL-MACHINE" ] && echo "${name}" | grep -q "^centos-7"; then
-        echo "SKIP: CentOS 7 has an unstable agent"
+        echo "SKIP: CentOS 7 has an unstable agent: ${name}"
         continue
     fi
 
@@ -230,6 +230,17 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
             echo "FAIL: cloud-init vendor-data provisioning: ${name}"
             FAIL=1
         fi
+    fi
+
+    # Systemd cleanliness
+    if lxc exec "${name}" -- sh -c "type systemctl" >/dev/null 2>&1; then
+        if lxc exec "${name}" -- systemctl --failed >/dev/null 2>&1; then
+            echo "PASS: systemd clean: ${name}"
+        else
+            echo "FAIL: systemd clean: ${name}"
+        fi
+    else
+        echo "SKIP: systemd clean: ${name}"
     fi
 done
 
