@@ -234,10 +234,10 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
 
     # Systemd cleanliness
     if lxc exec "${name}" -- sh -c "type systemctl" >/dev/null 2>&1; then
-        if lxc exec "${name}" -- systemctl --failed >/dev/null 2>&1; then
-            echo "PASS: systemd clean: ${name}"
-        else
+        if lxc exec "${name}" -- systemctl --failed 2>&1 | grep -q failed; then
             echo "FAIL: systemd clean: ${name}"
+        else
+            echo "PASS: systemd clean: ${name}"
         fi
     else
         echo "SKIP: systemd clean: ${name}"
