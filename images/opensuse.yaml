@@ -180,7 +180,6 @@ packages:
     - file
     - glib2-tools
     - gzip
-    - hardlink
     - hostname
     - iproute2
     - iputils
@@ -190,6 +189,13 @@ packages:
     - tar
     - which
     action: install
+
+  - packages:
+    - hardlink
+    action: install
+    releases:
+    - 15.2
+    - tumbleweed
 
   - packages:
     - libdevmapper1_03
