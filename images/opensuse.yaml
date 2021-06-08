@@ -108,6 +108,7 @@ files:
   - vm
   releases:
   - 15.2
+  - 15.3
 
 - name: ifcfg-enp5s0
   path: /etc/sysconfig/network/ifcfg-enp5s0
@@ -156,6 +157,7 @@ files:
   - vm
   release:
   - 15.2
+  - 15.3
 
 - path: /etc/fstab
   generator: dump
