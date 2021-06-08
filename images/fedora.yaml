@@ -175,6 +175,7 @@ packages:
     - cloud-init
     - network-scripts
     - NetworkManager
+    - openssh-server
     action: install
     variants:
     - cloud
