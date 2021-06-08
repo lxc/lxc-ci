@@ -55,6 +55,9 @@ files:
     [Network]
     DHCP=ipv4
 
+- path: /etc/fstab
+  generator: dump
+
 packages:
   manager: yum
   update: true
