@@ -242,6 +242,9 @@ files:
 - path: /etc/machine-id
   generator: dump
 
+- path: /etc/fstab
+  generator: dump
+
 - path: /var/lib/dbus/machine-id
   generator: remove
 
@@ -504,6 +507,7 @@ packages:
 
   - packages:
     - cloud-init
+    - NetworkManager
     action: install
     variants:
     - cloud
@@ -661,4 +665,3 @@ actions:
   releases:
   - 8
   - 8-Stream
-
