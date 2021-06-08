@@ -93,6 +93,9 @@ files:
     [Network]
     DHCP=ipv4
 
+- path: /etc/fstab
+  generator: dump
+
 actions:
 - trigger: post-unpack
   action: |-
