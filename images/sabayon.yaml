@@ -56,22 +56,6 @@ files:
     ExecStart=
     ExecStart=/usr/lib/systemd/systemd-sysctl  --prefix=/etc/sysctl.d/
 
-- name: network-device-down.service
-  path: /etc/systemd/system/network-device-down.service
-  generator: dump
-  content: |-
-    [Unit]
-    Description=Turn off network device
-    Before=NetworkManager.service
-
-    [Service]
-    ExecStart=-/bin/ip link set eth0 down
-    Type=oneshot
-    RemainAfterExit=true
-
-    [Install]
-    WantedBy=default.target
-
 - name: meta-data
   generator: cloud-init
   variants:
@@ -109,10 +93,7 @@ actions:
     #!/bin/sh
 
     # Disable problematic systemd units
-    ln -s /dev/null /etc/systemd/system/systemd-journald-audit.socket
-    ln -s /dev/null /etc/systemd/system/systemd-remount-fs.service
     ln -s /dev/null /etc/systemd/system/sys-fs-fuse-connections.mount
-    ln -s /dev/null /etc/systemd/system/dev-hugepages.mount
 
     # Disable sabayon-anti-fork-bomb limits
     sed -i -e 's/^*/#*/g' /etc/security/limits.d/00-sabayon-anti-fork-bomb.conf
