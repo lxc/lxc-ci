@@ -491,19 +491,20 @@ packages:
     action: install
 
   - packages:
-    - NetworkManager
+    - network-scripts
     action: install
-    releases:
-    - 8
-    - 8-Stream
+    types:
+    - container
+    variants:
+    - default
 
   - packages:
     - NetworkManager
     action: install
-    releases:
-    - 7
     types:
     - vm
+    variants:
+    - default
 
   - packages:
     - cloud-init
@@ -656,3 +657,25 @@ actions:
   releases:
   - 8
   - 8-Stream
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    systemctl enable NetworkManager.service
+  types:
+  - vm
+  variants:
+  - default
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    systemctl enable network
+  types:
+  - container
+  variants:
+  - default
