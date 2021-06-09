@@ -259,6 +259,10 @@ do
         echo "==> Deleting storage pool"
         lxc storage delete "${poolName}2"
         lxc storage delete "${poolName}"
+
+        echo "==> Delete network"
+        lxc profile device remove default eth0
+        lxc network delete lxdbr0
 done
 
 FAIL=0
