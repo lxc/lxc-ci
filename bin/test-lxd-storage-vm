@@ -72,6 +72,24 @@ do
         echo "==> Checking VM root disk size is 10GB"
         lxc exec v1 -- df -B1000000000 | grep sda2 | grep 10
 
+        echo "==> Testing VM non-optimized export/import (while running to check config.mount is excluded)"
+        lxc export v1 "/tmp/lxd-test-${poolName}.tar.gz"
+        lxc delete -f v1
+        lxc import "/tmp/lxd-test-${poolName}.tar.gz"
+        rm "/tmp/lxd-test-${poolName}.tar.gz"
+        lxc start v1
+        sleep 90
+        lxc exec v1 -- ps aux | grep lxd-agent # Check booted OK.
+
+        echo "==> Testing VM optimized export/import (while running to check config.mount is excluded)"
+        lxc export v1 "/tmp/lxd-test-${poolName}-optimized.tar.gz" --optimized-storage
+        lxc delete -f v1
+        lxc import "/tmp/lxd-test-${poolName}-optimized.tar.gz"
+        rm "/tmp/lxd-test-${poolName}-optimized.tar.gz"
+        lxc start v1
+        sleep 90
+        lxc exec v1 -- ps aux | grep lxd-agent # Check booted OK.
+
         echo "==> Increasing VM root disk size for next boot"
         lxc config device set v1 root size=11GB
         lxc config get v1 volatile.root.apply_quota | grep true
