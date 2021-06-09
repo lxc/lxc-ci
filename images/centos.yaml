@@ -497,6 +497,9 @@ packages:
     - container
     variants:
     - default
+    releases:
+    - 8
+    - 8-Stream
 
   - packages:
     - NetworkManager
@@ -679,3 +682,6 @@ actions:
   - container
   variants:
   - default
+  releases:
+  - 8
+  - 8-Stream
