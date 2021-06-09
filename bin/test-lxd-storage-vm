@@ -105,6 +105,7 @@ do
 
         echo "==> Checking additional disk device support"
         lxc stop -f v1
+
         # Create directory with a file for directory disk tests.
         mkdir "/tmp/lxd-test-${poolName}"
         touch "/tmp/lxd-test-${poolName}/lxd-test"
@@ -120,6 +121,7 @@ do
         lxc start v1
         sleep 90
 
+        echo "==> Testing VM lxd-agent drive mounts"
         # Check there is only 1 mount for each directory disk and that it is mounted with the appropriate options.
         lxc exec v1 -- mount | grep '/srv/rw type' -c | grep 1
         lxc exec v1 -- mount | grep '/srv/ro type' -c | grep 1
@@ -166,6 +168,7 @@ do
         lxc exec v1 -- dd if=/dev/urandom of=/dev/sdc bs=512 count=2
 
         # Remove temporary directory (should now be empty aside from block file).
+        echo "==> Stopping VM"
         lxc stop -f v1
         rm "/tmp/lxd-test-${poolName}/lxd-test-block"
         rmdir "/tmp/lxd-test-${poolName}"
