@@ -95,7 +95,7 @@ targets:
     - type: all
       content: |-
         lxc.arch = {{ image.architecture_kernel }}
-    
+
 files:
 - name: hostname
   path: /etc/hostname
@@ -247,6 +247,7 @@ packages:
     - cronie-noanacron
     - curl
     - dhclient
+    - hostname
     - initscripts
     - openssh-clients
     - passwd
