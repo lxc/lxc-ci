@@ -258,11 +258,24 @@ packages:
     action: install
 
   - packages:
+    - network-scripts
+    action: install
+    types:
+    - container
+    variants:
+    - default
+
+  - packages:
     - NetworkManager
     action: install
+    types:
+    - vm
+    variants:
+    - default
 
   - packages:
     - cloud-init
+    - NetworkManager
     action: install
     variants:
     - cloud
@@ -331,3 +344,25 @@ actions:
     sed -i "s#root=[^ ]*#root=/dev/sda2#g" "${target}"
   types:
   - vm
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    systemctl enable NetworkManager.service
+  types:
+  - vm
+  variants:
+  - default
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    systemctl enable network
+  types:
+  - container
+  variants:
+  - default
