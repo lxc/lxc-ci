@@ -69,6 +69,11 @@ files:
 - path: /etc/machine-id
   generator: dump
 
+- path: /etc/fstab
+  generator: dump
+  types:
+  - container
+
 - path: /var/lib/dbus/machine-id
   generator: remove
 
