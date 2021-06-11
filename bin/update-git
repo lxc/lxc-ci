@@ -1,5 +1,6 @@
 #!/bin/sh -eu
 [ -e /lxc-ci/etc/config ] && . /lxc-ci/etc/config
+export https_proxy
 
 cd /lxc-ci
 
