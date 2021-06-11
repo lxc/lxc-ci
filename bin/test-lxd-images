@@ -234,6 +234,12 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
 
     # Systemd cleanliness
     if lxc exec "${name}" -- sh -c "type systemctl" >/dev/null 2>&1; then
+        # Ensure systemctl is ready. If not, it returns "Failed to connect to bus".
+        for _ in $(seq 20); do
+            lxc exec "${name}" -- systemctl >/dev/null 2>&1 && break
+            sleep 0.5
+        done
+
         if lxc exec "${name}" -- systemctl --failed 2>&1 | grep -q failed; then
             echo "FAIL: systemd clean: ${name}"
             FAIL=1
