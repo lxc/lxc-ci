@@ -46,6 +46,7 @@
     execution-strategy:
       combination-filter: '
         !(arch=="i386" && track=="latest" && channel=="edge") &&
+        !(arch=="i386" && track=="latest" && channel=="candidate") &&
         !(arch=="i386" && track=="4.0" && channel=="edge")'
 
     builders:
