@@ -330,6 +330,7 @@ packages:
   - packages:
     - cloud-init
     - NetworkManager
+    - openssh-server
     action: install
     variants:
     - cloud
