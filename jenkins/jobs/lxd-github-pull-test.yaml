@@ -26,10 +26,6 @@
                 return "ceph";
             }
 
-            if (binding.getVariables().get("arch") == "i386") {
-                return "native-i386";
-            }
-
             return null;
 
     - raw:
@@ -91,10 +87,9 @@
         values:
         - amd64
         - arm64
-        - i386
 
     execution-strategy:
-      combination-filter: '!(arch=="i386" && backend!="dir") && !(arch=="arm64" && backend=="lvm") && !(arch=="arm64" && backend=="ceph") && !(arch=="arm64" && backend=="random") && !(backend!="dir" && compiler!="golang-1.15")'
+      combination-filter: '!(arch=="arm64" && backend=="lvm") && !(arch=="arm64" && backend=="ceph") && !(arch=="arm64" && backend=="random") && !(backend!="dir" && compiler!="golang-1.15")'
 
     publishers:
       - archive:

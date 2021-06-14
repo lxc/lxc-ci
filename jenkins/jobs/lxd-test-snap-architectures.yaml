@@ -13,7 +13,6 @@
         - amd64
         - arm64
         - armhf
-        - i386
         - ppc64el
         - s390x
 
@@ -43,12 +42,6 @@
         - candidate
         - stable
 
-    execution-strategy:
-      combination-filter: '
-        !(arch=="i386" && track=="latest" && channel=="edge") &&
-        !(arch=="i386" && track=="latest" && channel=="candidate") &&
-        !(arch=="i386" && track=="4.0" && channel=="edge")'
-
     builders:
     - shell: |-
         cd /lxc-ci
@@ -60,14 +53,6 @@
 
     - raw:
         !include: ../includes/webhook.yaml.inc
-
-    - groovy-label:
-        script: |-
-            if (binding.getVariables().get("arch") == "i386") {
-                return "native-i386";
-            }
-
-            return null;
 
     publishers:
     - workspace-cleanup:

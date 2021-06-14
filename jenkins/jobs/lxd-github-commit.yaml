@@ -80,14 +80,10 @@
         values:
         - amd64
         - arm64
-        - i386
 
     builders:
     - shell: exec /usr/bin/script /dev/null -e -q -c "/lxc-ci/bin/build-lxd ${{compiler}}
         https://github.com/lxc/lxd {branch} ${{backend}}"
-
-    execution-strategy:
-      combination-filter: '!(backend=="zfs" && arch=="i386") && !(backend=="lvm" && arch=="i386") && !(backend=="ceph" && arch=="i386")'
 
     properties:
     - build-discarder:
@@ -100,10 +96,6 @@
         script: |-
             if (binding.getVariables().get("backend") == "ceph") {{
                 return "ceph";
-            }}
-
-            if (binding.getVariables().get("arch") == "i386") {{
-                return "native-i386";
             }}
 
             return null;

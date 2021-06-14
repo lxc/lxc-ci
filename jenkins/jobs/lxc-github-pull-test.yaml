@@ -27,14 +27,6 @@
     - raw:
         !include: ../includes/webhook.yaml.inc
 
-    - groovy-label:
-        script: |-
-            if (binding.getVariables().get("arch") == "i386") {
-                return "native-i386";
-            }
-
-            return null;
-
     parameters:
     - string:
         name: sha1
@@ -75,7 +67,6 @@
         values:
         - amd64
         - arm64
-        - i386
 
     - axis:
         name: restrict
