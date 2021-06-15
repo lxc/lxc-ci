@@ -305,6 +305,7 @@ packages:
     - cronie-noanacron
     - curl
     - dhclient
+    - hostname
     - initscripts
     - openssh-clients
     - passwd
