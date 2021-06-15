@@ -24,6 +24,7 @@
         - "3.11"
         - "3.12"
         - "3.13"
+        - "3.14"
         - "edge"
 
     - axis:
@@ -55,7 +56,7 @@
 
     execution-strategy:
       combination-filter: '
-      !(variant=="cloud" && release != "3.13" && release != "edge") &&
+      !(variant=="cloud" && release != "3.13" && release != "3.14" && release != "edge") &&
       !(variant=="cloud" && architecture == "s390x")'
 
     properties:
