@@ -152,8 +152,8 @@ if [ -e "/sys/fs/cgroup/memory/memory.memsw.limit_in_bytes" ] || [ -e "/sys/fs/c
 
     # shellcheck disable=SC2251
     ! lxc stop c1 --force
-    lxc start c1
     lxc config set c1 limits.memory.enforce soft
+    lxc start c1
     lxc exec c1 -- mkdir -p /root/dd
     lxc exec c1 -- mount -t tmpfs tmpfs /root/dd -o size=2G
     dmesg -c >/dev/null 2>&1
