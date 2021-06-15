@@ -21,7 +21,6 @@
         name: release
         type: user-defined
         values:
-        - trusty
         - xenial
         - bionic
         - focal
@@ -45,7 +44,7 @@
         fi
 
         TYPE="container"
-        if ([ "${architecture}" = "amd64" ] || [ "${architecture}" = "arm64" ]) && [ "${release}" != "trusty" ]; then
+        if [ "${architecture}" = "amd64" ] || [ "${architecture}" = "arm64" ]; then
             TYPE="container,vm"
         fi
 
@@ -56,12 +55,10 @@
 
     execution-strategy:
       combination-filter: '
-      !(architecture=="s390x" && release == "trusty") &&
       !(architecture=="i386" && release == "focal") &&
       !(architecture=="i386" && release == "groovy") &&
       !(architecture=="i386" && release == "hirsute") &&
-      !(architecture=="i386" && release == "impish") &&
-      !(variant == "cloud" && release == "trusty")'
+      !(architecture=="i386" && release == "impish")'
 
     properties:
     - build-discarder:
