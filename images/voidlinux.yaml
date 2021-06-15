@@ -139,7 +139,7 @@ actions:
     mkdir /etc/sv/dhclient-eth0/
     cp /etc/sv/dhclient/run /etc/sv/dhclient-eth0/
     ln -s /run/runit/supervise.dhclient-eth0 /etc/sv/dhclient-eth0/supervice
-    sed -i "/^exec / s/$/eth0/" /etc/sv/dhclient-eth0/run
+    sed -i "/^exec dhclient/ s/$/eth0/" /etc/sv/dhclient-eth0/run
 
     # Enable services
     ln -s /etc/sv/socklog-unix /etc/runit/runsvdir/default/
