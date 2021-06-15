@@ -54,7 +54,7 @@
 
     execution-strategy:
       combination-filter: '
-      !(architecture=="s390x")
+      !(architecture=="s390x" && release == "15.2")
       && !(architecture=="i386" && release!="tumbleweed")'
 
     properties:
