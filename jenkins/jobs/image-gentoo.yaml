@@ -48,6 +48,10 @@
             ${LXD_ARCHITECTURE} ${TYPE} 7200 ${WORKSPACE} \
             -o image.architecture=${ARCH} -o image.variant=${variant}
 
+    execution-strategy:
+      combination-filter: '
+      !(variant == "cloud" && architecture != "amd64" && architecture != "i386")'
+
     properties:
     - build-discarder:
         num-to-keep: 2
