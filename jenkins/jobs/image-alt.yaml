@@ -28,9 +28,6 @@
         values:
         - default
 
-    execution-strategy:
-      combination-filter: '!(architecture=="ppc64el" && release!="Sisyphus")'
-
     builders:
     - shell: |-
         cd /lxc-ci
