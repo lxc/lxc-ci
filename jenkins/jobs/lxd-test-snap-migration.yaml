@@ -22,7 +22,6 @@
         type: user-defined
         values:
         - latest-edge
-        - 2.0-edge
         - 3.0-edge
         - 4.0-edge
 
@@ -53,9 +52,6 @@
         else
             exit 1
         fi
-
-    execution-strategy:
-      combination-filter: '!(source=="xenial-backports" && target == "2.0-edge") && !(source=="bionic-updates" && target == "2.0-edge") && !(source=="xenial-backports-hwe" && target == "2.0-edge") && !(source=="bionic-updates-hwe" && target == "2.0-edge")'
 
     properties:
     - build-discarder:

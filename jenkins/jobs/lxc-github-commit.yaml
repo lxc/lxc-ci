@@ -7,11 +7,6 @@
             pkg_version: 1:4.0.9+master
 
         - "lxc-github-commit{suffix}":
-            branch: stable-2.0
-            suffix: "-{branch}"
-            pkg_version: 2.0.11+stable
-
-        - "lxc-github-commit{suffix}":
             branch: stable-3.0
             suffix: "-{branch}"
             pkg_version: 3.0.4+stable
