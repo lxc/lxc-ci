@@ -29,10 +29,6 @@
         - default
         - cloud
 
-    execution-strategy:
-      combination-filter: '
-      !(architecture!="amd64" && variant=="cloud")'
-
     builders:
     - shell: |-
         cd /lxc-ci
