@@ -202,6 +202,11 @@ files:
   types:
   - vm
 
+- path: /etc/fstab
+  generator: dump
+  types:
+  - container
+
 - name: lxd-agent-workaround.service
   path: /etc/systemd/system/lxd-agent-workaround.service
   generator: dump
