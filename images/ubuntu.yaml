@@ -374,7 +374,6 @@ files:
 
     source /etc/network/interfaces.d/*.cfg
   releases:
-  - trusty
   - xenial
   types:
   - container
@@ -414,17 +413,9 @@ files:
 
     source /etc/network/interfaces.d/*.cfg
   releases:
-  - trusty
   - xenial
   types:
   - vm
-
-- path: /etc/init/lxc-tty.conf
-  generator: upstart-tty
-  releases:
-  - trusty
-  types:
-  - container
 
 - name: meta-data
   generator: cloud-init

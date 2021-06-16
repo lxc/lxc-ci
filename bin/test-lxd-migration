@@ -16,7 +16,7 @@ cleanup() {
 }
 
 launch() {
-    if [ "${series}" = "trusty-backports" ] || [ "${series}" = "xenial-updates" ]; then
+    if [ "${series}" = "xenial-updates" ]; then
         lxc launch images:alpine/edge "${1}"
     else
         lxc launch images:alpine/edge "${1}" -n lxdbr0 -s "${2}"
@@ -39,26 +39,15 @@ done
 
 # Install the LXD deb
 apt install -t "${series}" lxd lxd-client jq --yes
-if [ "${series}" = "trusty-backports" ]; then
-    apt install snapd --yes
-    sleep 1m
-    snap install core
-    snap install core18
-    snap install snapd
-else
-    apt install zfsutils-linux thin-provisioning-tools --yes
-fi
+apt install zfsutils-linux thin-provisioning-tools --yes
 
 # Configure the LXD deb
-if [ "${series}" = "trusty-backports" ] || [ "${series}" = "xenial-updates" ]; then
+if [ "${series}" = "xenial-updates" ]; then
     # LXD 2.0
     lxd waitready --timeout=120
-    if [ "${series}" != "trusty-backports" ]; then
-        lxd init --auto --storage-backend=zfs --storage-create-loop=10 --storage-pool=lxd
-    fi
+    lxd init --auto --storage-backend=zfs --storage-create-loop=10 --storage-pool=lxd
 
-    (
-    cat << EOF
+    cat > /etc/default/lxd-bridge << EOF
 USE_LXD_BRIDGE=true
 LXD_BRIDGE=lxdbr0
 UPDATE_PROFILE=true
@@ -76,13 +65,8 @@ LXD_IPV6_NETWORK=2001:470:b368:4242::/64
 LXD_IPV6_NAT=true
 LXD_IPV6_PROXY=false
 EOF
-    ) > /etc/default/lxd-bridge
-    if [ "${series}" = "trusty-backports" ]; then
-        stop lxd
-        start lxd
-    else
-        systemctl restart lxd-bridge
-    fi
+
+    systemctl restart lxd-bridge
 
     lxd waitready --timeout=120
 else
