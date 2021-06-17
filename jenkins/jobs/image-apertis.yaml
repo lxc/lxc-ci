@@ -18,7 +18,7 @@
         name: release
         type: user-defined
         values:
-        - 'v2019.6'
+        - 'v2019.7'
         - 'v2020.4'
         - 'v2021.0'
 
