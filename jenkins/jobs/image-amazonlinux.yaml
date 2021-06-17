@@ -16,7 +16,7 @@
         name: release
         type: user-defined
         values:
-        - 2.0.20210427.0
+        - 2.0.20210525.0
 
     - axis:
         name: variant
