@@ -5,6 +5,7 @@ track=${1:-latest}
 channel=${2:-stable}
 
 export DEBIAN_FRONTEND=noninteractive
+export HOME=/root
 
 cleanup() {
     if [ "${FAIL}" = "1" ]; then
