@@ -73,22 +73,22 @@ remotes:
     public: false
 aliases: {}
 EOF
-) > ~/snap/lxd/current/.config/lxc/config.yml
-mkdir -p ~/snap/lxd/current/.config/lxc/jars/
+) > ~/snap/lxd/common/config/config.yml
+mkdir -p ~/snap/lxd/common/config/jars/
 
-mkdir -p ~/snap/lxd/current/.config/lxc/servercerts/
-cp /var/snap/lxd/common/lxd/server.crt ~/snap/lxd/current/.config/lxc/servercerts/rbac-user.crt
-cp /var/snap/lxd/common/lxd/server.crt ~/snap/lxd/current/.config/lxc/servercerts/rbac-admin.crt
+mkdir -p ~/snap/lxd/common/config/servercerts/
+cp /var/snap/lxd/common/lxd/server.crt ~/snap/lxd/common/config/servercerts/rbac-user.crt
+cp /var/snap/lxd/common/lxd/server.crt ~/snap/lxd/common/config/servercerts/rbac-admin.crt
 
 # Get user credentials
 curl http://canonical-lxd.stgraber.org/config/rbac-test.user -o /var/snap/bhttp/common/rbac-test.user
 bhttp --cookiefile /var/snap/bhttp/common/rbac-user --agent /var/snap/bhttp/common/rbac-test.user https://services.stgraber.org/rbac/api/rbac/v1/service/registerable || true
-cp /var/snap/bhttp/common/rbac-user ~/snap/lxd/current/.config/lxc/jars/rbac-user
+cp /var/snap/bhttp/common/rbac-user ~/snap/lxd/common/config/jars/rbac-user
 
 # Get admin credentials
 curl http://canonical-lxd.stgraber.org/config/rbac-test.admin -o /var/snap/bhttp/common/rbac-test.admin
 bhttp --cookiefile /var/snap/bhttp/common/rbac-admin --agent /var/snap/bhttp/common/rbac-test.admin https://services.stgraber.org/rbac/api/rbac/v1/service/registerable || true
-cp /var/snap/bhttp/common/rbac-admin ~/snap/lxd/current/.config/lxc/jars/rbac-admin
+cp /var/snap/bhttp/common/rbac-admin ~/snap/lxd/common/config/jars/rbac-admin
 
 # Validate access
 echo "==> Confirming basic API access"
