@@ -117,7 +117,7 @@ lxc exec c1 -- ping -c1 -6 lxdbr0.test
 
 # Add additional IPs to lxdbr0.
 ip a add 10.10.11.3/32 dev lxdbr0
-ip a add fd42:4242:4242:1010::2/128 dev lxdbr0
+ip a add fd42:4242:4242:1010::2/128 dev lxdbr0 nodad
 ping -c1 -4 10.10.11.3
 ping -c1 -6 fd42:4242:4242:1010::2
 
