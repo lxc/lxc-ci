@@ -1,0 +1,36 @@
+- job:
+    name: "lxd-test-network-bridge-firewall"
+    concurrent: false
+    description: Tests bridge firewall drivers
+    node: master
+    project-type: freestyle
+
+    builders:
+    - shell: |-
+        cd /lxc-ci
+        exec sudo /lxc-ci/bin/maas-run tags=virtual focal ga-20.04 default bin/test-lxd-network-bridge-firewall
+
+    properties:
+    - build-discarder:
+        num-to-keep: 3
+
+    - raw:
+        !include: ../includes/webhook.yaml.inc
+
+    publishers:
+    - workspace-cleanup:
+        fail-build: false
+
+    - naginator:
+        rerun-unstable-builds: true
+        rerun-matrix-part: true
+        max-failed-builds: 3
+        progressive-delay-increment: 300
+        progressive-delay-maximum: 900
+
+    triggers:
+    - timed: '@daily'
+
+    wrappers:
+    - ansicolor:
+        colormap: css
