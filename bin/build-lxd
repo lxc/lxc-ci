@@ -53,6 +53,7 @@ mkdir -p "${TEST_DIR}/go"
 export GOPATH=${TEST_DIR}/go
 export PATH=${GOPATH}/bin:${PATH}
 export GO111MODULE=off
+export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 
 # Setup dependencies
 echo "===> Copying pre-built dependencies"
@@ -105,7 +106,7 @@ echo "==> ENVIRONMENT DONE"
 # Build LXD
 echo "==> BUILD BEGIN: lxd"
 go get -t -d ./...
-CGO_LDFLAGS_ALLOW="-Wl,-z,now" go install -tags libsqlite3 ./...
+go install -tags libsqlite3 ./...
 echo "==> BUILD DONE: lxd"
 
 # Test namespace
