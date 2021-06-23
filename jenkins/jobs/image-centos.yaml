@@ -43,7 +43,7 @@
         [ "${ARCH}" = "ppc64el" ] && ARCH="ppc64le"
 
         EXTRA_ARGS=""
-        if { [ "${release}" = "7"] && [ "${architecture}" != "amd64" ]; } || { [ "${release}" = "8" ] && [ "${architecture}" = "armhf" ]; }; then
+        if { [ "${release}" = "7" ] && [ "${architecture}" != "amd64" ]; } || { [ "${release}" = "8" ] && [ "${architecture}" = "armhf" ]; }; then
             EXTRA_ARGS="-o source.url=http://mirror.math.princeton.edu/pub/centos-altarch/ -o source.skip_verification=true"
         fi
 
