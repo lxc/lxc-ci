@@ -3,8 +3,6 @@
 - centos-8
 - debian-buster
 - debian-stretch
-- fedora-31
-- fedora-32
 - manjaro
 - opensuse-15.2
 - opensuse-tumbleweed
