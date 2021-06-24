@@ -152,6 +152,10 @@ if [ -e "/sys/fs/cgroup/memory/memory.memsw.limit_in_bytes" ] || [ -e "/sys/fs/c
 
     # shellcheck disable=SC2251
     ! lxc stop c1 --force
+
+    # Wait for post-stop to complete
+    sleep 2s
+
     lxc config set c1 limits.memory.enforce soft
     lxc start c1
     lxc exec c1 -- mkdir -p /root/dd
@@ -163,6 +167,10 @@ if [ -e "/sys/fs/cgroup/memory/memory.memsw.limit_in_bytes" ] || [ -e "/sys/fs/c
 
     # shellcheck disable=SC2251
     ! lxc stop c1 --force
+
+    # Wait for post-stop to complete
+    sleep 2s
+
     lxc config unset c1 limits.memory
     lxc config unset c1 limits.memory.enforce
     lxc start c1
