@@ -121,7 +121,7 @@ for i in $(seq "$1"); do
     lxc exec "${PREFIX}-$i" -- snap refresh
     lxc exec "${PREFIX}-$i" -- snap switch lxd --channel="$3"
     if [ "$i" = "$1" ]; then
-        lxc exec "${PREFIX}-$i" -- timeout 5m snap refresh lxd
+        lxc exec "${PREFIX}-$i" -- timeout 10m snap refresh lxd
     fi
 done
 
