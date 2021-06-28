@@ -1,3 +1,4 @@
+- almalinux-8
 - archlinux
 - centos-7
 - centos-8
@@ -9,6 +10,7 @@
 - opensuse-15.2
 - opensuse-15.3
 - opensuse-tumbleweed
+- rockylinux-8
 - ubuntu-16.04
 - ubuntu-18.04
 - ubuntu-20.04
