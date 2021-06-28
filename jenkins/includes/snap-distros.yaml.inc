@@ -6,6 +6,8 @@
 - debian-bullseye
 - debian-buster
 - debian-stretch
+- fedora-33
+- fedora-34
 - manjaro
 - opensuse-15.2
 - opensuse-15.3
