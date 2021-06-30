@@ -12,6 +12,7 @@
         values:
         - daily
         - ubuntu
+        - ubuntu-bootstrap
         - ubuntu-proposed
         - ubuntu-unstable
 

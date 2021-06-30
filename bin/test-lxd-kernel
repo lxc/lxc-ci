@@ -1,6 +1,9 @@
 #!/bin/sh
 set -eu
 
+# Print kernel version
+echo "Starting test on: $(uname -a)"
+
 # Wait for snapd seeding
 sleep 1m
 

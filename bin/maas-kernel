@@ -93,6 +93,7 @@ case "$i" in
         apt-get install software-properties-common --yes
         apt-add-repository ppa:canonical-kernel-team/bootstrap --yes
         apt-get dist-upgrade --yes
+        apt-get install linux-generic-wip --yes
       ;;
 
       ubuntu-unstable)
@@ -102,6 +103,7 @@ case "$i" in
         apt-get install software-properties-common --yes
         apt-add-repository ppa:canonical-kernel-team/unstable --yes
         apt-get dist-upgrade --yes
+        apt-get install linux-generic-wip --yes
       ;;
 
       daily)
@@ -110,7 +112,7 @@ case "$i" in
         wget -e robots=off -r --no-parent -A '*all*.deb' -R '*lpae*' -R '*lowlatency*' https://kernel.ubuntu.com/~kernel-ppa/mainline/daily/current/
         wget -e robots=off -r --no-parent -A '*amd64*.deb' -R '*lpae*' -R '*lowlatency*' https://kernel.ubuntu.com/~kernel-ppa/mainline/daily/current/
         apt-get update
-        apt-get install kernel.ubuntu.com/~kernel-ppa/mainline/daily/current/*.deb --yes
+        apt-get install ./kernel.ubuntu.com/~kernel-ppa/mainline/daily/current/amd64/*.deb --yes
         apt-get dist-upgrade --yes
       ;;
 
