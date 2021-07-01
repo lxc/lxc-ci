@@ -83,7 +83,7 @@ case "$i" in
         . /etc/os-release
         echo "deb http://us.archive.ubuntu.com/ubuntu ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" > /etc/apt/sources.list.d/proposed.list
         apt-get update
-        apt-get dist-upgrade --yes
+        apt-get install linux-generic --yes
       ;;
 
       ubuntu-bootstrap)
