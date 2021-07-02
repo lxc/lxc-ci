@@ -241,6 +241,14 @@ packages:
     - cloud
 
   - packages:
+    - cloud-utils-growpart
+    action: install
+    types:
+    - vm
+    variants:
+    - cloud
+
+  - packages:
     - shim
     action: install
     types:

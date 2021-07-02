@@ -186,6 +186,14 @@ packages:
     - cloud
 
   - packages:
+    - cloud-utils-growpart
+    action: install
+    types:
+    - vm
+    variants:
+    - cloud
+
+  - packages:
     - libsss_idmap
     - libsss_nss_idmap
     - sssd-client
