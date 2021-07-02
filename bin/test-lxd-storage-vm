@@ -72,6 +72,20 @@ do
         echo "==> Checking VM root disk size is 10GB"
         lxc exec v1 -- df -B1000000000 | grep sda2 | grep 10
 
+        echo "==> Check QEMU crash behavior and recovery"
+        uuid=$(lxc config get v1 volatile.uuid)
+        ps aux | grep -v grep | grep "${uuid}"
+        nsenter --mount=/run/snapd/ns/lxd.mnt -- rm /var/snap/lxd/common/lxd/logs/v1/qemu.monitor
+        systemctl reload snap.lxd.daemon
+        sleep 5
+        lxc ls v1 | grep ERROR
+        ! lxc stop v1 || false
+        ! lxc start v1 || false
+        ps aux | grep -v grep | grep "${uuid}"
+        lxc stop v1 -f
+        ! ps aux | grep -v grep | grep "${uuid}" || false
+        lxc start v1
+
         echo "==> Testing VM non-optimized export/import (while running to check config.mount is excluded)"
         lxc export v1 "/tmp/lxd-test-${poolName}.tar.gz"
         lxc delete -f v1
