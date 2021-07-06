@@ -1746,7 +1746,7 @@ packages:
   repositories:
   - name: sources.list
     url: |-
-      deb http://kali.donwload/kali {{ image.release }} main non-free contrib
+      deb http://kali.download/kali {{ image.release }} main non-free contrib
 
 actions:
 - trigger: post-packages
