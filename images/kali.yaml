@@ -4,7 +4,7 @@ image:
 
 source:
   downloader: debootstrap
-  url: http://http.kali.org/kali
+  url: http://kali.download/kali
   same_as: sid
   keys:
   # 0x44C6513A8E4FB3D30875F758ED444FF07D8D0BF6
@@ -1746,7 +1746,7 @@ packages:
   repositories:
   - name: sources.list
     url: |-
-      deb http://http.kali.org/kali {{ image.release }} main non-free contrib
+      deb http://kali.donwload/kali {{ image.release }} main non-free contrib
 
 actions:
 - trigger: post-packages
