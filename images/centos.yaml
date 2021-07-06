@@ -500,6 +500,24 @@ packages:
     releases:
     - 8
     - 8-Stream
+    architectures:
+    - amd64
+    - arm64
+    - i386
+    - ppc64el
+
+  - packages:
+    - NetworkManager
+    action: install
+    types:
+    - container
+    variants:
+    - default
+    releases:
+    - 8
+    - 8-Stream
+    architectures:
+    - armhf
 
   - packages:
     - NetworkManager
@@ -694,3 +712,24 @@ actions:
   releases:
   - 8
   - 8-Stream
+  architectures:
+  - amd64
+  - arm64
+  - i386
+  - ppc64el
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    systemctl enable NetworkManager.service
+  types:
+  - container
+  variants:
+  - default
+  releases:
+  - 8
+  - 8-Stream
+  architectures:
+  - armhf
