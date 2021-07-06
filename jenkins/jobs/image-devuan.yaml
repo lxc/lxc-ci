@@ -44,6 +44,9 @@
             -o image.architecture=${architecture} \
             -o image.release=${release} -o image.variant=${variant}
 
+    execution-strategy:
+      combination-filter: '!(architecture=="ppc64el" && release == "ascii")'
+
     properties:
     - build-discarder:
         num-to-keep: 2
