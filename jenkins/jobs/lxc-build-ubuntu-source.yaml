@@ -50,7 +50,6 @@
         name: release
         type: user-defined
         values:
-        - xenial
         - bionic
         - focal
         - groovy
