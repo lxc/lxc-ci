@@ -57,7 +57,7 @@ snap refresh distrobuilder || true
 # Build the image
 mkdir /root/build
 if [ "$(uname -m)" = "x86_64" ] || [ "$(uname -m)" = "i686" ]; then
-    if ! echo "${YAML}" | grep -q -E "sabayon|gentoo"; then
+    if ! echo "${YAML}" | grep -q -E "sabayon|gentoo|oracle"; then
         mount -t tmpfs tmpfs /root/build -o size=5G,nr_inodes=10000000
     fi
 fi
