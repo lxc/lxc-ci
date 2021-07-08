@@ -95,6 +95,11 @@ if [ -e /build/source/src/python-lxc/examples/api_test.py ]; then
     gzip -9 /usr/share/doc/python3-lxc/examples/api_test.py
 fi
 
+# Setup tmpfs for the tests
+mount -t tmpfs tmpfs /home
+mkdir -p /var/lib/lxc
+mount -t tmpfs tmpfs /var/lib/lxc
+
 # Run testsuite
 /build/lxc-exercise
 
