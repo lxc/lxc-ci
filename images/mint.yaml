@@ -302,6 +302,7 @@ files:
   - tricia
   - ulyana
   - ulyssa
+  - uma
   variants:
   - default
 
@@ -418,6 +419,7 @@ actions:
   - tricia
   - ulyana
   - ulyssa
+  - uma
 
 - trigger: post-packages
   action: |-
