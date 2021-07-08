@@ -12,6 +12,7 @@
         values:
         - amd64
         - armhf
+        - arm64
         - i386
         - ppc64el
         - s390x
