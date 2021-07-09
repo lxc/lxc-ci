@@ -43,7 +43,7 @@
         suite=xenial
         if [ "${release}" = "tara" ] || [ "${release}" = "tessa" ] || [ "${release}" = "tina" ] || [ "${release}" = "tricia" ]; then
             suite=bionic
-        elif [ "${release}" = "ulyana" ] || [ "${release}" = "ulyssa" ]; then
+        elif [ "${release}" = "ulyana" ] || [ "${release}" = "ulyssa" ] || [ "${release}" = "uma" ]; then
             suite=focal
         fi
 
@@ -56,7 +56,8 @@
     execution-strategy:
       combination-filter: '
       !(architecture=="i386" && release == "ulyana")
-      && !(architecture=="i386" && release == "ulyssa")'
+      && !(architecture=="i386" && release == "ulyssa")
+      && !(architecture=="i386" && release == "uma")'
 
     properties:
     - build-discarder:
