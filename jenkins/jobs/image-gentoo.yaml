@@ -29,6 +29,7 @@
         values:
         - default
         - cloud
+        - systemd
 
     builders:
     - shell: |-
@@ -45,9 +46,14 @@
             TYPE="container,vm"
         fi
 
+        EXTRA_ARGS=""
+        if [ "${variant}" = "systemd" ]; then
+            EXTRA_ARGS="-o source.variant=systemd"
+        fi
+
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/gentoo.yaml \
             ${LXD_ARCHITECTURE} ${TYPE} 7200 ${WORKSPACE} \
-            -o image.architecture=${ARCH} -o image.variant=${variant}
+            -o image.architecture=${ARCH} -o image.variant=${variant} ${EXTRA_ARGS}
 
     execution-strategy:
       combination-filter: '
