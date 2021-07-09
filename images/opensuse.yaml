@@ -173,6 +173,12 @@ packages:
   cleanup: true
   sets:
   - packages:
+    - busybox-gzip
+    action: remove
+    architectures:
+    - ppc64le
+
+  - packages:
     - apparmor-abstractions
     - apparmor-parser
     - dbus-1
