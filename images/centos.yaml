@@ -501,10 +501,10 @@ packages:
     - 8
     - 8-Stream
     architectures:
-    - amd64
-    - arm64
+    - x86_64
+    - aarch64
     - i386
-    - ppc64el
+    - ppc64le
 
   - packages:
     - NetworkManager
@@ -517,7 +517,7 @@ packages:
     - 8
     - 8-Stream
     architectures:
-    - armhf
+    - armhfp
 
   - packages:
     - NetworkManager
@@ -713,10 +713,10 @@ actions:
   - 8
   - 8-Stream
   architectures:
-  - amd64
-  - arm64
+  - x86_64
+  - aarch64
   - i386
-  - ppc64el
+  - ppc64le
 
 - trigger: post-files
   action: |-
@@ -732,4 +732,4 @@ actions:
   - 8
   - 8-Stream
   architectures:
-  - armhf
+  - armhfp
