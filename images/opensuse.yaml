@@ -177,6 +177,8 @@ packages:
     action: remove
     architectures:
     - ppc64le
+    releases:
+    - tumbleweed
 
   - packages:
     - apparmor-abstractions
