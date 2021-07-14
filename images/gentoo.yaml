@@ -534,6 +534,16 @@ actions:
     set -eux
     rc-update add syslog-ng boot
     rc-update add acpid default
+  types:
+  - vm
+  variants:
+  - default
+  - cloud
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
     TARGET="x86_64"
     [ "$(uname -m)" = "aarch64" ] && TARGET="arm64"
     grub-install --target=${TARGET}-efi --no-nvram --removable
