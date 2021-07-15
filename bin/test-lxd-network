@@ -45,6 +45,23 @@ ip a
 lxc storage create default zfs source="${storageDevice}"
 lxc profile device add default root disk path=/ pool=default
 
+(
+cat << EOF
+version: 2
+ethernets:
+  eth0:
+    optional: true
+    accept-ra: true
+    dhcp4: true
+    dhcp6: true
+  enp5s0:
+    optional: true
+    accept-ra: true
+    dhcp4: true
+    dhcp6: true
+EOF
+) | lxc profile set default user.network-config -
+
 # Launch instances with physical NICs
 echo "==> VM on default VLAN with physical"
 lxc init images:ubuntu/20.04/cloud v1-physical --vm
