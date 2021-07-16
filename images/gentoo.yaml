@@ -343,6 +343,15 @@ files:
     rc_keyword="-stop"
     config_eth0="dhcp"
 
+- path: /etc/systemd/network/eth0.network
+  generator: dump
+  content: |-
+    [Match]
+    Name=eth0
+
+    [Network]
+    DHCP=ipv4
+
 - path: /etc/local.d/repo_check.start
   generator: dump
   mode: 700
@@ -552,6 +561,18 @@ actions:
     sed -i "s#root=[^ ]*#root=/dev/sda2#g" /boot/grub/grub.cfg
   types:
   - vm
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    umount -l /etc/resolv.conf || true
+    rm /etc/resolv.conf
+    ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+
+    systemctl enable systemd-resolved
+    systemctl enable systemd-networkd
+  variants:
+  - systemd
 
 environment:
   variables:
