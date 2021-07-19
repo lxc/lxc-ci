@@ -127,6 +127,8 @@ actions:
     # It's important that xbps is updated before glibc.
     [ -e /lib64 ] || ln -s lib /lib64
     echo ignorepkg=glibc > /etc/xbps.d/glibc.conf
+
+    echo repository=https://mirrors.servercentral.com/voidlinux/current > /usr/share/xbps.d/00-repository-main.conf
   variants:
   - default
 
