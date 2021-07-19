@@ -17,10 +17,6 @@
         name: release
         type: user-defined
         values:
-        - sarah
-        - serena
-        - sonya
-        - sylvia
         - tara
         - tessa
         - tina
@@ -40,10 +36,8 @@
     - shell: |-
         cd /lxc-ci
 
-        suite=xenial
-        if [ "${release}" = "tara" ] || [ "${release}" = "tessa" ] || [ "${release}" = "tina" ] || [ "${release}" = "tricia" ]; then
-            suite=bionic
-        elif [ "${release}" = "ulyana" ] || [ "${release}" = "ulyssa" ] || [ "${release}" = "uma" ]; then
+        suite=bionic
+        if [ "${release}" = "ulyana" ] || [ "${release}" = "ulyssa" ] || [ "${release}" = "uma" ]; then
             suite=focal
         fi
 
