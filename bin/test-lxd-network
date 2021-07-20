@@ -4,6 +4,20 @@ set -eu
 storageDevice="/dev/nvme0n1p3"
 parentNIC="enp10s0"
 
+cleanup() {
+    echo ""
+    if [ "${FAIL}" = "1" ]; then
+        echo "Test failed"
+        exit 1
+    fi
+
+    echo "Test passed"
+    exit 0
+}
+
+FAIL=1
+trap cleanup EXIT HUP INT TERM
+
 # Wait for snapd seeding
 sleep 1m
 
@@ -86,7 +100,8 @@ sleep 2m
 
 # Check that all instances have an IPv4 and IPv6 address
 networkTests() {
-FAIL=0
+local FAIL=0
+
 echo "=> Performing network tests"
 for url in $(lxc query "/1.0/instances" | jq -r .[]); do
     name=$(echo "${url}" | cut -d/ -f4)
@@ -130,11 +145,9 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
 done
 
 if [ "${FAIL}" = "1" ]; then
-    echo "=> Test failed"
     return 1
 fi
 
-echo "=> Test passed"
 return 0
 }
 
@@ -201,3 +214,5 @@ done
 lxc profile device remove default root
 lxc storage delete default
 lxc network delete lxdbr0
+
+FAIL=0
