@@ -57,7 +57,8 @@
 
     execution-strategy:
       combination-filter: '
-      !(variant == "cloud" && architecture != "amd64" && architecture != "i386")'
+      !(variant == "cloud" && architecture != "amd64" && architecture != "i386")
+      && !(variant == "systemd" && architecture == "s390x")'
 
     properties:
     - build-discarder:
