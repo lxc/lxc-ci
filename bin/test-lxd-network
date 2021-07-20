@@ -192,6 +192,7 @@ lxc delete -f v1-sriov
 lxc delete -f c1-sriov
 
 # Check bridged NIC type works
+echo "=> Performing bridged NIC tests"
 lxc network create lxdbr0
 lxc config device remove v1-physical eth0
 lxc config device remove c1-physical eth0
@@ -206,6 +207,7 @@ lxc list
 networkTests
 
 # Cleanup
+echo "=> Cleanup"
 for url in $(lxc query "/1.0/instances" | jq -r .[]); do
     name=$(echo "${url}" | cut -d/ -f4)
     lxc delete -f "${name}"
