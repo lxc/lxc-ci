@@ -159,6 +159,12 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
     name=$(echo "${url}" | cut -d/ -f4)
     echo ""
 
+    # Skip busybox as it wouldn't pass any test
+    if echo "${name}" | grep -q '^busybox'; then
+        echo "SKIP: Busybox is untestable"
+        continue
+    fi
+
     # FIXME: Skip CentOS 7 VMs due to racy agent
     if [ "${TYPE}" = "VIRTUAL-MACHINE" ] && echo "${name}" | grep -q "^centos-7"; then
         echo "SKIP: CentOS 7 has an unstable agent: ${name}"
