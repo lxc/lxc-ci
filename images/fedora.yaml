@@ -270,6 +270,7 @@ actions:
     target=/boot/efi/EFI/fedora/grub.cfg
     grub2-mkconfig -o "${target}"
     sed -i "s#root=[^ ]*#root=/dev/sda2#g" "${target}"
+    sed -Ei "s#^(linux|initrd) .+/overlay/#\1 (\$root)/#g" "${target}"
 
     # Regenerate initramfs
     kver=$(ls /boot/initramfs-*.img | sed -r 's#.*initramfs-(.+)\.img#\1#')
