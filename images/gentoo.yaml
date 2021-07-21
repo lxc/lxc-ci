@@ -351,6 +351,28 @@ files:
 
     [Network]
     DHCP=ipv4
+  types:
+  - container
+  variants:
+  - systemd
+
+- path: /etc/systemd/network/enp5s0.network
+  generator: dump
+  content: |-
+    [Match]
+    Name=enp5s0
+
+    [Network]
+    DHCP=ipv4
+  types:
+  - vm
+  variants:
+  - systemd
+
+- path: /etc/machine-id
+  generator: dump
+  variants:
+  - systemd
 
 - path: /etc/local.d/repo_check.start
   generator: dump
