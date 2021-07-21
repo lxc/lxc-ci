@@ -571,6 +571,7 @@ packages:
 
   - packages:
     - cloud-init
+    - openssh
     action: install
     variants:
     - cloud
