@@ -186,10 +186,15 @@ lxc list
 networkTests
 
 # Remove instances, leaving one VM and container for bridge hotplug test
-lxc delete -f v1-macvlan
-lxc delete -f c1-macvlan
-lxc delete -f v1-sriov
-lxc delete -f c1-sriov
+echo "=> Removing some instances"
+lxc stop -f v1-macvlan
+lxc delete v1-macvlan
+lxc stop -f c1-macvlan
+lxc delete c1-macvlan
+lxc stop -f v1-sriov
+lxc delete v1-sriov
+lxc stop -f c1-sriov
+lxc delete c1-sriov
 
 # Check bridged NIC type works
 echo "=> Performing bridged NIC tests"
