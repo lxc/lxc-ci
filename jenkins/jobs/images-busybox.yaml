@@ -24,6 +24,7 @@
         cd /lxc-ci
         LXD_ARCHITECTURE="${architecture}"
         ARCH=${architecture}
+        TYPE=container
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/busybox.yaml \
             ${LXD_ARCHITECTURE} ${TYPE} 600 ${WORKSPACE} \
