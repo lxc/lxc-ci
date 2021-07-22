@@ -133,8 +133,8 @@ if [ -e "/sys/fs/cgroup/memory" ]; then
 
     lxc config set c1 limits.memory.swap=true
     lxc config set c1 limits.memory.swap.priority=5
-    # swappiness is 60 (default) - 10 (maximum deduction) + 5 (priority)
-    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/memory/memory.swappiness)" = "55" ]
+    # swappiness is 70 - 5 (priority)
+    [ "$(lxc exec c1 -- cat /sys/fs/cgroup/memory/memory.swappiness)" = "65" ]
 fi
 
 if [ -e "/sys/fs/cgroup/memory/memory.memsw.limit_in_bytes" ] || [ -e "/sys/fs/cgroup/memory.swap.max" ]; then
