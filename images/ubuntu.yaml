@@ -341,7 +341,6 @@ files:
   releases:
   - bionic
   - focal
-  - groovy
   - hirsute
   - impish
   types:
@@ -380,7 +379,6 @@ files:
   releases:
   - bionic
   - focal
-  - groovy
   - hirsute
   - impish
   types:
@@ -509,7 +507,6 @@ packages:
     - disco
     - eoan
     - focal
-    - groovy
     - hirsute
     - impish
     types:
@@ -530,7 +527,6 @@ packages:
     - bionic
     - eoan
     - focal
-    - groovy
     - hirsute
     - impish
     types:
@@ -586,7 +582,6 @@ actions:
   releases:
   - bionic
   - focal
-  - groovy
   - hirsute
   - impish
 
