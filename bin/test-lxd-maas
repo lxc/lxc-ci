@@ -87,7 +87,7 @@ lxc list
 
 lxc stop "$(hostname)-c1"
 lxc profile assign "$(hostname)-c1" default
-lxc config device add "$(hostname)-c1" eth0 nic nictype=bridged parent=br0 maas.subnet.ipv4=DEV-IPv4 maas.subnet.ipv6=DEV-IPv6 ipv4.address=172.17.16.100 ipv6.address=2001:470:b0f8:1016:2::100
+lxc config device add "$(hostname)-c1" eth0 nic nictype=bridged parent=br0 maas.subnet.ipv4=DEV-IPv4 maas.subnet.ipv6=DEV-IPv6 ipv4.address=172.17.16.111 ipv6.address=2001:470:b0f8:1016:2::111
 lxc start "$(hostname)-c1"
 sleep 10
 lxc list
