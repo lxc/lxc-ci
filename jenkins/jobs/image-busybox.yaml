@@ -19,6 +19,12 @@
         values:
         - "1.33.1"
 
+    - axis:
+        name: variant
+        type: user-defined
+        values:
+        - default
+
     builders:
     - shell: |-
         cd /lxc-ci
