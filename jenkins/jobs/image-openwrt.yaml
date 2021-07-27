@@ -17,7 +17,6 @@
         type: user-defined
         values:
         - snapshot
-        - "18.06"
         - "19.07"
 
     - axis:
