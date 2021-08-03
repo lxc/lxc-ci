@@ -270,7 +270,9 @@ actions:
     target=/boot/efi/EFI/fedora/grub.cfg
     grub2-mkconfig -o "${target}"
     sed -i "s#root=[^ ]*#root=/dev/sda2#g" "${target}"
+
     sed -Eri "s#^(linux|initrd) .+/overlay/#\1 /#g" /boot/loader/entries/*
+    sed -ri 's#^options .+#options $kernelopts#g' /boot/loader/entries/*
 
     # Regenerate initramfs
     kver=$(ls /boot/initramfs-*.img | sed -r 's#.*initramfs-(.+)\.img#\1#')
@@ -287,15 +289,3 @@ actions:
     exit 0
   types:
   - vm
-
-- trigger: post-files
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    sed -ri 's#^options .+#options $kernelopts#g' /boot/loader/entries/*
-  types:
-  - vm
-  releases:
-  - 33
-  - 34
