@@ -308,6 +308,7 @@ packages:
   sets:
   - packages:
     - alpine-base
+    - sudo
     action: install
 
   - packages:

@@ -1734,6 +1734,7 @@ packages:
     - net-tools
     - openssh-client
     - vim
+    - sudo
     - systemd
     action: install
 

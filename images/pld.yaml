@@ -94,6 +94,7 @@ packages:
     - dhcp-client
     - localedb-src
     - rc-scripts
+    - sudo
     - tzdata
     - vim
     action: install

@@ -465,3 +465,7 @@ packages:
   manager: opkg
   update: false
   cleanup: true
+  sets:
+  - packages:
+    - sudo
+    action: install

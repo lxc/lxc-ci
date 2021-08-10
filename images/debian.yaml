@@ -954,6 +954,7 @@ packages:
     - net-tools
     - openssh-client
     - procps
+    - sudo
     - vim
     action: install
 

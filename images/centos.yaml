@@ -486,6 +486,7 @@ packages:
     - passwd
     - policycoreutils
     - rootfiles
+    - sudo
     - rsyslog
     - vim-minimal
     action: install

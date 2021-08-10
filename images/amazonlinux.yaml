@@ -65,6 +65,7 @@ packages:
   sets:
   - packages:
     - iproute
+    - sudo
     - systemd
     - systemd-networkd
     - systemd-resolved

@@ -171,6 +171,7 @@ packages:
     - pigz
     - policycoreutils
     - procps-ng
+    - sudo
     - systemd-udev
     - which
     - xz

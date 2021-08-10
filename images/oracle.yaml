@@ -175,6 +175,7 @@ packages:
     - passwd
     - policycoreutils
     - rootfiles
+    - sudo
     - systemd-udev
     - vim-minimal
     action: install

@@ -82,6 +82,10 @@ packages:
   cleanup: true
   sets:
   - packages:
+    - sudo
+    action: install
+
+  - packages:
     - cloud-init
     action: install
     variants:

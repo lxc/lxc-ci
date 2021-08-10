@@ -326,6 +326,7 @@ packages:
     - netbase
     - openssh-client
     - rsync
+    - sudo
     - sysv-rc-conf
     - sysvinit-core
     - vim-tiny

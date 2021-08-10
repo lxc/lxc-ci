@@ -259,6 +259,10 @@ packages:
   manager: egoportage
   update: false
   cleanup: true
+  sets:
+  - packages:
+    - sudo
+    action: install
 
 actions:
 - trigger: post-packages
