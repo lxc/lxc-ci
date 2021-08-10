@@ -334,6 +334,7 @@ packages:
     - language-pack-en
     - linuxmint-keyring
     - openssh-client
+    - sudo
     - vim
     action: install
 

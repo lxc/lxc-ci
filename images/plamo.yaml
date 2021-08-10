@@ -214,6 +214,10 @@ packages:
       cmd: true
     refresh:
       cmd: true
+  sets:
+  - packages:
+    - sudo
+    action: install
 
 actions:
 - trigger: post-unpack

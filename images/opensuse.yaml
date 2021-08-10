@@ -193,6 +193,7 @@ packages:
     - iputils
     - pigz
     - rsync
+    - sudo
     - systemd-sysvinit
     - tar
     - which

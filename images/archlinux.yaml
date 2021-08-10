@@ -561,6 +561,7 @@ packages:
     - procps-ng
     - psmisc
     - sed
+    - sudo
     - sysfsutils
     - systemd-sysvcompat
     - tar

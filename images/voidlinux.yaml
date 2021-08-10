@@ -107,6 +107,7 @@ packages:
     - cronie
     - dhclient
     - socklog-void
+    - sudo
     action: install
 
 actions:

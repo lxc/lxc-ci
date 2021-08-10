@@ -312,6 +312,7 @@ packages:
     - policycoreutils
     - rootfiles
     - rsyslog
+    - sudo
     - vim-minimal
     action: install
 

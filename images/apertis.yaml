@@ -67,6 +67,10 @@ packages:
   cleanup: false
   sets:
   - packages:
+    - sudo
+    action: install
+
+  - packages:
     - connman
     action: remove
 

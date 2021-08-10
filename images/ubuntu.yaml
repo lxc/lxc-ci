@@ -463,6 +463,7 @@ packages:
     - fuse
     - language-pack-en
     - openssh-client
+    - sudo
     - vim
     action: install
 
