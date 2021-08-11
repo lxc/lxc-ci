@@ -474,6 +474,76 @@ lxc network delete dummy
 ovs-vsctl list-ports dummybr0 | grep patch-lxd-net | wc -l | grep 0 # Check bridge has no OVN patch port connected.
 ovs-vsctl del-br dummybr0 # Remove dummy uplink bridge.
 
+# Test external SNAT address for network.
+ip link add dummybr0 type bridge # Create dummy uplink bridge.
+ip address add 192.0.2.1/24 dev dummybr0
+ip address add 2001:db8:1:1::1/64 dev dummybr0
+ip link set dummybr0 up
+lxc network create dummy --type=physical \
+    parent=dummybr0 \
+    ipv4.gateway=192.0.2.1/24 \
+    ipv6.gateway=2001:db8:1:1::1/64 \
+    ipv4.ovn.ranges=192.0.2.10-192.0.2.19 \
+    ipv4.routes=198.51.100.0/24 \
+    ipv6.routes=2001:db8:1:2::/64
+
+lxc network create ovn-virtual-network --type=ovn network=dummy
+
+# Check connectivity back to uplink bridge without SNAT address specified.
+lxc launch images:ubuntu/20.04 u1 -n ovn-virtual-network
+sleep 5
+lxc exec u1 -- ping -c1 -W5 192.0.2.1
+lxc exec u1 -- ping -c1 -W5 2001:db8:1:1::1
+
+# Set external SNAT address on OVN network (and check it only is allowed with uplink routed ingress mode).
+! lxc network set ovn-virtual-network ipv4.nat.address=198.51.100.1 || false
+! lxc network set ovn-virtual-network ipv6.nat.address=2001:db8:1:2::1 || false
+lxc network set dummy ovn.ingress_mode=routed
+lxc network set ovn-virtual-network ipv4.nat.address=198.51.100.1
+lxc network set ovn-virtual-network ipv6.nat.address=2001:db8:1:2::1
+ovn-nbctl list nat | grep 198.51.100.1
+ovn-nbctl list nat | grep 2001:db8:1:2::1
+
+# Add a static route to SNAT address on uplink to OVN network's router (simulating BGP route advert to uplink).
+ovnIPv4="$(lxc network get ovn-virtual-network volatile.network.ipv4.address)"
+ovnIPv6="$(lxc network get ovn-virtual-network volatile.network.ipv6.address)"
+ip r add 198.51.100.1/32 via "${ovnIPv4}" dev dummybr0
+ip r add 2001:db8:1:2::1/128 via "${ovnIPv6}" dev dummybr0
+
+# Check connectivity back to uplink bridge with SNAT address specified.
+lxc exec u1 -- ping -c1 -W5 192.0.2.1
+lxc exec u1 -- ping -c1 -W5 2001:db8:1:1::1
+
+# Remove the routes and check that connectivity fails (indicating that SNAT is indeed rewriting packet source).
+ip r del 198.51.100.1/32 via "${ovnIPv4}" dev dummybr0
+ip r del 2001:db8:1:2::1/128 via "${ovnIPv6}" dev dummybr0
+! lxc exec u1 -- ping -c1 -W5 192.0.2.1 || false
+! lxc exec u1 -- ping -c1 -W5 2001:db8:1:1::1 || false
+
+# Check a NIC in the same OVN network can use a subnet containing the SNAT address in its external routes.
+lxc config device set u1 eth0 ipv4.routes.external=198.51.100.0/24
+lxc config device set u1 eth0 ipv6.routes.external=2001:db8:1:2::/64
+lxc config device unset u1 eth0 ipv4.routes.external
+lxc config device unset u1 eth0 ipv6.routes.external
+
+# Create another OVN network and check it cannot use an external subnet containing the SNAT address of 1st network.
+lxc network create ovn-virtual-network2 --type=ovn network=dummy
+! lxc network set ovn-virtual-network2 ipv4.nat.address=198.51.100.1 || false
+! lxc network set ovn-virtual-network2 ipv6.nat.address=2001:db8:1:2::1 || false
+lxc network delete ovn-virtual-network2
+
+# Remove external SNAT address and check normal SNAT operation returns connectivity.
+lxc network unset ovn-virtual-network ipv4.nat.address
+lxc network unset ovn-virtual-network ipv6.nat.address
+sleep 2
+lxc exec u1 -- ping -c1 -W5 192.0.2.1
+lxc exec u1 -- ping -c1 -W5 2001:db8:1:1::1
+
+lxc delete -f u1
+lxc network delete ovn-virtual-network
+lxc network delete dummy
+ip link delete dummybr0 # Remove dummy uplink bridge.
+
 lxc image delete "${FINGERPRINT}" --project testovn
 lxc image delete "${FINGERPRINT}" --project default
 lxc profile device remove default root --project testovn
