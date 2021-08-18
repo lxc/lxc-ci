@@ -52,8 +52,8 @@
         values:
         - bionic
         - focal
-        - groovy
         - hirsute
+        - impish
 
     - axis:
         name: restrict
