@@ -327,10 +327,9 @@ actions:
     fi
 
     # remove initpkg that do not execute on containers
-    for pkg in shadow netconfig7 eudev openssh pkgtools7; do
+    for pkg in shadow netconfig7 eudev openssh; do
       rm -f "/var/log/initpkg/${pkg}"
     done
-    ( cd /sbin ; mv installer_new installer )
 
 mappings:
   architecture_map: plamolinux
