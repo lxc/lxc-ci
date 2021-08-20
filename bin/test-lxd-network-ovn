@@ -45,511 +45,523 @@ lxc project switch default
 lxc storage create default zfs
 lxc profile device add default root disk path=/ pool=default
 
-lxc network create lxdbr0 \
-    ipv4.address=10.10.10.1/24 ipv4.nat=true \
-    ipv4.dhcp.ranges=10.10.10.2-10.10.10.199 \
-    ipv4.ovn.ranges=10.10.10.200-10.10.10.254 \
-    ipv6.address=fd42:4242:4242:1010::1/64 ipv6.nat=true \
-    ipv6.ovn.ranges=fd42:4242:4242:1010::200-fd42:4242:4242:1010::254
+ovn_basic_tests() {
+    lxc network create lxdbr0 \
+        ipv4.address=10.10.10.1/24 ipv4.nat=true \
+        ipv4.dhcp.ranges=10.10.10.2-10.10.10.199 \
+        ipv4.ovn.ranges=10.10.10.200-10.10.10.254 \
+        ipv6.address=fd42:4242:4242:1010::1/64 ipv6.nat=true \
+        ipv6.ovn.ranges=fd42:4242:4242:1010::200-fd42:4242:4242:1010::254
 
-# Create OVN network without specifying uplink parent network (check default selection works).
-lxc network create ovn-virtual-network --type=ovn
-sleep 2
-lxc network list | grep ovn-virtual-network
+    # Create OVN network without specifying uplink parent network (check default selection works).
+    lxc network create ovn-virtual-network --type=ovn
+    sleep 2
+    lxc network list | grep ovn-virtual-network
 
-echo "==> Check host connectivity to linuxcontainers.org"
-ping -c1 -4 -W5 linuxcontainers.org
-ping -c1 -6 -W5 linuxcontainers.org
+    echo "==> Check host connectivity to linuxcontainers.org"
+    ping -c1 -4 -W5 linuxcontainers.org
+    ping -c1 -6 -W5 linuxcontainers.org
 
-echo "==> Launching a test container on lxdbr0"
-lxc init images:ubuntu/20.04 u1
-FINGERPRINT="$(lxc image ls -cf --format=csv)"
-lxc config device add u1 eth0 nic network=lxdbr0 name=eth0
-lxc start u1
+    echo "==> Launching a test container on lxdbr0"
+    lxc init images:ubuntu/20.04 u1
+    FINGERPRINT="$(lxc image ls -cf --format=csv)"
+    lxc config device add u1 eth0 nic network=lxdbr0 name=eth0
+    lxc start u1
 
-echo "==> Launching a first test container on ovn-virtual-network"
-lxc init images:ubuntu/20.04 u2
-lxc config device add u2 eth0 nic network=ovn-virtual-network name=eth0
-lxc start u2
+    echo "==> Launching a first test container on ovn-virtual-network"
+    lxc init images:ubuntu/20.04 u2
+    lxc config device add u2 eth0 nic network=ovn-virtual-network name=eth0
+    lxc start u2
 
-echo "==> Launching a second test container on ovn-virtual-network"
-lxc init images:ubuntu/20.04 u3
-lxc config device add u3 eth0 nic network=ovn-virtual-network name=eth0
-lxc start u3
+    echo "==> Launching a second test container on ovn-virtual-network"
+    lxc init images:ubuntu/20.04 u3
+    lxc config device add u3 eth0 nic network=ovn-virtual-network name=eth0
+    lxc start u3
 
-echo "==> Wait for addresses"
-sleep 10
-lxc list
+    echo "==> Wait for addresses"
+    sleep 10
+    lxc list
 
-echo "==> Testing connectivity"
-U1_IPV4="$(lxc list u1 -c4 --format=csv | cut -d' ' -f1)"
-U1_IPV6="$(lxc list u1 -c6 --format=csv | cut -d' ' -f1)"
-U3_IPV4="$(lxc list u3 -c4 --format=csv | cut -d' ' -f1)"
-U3_IPV6="$(lxc list u3 -c6 --format=csv | cut -d' ' -f1)"
+    echo "==> Testing connectivity"
+    U1_IPV4="$(lxc list u1 -c4 --format=csv | cut -d' ' -f1)"
+    U1_IPV6="$(lxc list u1 -c6 --format=csv | cut -d' ' -f1)"
+    U3_IPV4="$(lxc list u3 -c4 --format=csv | cut -d' ' -f1)"
+    U3_IPV6="$(lxc list u3 -c6 --format=csv | cut -d' ' -f1)"
 
-echo "==> lxdbr0 to internet"
-lxc exec u1 -- ping -c1 -4 -W5 linuxcontainers.org
-lxc exec u1 -- ping -c1 -6 -W5 linuxcontainers.org
+    echo "==> lxdbr0 to internet"
+    lxc exec u1 -- ping -c1 -4 -W5 linuxcontainers.org
+    lxc exec u1 -- ping -c1 -6 -W5 linuxcontainers.org
 
-echo "==> lxdbr0 to OVN gateway"
-lxc exec u1 -- ping -c1 -4 -W5 10.10.10.200
-lxc exec u1 -- ping -c1 -6 -W5 fd42:4242:4242:1010::200
+    echo "==> lxdbr0 to OVN gateway"
+    lxc exec u1 -- ping -c1 -4 -W5 10.10.10.200
+    lxc exec u1 -- ping -c1 -6 -W5 fd42:4242:4242:1010::200
 
-echo "==> OVN to OVN"
-lxc exec u2 -- ping -c1 -4 -W5 "${U3_IPV4}"
-lxc exec u2 -- ping -c1 -6 -W5 "${U3_IPV6}"
+    echo "==> OVN to OVN"
+    lxc exec u2 -- ping -c1 -4 -W5 "${U3_IPV4}"
+    lxc exec u2 -- ping -c1 -6 -W5 "${U3_IPV6}"
 
-echo "==> OVN to lxdbr0 instance"
-lxc exec u3 -- ping -c1 -4 -W5 "${U1_IPV4}"
-lxc exec u3 -- ping -c1 -6 -W5 "${U1_IPV6}"
+    echo "==> OVN to lxdbr0 instance"
+    lxc exec u3 -- ping -c1 -4 -W5 "${U1_IPV4}"
+    lxc exec u3 -- ping -c1 -6 -W5 "${U1_IPV6}"
 
-echo "==> DNS resolution on OVN"
-lxc exec u3 -- ping -c1 -4 -W5 u2.lxd
-lxc exec u3 -- ping -c1 -6 -W5 u2.lxd
+    echo "==> DNS resolution on OVN"
+    lxc exec u3 -- ping -c1 -4 -W5 u2.lxd
+    lxc exec u3 -- ping -c1 -6 -W5 u2.lxd
 
-echo "==> OVN to lxdbr0 gateway"
-lxc exec u2 -- ping -c1 -W5 10.10.10.1
-lxc exec u2 -- ping -c1 -W5 fd42:4242:4242:1010::1
+    echo "==> OVN to lxdbr0 gateway"
+    lxc exec u2 -- ping -c1 -W5 10.10.10.1
+    lxc exec u2 -- ping -c1 -W5 fd42:4242:4242:1010::1
 
-echo "==> OVN to internet"
-lxc exec u2 -- ping -c1 -4 -W5 linuxcontainers.org
-lxc exec u2 -- ping -c1 -6 -W5 linuxcontainers.org
+    echo "==> OVN to internet"
+    lxc exec u2 -- ping -c1 -4 -W5 linuxcontainers.org
+    lxc exec u2 -- ping -c1 -6 -W5 linuxcontainers.org
 
-echo "===> Testing project restrictions"
-lxc project create testovn -c features.networks=true -c restricted=true
-lxc profile device add default root disk path=/ pool=default --project testovn
+    echo "===> Testing project restrictions"
+    lxc project create testovn -c features.networks=true -c restricted=true
+    lxc profile device add default root disk path=/ pool=default --project testovn
 
-# Test we cannot create network in restricted project with no defined uplinks.
-! lxc network create ovn-virtual-network --project testovn || false
+    # Test we cannot create network in restricted project with no defined uplinks.
+    ! lxc network create ovn-virtual-network --project testovn || false
 
-# Test we can create network with a single restricted uplink network defined without specfiying it (or type).
-lxc project set testovn restricted.networks.uplinks=lxdbr0
-lxc network create ovn-virtual-network --project testovn
-lxc network delete ovn-virtual-network --project testovn
+    # Test we can create network with a single restricted uplink network defined without specfiying it (or type).
+    lxc project set testovn restricted.networks.uplinks=lxdbr0
+    lxc network create ovn-virtual-network --project testovn
+    lxc network delete ovn-virtual-network --project testovn
 
-# Test we have to specify uplink network if multiple are allowed.
-lxc network create lxdbr1 --project default
-lxc project set testovn restricted.networks.uplinks=lxdbr0,lxdbr1
-! lxc network create ovn-virtual-network --project testovn || false
-lxc network create ovn-virtual-network network=lxdbr0 --project testovn
-lxc network delete ovn-virtual-network --project testovn
-lxc network delete lxdbr1 --project default
+    # Test we have to specify uplink network if multiple are allowed.
+    lxc network create lxdbr1 --project default
+    lxc project set testovn restricted.networks.uplinks=lxdbr0,lxdbr1
+    ! lxc network create ovn-virtual-network --project testovn || false
+    lxc network create ovn-virtual-network network=lxdbr0 --project testovn
+    lxc network delete ovn-virtual-network --project testovn
+    lxc network delete lxdbr1 --project default
 
-# Test physical uplink with external IPs.
-ip link add dummy0 type dummy
-lxc network create dummy --type=physical --project default \
-    parent=dummy0 \
-    ipv4.gateway=192.0.2.1/24 \
-    ipv6.gateway=2001:db8:1:1::1/64 \
-    ipv4.ovn.ranges=192.0.2.10-192.0.2.19 \
-    ipv4.routes=198.51.100.0/24 \
-    ipv6.routes=2001:db8:1:2::/64 \
-    dns.nameservers=192.0.2.53
+    # Test physical uplink with external IPs.
+    ip link add dummy0 type dummy
+    lxc network create dummy --type=physical --project default \
+        parent=dummy0 \
+        ipv4.gateway=192.0.2.1/24 \
+        ipv6.gateway=2001:db8:1:1::1/64 \
+        ipv4.ovn.ranges=192.0.2.10-192.0.2.19 \
+        ipv4.routes=198.51.100.0/24 \
+        ipv6.routes=2001:db8:1:2::/64 \
+        dns.nameservers=192.0.2.53
 
-# Test using external subnets using physical uplink.
-lxc project set testovn restricted.networks.uplinks=dummy
-lxc network create ovn-virtual-network --type=ovn --project testovn network=dummy \
-    ipv4.address=198.51.100.1/24 \
-    ipv6.address=2001:db8:1:2::1/64 \
-    ipv4.nat=false \
-    ipv6.nat=false
+    # Test using external subnets using physical uplink.
+    lxc project set testovn restricted.networks.uplinks=dummy
+    lxc network create ovn-virtual-network --type=ovn --project testovn network=dummy \
+        ipv4.address=198.51.100.1/24 \
+        ipv6.address=2001:db8:1:2::1/64 \
+        ipv4.nat=false \
+        ipv6.nat=false
 
-# Check network external subnet overlap is prevented.
-! lxc network create ovn-virtual-network2 --type=ovn --project default network=dummy \
-    ipv4.address=198.51.100.1/26 \
-    ipv4.nat=false || false
+    # Check network external subnet overlap is prevented.
+    ! lxc network create ovn-virtual-network2 --type=ovn --project default network=dummy \
+        ipv4.address=198.51.100.1/26 \
+        ipv4.nat=false || false
 
-! lxc network create ovn-virtual-network2 --type=ovn --project default network=dummy \
-    ipv6.address=2001:db8:1:2::1/122 \
-    ipv6.nat=false || false
+    ! lxc network create ovn-virtual-network2 --type=ovn --project default network=dummy \
+        ipv6.address=2001:db8:1:2::1/122 \
+        ipv6.nat=false || false
 
-# Check uplink dns.nameservers changes are applied to dependent OVN networks.
-ovn-nbctl --format=csv --bare --column=options find dhcp_option cidr=198.51.100.0/24 | grep dns_server={192.0.2.53}
-lxc network set dummy dns.nameservers=192.0.2.54 --project default
-ovn-nbctl --format=csv --bare --column=options find dhcp_option cidr=198.51.100.0/24 | grep dns_server={192.0.2.54}
-lxc network set dummy dns.nameservers=192.0.2.53 --project default
+    # Check uplink dns.nameservers changes are applied to dependent OVN networks.
+    ovn-nbctl --format=csv --bare --column=options find dhcp_option cidr=198.51.100.0/24 | grep dns_server={192.0.2.53}
+    lxc network set dummy dns.nameservers=192.0.2.54 --project default
+    ovn-nbctl --format=csv --bare --column=options find dhcp_option cidr=198.51.100.0/24 | grep dns_server={192.0.2.54}
+    lxc network set dummy dns.nameservers=192.0.2.53 --project default
 
-# Check network external subnet overlap check relaxation when uplink has anycast routed ingress mode enabled.
-lxc network set dummy ovn.ingress_mode=routed ipv4.routes.anycast=true ipv6.routes.anycast=true --project default
+    # Check network external subnet overlap check relaxation when uplink has anycast routed ingress mode enabled.
+    lxc network set dummy ovn.ingress_mode=routed ipv4.routes.anycast=true ipv6.routes.anycast=true --project default
 
-lxc network create ovn-virtual-network2 --type=ovn --project default network=dummy \
-    ipv4.address=198.51.100.1/26 \
-    ipv4.nat=false \
-    ipv6.address=2001:db8:1:2::1/122 \
-    ipv6.nat=false
+    lxc network create ovn-virtual-network2 --type=ovn --project default network=dummy \
+        ipv4.address=198.51.100.1/26 \
+        ipv4.nat=false \
+        ipv6.address=2001:db8:1:2::1/122 \
+        ipv6.nat=false
 
-lxc network delete ovn-virtual-network2 --project default
-lxc network unset dummy ovn.ingress_mode --project default
-lxc network unset dummy ipv4.routes.anycast --project default
-lxc network unset dummy ipv6.routes.anycast --project default
+    lxc network delete ovn-virtual-network2 --project default
+    lxc network unset dummy ovn.ingress_mode --project default
+    lxc network unset dummy ipv4.routes.anycast --project default
+    lxc network unset dummy ipv6.routes.anycast --project default
 
-lxc init images:ubuntu/20.04 u1 --project testovn
-lxc config device add u1 eth0 nic network=ovn-virtual-network name=eth0 --project testovn
+    lxc init images:ubuntu/20.04 u1 --project testovn
+    lxc config device add u1 eth0 nic network=ovn-virtual-network name=eth0 --project testovn
 
-# Record NAT rules count before u1 started.
-natRulesBefore=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
+    # Record NAT rules count before u1 started.
+    natRulesBefore=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
 
-lxc start u1 --project testovn
+    lxc start u1 --project testovn
 
-# Test external IPs allocated and published using dnat.
-sleep 5
-U1_EXT_IPV4="$(lxc list u1 --project testovn -c4 --format=csv | cut -d' ' -f1)"
-U1_EXT_IPV6="$(lxc list u1 --project testovn -c6 --format=csv | cut -d' ' -f1)"
-ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "${U1_EXT_IPV4},${U1_EXT_IPV4},dnat_and_snat"
-ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "${U1_EXT_IPV6},${U1_EXT_IPV6},dnat_and_snat"
-lxc stop -f u1 --project testovn
+    # Test external IPs allocated and published using dnat.
+    sleep 5
+    U1_EXT_IPV4="$(lxc list u1 --project testovn -c4 --format=csv | cut -d' ' -f1)"
+    U1_EXT_IPV6="$(lxc list u1 --project testovn -c6 --format=csv | cut -d' ' -f1)"
+    ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "${U1_EXT_IPV4},${U1_EXT_IPV4},dnat_and_snat"
+    ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "${U1_EXT_IPV6},${U1_EXT_IPV6},dnat_and_snat"
+    lxc stop -f u1 --project testovn
 
-# Check NAT rules got cleaned up.
-natRulesAfter=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
-if [ "$natRulesBefore" -ne "$natRulesAfter" ]; then
-    echo "NAT rules left over. Started with ${natRulesBefore} now have ${natRulesAfter}"
-    false
+    # Check NAT rules got cleaned up.
+    natRulesAfter=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
+    if [ "$natRulesBefore" -ne "$natRulesAfter" ]; then
+        echo "NAT rules left over. Started with ${natRulesBefore} now have ${natRulesAfter}"
+        false
+    fi
+
+    # Test external IPs routed to OVN NIC.
+    lxc network set ovn-virtual-network --project testovn \
+        ipv4.address=auto \
+        ipv6.address=auto \
+        ipv4.nat=true \
+        ipv6.nat=true
+
+    # Record NAT rules count before u1 started again.
+    natRulesBefore=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
+
+    # Check external routes are not too big (when using l2proxy uplink ingress mode).
+    ! lxc config device set u1 eth0 ipv4.routes.external=198.51.100.0/24 --project testovn || false
+    ! lxc config device set u1 eth0 ipv6.routes.external=2001:db8:1:2::/64 --project testovn || false
+
+    # Check external routes are ensured to be within uplink's external routes.
+    ! lxc config device set u1 eth0 ipv4.routes.external=203.0.113.0/26 --project testovn || false
+    ! lxc config device set u1 eth0 ipv6.routes.external=2001:db8:2:2::/122  --project testovn || false
+    lxc config device set u1 eth0 ipv4.routes.external=198.51.100.0/26 --project testovn
+    lxc config device set u1 eth0 ipv6.routes.external=2001:db8:1:2::/122 --project testovn
+
+    # Check NIC external route overlap detection.
+    lxc init images:ubuntu/20.04 u2 --project testovn
+    lxc config device add u2 eth0 nic network=ovn-virtual-network name=eth0 --project testovn
+    ! lxc config device set u2 eth0 ipv4.routes.external=198.51.100.1/32 --project testovn || false
+    ! lxc config device set u2 eth0 ipv6.routes.external=2001:db8:1:2::1/128 --project testovn || false
+
+    # Check NIC external route overlap check relaxation when uplink has anycast routed ingress mode enabled.
+    lxc network set dummy ovn.ingress_mode=routed ipv4.routes.anycast=true ipv6.routes.anycast=true --project default
+    lxc config device set u2 eth0 ipv4.routes.external=198.51.100.1/32 --project testovn
+    lxc config device set u2 eth0 ipv6.routes.external=2001:db8:1:2::1/128 --project testovn
+    lxc delete -f u2 --project testovn
+    lxc network unset dummy ovn.ingress_mode --project default
+    lxc network unset dummy ipv4.routes.anycast --project default
+    lxc network unset dummy ipv6.routes.anycast --project default
+
+    # Check DNAT_AND_SNAT rules get added when starting instance port with external routes.
+    lxc start u1 --project testovn
+    ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat
+    ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "198.51.100.0,198.51.100.0,dnat_and_snat"
+    ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "198.51.100.63,198.51.100.63,dnat_and_snat"
+    ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "2001:db8:1:2::,2001:db8:1:2::,dnat_and_snat"
+    ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "2001:db8:1:2::3f,2001:db8:1:2::3f,dnat_and_snat"
+    ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l | grep 132
+
+    # Add internal static route to instance NIC.
+    lxc config device set u1 eth0 ipv4.routes=203.0.113.1/32 ipv6.routes=2001:db8:2:2::1/128 --project testovn
+
+    # Check static routes get added when starting intance port with external and internal routes, and that they remain
+    # when the network is modified while the instance NIC is running.
+    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "198.51.100.0/26,"
+    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "2001:db8:1:2::/122,"
+    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "203.0.113.1,"
+    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "2001:db8:2:2::1,"
+    lxc network set ovn-virtual-network --project testovn ipv4.dhcp=false
+    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "198.51.100.0/26,"
+    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "2001:db8:1:2::/122,"
+    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "203.0.113.1,"
+    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "2001:db8:2:2::1,"
+    lxc network unset ovn-virtual-network --project testovn ipv4.dhcp
+
+    # Check DNAT_AND_SNAT NAT rules get removed when switching to routed ingress mode.
+    natRulesBeforeRouted=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
+    lxc network set dummy ovn.ingress_mode=routed
+    natRulesAfterRouted=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
+    if [ "$natRulesAfterRouted" -ne "4" ]; then
+        echo "NAT rules left over after switching to routed ingress mode. Expecting 4. Started with ${natRulesBeforeRouted} now have ${natRulesAfterRouted}"
+        false
+    fi
+
+    # Check DNAT_AND_SNAT rules are re-added when switching to l2proxy ingress mode.
+    lxc network unset dummy ovn.ingress_mode
+    natRulesAfterL2proxy=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
+    if [ "$natRulesBeforeRouted" -ne "$natRulesAfterL2proxy" ]; then
+        echo "NAT rules not restored after switching to l2proxy ingress mode. Started with ${natRulesBeforeRouted} now have ${natRulesAfterL2proxy}"
+        false
+    fi
+
+    lxc stop -f u1 --project testovn
+
+    # Check NAT rules got cleaned up.
+    natRulesAfter=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
+    if [ "$natRulesBefore" -ne "$natRulesAfter" ]; then
+        echo "NAT rules left over. Started with ${natRulesBefore} now have ${natRulesAfter}"
+        false
+    fi
+
+    # Check routed ingress mode allows larger subnets and doesn't add DNAT rules.
+    lxc network set dummy ovn.ingress_mode=routed
+    lxc config device set u1 eth0 ipv4.routes.external=198.51.100.0/24 --project testovn
+    lxc config device set u1 eth0 ipv6.routes.external=2001:db8:1:2::/64 --project testovn
+    lxc start u1 --project testovn
+
+    # Check no NAT rules got added.
+    natRulesAfter=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
+    if [ "$natRulesBefore" -ne "$natRulesAfter" ]; then
+        echo "NAT rules got added in routed ingress mode. Started with ${natRulesBefore} now have ${natRulesAfter}"
+        false
+    fi
+
+    lxc delete -f u1 --project testovn
+    lxc network unset dummy ovn.ingress_mode
+
+    # Set custom domain to allow identification of DHCP options.
+    lxc network set ovn-virtual-network dns.domain=testdhcp --project testovn
+
+    # Look for DHCP options mentioning our testdhcp domain name, there should be two.
+    ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep testdhcp | wc -l | grep 2
+
+    # Only enable IPv6 DHCP.
+    lxc init images:ubuntu/20.04 u1 --project testovn
+    lxc network set ovn-virtual-network ipv4.dhcp=false ipv6.dhcp=true --project testovn
+
+    # Look for DHCP options mentioning our testdhcp domain name, there should be one.
+    ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep testdhcp | wc -l | grep 1
+
+    # Check container can start with IPv4 DHCP disabled.
+    lxc start u1 --project testovn
+    lxc stop -f u1 --project testovn
+
+    # Only enable IPv4 DHCP.
+    lxc network set ovn-virtual-network ipv4.dhcp=true ipv6.dhcp=false --project testovn
+
+    # Look for DHCP options mentioning our testdhcp domain name, there should be one.
+    ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep testdhcp | wc -l | grep 1
+
+    # Check container can start with IPv6 DHCP disabled.
+    lxc start u1 --project testovn
+    lxc delete -f u1 --project testovn
+
+    # Disable both IPv4 and IPv6 DHCP.
+    lxc network set ovn-virtual-network ipv4.dhcp=false ipv6.dhcp=false --project testovn
+
+    # Look for DHCP options mentioning our testdhcp domain name, there shouldn't be any.
+    ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep testdhcp | wc -l | grep 0
+
+    lxc network delete ovn-virtual-network --project testovn
+    lxc image delete "${FINGERPRINT}" --project testovn
+    lxc project delete testovn
+    lxc network delete dummy --project default
+    ip link delete dummy0
+
+    echo "===> Testing projects"
+    lxc project create testovn -c features.networks=true -c limits.networks=1
+    lxc project switch testovn
+    lxc profile device add default root disk path=/ pool=default
+
+    # Create network inside project with same name and subnet as network in default project.
+    lxc network create ovn-virtual-network network=lxdbr0 --type=ovn \
+        ipv4.address="$(lxc network get ovn-virtual-network ipv4.address --project default)" ipv4.nat=true \
+        ipv6.address="$(lxc network get ovn-virtual-network ipv6.address --project default)" ipv6.nat=true
+    sleep 2
+
+    # Test we cannot exceed specified project limits for networks.
+    ! lxc network create ovn-virtual-network-toomany network=lxdbr0 --type=ovn || false
+
+    echo "==> Launching a first test container on testovn project ovn-virtual-network"
+    lxc init images:ubuntu/20.04 u2
+    lxc config device add u2 eth0 nic network=ovn-virtual-network name=eth0
+    lxc start u2
+
+    echo "==> Launching a second test container on testovn project ovn-virtual-network"
+    lxc init images:ubuntu/20.04 u3
+    lxc config device add u3 eth0 nic network=ovn-virtual-network name=eth0
+    lxc start u3
+
+    echo "==> Wait for addresses"
+    sleep 10
+    lxc list
+
+    echo "==> Testing connectivity"
+
+    U3_IPV4="$(lxc list u3 -c4 --format=csv | cut -d' ' -f1)"
+    U3_IPV6="$(lxc list u3 -c6 --format=csv | cut -d' ' -f1)"
+
+    echo "==> lxdbr0 to OVN gateway in project testovn"
+    lxc exec u1 --project default -- ping -c1 -W5 -4 10.10.10.201
+    lxc exec u1 --project default -- ping -c1 -W5 -6 fd42:4242:4242:1010::201
+
+    echo "==> OVN to OVN in project testovn"
+    lxc exec u2 -- ping -c1 -4 "${U3_IPV4}"
+    lxc exec u2 -- ping -c1 -6 "${U3_IPV6}"
+
+    echo "==> OVN to lxdbr0 instance in project testovn"
+    lxc exec u3 -- ping -c1 -4 "${U1_IPV4}"
+    lxc exec u3 -- ping -c1 -6 "${U1_IPV6}"
+
+    echo "==> DNS resolution on OVN in project testovn"
+    lxc exec u3 -- ping -c1 -4 u2.lxd
+    lxc exec u3 -- ping -c1 -6 u2.lxd
+
+    echo "==> OVN to lxdbr0 gateway in project testovn"
+    lxc exec u2 -- ping -c1 10.10.10.1
+    lxc exec u2 -- ping -c1 fd42:4242:4242:1010::1
+
+    echo "==> OVN to internet in project testovn"
+    lxc exec u2 -- ping -c1 -4 -W5 linuxcontainers.org
+    lxc exec u2 -- ping -c1 -6 -W5 linuxcontainers.org
+
+    echo "===> Check network in use protection from deletion"
+    # Delete instances in default project first.
+    lxc delete -f u1 u2 u3 --project default
+
+    # Check we cannot delete lxdbr0 (as it is parent of OVN networks).
+    ! lxc network delete lxdbr0 --project default || false
+
+    # Delete OVN network in default project.
+    lxc network delete ovn-virtual-network --project default
+
+    # Check we cannot delete lxdbr0 (as it is still parent of OVN network in project).
+    ! lxc network delete lxdbr0 --project default || false
+
+    # Check we cannot delete OVN network in project due to instances using it.
+    ! lxc network delete ovn-virtual-network || false
+
+    # Remove instances using OVN network in project.
+    lxc delete -f u2 u3
+
+    # Delete OVN network in project and parent in default project.
+    lxc network delete ovn-virtual-network
+    lxc network delete lxdbr0 --project default
+
+    # Test physical uplinks using native bridge.
+    lxc project switch default
+    ip link add dummybr0 type bridge # Create dummy uplink bridge.
+    ip address add 192.0.2.1/24 dev dummybr0
+    ip address add 2001:db8:1:1::1/64 dev dummybr0
+    ip link set dummybr0 up
+    lxc network create dummy --type=physical \
+        parent=dummybr0 \
+        ipv4.gateway=192.0.2.1/24 \
+        ipv6.gateway=2001:db8:1:1::1/64 \
+        ipv4.ovn.ranges=192.0.2.10-192.0.2.19
+    lxc network create ovn-virtual-network --type=ovn network=dummy
+    sleep 2
+    bridge link show | grep dummybr0 | wc -l | grep 1 # Check we have one port connected to the uplink bridge.
+    ovs-vsctl list-br | grep ovn | wc  -l | grep 1 # Check we have one OVS bridge.
+    ovnIPv4="$(lxc network get ovn-virtual-network volatile.network.ipv4.address)"
+    ovnIPv6="$(lxc network get ovn-virtual-network volatile.network.ipv6.address)"
+    ping -c1 -4 "${ovnIPv4}" # Check IPv4 connectivity over dummy bridge to OVN router.
+    ping -c1 -6 "${ovnIPv6}" # Check IPv6 connectivity over dummy bridge to OVN router.
+    lxc network delete ovn-virtual-network
+    lxc network delete dummy
+    bridge link show | grep dummybr0 | wc -l | grep 0 # Check the port is removed from the uplink bridge.
+    ovs-vsctl list-br | grep ovn | wc  -l | grep 0 # Check the OVS bridge is removed.
+    ip link delete dummybr0 # Remove dummy uplink bridge.
+
+    # Test physical uplinks using OVS bridge.
+    ovs-vsctl add-br dummybr0 # Create dummy uplink bridge.
+    ip address add 192.0.2.1/24 dev dummybr0
+    ip address add 2001:db8:1:1::1/64 dev dummybr0
+    ip link set dummybr0 up
+    lxc network create dummy --type=physical \
+        parent=dummybr0 \
+        ipv4.gateway=192.0.2.1/24 \
+        ipv6.gateway=2001:db8:1:1::1/64 \
+        ipv4.ovn.ranges=192.0.2.10-192.0.2.19
+    lxc network create ovn-virtual-network --type=ovn network=dummy
+    sleep 2
+    ovs-vsctl list-ports dummybr0 | grep patch-lxd-net | wc -l | grep 1 # Check bridge has an OVN patch port connected.
+    ovnIPv4="$(lxc network get ovn-virtual-network volatile.network.ipv4.address)"
+    ovnIPv6="$(lxc network get ovn-virtual-network volatile.network.ipv6.address)"
+    ping -c1 -4 "${ovnIPv4}" # Check IPv4 connectivity over dummy bridge to OVN router.
+    ping -c1 -6 "${ovnIPv6}" # Check IPv6 connectivity over dummy bridge to OVN router.
+    lxc network delete ovn-virtual-network
+    lxc network delete dummy
+    ovs-vsctl list-ports dummybr0 | grep patch-lxd-net | wc -l | grep 0 # Check bridge has no OVN patch port connected.
+    ovs-vsctl del-br dummybr0 # Remove dummy uplink bridge.
+
+    # Test external SNAT address for network.
+    ip link add dummybr0 type bridge # Create dummy uplink bridge.
+    ip address add 192.0.2.1/24 dev dummybr0
+    ip address add 2001:db8:1:1::1/64 dev dummybr0
+    ip link set dummybr0 up
+    lxc network create dummy --type=physical \
+        parent=dummybr0 \
+        ipv4.gateway=192.0.2.1/24 \
+        ipv6.gateway=2001:db8:1:1::1/64 \
+        ipv4.ovn.ranges=192.0.2.10-192.0.2.19 \
+        ipv4.routes=198.51.100.0/24 \
+        ipv6.routes=2001:db8:1:2::/64
+
+    lxc network create ovn-virtual-network --type=ovn network=dummy
+
+    # Check connectivity back to uplink bridge without SNAT address specified.
+    lxc launch images:ubuntu/20.04 u1 -n ovn-virtual-network
+    sleep 5
+    lxc exec u1 -- ping -c1 -W5 192.0.2.1
+    lxc exec u1 -- ping -c1 -W5 2001:db8:1:1::1
+
+    # Set external SNAT address on OVN network (and check it only is allowed with uplink routed ingress mode).
+    ! lxc network set ovn-virtual-network ipv4.nat.address=198.51.100.1 || false
+    ! lxc network set ovn-virtual-network ipv6.nat.address=2001:db8:1:2::1 || false
+    lxc network set dummy ovn.ingress_mode=routed
+    lxc network set ovn-virtual-network ipv4.nat.address=198.51.100.1
+    lxc network set ovn-virtual-network ipv6.nat.address=2001:db8:1:2::1
+    ovn-nbctl list nat | grep 198.51.100.1
+    ovn-nbctl list nat | grep 2001:db8:1:2::1
+
+    # Add a static route to SNAT address on uplink to OVN network's router (simulating BGP route advert to uplink).
+    ovnIPv4="$(lxc network get ovn-virtual-network volatile.network.ipv4.address)"
+    ovnIPv6="$(lxc network get ovn-virtual-network volatile.network.ipv6.address)"
+    ip r add 198.51.100.1/32 via "${ovnIPv4}" dev dummybr0
+    ip r add 2001:db8:1:2::1/128 via "${ovnIPv6}" dev dummybr0
+
+    # Check connectivity back to uplink bridge with SNAT address specified.
+    lxc exec u1 -- ping -c1 -W5 192.0.2.1
+    lxc exec u1 -- ping -c1 -W5 2001:db8:1:1::1
+
+    # Remove the routes and check that connectivity fails (indicating that SNAT is indeed rewriting packet source).
+    ip r del 198.51.100.1/32 via "${ovnIPv4}" dev dummybr0
+    ip r del 2001:db8:1:2::1/128 via "${ovnIPv6}" dev dummybr0
+    ! lxc exec u1 -- ping -c1 -W5 192.0.2.1 || false
+    ! lxc exec u1 -- ping -c1 -W5 2001:db8:1:1::1 || false
+
+    # Check a NIC in the same OVN network can use a subnet containing the SNAT address in its external routes.
+    lxc config device set u1 eth0 ipv4.routes.external=198.51.100.0/24
+    lxc config device set u1 eth0 ipv6.routes.external=2001:db8:1:2::/64
+    lxc config device unset u1 eth0 ipv4.routes.external
+    lxc config device unset u1 eth0 ipv6.routes.external
+
+    # Create another OVN network and check it cannot use an external subnet containing the SNAT address of 1st network.
+    lxc network create ovn-virtual-network2 --type=ovn network=dummy
+    ! lxc network set ovn-virtual-network2 ipv4.nat.address=198.51.100.1 || false
+    ! lxc network set ovn-virtual-network2 ipv6.nat.address=2001:db8:1:2::1 || false
+    lxc network delete ovn-virtual-network2
+
+    # Remove external SNAT address and check normal SNAT operation returns connectivity.
+    lxc network unset ovn-virtual-network ipv4.nat.address
+    lxc network unset ovn-virtual-network ipv6.nat.address
+    sleep 2
+    lxc exec u1 -- ping -c1 -W5 192.0.2.1
+    lxc exec u1 -- ping -c1 -W5 2001:db8:1:1::1
+
+    lxc delete -f u1
+    lxc network delete ovn-virtual-network
+    lxc network delete dummy
+    ip link delete dummybr0 # Remove dummy uplink bridge.
+
+    lxc image delete "${FINGERPRINT}" --project testovn
+    lxc image delete "${FINGERPRINT}" --project default
+    lxc profile device remove default root --project testovn
+    lxc project delete testovn
+}
+
+# Allow for running a specific set of tests.
+if [ "$#" -gt 0 ]; then
+  TEST_CURRENT="ovn_${1}_tests"
+  ${TEST_CURRENT}
+else
+    # Otherwise run full suite.
+    ovn_basic_tests
 fi
 
-# Test external IPs routed to OVN NIC.
-lxc network set ovn-virtual-network --project testovn \
-    ipv4.address=auto \
-    ipv6.address=auto \
-    ipv4.nat=true \
-    ipv6.nat=true
-
-# Record NAT rules count before u1 started again.
-natRulesBefore=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
-
-# Check external routes are not too big (when using l2proxy uplink ingress mode).
-! lxc config device set u1 eth0 ipv4.routes.external=198.51.100.0/24 --project testovn || false
-! lxc config device set u1 eth0 ipv6.routes.external=2001:db8:1:2::/64 --project testovn || false
-
-# Check external routes are ensured to be within uplink's external routes.
-! lxc config device set u1 eth0 ipv4.routes.external=203.0.113.0/26 --project testovn || false
-! lxc config device set u1 eth0 ipv6.routes.external=2001:db8:2:2::/122  --project testovn || false
-lxc config device set u1 eth0 ipv4.routes.external=198.51.100.0/26 --project testovn
-lxc config device set u1 eth0 ipv6.routes.external=2001:db8:1:2::/122 --project testovn
-
-# Check NIC external route overlap detection.
-lxc init images:ubuntu/20.04 u2 --project testovn
-lxc config device add u2 eth0 nic network=ovn-virtual-network name=eth0 --project testovn
-! lxc config device set u2 eth0 ipv4.routes.external=198.51.100.1/32 --project testovn || false
-! lxc config device set u2 eth0 ipv6.routes.external=2001:db8:1:2::1/128 --project testovn || false
-
-# Check NIC external route overlap check relaxation when uplink has anycast routed ingress mode enabled.
-lxc network set dummy ovn.ingress_mode=routed ipv4.routes.anycast=true ipv6.routes.anycast=true --project default
-lxc config device set u2 eth0 ipv4.routes.external=198.51.100.1/32 --project testovn
-lxc config device set u2 eth0 ipv6.routes.external=2001:db8:1:2::1/128 --project testovn
-lxc delete -f u2 --project testovn
-lxc network unset dummy ovn.ingress_mode --project default
-lxc network unset dummy ipv4.routes.anycast --project default
-lxc network unset dummy ipv6.routes.anycast --project default
-
-# Check DNAT_AND_SNAT rules get added when starting instance port with external routes.
-lxc start u1 --project testovn
-ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat
-ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "198.51.100.0,198.51.100.0,dnat_and_snat"
-ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "198.51.100.63,198.51.100.63,dnat_and_snat"
-ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "2001:db8:1:2::,2001:db8:1:2::,dnat_and_snat"
-ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "2001:db8:1:2::3f,2001:db8:1:2::3f,dnat_and_snat"
-ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l | grep 132
-
-# Add internal static route to instance NIC.
-lxc config device set u1 eth0 ipv4.routes=203.0.113.1/32 ipv6.routes=2001:db8:2:2::1/128 --project testovn
-
-# Check static routes get added when starting intance port with external and internal routes, and that they remain
-# when the network is modified while the instance NIC is running.
-ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "198.51.100.0/26,"
-ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "2001:db8:1:2::/122,"
-ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "203.0.113.1,"
-ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "2001:db8:2:2::1,"
-lxc network set ovn-virtual-network --project testovn ipv4.dhcp=false
-ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "198.51.100.0/26,"
-ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "2001:db8:1:2::/122,"
-ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "203.0.113.1,"
-ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "2001:db8:2:2::1,"
-lxc network unset ovn-virtual-network --project testovn ipv4.dhcp
-
-# Check DNAT_AND_SNAT NAT rules get removed when switching to routed ingress mode.
-natRulesBeforeRouted=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
-lxc network set dummy ovn.ingress_mode=routed
-natRulesAfterRouted=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
-if [ "$natRulesAfterRouted" -ne "4" ]; then
-    echo "NAT rules left over after switching to routed ingress mode. Expecting 4. Started with ${natRulesBeforeRouted} now have ${natRulesAfterRouted}"
-    false
-fi
-
-# Check DNAT_AND_SNAT rules are re-added when switching to l2proxy ingress mode.
-lxc network unset dummy ovn.ingress_mode
-natRulesAfterL2proxy=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
-if [ "$natRulesBeforeRouted" -ne "$natRulesAfterL2proxy" ]; then
-    echo "NAT rules not restored after switching to l2proxy ingress mode. Started with ${natRulesBeforeRouted} now have ${natRulesAfterL2proxy}"
-    false
-fi
-
-lxc stop -f u1 --project testovn
-
-# Check NAT rules got cleaned up.
-natRulesAfter=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
-if [ "$natRulesBefore" -ne "$natRulesAfter" ]; then
-    echo "NAT rules left over. Started with ${natRulesBefore} now have ${natRulesAfter}"
-    false
-fi
-
-# Check routed ingress mode allows larger subnets and doesn't add DNAT rules.
-lxc network set dummy ovn.ingress_mode=routed
-lxc config device set u1 eth0 ipv4.routes.external=198.51.100.0/24 --project testovn
-lxc config device set u1 eth0 ipv6.routes.external=2001:db8:1:2::/64 --project testovn
-lxc start u1 --project testovn
-
-# Check no NAT rules got added.
-natRulesAfter=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
-if [ "$natRulesBefore" -ne "$natRulesAfter" ]; then
-    echo "NAT rules got added in routed ingress mode. Started with ${natRulesBefore} now have ${natRulesAfter}"
-    false
-fi
-
-lxc delete -f u1 --project testovn
-lxc network unset dummy ovn.ingress_mode
-
-# Set custom domain to allow identification of DHCP options.
-lxc network set ovn-virtual-network dns.domain=testdhcp --project testovn
-
-# Look for DHCP options mentioning our testdhcp domain name, there should be two.
-ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep testdhcp | wc -l | grep 2
-
-# Only enable IPv6 DHCP.
-lxc init images:ubuntu/20.04 u1 --project testovn
-lxc network set ovn-virtual-network ipv4.dhcp=false ipv6.dhcp=true --project testovn
-
-# Look for DHCP options mentioning our testdhcp domain name, there should be one.
-ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep testdhcp | wc -l | grep 1
-
-# Check container can start with IPv4 DHCP disabled.
-lxc start u1 --project testovn
-lxc stop -f u1 --project testovn
-
-# Only enable IPv4 DHCP.
-lxc network set ovn-virtual-network ipv4.dhcp=true ipv6.dhcp=false --project testovn
-
-# Look for DHCP options mentioning our testdhcp domain name, there should be one.
-ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep testdhcp | wc -l | grep 1
-
-# Check container can start with IPv6 DHCP disabled.
-lxc start u1 --project testovn
-lxc delete -f u1 --project testovn
-
-# Disable both IPv4 and IPv6 DHCP.
-lxc network set ovn-virtual-network ipv4.dhcp=false ipv6.dhcp=false --project testovn
-
-# Look for DHCP options mentioning our testdhcp domain name, there shouldn't be any.
-ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep testdhcp | wc -l | grep 0
-
-lxc network delete ovn-virtual-network --project testovn
-lxc image delete "${FINGERPRINT}" --project testovn
-lxc project delete testovn
-lxc network delete dummy --project default
-ip link delete dummy0
-
-echo "===> Testing projects"
-lxc project create testovn -c features.networks=true -c limits.networks=1
-lxc project switch testovn
-lxc profile device add default root disk path=/ pool=default
-
-# Create network inside project with same name and subnet as network in default project.
-lxc network create ovn-virtual-network network=lxdbr0 --type=ovn \
-    ipv4.address="$(lxc network get ovn-virtual-network ipv4.address --project default)" ipv4.nat=true \
-    ipv6.address="$(lxc network get ovn-virtual-network ipv6.address --project default)" ipv6.nat=true
-sleep 2
-
-# Test we cannot exceed specified project limits for networks.
-! lxc network create ovn-virtual-network-toomany network=lxdbr0 --type=ovn || false
-
-echo "==> Launching a first test container on testovn project ovn-virtual-network"
-lxc init images:ubuntu/20.04 u2
-lxc config device add u2 eth0 nic network=ovn-virtual-network name=eth0
-lxc start u2
-
-echo "==> Launching a second test container on testovn project ovn-virtual-network"
-lxc init images:ubuntu/20.04 u3
-lxc config device add u3 eth0 nic network=ovn-virtual-network name=eth0
-lxc start u3
-
-echo "==> Wait for addresses"
-sleep 10
-lxc list
-
-echo "==> Testing connectivity"
-
-U3_IPV4="$(lxc list u3 -c4 --format=csv | cut -d' ' -f1)"
-U3_IPV6="$(lxc list u3 -c6 --format=csv | cut -d' ' -f1)"
-
-echo "==> lxdbr0 to OVN gateway in project testovn"
-lxc exec u1 --project default -- ping -c1 -W5 -4 10.10.10.201
-lxc exec u1 --project default -- ping -c1 -W5 -6 fd42:4242:4242:1010::201
-
-echo "==> OVN to OVN in project testovn"
-lxc exec u2 -- ping -c1 -4 "${U3_IPV4}"
-lxc exec u2 -- ping -c1 -6 "${U3_IPV6}"
-
-echo "==> OVN to lxdbr0 instance in project testovn"
-lxc exec u3 -- ping -c1 -4 "${U1_IPV4}"
-lxc exec u3 -- ping -c1 -6 "${U1_IPV6}"
-
-echo "==> DNS resolution on OVN in project testovn"
-lxc exec u3 -- ping -c1 -4 u2.lxd
-lxc exec u3 -- ping -c1 -6 u2.lxd
-
-echo "==> OVN to lxdbr0 gateway in project testovn"
-lxc exec u2 -- ping -c1 10.10.10.1
-lxc exec u2 -- ping -c1 fd42:4242:4242:1010::1
-
-echo "==> OVN to internet in project testovn"
-lxc exec u2 -- ping -c1 -4 -W5 linuxcontainers.org
-lxc exec u2 -- ping -c1 -6 -W5 linuxcontainers.org
-
-echo "===> Check network in use protection from deletion"
-# Delete instances in default project first.
-lxc delete -f u1 u2 u3 --project default
-
-# Check we cannot delete lxdbr0 (as it is parent of OVN networks).
-! lxc network delete lxdbr0 --project default || false
-
-# Delete OVN network in default project.
-lxc network delete ovn-virtual-network --project default
-
-# Check we cannot delete lxdbr0 (as it is still parent of OVN network in project).
-! lxc network delete lxdbr0 --project default || false
-
-# Check we cannot delete OVN network in project due to instances using it.
-! lxc network delete ovn-virtual-network || false
-
-# Remove instances using OVN network in project.
-lxc delete -f u2 u3
-
-# Delete OVN network in project and parent in default project.
-lxc network delete ovn-virtual-network
-lxc network delete lxdbr0 --project default
-
-# Test physical uplinks using native bridge.
 lxc project switch default
-ip link add dummybr0 type bridge # Create dummy uplink bridge.
-ip address add 192.0.2.1/24 dev dummybr0
-ip address add 2001:db8:1:1::1/64 dev dummybr0
-ip link set dummybr0 up
-lxc network create dummy --type=physical \
-    parent=dummybr0 \
-    ipv4.gateway=192.0.2.1/24 \
-    ipv6.gateway=2001:db8:1:1::1/64 \
-    ipv4.ovn.ranges=192.0.2.10-192.0.2.19
-lxc network create ovn-virtual-network --type=ovn network=dummy
-sleep 2
-bridge link show | grep dummybr0 | wc -l | grep 1 # Check we have one port connected to the uplink bridge.
-ovs-vsctl list-br | grep ovn | wc  -l | grep 1 # Check we have one OVS bridge.
-ovnIPv4="$(lxc network get ovn-virtual-network volatile.network.ipv4.address)"
-ovnIPv6="$(lxc network get ovn-virtual-network volatile.network.ipv6.address)"
-ping -c1 -4 "${ovnIPv4}" # Check IPv4 connectivity over dummy bridge to OVN router.
-ping -c1 -6 "${ovnIPv6}" # Check IPv6 connectivity over dummy bridge to OVN router.
-lxc network delete ovn-virtual-network
-lxc network delete dummy
-bridge link show | grep dummybr0 | wc -l | grep 0 # Check the port is removed from the uplink bridge.
-ovs-vsctl list-br | grep ovn | wc  -l | grep 0 # Check the OVS bridge is removed.
-ip link delete dummybr0 # Remove dummy uplink bridge.
-
-# Test physical uplinks using OVS bridge.
-ovs-vsctl add-br dummybr0 # Create dummy uplink bridge.
-ip address add 192.0.2.1/24 dev dummybr0
-ip address add 2001:db8:1:1::1/64 dev dummybr0
-ip link set dummybr0 up
-lxc network create dummy --type=physical \
-    parent=dummybr0 \
-    ipv4.gateway=192.0.2.1/24 \
-    ipv6.gateway=2001:db8:1:1::1/64 \
-    ipv4.ovn.ranges=192.0.2.10-192.0.2.19
-lxc network create ovn-virtual-network --type=ovn network=dummy
-sleep 2
-ovs-vsctl list-ports dummybr0 | grep patch-lxd-net | wc -l | grep 1 # Check bridge has an OVN patch port connected.
-ovnIPv4="$(lxc network get ovn-virtual-network volatile.network.ipv4.address)"
-ovnIPv6="$(lxc network get ovn-virtual-network volatile.network.ipv6.address)"
-ping -c1 -4 "${ovnIPv4}" # Check IPv4 connectivity over dummy bridge to OVN router.
-ping -c1 -6 "${ovnIPv6}" # Check IPv6 connectivity over dummy bridge to OVN router.
-lxc network delete ovn-virtual-network
-lxc network delete dummy
-ovs-vsctl list-ports dummybr0 | grep patch-lxd-net | wc -l | grep 0 # Check bridge has no OVN patch port connected.
-ovs-vsctl del-br dummybr0 # Remove dummy uplink bridge.
-
-# Test external SNAT address for network.
-ip link add dummybr0 type bridge # Create dummy uplink bridge.
-ip address add 192.0.2.1/24 dev dummybr0
-ip address add 2001:db8:1:1::1/64 dev dummybr0
-ip link set dummybr0 up
-lxc network create dummy --type=physical \
-    parent=dummybr0 \
-    ipv4.gateway=192.0.2.1/24 \
-    ipv6.gateway=2001:db8:1:1::1/64 \
-    ipv4.ovn.ranges=192.0.2.10-192.0.2.19 \
-    ipv4.routes=198.51.100.0/24 \
-    ipv6.routes=2001:db8:1:2::/64
-
-lxc network create ovn-virtual-network --type=ovn network=dummy
-
-# Check connectivity back to uplink bridge without SNAT address specified.
-lxc launch images:ubuntu/20.04 u1 -n ovn-virtual-network
-sleep 5
-lxc exec u1 -- ping -c1 -W5 192.0.2.1
-lxc exec u1 -- ping -c1 -W5 2001:db8:1:1::1
-
-# Set external SNAT address on OVN network (and check it only is allowed with uplink routed ingress mode).
-! lxc network set ovn-virtual-network ipv4.nat.address=198.51.100.1 || false
-! lxc network set ovn-virtual-network ipv6.nat.address=2001:db8:1:2::1 || false
-lxc network set dummy ovn.ingress_mode=routed
-lxc network set ovn-virtual-network ipv4.nat.address=198.51.100.1
-lxc network set ovn-virtual-network ipv6.nat.address=2001:db8:1:2::1
-ovn-nbctl list nat | grep 198.51.100.1
-ovn-nbctl list nat | grep 2001:db8:1:2::1
-
-# Add a static route to SNAT address on uplink to OVN network's router (simulating BGP route advert to uplink).
-ovnIPv4="$(lxc network get ovn-virtual-network volatile.network.ipv4.address)"
-ovnIPv6="$(lxc network get ovn-virtual-network volatile.network.ipv6.address)"
-ip r add 198.51.100.1/32 via "${ovnIPv4}" dev dummybr0
-ip r add 2001:db8:1:2::1/128 via "${ovnIPv6}" dev dummybr0
-
-# Check connectivity back to uplink bridge with SNAT address specified.
-lxc exec u1 -- ping -c1 -W5 192.0.2.1
-lxc exec u1 -- ping -c1 -W5 2001:db8:1:1::1
-
-# Remove the routes and check that connectivity fails (indicating that SNAT is indeed rewriting packet source).
-ip r del 198.51.100.1/32 via "${ovnIPv4}" dev dummybr0
-ip r del 2001:db8:1:2::1/128 via "${ovnIPv6}" dev dummybr0
-! lxc exec u1 -- ping -c1 -W5 192.0.2.1 || false
-! lxc exec u1 -- ping -c1 -W5 2001:db8:1:1::1 || false
-
-# Check a NIC in the same OVN network can use a subnet containing the SNAT address in its external routes.
-lxc config device set u1 eth0 ipv4.routes.external=198.51.100.0/24
-lxc config device set u1 eth0 ipv6.routes.external=2001:db8:1:2::/64
-lxc config device unset u1 eth0 ipv4.routes.external
-lxc config device unset u1 eth0 ipv6.routes.external
-
-# Create another OVN network and check it cannot use an external subnet containing the SNAT address of 1st network.
-lxc network create ovn-virtual-network2 --type=ovn network=dummy
-! lxc network set ovn-virtual-network2 ipv4.nat.address=198.51.100.1 || false
-! lxc network set ovn-virtual-network2 ipv6.nat.address=2001:db8:1:2::1 || false
-lxc network delete ovn-virtual-network2
-
-# Remove external SNAT address and check normal SNAT operation returns connectivity.
-lxc network unset ovn-virtual-network ipv4.nat.address
-lxc network unset ovn-virtual-network ipv6.nat.address
-sleep 2
-lxc exec u1 -- ping -c1 -W5 192.0.2.1
-lxc exec u1 -- ping -c1 -W5 2001:db8:1:1::1
-
-lxc delete -f u1
-lxc network delete ovn-virtual-network
-lxc network delete dummy
-ip link delete dummybr0 # Remove dummy uplink bridge.
-
-lxc image delete "${FINGERPRINT}" --project testovn
-lxc image delete "${FINGERPRINT}" --project default
-lxc profile device remove default root --project testovn
 lxc profile device remove default root --project default
 lxc storage delete default
-lxc project switch default
-lxc project delete testovn
 
 FAIL=0
