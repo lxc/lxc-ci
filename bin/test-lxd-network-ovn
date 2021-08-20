@@ -31,8 +31,8 @@ snap install jq
 snap refresh lxd --channel=latest/edge
 lxd waitready --timeout=300
 
-# Install OVN
-apt install ovn-host ovn-central --yes
+# Install OVN and dnsutils.
+apt install ovn-host ovn-central dnsutils --yes
 
 # Configure OVN.
 ovs-vsctl set open_vswitch . \
@@ -546,8 +546,186 @@ ovn_basic_tests() {
 
     lxc image delete "${FINGERPRINT}" --project testovn
     lxc image delete "${FINGERPRINT}" --project default
-    lxc profile device remove default root --project testovn
+    lxc project switch default
     lxc project delete testovn
+}
+
+ovn_forward_tests() {
+    # Create lxdbr0 bridge to act as uplink network.
+    lxc network create lxdbr0 \
+        ipv4.address=10.10.10.1/24 ipv4.nat=true \
+        ipv4.dhcp.ranges=10.10.10.2-10.10.10.199 \
+        ipv4.ovn.ranges=10.10.10.200-10.10.10.254 \
+        ipv6.address=fd42:4242:4242:1010::1/64 ipv6.nat=true \
+        ipv6.ovn.ranges=fd42:4242:4242:1010::200-fd42:4242:4242:1010::254
+
+    # Create OVN network using physical uplink network.
+    lxc project create testovn -c features.networks=true
+    lxc project switch testovn
+    lxc network create ovn-virtual-network --type=ovn network=lxdbr0
+    sleep 2
+    lxc network show ovn-virtual-network
+    ip4AddressPrefix=$(lxc network get ovn-virtual-network ipv4.address | sed 's/\.1\/24$//g')
+    ip6AddressPrefix=$(lxc network get ovn-virtual-network ipv6.address | sed 's/::1\/64$//g')
+
+    # Check no forward can be created with a listen address set that is not in the uplink's routes.
+    ! lxc network forward create ovn-virtual-network 192.0.2.1 target_address="${ip4AddressPrefix}.2" || false
+    ! lxc network forward create ovn-virtual-network 2001:db8:1:2::1 target_address="${ip6AddressPrefix}.2" || false
+
+    # Add routes to the uplink network and check we can create forwards.
+    lxc network set lxdbr0 ipv4.routes=192.0.2.0/24 ipv6.routes=2001:db8:1:2::/64 --project=default
+
+    # Check forwards can be created with no target address.
+    lxc network forward create ovn-virtual-network 192.0.2.1
+    lxc network forward create ovn-virtual-network 2001:db8:1:2::1
+    ovn-nbctl list load_balancer | grep name -c | grep 0
+
+    # Check user config is allowed, but unknown keys are not.
+    lxc network forward set ovn-virtual-network 192.0.2.1 user.foo=bar
+    lxc network forward show ovn-virtual-network 192.0.2.1 | grep 'user.foo: bar'
+    ! lxc network forward set ovn-virtual-network 192.0.2.1 foo=bar || false
+
+    # Check basic forward default target address can be set (to non-existent target address).
+    lxc network forward set ovn-virtual-network 192.0.2.1 target_address="${ip4AddressPrefix}.2"
+    lxc network forward set ovn-virtual-network 2001:db8:1:2::1  target_address="${ip6AddressPrefix}::2"
+    ovn-nbctl list load_balancer | grep name -c | grep 2
+    lxc network forward delete ovn-virtual-network 192.0.2.1
+    lxc network forward delete ovn-virtual-network 2001:db8:1:2::1
+    ovn-nbctl list load_balancer | grep name -c | grep 0
+
+    # Check basic forward can be created with target address (to non-existent target address).
+    lxc network forward create ovn-virtual-network 192.0.2.1 target_address="${ip4AddressPrefix}.2"
+    lxc network forward create ovn-virtual-network 2001:db8:1:2::1 target_address="${ip6AddressPrefix}::2"
+    ovn-nbctl list load_balancer | grep name -c | grep 2
+
+    # Check duplicate forwards cannot be created.
+    ! lxc network forward create ovn-virtual-network 192.0.2.1 target_address="${ip4AddressPrefix}.2" || false
+    ! lxc network forward create ovn-virtual-network 2001:db8:1:2::1 target_address="${ip6AddressPrefix}::2" || false
+
+    # Check a forward on another ovn network connected to same uplink cannot conflict with an existing forward.
+    lxc network create ovn-virtual-network2 --type=ovn network=lxdbr0
+    ip4AddressPrefix2=$(lxc network get ovn-virtual-network2 ipv4.address | sed 's/\.1\/24$//g')
+    ip6AddressPrefix2=$(lxc network get ovn-virtual-network2 ipv6.address | sed 's/::1\/64$//g')
+
+    ! lxc network forward create ovn-virtual-network2 192.0.2.1 target_address="${ip4AddressPrefix2}.2" || false
+    ! lxc network forward create ovn-virtual-network2 2001:db8:1:2::1 target_address="${ip6AddressPrefix2}::2" || false
+    lxc network forward create ovn-virtual-network2 192.0.2.2 target_address="${ip4AddressPrefix2}.2"
+    lxc network forward create ovn-virtual-network2 2001:db8:1:2::2 target_address="${ip6AddressPrefix2}::2"
+
+    # Check changing network's subnet(s) are prevented if forwards exist that conflict.
+    ! lxc network set ovn-virtual-network2 ipv4.address=192.168.0.1/24 || false
+    ! lxc network set ovn-virtual-network2 ipv6.address=2001:db8:1:3::1/64 || false
+
+    # Check network forwards are removed when network is removed.
+    ovn-nbctl list load_balancer | grep name -c | grep 4
+    lxc network delete ovn-virtual-network2
+    ovn-nbctl list load_balancer | grep name -c | grep 2
+
+    # Create instance connected to ovn-virtual-network.
+    lxc launch images:ubuntu/20.04 u1 -n ovn-virtual-network -s default
+    FINGERPRINT="$(lxc image ls -cf --format=csv)"
+    sleep 5
+    lxc list
+    U1_IPV4="$(lxc list u1 -c4 --format=csv | cut -d' ' -f1)"
+    U1_IPV6="$(lxc list u1 -c6 --format=csv | cut -d' ' -f1)"
+
+    lxc network forward delete ovn-virtual-network 192.0.2.1
+    lxc network forward delete ovn-virtual-network 2001:db8:1:2::1
+
+    # Check IP is unused and not working.
+    ! ping -c1 -4 -W5 192.0.2.1 || false
+    ! ping -c1 -6 -W5 2001:db8:1:2::1 || false
+
+    # Add forward to u1 and test working.
+    lxc network forward create ovn-virtual-network 192.0.2.1 target_address="${U1_IPV4}"
+    lxc network forward create ovn-virtual-network 2001:db8:1:2::1 target_address="${U1_IPV6}"
+
+    # Check forward is working (including neighbour adverts) by pinging it.
+    ping -c1 -4 -W5 192.0.2.1
+    ping -c1 -6 -W5 2001:db8:1:2::1
+
+    # Check DNS TCP forwarding using default target rule.
+    lxc exec u1 -- systemctl mask dnsmasq
+    lxc exec u1 -- apt install dnsmasq -y
+cat <<EOF | lxc exec u1 -- tee /etc/dnsmasq.d/lxd_test.conf
+interface=eth0
+bind-interfaces
+interface-name=u1.lxd,eth0
+EOF
+
+    lxc exec u1 -- systemctl unmask dnsmasq
+    lxc exec u1 -- systemctl start dnsmasq
+    dig a +tcp @192.0.2.1 u1.lxd
+    dig aaaa +tcp @2001:db8:1:2::1 u1.lxd
+
+    # Check stopping the DNS service and checking we get no connection using default target rule.
+    lxc exec u1 -- systemctl stop dnsmasq
+    ! dig a +tcp @192.0.2.1 u1.lxd || false
+    ! dig aaaa +tcp @2001:db8:1:2::1 u1.lxd || false
+
+    # Check TCP port forward of port 53 to a different host.
+    lxc launch images:ubuntu/20.04 u2 -n ovn-virtual-network -s default
+    sleep 5
+    lxc list
+    U2_IPV4="$(lxc list u2 -c4 --format=csv | cut -d' ' -f1)"
+    U2_IPV6="$(lxc list u2 -c6 --format=csv | cut -d' ' -f1)"
+
+    lxc exec u2 -- systemctl mask dnsmasq
+    lxc exec u2 -- apt install dnsmasq -y
+cat <<EOF | lxc exec u2 -- tee /etc/dnsmasq.d/lxd_test.conf
+interface=eth0
+bind-interfaces
+interface-name=u2.lxd,eth0
+EOF
+
+    lxc exec u2 -- systemctl unmask dnsmasq
+    lxc exec u2 -- systemctl start dnsmasq
+
+    lxc network forward port add ovn-virtual-network 192.0.2.1 tcp 53 "${U2_IPV4}"
+    lxc network forward port add ovn-virtual-network 2001:db8:1:2::1 tcp 53 "${U2_IPV6}"
+
+    dig a +tcp @192.0.2.1 u2.lxd
+    dig aaaa +tcp @2001:db8:1:2::1 u2.lxd
+
+    # Remove port forward and check it reverts to default forward rule (which shouldn't work as dnsmasq is off).
+    lxc network forward port remove ovn-virtual-network 192.0.2.1 tcp 53
+    lxc network forward port remove ovn-virtual-network 2001:db8:1:2::1 tcp 53
+    ! dig a +tcp @192.0.2.1 u1.lxd || false
+    ! dig aaaa +tcp @2001:db8:1:2::1 u1.lxd || false
+
+    # Check starting dnsmasq allows the default forward rule to work to u1.
+    lxc exec u1 -- systemctl start dnsmasq
+    dig a +tcp @192.0.2.1 u1.lxd
+    dig aaaa +tcp @2001:db8:1:2::1 u1.lxd
+
+    # Check UDP port forwarding rules, and mixing protocols on same listen port without default target address.
+    lxc network forward unset ovn-virtual-network 192.0.2.1 target_address
+    lxc network forward unset ovn-virtual-network 2001:db8:1:2::1 target_address
+    lxc network forward port add ovn-virtual-network 192.0.2.1 udp 53 "${U1_IPV4}"
+    lxc network forward port add ovn-virtual-network 2001:db8:1:2::1 udp 53 "${U1_IPV6}"
+    lxc network forward port add ovn-virtual-network 192.0.2.1 tcp 53 "${U2_IPV4}"
+    lxc network forward port add ovn-virtual-network 2001:db8:1:2::1 tcp 53 "${U2_IPV6}"
+
+    # Check UDP port forwarding to u1 is working, and that TCP port forwarding to u2 is not (as dnsmasq is off).
+    lxc exec u2 -- systemctl stop dnsmasq
+    dig a @192.0.2.1 u1.lxd
+    dig aaaa @2001:db8:1:2::1 u1.lxd
+    ! dig a +tcp @192.0.2.1 u2.lxd || false
+    ! dig aaaa +tcp @2001:db8:1:2::1 u2.lxd || false
+
+    # Check TCP port forwarding on same listen port as UDP port is working by starting dnsmasq on u2.
+    lxc exec u2 -- systemctl start dnsmasq
+    dig a +tcp @192.0.2.1 u2.lxd
+    dig aaaa +tcp @2001:db8:1:2::1 u2.lxd
+
+    # Clean up.
+    lxc delete -f u1
+    lxc delete -f u2
+    lxc image delete "${FINGERPRINT}"
+    lxc network delete ovn-virtual-network
+    lxc project switch default
+    lxc project delete testovn
+    lxc network delete lxdbr0
 }
 
 # Allow for running a specific set of tests.
@@ -557,6 +735,7 @@ if [ "$#" -gt 0 ]; then
 else
     # Otherwise run full suite.
     ovn_basic_tests
+    ovn_forward_tests
 fi
 
 lxc storage delete default
