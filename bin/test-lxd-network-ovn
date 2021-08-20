@@ -34,13 +34,13 @@ lxd waitready --timeout=300
 # Install OVN
 apt install ovn-host ovn-central --yes
 
-# Configure OVN
+# Configure OVN.
 ovs-vsctl set open_vswitch . \
   external_ids:ovn-remote=unix:/var/run/ovn/ovnsb_db.sock \
   external_ids:ovn-encap-type=geneve \
   external_ids:ovn-encap-ip=127.0.0.1
 
-# Configure LXD
+# Configure LXD.
 lxc project switch default
 lxc storage create default zfs
 lxc profile device add default root disk path=/ pool=default
