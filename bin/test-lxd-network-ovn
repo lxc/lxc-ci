@@ -43,7 +43,6 @@ ovs-vsctl set open_vswitch . \
 # Configure LXD.
 lxc project switch default
 lxc storage create default zfs
-lxc profile device add default root disk path=/ pool=default
 
 ovn_basic_tests() {
     lxc network create lxdbr0 \
@@ -63,18 +62,18 @@ ovn_basic_tests() {
     ping -c1 -6 -W5 linuxcontainers.org
 
     echo "==> Launching a test container on lxdbr0"
-    lxc init images:ubuntu/20.04 u1
+    lxc init images:ubuntu/20.04 u1 -s default
     FINGERPRINT="$(lxc image ls -cf --format=csv)"
     lxc config device add u1 eth0 nic network=lxdbr0 name=eth0
     lxc start u1
 
     echo "==> Launching a first test container on ovn-virtual-network"
-    lxc init images:ubuntu/20.04 u2
+    lxc init images:ubuntu/20.04 u2 -s default
     lxc config device add u2 eth0 nic network=ovn-virtual-network name=eth0
     lxc start u2
 
     echo "==> Launching a second test container on ovn-virtual-network"
-    lxc init images:ubuntu/20.04 u3
+    lxc init images:ubuntu/20.04 u3 -s default
     lxc config device add u3 eth0 nic network=ovn-virtual-network name=eth0
     lxc start u3
 
@@ -184,7 +183,7 @@ ovn_basic_tests() {
     lxc network unset dummy ipv4.routes.anycast --project default
     lxc network unset dummy ipv6.routes.anycast --project default
 
-    lxc init images:ubuntu/20.04 u1 --project testovn
+    lxc init images:ubuntu/20.04 u1 --project testovn -s default
     lxc config device add u1 eth0 nic network=ovn-virtual-network name=eth0 --project testovn
 
     # Record NAT rules count before u1 started.
@@ -228,7 +227,7 @@ ovn_basic_tests() {
     lxc config device set u1 eth0 ipv6.routes.external=2001:db8:1:2::/122 --project testovn
 
     # Check NIC external route overlap detection.
-    lxc init images:ubuntu/20.04 u2 --project testovn
+    lxc init images:ubuntu/20.04 u2 --project testovn -s default
     lxc config device add u2 eth0 nic network=ovn-virtual-network name=eth0 --project testovn
     ! lxc config device set u2 eth0 ipv4.routes.external=198.51.100.1/32 --project testovn || false
     ! lxc config device set u2 eth0 ipv6.routes.external=2001:db8:1:2::1/128 --project testovn || false
@@ -316,7 +315,7 @@ ovn_basic_tests() {
     ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep testdhcp | wc -l | grep 2
 
     # Only enable IPv6 DHCP.
-    lxc init images:ubuntu/20.04 u1 --project testovn
+    lxc init images:ubuntu/20.04 u1 --project testovn -s default
     lxc network set ovn-virtual-network ipv4.dhcp=false ipv6.dhcp=true --project testovn
 
     # Look for DHCP options mentioning our testdhcp domain name, there should be one.
@@ -363,12 +362,12 @@ ovn_basic_tests() {
     ! lxc network create ovn-virtual-network-toomany network=lxdbr0 --type=ovn || false
 
     echo "==> Launching a first test container on testovn project ovn-virtual-network"
-    lxc init images:ubuntu/20.04 u2
+    lxc init images:ubuntu/20.04 u2 -s default
     lxc config device add u2 eth0 nic network=ovn-virtual-network name=eth0
     lxc start u2
 
     echo "==> Launching a second test container on testovn project ovn-virtual-network"
-    lxc init images:ubuntu/20.04 u3
+    lxc init images:ubuntu/20.04 u3 -s default
     lxc config device add u3 eth0 nic network=ovn-virtual-network name=eth0
     lxc start u3
 
@@ -491,7 +490,7 @@ ovn_basic_tests() {
     lxc network create ovn-virtual-network --type=ovn network=dummy
 
     # Check connectivity back to uplink bridge without SNAT address specified.
-    lxc launch images:ubuntu/20.04 u1 -n ovn-virtual-network
+    lxc launch images:ubuntu/20.04 u1 -n ovn-virtual-network -s default
     sleep 5
     lxc exec u1 -- ping -c1 -W5 192.0.2.1
     lxc exec u1 -- ping -c1 -W5 2001:db8:1:1::1
@@ -560,8 +559,6 @@ else
     ovn_basic_tests
 fi
 
-lxc project switch default
-lxc profile device remove default root --project default
 lxc storage delete default
 
 FAIL=0
