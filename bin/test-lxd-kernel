@@ -26,12 +26,13 @@ export CGO_LDFLAGS="-L/root/go/deps/raft/.libs -L/root/go/deps/dqlite/.libs/"
 export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 export LD_LIBRARY_PATH="/root/go/deps/raft/.libs/:/root/go/deps/dqlite/.libs/"
 export PATH=${PATH}:/root/go/bin
-export GO111MODULE=off
 
 # Build LXD
 cd /root
-go get -v github.com/lxc/lxd/lxc
+mkdir -p /root/go/src/github.com/lxc
+git clone https://github.com/lxc/lxd /root/go/src/github.com/lxc/lxd
 cd /root/go/src/github.com/lxc/lxd
+[ -e go.mod ] || export GO111MODULE=off
 make deps
 go get -v -tags libsqlite3 github.com/lxc/lxd/lxd
 

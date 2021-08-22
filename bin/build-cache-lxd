@@ -97,7 +97,6 @@ cd "${TEMP_DIR}"
 # Build the Go cache and binaries
 export GOPATH="${TEMP_DIR}/go"
 export GOCACHE="${GOPATH}/pkg"
-export GO111MODULE=off
 
 OLD_PATH=${PATH}
 for version in 1.13 1.14 1.15 1.16 tip; do
@@ -121,7 +120,8 @@ cd "${TEMP_DIR}"
 export PATH="/snap/go_tip/current/bin:${OLD_PATH}"
 mkdir -p "${TEMP_DIR}/go"
 export GOPATH=${TEMP_DIR}/go
-go get -d -t github.com/lxc/lxd/... >/dev/null || echo "Failed to download LXD dependencies"
+GO111MODULE=on go get -d -t github.com/lxc/lxd/... >/dev/null || echo "Failed to download LXD dependencies"
+GO111MODULE=off go get -d -t github.com/lxc/lxd/... >/dev/null || echo "Failed to download LXD dependencies"
 
 # Move things into place
 rm -Rf /lxc-ci/build/cache.new

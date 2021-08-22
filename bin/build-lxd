@@ -52,7 +52,6 @@ echo "===> Setting up environment variables"
 mkdir -p "${TEST_DIR}/go"
 export GOPATH=${TEST_DIR}/go
 export PATH=${GOPATH}/bin:${PATH}
-export GO111MODULE=off
 export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 
 # Setup dependencies
@@ -77,6 +76,7 @@ else
     git fetch -q "${GIT_REPOSITORY}" "+refs/pull/*:refs/remotes/origin/pr/*"
     git checkout -q "${GIT_REF}"
 fi
+[ -e go.mod ] || export GO111MODULE=off
 echo "==> SETUP DONE"
 
 # Print go version
