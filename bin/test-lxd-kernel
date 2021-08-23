@@ -35,6 +35,7 @@ cd /root/go/src/github.com/lxc/lxd
 [ -e go.mod ] || export GO111MODULE=off
 make deps
 go get -v -tags libsqlite3 github.com/lxc/lxd/lxd
+go get -v github.com/lxc/lxd/lxc
 
 # Test environment
 chmod +x /root
