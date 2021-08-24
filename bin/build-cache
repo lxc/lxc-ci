@@ -55,9 +55,8 @@ apt-get clean
 snap set system experimental.parallel-instances=true
 snap install core || true
 snap install go_113 --channel=1.13 --unaliased --classic
-snap install go_114 --channel=1.14 --unaliased --classic
-snap install go_115 --channel=1.15 --unaliased --classic
 snap install go_116 --channel=1.16 --unaliased --classic
+snap install go_117 --channel=1.17 --unaliased --classic
 snap install go_tip --channel=latest/edge --unaliased --classic
 
 # Build the cache
