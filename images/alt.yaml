@@ -92,9 +92,31 @@ files:
 
     [Network]
     DHCP=ipv4
+  variants:
+  - default
 
 - path: /etc/fstab
   generator: dump
+
+- name: meta-data
+  generator: cloud-init
+  variants:
+  - cloud
+
+- name: network-config
+  generator: cloud-init
+  variants:
+  - cloud
+
+- name: user-data
+  generator: cloud-init
+  variants:
+  - cloud
+
+- name: vendor-data
+  generator: cloud-init
+  variants:
+  - cloud
 
 actions:
 - trigger: post-unpack
@@ -131,6 +153,24 @@ packages:
     - sudo
     - vim-console
     action: install
+
+  - packages:
+    - cloud-init
+    - cloud-init-config-netplan
+    action: install
+    variants:
+    - cloud
+
+actions:
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Enable the cloud-init systemd service
+    systemctl enable cloud-init.service cloud-config.service cloud-final.service
+  variants:
+  - cloud
 
 environment:
   variables:
