@@ -644,9 +644,6 @@ actions:
     # Disable loginuid in PAM stack
     sed -i '/^session.*pam_loginuid.so/s/^session/# session/' /etc/pam.d/*
 
-    # Set locale
-    localectl set-locale en_US.utf8
-
 - trigger: post-files
   action: |-
     #!/bin/sh
