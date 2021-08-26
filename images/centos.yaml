@@ -480,6 +480,8 @@ packages:
     - cronie-noanacron
     - curl
     - dhclient
+    - glibc-langpack-en
+    - glibc-locale-source
     - hostname
     - initscripts
     - openssh-clients
@@ -643,6 +645,10 @@ actions:
 
     # Disable loginuid in PAM stack
     sed -i '/^session.*pam_loginuid.so/s/^session/# session/' /etc/pam.d/*
+
+    # Set default locale
+    localedef -i en_US -f UTF-8 en_US.UTF-8
+    echo 'LANG=en_US.utf8' > /etc/locale.conf
 
 - trigger: post-files
   action: |-
