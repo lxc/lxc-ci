@@ -55,7 +55,7 @@ sleep 30s
 snap refresh distrobuilder || true
 
 # Build the image
-mkdir /root/build
+mkdir /root/build /root/build/cache
 if [ "$(uname -m)" = "x86_64" ] || [ "$(uname -m)" = "i686" ]; then
     if ! echo "${YAML}" | grep -q -E "sabayon|gentoo|oracle"; then
         mount -t tmpfs tmpfs /root/build -o size=5G,nr_inodes=10000000
@@ -65,13 +65,13 @@ mv /root/image.yaml /root/build/
 cd /root/build/
 SERIAL=\$(date -u +%Y%m%d_%H:%M)
 
-distrobuilder --timeout "${TIMEOUT}" build-dir image.yaml rootfs -o image.serial="\${SERIAL}" "\$@"
+distrobuilder --cache-dir /root/build/cache/ --timeout "${TIMEOUT}" build-dir image.yaml rootfs -o image.serial="\${SERIAL}" "\$@"
 if echo ${TYPE} | grep -q vm; then
-    distrobuilder pack-lxd image.yaml rootfs --vm -o image.serial="\${SERIAL}" "\$@"
+    distrobuilder --cache-dir /root/build/cache/ pack-lxd image.yaml rootfs --vm -o image.serial="\${SERIAL}" "\$@"
 fi
 if echo ${TYPE} | grep -q container; then
-    distrobuilder pack-lxc image.yaml rootfs -o image.serial="\${SERIAL}" "\$@"
-    distrobuilder pack-lxd image.yaml rootfs -o image.serial="\${SERIAL}" "\$@"
+    distrobuilder --cache-dir /root/build/cache/ pack-lxc image.yaml rootfs -o image.serial="\${SERIAL}" "\$@"
+    distrobuilder --cache-dir /root/build/cache/ pack-lxd image.yaml rootfs -o image.serial="\${SERIAL}" "\$@"
 fi
 btrfs subvolume delete rootfs/var/lib/machines >/dev/null 2>&1 || true
 rm -Rf rootfs
