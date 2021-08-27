@@ -33,7 +33,7 @@
         ARCH=${architecture}
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/sabayon.yaml \
-            ${LXD_ARCHITECTURE} container 3600 ${WORKSPACE} \
+            ${LXD_ARCHITECTURE} container 7200 ${WORKSPACE} \
             -o image.architecture=${ARCH} -o image.variant=${variant}
 
     properties:
