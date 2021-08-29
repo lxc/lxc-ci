@@ -654,6 +654,13 @@ actions:
     # Disable loginuid in PAM stack
     sed -i '/^session.*pam_loginuid.so/s/^session/# session/' /etc/pam.d/*
 
+- trigger: post-packages
+  architectures:
+  - aaarch64
+  - i386
+  - ppc64le
+  - x86_64
+  action: |-
     # Set default locale
     localedef -i en_US -f UTF-8 en_US.UTF-8
     echo 'LANG=en_US.utf8' > /etc/locale.conf
