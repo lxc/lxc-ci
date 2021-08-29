@@ -211,6 +211,7 @@ packages:
     - curl
     - dhclient
     - glibc-langpack-en
+    - glibc-locale-source
     - hostname
     - initscripts
     - openssh-clients
@@ -220,15 +221,6 @@ packages:
     - rsyslog
     - sudo
     - vim-minimal
-    action: install
-
-  - packages:
-    - glibc-locale-source
-    architectures:
-    - aaarch64
-    - i386
-    - ppc64le
-    - x86_64
     action: install
 
   - packages:
