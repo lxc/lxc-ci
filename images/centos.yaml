@@ -661,6 +661,9 @@ actions:
   - ppc64le
   - x86_64
   action: |-
+    #!/bin/sh
+    set -eux
+
     # Set default locale
     localedef -i en_US -f UTF-8 en_US.UTF-8
     echo 'LANG=en_US.utf8' > /etc/locale.conf
