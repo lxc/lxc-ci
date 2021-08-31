@@ -26,6 +26,7 @@
         values:
         - default
         - cloud
+        - desktop-gnome
 
     builders:
     - shell: |-
@@ -42,6 +43,10 @@
             TYPE="container,vm"
         fi
 
+        if [ "${variant}" = "desktop-gnome" ]; then
+            TYPE="vm"
+        fi
+
         if [ "${ARCH}" = "x86_64" ]; then
             exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/archlinux.yaml \
                 ${LXD_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
@@ -55,7 +60,8 @@
 
     execution-strategy:
       combination-filter: '
-      !(architecture != "amd64" && variant == "cloud")'
+      !(architecture != "amd64" && variant == "cloud") &&
+      !(architecture != "amd64" && variant == "desktop-gnome")'
 
     properties:
     - build-discarder:
