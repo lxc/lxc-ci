@@ -659,6 +659,7 @@ actions:
 - trigger: post-packages
   action: |-
     #!/bin/sh
+    set -eux
 
     # Timezone
     ln -s /usr/share/zoneinfo/UTC /etc/localtime
