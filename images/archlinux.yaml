@@ -519,6 +519,7 @@ files:
   - cloud
   architectures:
   - x86_64
+
 - name: user-data
   generator: cloud-init
   variants:
@@ -580,6 +581,7 @@ packages:
     - x86_64
 
   - packages:
+    - cloud-guest-utils
     - grub
     action: install
     types:
@@ -627,6 +629,23 @@ packages:
     types:
     - container
 
+  - packages:
+    - gnome
+    - spice-vdagent
+    action: install
+    variants:
+    - desktop-gnome
+
+  - packages:
+    - gnome-boxes
+    - simple-scan
+    - libvirt
+    - libvirt-glib
+    - qemu
+    action: install
+    variants:
+    - desktop-gnome
+
 actions:
 - trigger: post-packages
   action: |-
@@ -636,6 +655,55 @@ actions:
     ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
     systemctl enable systemd-networkd
     systemctl enable systemd-resolved
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+
+    # Timezone
+    ln -s /usr/share/zoneinfo/UTC /etc/localtime
+    echo UTC > /etc/timezone
+
+    # Locale
+    echo en_US.UTF-8 UTF-8 > /etc/locale.gen
+    locale-gen
+    echo LANG=en_US.UTF-8 > /etc/locale.conf
+
+    # User
+    USERNAME="archlinux"
+    useradd ${USERNAME} -m -U -G adm,video,users
+    echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/${USERNAME}
+    chmod 600 /etc/sudoers.d/${USERNAME}
+
+    (
+    cat << EOF
+    [daemon]
+    AutomaticLogin=${USERNAME}
+    AutomaticLoginEnable=true
+    EOF
+    ) > /etc/gdm/custom.conf
+
+    # Automatic disk resize
+    (
+    cat << EOF
+    [Unit]
+    Description=LXD - grow root partition
+
+    [Service]
+    Type=oneshot
+    ExecStartPre=-/usr/sbin/growpart /dev/sda 2
+    ExecStart=/usr/sbin/resize2fs /dev/sda2
+
+    [Install]
+    WantedBy=default.target
+    EOF
+    ) > /etc/systemd/system/lxd-growpart.service
+    systemctl enable lxd-growpart
+
+    # Enable GDM
+    systemctl enable gdm
+  variants:
+  - desktop-gnome
 
 - trigger: post-files
   action: |-
