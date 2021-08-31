@@ -385,6 +385,7 @@ files:
   - vm
   variants:
   - default
+  - desktop
 
 - path: /etc/network/interfaces
   generator: dump
@@ -539,6 +540,19 @@ packages:
     types:
     - vm
 
+  - packages:
+    - cloud-guest-utils
+    action: install
+    types:
+    - vm
+
+  - packages:
+    - linux-image-generic
+    - ubuntu-desktop-minimal
+    action: install
+    variants:
+    - desktop
+
   repositories:
   - name: sources.list
     url: |-
@@ -617,6 +631,54 @@ actions:
     sed -i "s#root=[^ ]*#root=/dev/sda2#g" /boot/grub/grub.cfg
   types:
   - vm
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Timezone
+    rm -f /etc/localtime
+    ln -s /usr/share/zoneinfo/UTC /etc/localtime
+    echo UTC > /etc/timezone
+
+    # Locale
+    echo en_US.UTF-8 UTF-8 > /etc/locale.gen
+    locale-gen
+    echo LANG=en_US.UTF-8 > /etc/locale.conf
+
+    # User
+    USERNAME="ubuntu"
+    useradd ${USERNAME} -s /bin/bash -m -U -G adm,video,users
+    echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/${USERNAME}
+    chmod 600 /etc/sudoers.d/${USERNAME}
+
+    (
+    cat << EOF
+    [daemon]
+    AutomaticLogin=${USERNAME}
+    AutomaticLoginEnable=true
+    EOF
+    ) > /etc/gdm3/custom.conf
+
+    # Automatic disk resize
+    (
+    cat << EOF
+    [Unit]
+    Description=LXD - grow root partition
+
+    [Service]
+    Type=oneshot
+    ExecStartPre=-/usr/bin/growpart /dev/sda 2
+    ExecStart=/usr/sbin/resize2fs /dev/sda2
+
+    [Install]
+    WantedBy=default.target
+    EOF
+    ) > /etc/systemd/system/lxd-growpart.service
+    systemctl enable lxd-growpart
+  variants:
+  - desktop
 
 mappings:
   architecture_map: debian
