@@ -33,6 +33,7 @@
         values:
         - default
         - cloud
+        - desktop
 
     builders:
     - shell: |-
@@ -47,6 +48,10 @@
             TYPE="container,vm"
         fi
 
+        if [ "${variant}" = "desktop" ]; then
+            TYPE="vm"
+        fi
+
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/ubuntu.yaml \
             ${architecture} ${TYPE} 3600 ${WORKSPACE} \
             -o image.architecture=${architecture} -o image.release=${release} \
@@ -54,6 +59,8 @@
 
     execution-strategy:
       combination-filter: '
+      !(architecture!="amd64" && variant == "desktop") &&
+      !(release=="xenial" && variant == "desktop") &&
       !(architecture=="i386" && release == "focal") &&
       !(architecture=="i386" && release == "hirsute") &&
       !(architecture=="i386" && release == "impish")'
