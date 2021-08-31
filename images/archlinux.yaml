@@ -662,6 +662,7 @@ actions:
     set -eux
 
     # Timezone
+    rm -f /etc/localtime
     ln -s /usr/share/zoneinfo/UTC /etc/localtime
     echo UTC > /etc/timezone
 
