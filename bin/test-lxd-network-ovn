@@ -612,6 +612,17 @@ ovn_forward_tests() {
     lxc network forward create ovn-virtual-network2 192.0.2.2 target_address="${ip4AddressPrefix2}.2"
     lxc network forward create ovn-virtual-network2 2001:db8:1:2::2 target_address="${ip6AddressPrefix2}::2"
 
+    # Check an external route on another network's NIC prevents another network from setting up a forward listener.
+    lxc init images:ubuntu/20.04 u1 -n ovn-virtual-network2 -s default
+    lxc config device set u1 eth0 \
+        ipv4.routes.external=192.0.2.3/32,192.0.2.4/32 \
+        ipv6.routes.external=2001:db8:1:2::3/128,2001:db8:1:2::4/128
+    ! lxc network forward create ovn-virtual-network 192.0.2.3 || false
+    ! lxc network forward create ovn-virtual-network 2001:db8:1:2::3 || false
+    lxc delete -f u1
+    lxc network forward create ovn-virtual-network 192.0.2.3
+    lxc network forward create ovn-virtual-network 2001:db8:1:2::3
+
     # Check changing network's subnet(s) are prevented if forwards exist that conflict.
     ! lxc network set ovn-virtual-network2 ipv4.address=192.168.0.1/24 || false
     ! lxc network set ovn-virtual-network2 ipv6.address=2001:db8:1:3::1/64 || false
