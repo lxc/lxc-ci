@@ -636,16 +636,6 @@ packages:
     variants:
     - desktop-gnome
 
-  - packages:
-    - gnome-boxes
-    - simple-scan
-    - libvirt
-    - libvirt-glib
-    - qemu
-    action: install
-    variants:
-    - desktop-gnome
-
 actions:
 - trigger: post-packages
   action: |-

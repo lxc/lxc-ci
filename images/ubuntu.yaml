@@ -548,7 +548,7 @@ packages:
 
   - packages:
     - linux-image-generic
-    - ubuntu-desktop-minimal
+    - ubuntu-desktop
     action: install
     variants:
     - desktop
