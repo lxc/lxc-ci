@@ -18,6 +18,7 @@
         values:
         - snapshot
         - "19.07"
+        - "21.02"
 
     - axis:
         name: variant
