@@ -63,6 +63,9 @@ cleanup() {
 }
 trap cleanup EXIT HUP INT TERM
 
+# Configure to use the proxy
+curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh
+
 if [ "${track}" = "latest" ]; then
     snapd_channel=${channel}
 else
