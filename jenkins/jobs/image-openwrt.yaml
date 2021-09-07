@@ -11,6 +11,8 @@
         type: slave
         values:
         - amd64
+        - arm64
+        - armhf
 
     - axis:
         name: release
@@ -33,6 +35,8 @@
 
         ARCH=${architecture}
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
+        [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
+        [ "${ARCH}" = "armhf" ] && ARCH="armv7l"
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/openwrt.yaml \
             ${LXD_ARCHITECTURE} container 7200 ${WORKSPACE} \
