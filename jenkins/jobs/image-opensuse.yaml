@@ -30,6 +30,7 @@
         values:
         - default
         - cloud
+        - desktop-kde
 
     builders:
     - shell: |-
@@ -55,7 +56,8 @@
     execution-strategy:
       combination-filter: '
       !(architecture=="s390x" && release == "15.2")
-      && !(architecture=="i386" && release!="tumbleweed")'
+      && !(architecture=="i386" && release!="tumbleweed")
+      && !(architecture == "amd64" && variants == "desktop-kde")'
 
     properties:
     - build-discarder:
