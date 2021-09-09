@@ -57,7 +57,7 @@
       combination-filter: '
       !(architecture=="s390x" && release == "15.2")
       && !(architecture=="i386" && release!="tumbleweed")
-      && !(architecture == "amd64" && variants == "desktop-kde")'
+      && !(architecture == "amd64" && variant == "desktop-kde")'
 
     properties:
     - build-discarder:
