@@ -167,6 +167,55 @@ files:
   variants:
   - cloud
 
+- path: /etc/polkit-1/rules.d/50-default.rules
+  generator: dump
+  content: |-
+    /*
+    * Allow user "opensuse" to execute any actions
+    * without password authentication, similar to "sudo NOPASSWD:".
+    * This is useful for the system settings as it will stop
+    * asking for a password.
+    */
+    polkit.addRule(function(action, subject) {
+        if (subject.user == "opensuse") {
+            return polkit.Result.YES;
+        }
+    });
+  types:
+  - vm
+  variants:
+  - desktop-kde
+
+- path: /etc/sddm.conf.d/autologin.conf
+  generator: dump
+  content: |-
+    [Autologin]
+    User=opensuse
+    Session=default
+    Relogin=true
+  types:
+  - vm
+  variants:
+  - desktop-kde
+
+- path: /etc/systemd/system/lxd-growpart.service
+  generator: dump
+  content: |-
+    [Unit]
+    Description=LXD - grow root partition
+
+    [Service]
+    Type=oneshot
+    ExecStartPre=-/usr/bin/growpart /dev/sda 2
+    ExecStart=/usr/sbin/resize2fs /dev/sda2
+
+    [Install]
+    WantedBy=default.target
+  types:
+  - vm
+  variants:
+  - desktop-kde
+
 packages:
   manager: zypper
   update: true
@@ -256,6 +305,17 @@ packages:
     types:
     - vm
 
+  - packages:
+    - discover
+    - dolphin
+    - konsole
+    - sddm
+    action: install
+    types:
+    - vm
+    variants:
+    - desktop-kde
+
 actions:
 - trigger: post-unpack
   action: |-
@@ -277,6 +337,35 @@ actions:
   - tumbleweed
   architectures:
   - ppc64le
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    zypper install -y -t pattern kde
+
+    # Timezone
+    rm -f /etc/localtime
+    ln -s /usr/share/zoneinfo/UTC /etc/localtime
+    echo UTC > /etc/timezone
+
+    # Locale
+    echo LANG=en_US.UTF-8 > /etc/locale.conf
+
+    # User
+    USERNAME="opensuse"
+    useradd ${USERNAME} -s /bin/bash -m -U -G video,users
+    echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/${USERNAME}
+    chmod 600 /etc/sudoers.d/${USERNAME}
+
+    sed -ri "s#(DISPLAYMANAGER_AUTOLOGIN)=.*#\1=${USERNAME}#" /etc/sysconfig/displaymanager
+
+    systemctl enable sddm
+  types:
+  - vm
+  variants:
+  - desktop-kde
 
 - trigger: post-packages
   action: |-
@@ -358,3 +447,14 @@ actions:
   - vm
   architectures:
   - aarch64
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    systemctl enable lxd-growpart
+  types:
+  - vm
+  variants:
+  - desktop-kde
