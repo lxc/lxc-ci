@@ -118,36 +118,11 @@ files:
   variants:
   - cloud
 
-actions:
-- trigger: post-unpack
-  action: |-
-    #!/bin/sh
-    mkdir -p /run/lock
-
 packages:
-  custom-manager:
-    install:
-      cmd: apt-get
-      flags: ["install", "-y"]
-    remove:
-      cmd: apt-get
-      flags: ["remove", "-y"]
-    update:
-      cmd: apt-get
-      flags: ["dist-upgrade", "-y"]
-    clean:
-      cmd: sh
-      flags:
-      - "-c"
-      - "rm -f
-        /var/cache/apt/archives/*.rpm
-        /var/cache/apt/*.bin
-        /var/lib/apt/lists/*.*"
-    refresh:
-      cmd: apt-get
-      flags: ["update"]
+  manager: apt
   update: true
   cleanup: true
+
   sets:
   - packages:
     - sudo
@@ -162,6 +137,20 @@ packages:
     - cloud
 
 actions:
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    mkdir -p /run/lock
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    rm -f /var/cache/apt/archives/*.rpm /var/cache/apt/*.bin /var/lib/apt/lists/*.*
+
 - trigger: post-packages
   action: |-
     #!/bin/sh
