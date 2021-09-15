@@ -26,9 +26,9 @@ while :; do
     [ ! -e /usr/bin/lxd ] && break
     apt remove --purge lxd lxd-client --yes && break
 done
-snap install lxd --edge
+snap remove lxd || true
+snap install lxd --channel=latest/edge
 snap install jq
-snap refresh lxd --channel=latest/edge
 lxd waitready --timeout=300
 
 # Install OVN and dnsutils.

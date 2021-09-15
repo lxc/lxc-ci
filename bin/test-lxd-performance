@@ -64,8 +64,8 @@ fi
 curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh
 
 # Install LXD snap
-snap install lxd --edge
-snap refresh lxd --channel=latest/edge
+snap remove lxd || true
+snap install lxd --channel=latest/edge
 snap stop lxd
 
 # Setup the SSD

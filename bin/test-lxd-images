@@ -29,8 +29,8 @@ while :; do
     [ ! -e /usr/bin/lxd ] && break
     apt remove --purge lxd lxd-client --yes && break
 done
-snap install lxd --edge
-snap refresh lxd --channel=latest/edge
+snap remove lxd || true
+snap install lxd --channel=latest/edge
 apt install jq zfsutils-linux -y --no-install-recommends
 export PATH="/snap/bin/:${PATH}"
 lxd waitready --timeout=300
