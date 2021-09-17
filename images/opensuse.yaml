@@ -216,6 +216,17 @@ files:
   variants:
   - desktop-kde
 
+- path: /home/opensuse/.config/kscreenlockerrc
+  generator: dump
+  content: |-
+    [Daemon]
+    Autolock=false
+    LockOnResume=false
+  types:
+  - vm
+  variants:
+  - desktop-kde
+
 packages:
   manager: zypper
   update: true
