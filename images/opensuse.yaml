@@ -308,6 +308,8 @@ packages:
   - packages:
     - discover
     - dolphin
+    - e2fsprogs
+    - growpart
     - konsole
     - sddm
     action: install
