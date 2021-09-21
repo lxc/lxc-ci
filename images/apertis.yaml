@@ -11,7 +11,7 @@ source:
 
 targets:
   lxc:
-    create-message: |-
+    create_message: |-
       You just created an {{ image.distribution }} container (release={{ image.release }}, arch={{ image.architecture }})
     config:
     - type: all

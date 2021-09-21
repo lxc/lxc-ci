@@ -15,7 +15,7 @@ environment:
 
 targets:
   lxc:
-    create-message: |
+    create_message: |
       You just created an {{ image.description }} container.
     config:
     - type: all
