@@ -64,7 +64,7 @@ source:
 
 targets:
   lxc:
-    create-message: |-
+    create_message: |-
       You just created a {{ image.description }} container.
     config:
     - type: all

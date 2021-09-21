@@ -784,7 +784,7 @@ source:
 
 targets:
   lxc:
-    create-message: |-
+    create_message: |-
       You just created a {{ image.description }} container.
 
       To enable SSH, run: apt install openssh-server

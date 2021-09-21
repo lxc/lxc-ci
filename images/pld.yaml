@@ -7,7 +7,7 @@ source:
 
 targets:
   lxc:
-    create-message: |-
+    create_message: |-
       You just created a {{ image.description }} container.
 
     config:
@@ -70,7 +70,7 @@ files:
     #IPADDR=10.1.1.10/24
 
 packages:
-  custom-manager:
+  custom_manager:
     refresh:
       cmd: poldek
       flags: [ -Oparticle_install=no, --noprogress, --up ]

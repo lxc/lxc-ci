@@ -1344,7 +1344,7 @@ source:
 
 targets:
   lxc:
-    create-message: |-
+    create_message: |-
       You just created an {{ image.description }} container.
 
       To enable SSH, run: apt install openssh-server
@@ -1375,7 +1375,7 @@ targets:
         lxc.arch = {{ image.architecture_personality }}
 
 packages:
-  custom-manager:
+  custom_manager:
     install:
       cmd: true
     remove:
