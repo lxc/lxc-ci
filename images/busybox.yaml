@@ -10,7 +10,7 @@ files:
   generator: dump
 
 packages:
-  custom-manager:
+  custom_manager:
     clean:
       cmd: true
     install:

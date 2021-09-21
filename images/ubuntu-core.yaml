@@ -1375,7 +1375,7 @@ targets:
         lxc.arch = {{ image.architecture_personality }}
 
 packages:
-  custom-manager:
+  custom_manager:
     install:
       cmd: true
     remove:

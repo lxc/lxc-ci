@@ -203,7 +203,7 @@ files:
     SERVICE="dhclient"
 
 packages:
-  custom-manager:
+  custom_manager:
     install:
       cmd: installpkg
     remove:
