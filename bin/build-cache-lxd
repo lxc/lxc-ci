@@ -109,7 +109,7 @@ for version in 1.13 1.16 1.17 tip; do
                github.com/client9/misspell/cmd/misspell \
                github.com/gordonklaus/ineffassign \
                golang.org/x/lint/golint; do
-        if [ "${VER}" = "1.13" ]; then
+        if [ "${version}" = "1.13" ]; then
             go get "${pkg}" >/dev/null || true
         else
             go install "${pkg}@latest" >/dev/null || true
