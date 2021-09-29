@@ -56,7 +56,7 @@ do
         lxc init images:ubuntu/20.04 v1 --vm -s "${poolName}"
 
 		echo "==> Create custom block volume and attach it to VM"
-		lxc storage volume create "${poolName}" vol1 --type=block
+		lxc storage volume create "${poolName}" vol1 --type=block size=10MB
 		lxc storage volume attach "${poolName}" vol1 v1
 
 		echo "==> Start VM and add content to custom block volume"
