@@ -103,12 +103,18 @@ for version in 1.13 1.16 1.17 tip; do
     VER=$(echo $version | sed "s/\.//g")
     export PATH="/snap/go_${VER}/current/bin:${OLD_PATH}"
 
-    go get github.com/rogpeppe/godeps >/dev/null || true
-    go get github.com/tsenart/deadcode >/dev/null || true
-    go get github.com/snapcore/snapd/i18n/xgettext-go >/dev/null || true
-    go get github.com/client9/misspell/cmd/misspell >/dev/null || true
-    go get github.com/gordonklaus/ineffassign >/dev/null || true
-    go get golang.org/x/lint/golint >/dev/null || true
+    for pkg in github.com/rogpeppe/godeps \
+               github.com/tsenart/deadcode \
+               github.com/snapcore/snapd/i18n/xgettext-go \
+               github.com/client9/misspell/cmd/misspell \
+               github.com/gordonklaus/ineffassign \
+               golang.org/x/lint/golint; do
+        if [ "${VER}" = "1.13" ]; then
+            go get "${pkg}" >/dev/null || true
+        else
+            go install "${pkg}@latest" >/dev/null || true
+        fi
+    done
 
     mkdir -p "${GOPATH}/bin" && mv "${GOPATH}/bin" "${GOPATH}/bin.$(go version | cut -d' ' -f3)"
     mkdir -p "${GOPATH}/pkg" && mv "${GOPATH}/pkg" "${GOPATH}/pkg.$(go version | cut -d' ' -f3)"
