@@ -126,8 +126,11 @@ cd "${TEMP_DIR}"
 export PATH="/snap/go_tip/current/bin:${OLD_PATH}"
 mkdir -p "${TEMP_DIR}/go"
 export GOPATH=${TEMP_DIR}/go
-GO111MODULE=on go get -d -t github.com/lxc/lxd/... >/dev/null || echo "Failed to download LXD dependencies"
-GO111MODULE=off go get -d -t github.com/lxc/lxd/... >/dev/null || echo "Failed to download LXD dependencies"
+
+git clone https://github.com/lxc/lxd
+cd lxd
+go get -d -t ./...
+cd "${TEMP_DIR}"
 
 # Move things into place
 rm -Rf /lxc-ci/build/cache.new

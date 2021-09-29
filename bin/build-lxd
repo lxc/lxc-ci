@@ -59,6 +59,7 @@ echo "===> Copying pre-built dependencies"
 VERSION=$(go version | cut -d' ' -f3)
 [ -d "/lxc-ci/build/cache/go/bin.${VERSION}" ] && cp -Ra "/lxc-ci/build/cache/go/bin.${VERSION}" "${GOPATH}/bin"
 [ -d "/lxc-ci/build/cache/go/pkg.${VERSION}" ] && cp -Ra "/lxc-ci/build/cache/go/pkg.${VERSION}" "${GOPATH}/pkg"
+[ -d "/lxc-ci/build/cache/go/pkg/cache" ] && cp -Ra "/lxc-ci/build/cache/go/pkg/cache" "${GOPATH}/pkg/cache"
 [ -d "/lxc-ci/build/cache/go/src" ] && cp -Ra /lxc-ci/build/cache/go/src "${GOPATH}/src"
 export GOCACHE="${GOPATH}/pkg"
 
