@@ -1,0 +1,107 @@
+#!/bin/sh
+set -eux
+
+cleanup() {
+    echo ""
+    if [ "${FAIL}" = "1" ]; then
+        echo "Test failed"
+        exit 1
+    fi
+
+    echo "Test passed"
+    exit 0
+}
+
+poolDriverList="${1:-dir btrfs lvm zfs ceph}"
+FAIL=1
+trap cleanup EXIT HUP INT TERM
+
+# Wait for snapd seeding
+sleep 1m
+
+# Configure to use the proxy
+curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh
+
+# Configure for ceph use
+curl -s http://canonical-lxd.stgraber.org/config/ceph.sh | sh
+
+# Install LXD
+while :; do
+    [ ! -e /usr/bin/lxd ] && break
+    apt remove --purge lxd lxd-client --yes && break
+done
+snap remove lxd || true
+snap install lxd --channel=latest/edge
+snap install jq
+lxd waitready --timeout=300
+
+# Configure LXD
+lxc network create lxdbr0
+lxc profile device add default eth0 nic network=lxdbr0
+
+poolName="vmpool$$"
+
+for poolDriver in $poolDriverList
+do
+        echo "==> Create storage pool using driver ${poolDriver}"
+        if [ "${poolDriver}" = "dir" ]; then
+                lxc storage create "${poolName}" "${poolDriver}" volume.size=5GB
+        elif [ "${poolDriver}" = "ceph" ]; then
+                lxc storage create "${poolName}" "${poolDriver}" source="${poolName}" volume.size=5GB
+        else
+                lxc storage create "${poolName}" "${poolDriver}" size=20GB volume.size=5GB
+        fi
+
+        echo "==> Create VM"
+        lxc init images:ubuntu/20.04 v1 --vm -s "${poolName}"
+
+		echo "==> Create custom block volume and attach it to VM"
+		lxc storage volume create "${poolName}" vol1 --type=block
+		lxc storage volume attach "${poolName}" vol1 v1
+
+		echo "==> Start VM and add content to custom block volume"
+		lxc start v1
+		sleep 30
+
+		lxc exec v1 -- /bin/sh -c "mkfs.ext4 /dev/sdb && mount /dev/sdb /mnt && echo foo > /mnt/bar && umount /mnt"
+
+		echo "==> Stop VM and detach custom block volume"
+		lxc stop -f v1
+		lxc storage volume detach "${poolName}" vol1 v1
+
+		echo "==> Backup custom block volume"
+		lxc storage volume export "${poolName}" vol1 vol1.tar.gz
+		lxc storage volume export "${poolName}" vol1 vol1-optimized.tar.gz --optimized-storage
+
+		echo "==> Import custom block volume"
+		lxc storage volume import "${poolName}" vol1.tar.gz vol2
+		lxc storage volume import "${poolName}" vol1-optimized.tar.gz vol3
+
+		echo "==> Attach custom block volumes to VM"
+		# Both volumes can be attached at the same time. The VM will have /dev/sdb and /dev/sdc.
+		# It doesn't matter which volume is which device as they contain the same content.
+		lxc storage volume attach "${poolName}" vol2 v1
+		lxc storage volume attach "${poolName}" vol3 v1
+
+		echo "==> Start VM and check content"
+		lxc start v1
+		sleep 30
+		# shellcheck disable=2016
+		lxc exec v1 -- /bin/sh -c 'mount /dev/sdb /mnt && [ $(cat /mnt/bar) = foo ] && umount /mnt'
+		# shellcheck disable=2016
+		lxc exec v1 -- /bin/sh -c 'mount /dev/sdc /mnt && [ $(cat /mnt/bar) = foo ] && umount /mnt'
+
+		echo "==> Deleting VM"
+		lxc stop -f v1
+		lxc storage volume detach "${poolName}" vol2 v1
+		lxc storage volume detach "${poolName}" vol3 v1
+		lxc rm v1
+
+		echo "==> Deleting storage pool and volumes"
+		lxc storage volume rm "${poolName}" vol1
+		lxc storage volume rm "${poolName}" vol2
+		lxc storage volume rm "${poolName}" vol3
+		lxc storage rm "${poolName}"
+done
+
+FAIL=0
