@@ -125,7 +125,6 @@ cd "${TEMP_DIR}"
 # Setup the Go cache
 export PATH="/snap/go_tip/current/bin:${OLD_PATH}"
 mkdir -p "${TEMP_DIR}/go"
-export GOPATH=${TEMP_DIR}/go
 
 git clone https://github.com/lxc/lxd
 cd lxd
@@ -135,7 +134,7 @@ cd "${TEMP_DIR}"
 # Move things into place
 rm -Rf /lxc-ci/build/cache.new
 mkdir -p /lxc-ci/build/cache.new
-rm -Rf "${TEMP_DIR}/go/pkg" "${TEMP_DIR}/go/bin"
+rm -Rf "${TEMP_DIR}/go/bin"
 mv "${TEMP_DIR}/go" /lxc-ci/build/cache.new/go
 mv "${TEMP_DIR}/raft" /lxc-ci/build/cache.new/raft
 mv "${TEMP_DIR}/dqlite" /lxc-ci/build/cache.new/dqlite
