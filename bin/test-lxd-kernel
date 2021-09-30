@@ -44,6 +44,20 @@ echo 0 > /proc/sys/net/bridge/bridge-nf-call-ip6tables
 ip link add lxdbr0 up type bridge
 ln -sf /usr/sbin/ebtables-legacy /etc/alternatives/ebtables
 
+# Setup cgroup2
+if [ -e "/sys/fs/cgroup/cgroup.procs" ]; then
+    # Try to escape to the root (V2 hosts)
+    if ! echo "$$" > "/sys/fs/cgroup/cgroup.procs" 2>/dev/null; then
+        # Create a .lxc cgroup if missing
+        if [ ! -d "/sys/fs/cgroup/.lxc" ]; then
+            mkdir /sys/fs/cgroup/.lxc
+        fi
+
+        # Use .lxc as the cgroup
+        echo "$$" > "/sys/fs/cgroup/.lxc/cgroup.procs"
+    fi
+fi
+
 # Run tests
 cd /root/go/src/github.com/lxc/lxd/test
 uname -a
