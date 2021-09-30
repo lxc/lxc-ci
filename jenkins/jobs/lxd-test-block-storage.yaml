@@ -1,0 +1,54 @@
+- job:
+    name: "lxd-test-block-storage"
+    concurrent: false
+    description: Run block storage tests on physical hardware.
+    node: master
+    project-type: matrix
+
+    axes:
+    - axis:
+        name: backend
+        type: user-defined
+        values:
+        - dir
+        - zfs
+        - btrfs
+        - lvm
+        - ceph
+
+    - axis:
+        name: restrict
+        type: slave
+        values:
+        - master
+
+    builders:
+    - shell: |-
+        set -e
+        cd /lxc-ci
+        sudo -E /lxc-ci/bin/maas-run tags=physical focal ga-20.04 default bin/test-lxd-block-storage "${backend}"
+
+    properties:
+    - build-discarder:
+        num-to-keep: 30
+
+    - raw:
+        !include: ../includes/webhook.yaml.inc
+
+    publishers:
+    - workspace-cleanup:
+        fail-build: false
+
+    - naginator:
+        rerun-unstable-builds: true
+        rerun-matrix-part: true
+        max-failed-builds: 3
+        progressive-delay-increment: 300
+        progressive-delay-maximum: 900
+
+    triggers:
+    - timed: '@daily'
+
+    wrappers:
+    - ansicolor:
+        colormap: css
