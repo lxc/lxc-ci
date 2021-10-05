@@ -339,18 +339,6 @@ actions:
   types:
   - vm
 
-- trigger: post-unpack
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    zypper refresh
-    zypper dist-upgrade -y --replacefiles
-  releases:
-  - tumbleweed
-  architectures:
-  - ppc64le
-
 - trigger: post-packages
   action: |-
     #!/bin/sh
