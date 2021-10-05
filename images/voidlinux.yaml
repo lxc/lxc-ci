@@ -116,6 +116,9 @@ actions:
     #!/bin/sh
     set -eux
 
+    rm -rf /etc/ssl/certs/DST_Root_CA_X3.pem /usr/share/ca-certificates/mozilla/DST_Root_CA_X3.crt /etc/ssl/certs/2e5ac55d.0
+    update-ca-certificates
+
     xbps-install -y -S
     xbps-install -y -u xbps || true
 
