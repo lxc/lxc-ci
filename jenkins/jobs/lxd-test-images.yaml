@@ -23,7 +23,11 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        exec sudo /lxc-ci/bin/maas-run tags=lxd-images focal ga-20.04 default bin/test-lxd-images "${type}"
+        if [ "${type}" = "vm" ]; then
+            exec sudo /lxc-ci/bin/maas-run name=lantea focal ga-20.04 default bin/test-lxd-images "${type}"
+        else
+            exec sudo /lxc-ci/bin/maas-run tags=lxd-images focal ga-20.04 default bin/test-lxd-images "${type}"
+        fi
 
     properties:
     - build-discarder:
