@@ -3,7 +3,7 @@ image:
 
 source:
   downloader: rootfs-http
-  url: https://cdn.amazonlinux.com/os-images/{{ image.release }}/container/amzn2-container-raw-{{ image.release }}-x86_64.tar.xz
+  url: https://cdn.amazonlinux.com/os-images/{{ image.release }}/{% if image.architecture == "aarch64" %}container-arm64{% else %}container{% endif %}/amzn2-container-raw-{{ image.release }}-{% if image.architecture == "aarch64" %}arm64{% else %}{{ image.architecture }}{% endif %}.tar.xz
 
 targets:
   lxc:
