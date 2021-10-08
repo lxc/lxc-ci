@@ -36,7 +36,7 @@
         [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
         
         REL=${release}
-        [ "${REL}" = "current" ] && REL=$(sed -En 's/location:.*os-images\/([^\/]+)\/.*/\1/p' <(curl -sI https://cdn.amazonlinux.com/os-images/latest/))
+        [ "${REL}" = "current" ] && REL=$(curl -sI https://cdn.amazonlinux.com/os-images/latest/ | sed -En 's/location:.*os-images\/([^\/]+)\/.*/\1/p') && echo $REL
 
         TYPE="container"
 
