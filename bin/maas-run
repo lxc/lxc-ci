@@ -9,6 +9,7 @@ fi
 # Login to maas
 echo "==> Connecting to MAAS" >&2
 maas login maas "${MAAS_URL}" "${MAAS_API}" >/dev/null
+maas refresh
 
 allocate() {
     # Allocate a machine (architecture, filter)
@@ -17,7 +18,7 @@ allocate() {
         TMPFILE=$(mktemp)
 
         set +e
-        maas maas machines allocate arch="${1}" "${2}" > "${TMPFILE}" 2>&1
+        maas maas machines allocate arch="${1}" "${2}" > "${TMPFILE}"
         RET=$?
         if [ "${RET}" = "2" ]; then
             echo "===> System is currently busy, trying again in 60s" >&2
@@ -25,7 +26,7 @@ allocate() {
             continue
         elif [ "${RET}" != "0" ]; then
             echo "==> Failed to allocate" >&2
-            cat "${TMPFILE}"
+            cat "${TMPFILE}" >&2
             rm "${TMPFILE}"
             return 1
         fi
