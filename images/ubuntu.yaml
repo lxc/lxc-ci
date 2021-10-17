@@ -343,6 +343,7 @@ files:
   - focal
   - hirsute
   - impish
+  - jammy
   types:
   - container
   variants:
@@ -381,6 +382,7 @@ files:
   - focal
   - hirsute
   - impish
+  - jammy
   types:
   - vm
   variants:
@@ -511,6 +513,7 @@ packages:
     - focal
     - hirsute
     - impish
+    - jammy
     types:
     - vm
 
@@ -531,6 +534,7 @@ packages:
     - focal
     - hirsute
     - impish
+    - jammy
     types:
     - vm
 
@@ -599,6 +603,7 @@ actions:
   - focal
   - hirsute
   - impish
+  - jammy
 
 - trigger: post-packages
   action: |-
