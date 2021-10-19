@@ -578,6 +578,7 @@ packages:
     - powerpc
     - powerpc64
     - ppc64el
+    - riscv64
 
 actions:
 - trigger: post-update
