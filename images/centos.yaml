@@ -437,6 +437,27 @@ files:
   - cloud
   releases:
   - 7
+  types:
+  - container
+
+- name: network-config
+  generator: cloud-init
+  content: |-
+    {% if config_get("user.network-config", "") == "" %}version: 1
+    config:
+      - type: physical
+        name: eth0
+        subnets:
+          - type: {% if config_get("user.network_mode", "") == "link-local" %}manual{% else %}dhcp{% endif %}
+            control: auto
+          - type: dhcp6
+            control: auto{% else %}{{ config_get("user.network-config", "") }}{% endif %}
+  variants:
+  - cloud
+  releases:
+  - 7
+  types:
+  - vm
 
 - name: network-config
   generator: cloud-init
