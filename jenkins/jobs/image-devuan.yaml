@@ -23,6 +23,7 @@
         values:
         - ascii
         - beowulf
+        - chimaera
 
     - axis:
         name: variant
