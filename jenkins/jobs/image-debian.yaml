@@ -26,6 +26,7 @@
         - buster
         - bullseye
         - sid
+        - bookworm
 
     - axis:
         name: variant
