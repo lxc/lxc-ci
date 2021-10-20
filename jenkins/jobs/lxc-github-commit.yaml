@@ -4,7 +4,7 @@
     jobs:
         - "lxc-github-commit{suffix}":
             branch: master
-            pkg_version: 1:4.0.10+master
+            pkg_version: 1:4.0.11+master
 
         - "lxc-github-commit{suffix}":
             branch: stable-3.0
@@ -14,7 +14,7 @@
         - "lxc-github-commit{suffix}":
             branch: stable-4.0
             suffix: "-{branch}"
-            pkg_version: 1:4.0.10+stable
+            pkg_version: 1:4.0.11+stable
 
 - job-template:
     name: "lxc-github-commit{suffix}"
