@@ -569,6 +569,7 @@ packages:
 
   - packages:
     - cloud-utils-growpart
+    - gdisk
     action: install
     types:
     - vm
