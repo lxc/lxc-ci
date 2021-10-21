@@ -1022,8 +1022,9 @@ packages:
   - name: sources.list
     url: |-
       deb http://deb.debian.org/debian {{ image.release }} main
-      {% if image.release != "sid" and image.release != "bullseye" and not (image.release == "wheezy" and image.architecture_mapped == "powerpc") and not (image.release == "wheezy" and image.architecture_mapped == "s390x") %}deb http://security.debian.org/debian-security {{ image.release }}/updates main{% endif %}
-      {% if image.release == "bullseye" %}deb http://security.debian.org/ bullseye-security main contrib non-free{% endif %}
+      {% if image.release != "sid" %}deb http://deb.debian.org/debian {{ image.release }}-updates main{% endif %}
+      {% if image.release != "sid" and image.release != "stretch" and image.release != "buster" %}deb http://deb.debian.org/debian-security/ {{ image.release }}-security main{% endif %}
+      {% if image.release == "stretch" or image.release == "buster" %}deb http://deb.debian.org/debian-security/ {{ image.release }}/updates main{% endif %}
 
 actions:
 - trigger: post-unpack
