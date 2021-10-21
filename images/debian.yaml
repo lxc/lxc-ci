@@ -873,6 +873,7 @@ files:
   - buster
   - bullseye
   - sid
+  - bookworm
 
 - path: /etc/network/interfaces
   generator: dump
@@ -995,6 +996,7 @@ packages:
     - buster
     - bullseye
     - sid
+    - bookworm
 
   - packages:
     - grub-efi-arm64
@@ -1014,6 +1016,7 @@ packages:
     - buster
     - bullseye
     - sid
+    - bookworm
 
   repositories:
   - name: sources.list
@@ -1079,6 +1082,7 @@ actions:
   - buster
   - bullseye
   - sid
+  - bookworm
 
 - trigger: post-files
   action: |-
