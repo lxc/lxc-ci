@@ -8,4 +8,4 @@
 - tomponline
 - tych0
 - masnax
-- sdeziel
+- simondeziel
