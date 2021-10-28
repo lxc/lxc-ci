@@ -897,6 +897,8 @@ ovn_peering_tests() {
     # Disable DHCP client and SLAAC acceptance so we don't get automatic IPs added.
     lxc exec ovn1 --project=ovn1 -- rm -f /etc/netplan/*
     lxc exec ovn1 --project=ovn1 -- netplan apply
+    lxc exec ovn1 --project=ovn1 -- systemctl mask systemd-networkd
+    lxc exec ovn1 --project=ovn1 -- systemctl stop systemd-networkd
     lxc exec ovn1 --project=ovn1 -- sysctl net.ipv6.conf.eth0.accept_ra=0
     lxc exec ovn1 --project=ovn1 -- sysctl net.ipv6.conf.eth0.autoconf=0
     lxc exec ovn1 --project=ovn1 -- ip a flush dev eth0
