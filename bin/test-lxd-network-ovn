@@ -948,10 +948,69 @@ ovn_peering_tests() {
     lxc exec ovn2 -T -n --project=ovn2 -- ping -c1 -4 -W5 "${ovn1NICIPv4}"
     lxc exec ovn2 -T -n --project=ovn2 -- ping -c1 -6 -W5 "${ovn1NICIPv6}"
 
-    # Cleanup.
+    # Check external ingress spoof protection.
+    # Setup ovn1's IP on the external bridge, with a spoofed route source address and confirm no spoofed packets
+    # reach ovn2's NIC.
+    ovn2IPv4="$(lxc network get ovn2 volatile.network.ipv4.address --project=ovn2)"
+    ovn2IPv6="$(lxc network get ovn2 volatile.network.ipv6.address --project=ovn2)"
+
+    ip a add "${ovn1NICIPv4}/32" dev lxdbr0
+    ip a add "${ovn1NICIPv6}/128" dev lxdbr0
+    ip -4 r add "${ovn2NICIPv4}/32" via "${ovn2IPv4}" dev lxdbr0 src "${ovn1NICIPv4}"
+    ip -6 r add "${ovn2NICIPv6}/128" via "${ovn2IPv6}" dev lxdbr0 src "${ovn1NICIPv6}"
+
+    ping -c3 -4 -W5 "${ovn2NICIPv4}" || true &
+    ! lxc exec ovn2 -T -n --project=ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp and src "${ovn1NICIPv4}" -q -c 1 > /dev/null || false
+    wait
+
+    ping -c3 -6 -W5 "${ovn2NICIPv6}" || true &
+    ! lxc exec ovn2 -T -n --project=ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp6 and src "${ovn1NICIPv6}" -q -c 1 > /dev/null || false
+    wait
+
+    # Remove spoofed IPs and routes, and check can ping the instance NIC externally using non-spoofed IP.
+    ip a del "${ovn1NICIPv4}/32" dev lxdbr0
+    ip a del "${ovn1NICIPv6}/128" dev lxdbr0
+    ip -4 r replace "${ovn2NICIPv4}/32" via "${ovn2IPv4}" dev lxdbr0
+    ip -6 r replace "${ovn2NICIPv6}/128" via "${ovn2IPv6}" dev lxdbr0
+    ping -c3 -4 -W5 "${ovn2NICIPv4}"
+    ping -c3 -6 -W5 "${ovn2NICIPv6}"
+    ip -4 r del "${ovn2NICIPv4}/32" via "${ovn2IPv4}" dev lxdbr0
+    ip -6 r del "${ovn2NICIPv6}/128" via "${ovn2IPv6}" dev lxdbr0
+
+    # ACLs referencing peers.
+    lxc network acl create ovn1 --project=ovn1
+    lxc config device set ovn1 eth0 security.acls=ovn1 --project=ovn1
+    ! lxc exec ovn1 -T -n --project=ovn1 -- ping -c1 -4 -W5 "${ovn2NICIPv4}" || false
+    ! lxc exec ovn1 -T -n --project=ovn1 -- ping -c1 -6 -W5 "${ovn2NICIPv6}" || false
+    ! lxc exec ovn2 -T -n --project=ovn2 -- ping -c1 -4 -W5 "${ovn1NICIPv4}" || false
+    ! lxc exec ovn2 -T -n --project=ovn2 -- ping -c1 -6 -W5 "${ovn1NICIPv6}" || false
+
+    lxc network acl rule add ovn1 egress destination=@ovn1/ovn1foo action=allow --project=ovn1
+    lxc exec ovn1 -T -n --project=ovn1 -- ping -c1 -4 -W5 "${ovn2NICIPv4}"
+    lxc exec ovn1 -T -n --project=ovn1 -- ping -c1 -6 -W5 "${ovn2NICIPv6}"
+    ! lxc exec ovn2 -T -n --project=ovn2 -- ping -c1 -4 -W5 "${ovn1NICIPv4}" || false
+    ! lxc exec ovn2 -T -n --project=ovn2 -- ping -c1 -6 -W5 "${ovn1NICIPv6}" || false
+
+    lxc network acl rule add ovn1 ingress source=@ovn1/ovn1foo action=allow --project=ovn1
+    lxc exec ovn1 -T -n --project=ovn1 -- ping -c1 -4 -W5 "${ovn2NICIPv4}"
+    lxc exec ovn1 -T -n --project=ovn1 -- ping -c1 -6 -W5 "${ovn2NICIPv6}"
+    lxc exec ovn2 -T -n --project=ovn2 -- ping -c1 -4 -W5 "${ovn1NICIPv4}"
+    lxc exec ovn2 -T -n --project=ovn2 -- ping -c1 -6 -W5 "${ovn1NICIPv6}"
+
+    # Check cannot add an ACL to a network NIC that references a peer connection from another network.
+    lxc network create ovn1b --type=ovn network=lxdbr0 --project=ovn1
+    ! lxc network set ovn1b security.acls=ovn1 --project=ovn1 || false
+    lxc network delete ovn1b --project=ovn1
+
+    # Cleanup instances.
     lxc delete -f ovn1 --project=ovn1
     lxc delete -f ovn2 --project=ovn2
 
+    # Check cannot delete peer used by ACL.
+    ! lxc network peer delete ovn1 ovn1foo --project=ovn1 || false
+
+    # Cleanup.
+    lxc network acl delete ovn1 --project=ovn1
     lxc network peer delete ovn1 ovn1foo --project=ovn1
     lxc network delete ovn1 --project=ovn1
     lxc network delete ovn2 --project=ovn2
