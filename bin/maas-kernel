@@ -35,6 +35,9 @@ case "$i" in
         echo "===> Installing the NVIDIA driver"
 
         apt-get update
+        apt-get dist-upgrade --yes
+        apt-get install linux-generic --yes
+        apt-get remove --purge --yes linux.*hwe.* --yes
         apt-get install nvidia-utils-440 linux-modules-nvidia-440-generic libnvidia-compute-440 --yes
 
         echo "blacklist nouveau" > /etc/modprobe.d/blacklist-nouveau.conf
@@ -46,6 +49,7 @@ case "$i" in
         echo "===> Installing the AMD vGPU driver"
 
         apt-get update
+        apt-get dist-upgrade --yes
         apt-get install build-essential --yes
         git clone https://github.com/kasperlewau/MxGPU-Virtualization
         (cd MxGPU-Virtualization && ./gim.sh)
@@ -59,6 +63,7 @@ case "$i" in
         echo "===> Installing the NVIDIA vGPU driver"
 
         apt-get update
+        apt-get dist-upgrade --yes
         apt-get install build-essential --yes
         curl http://canonical-lxd.stgraber.org/nvidia/v12.2-beta/nvidia-vgpu-kvm.run -o /root/nvidia-vgpu-kvm.run
         chmod +x /root/nvidia-vgpu-kvm.run
