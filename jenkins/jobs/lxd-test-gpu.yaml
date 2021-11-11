@@ -34,7 +34,7 @@
         fi
 
         if [ "${platform}" = "nvidia" ] && [ "${target}" = "mig" ]; then
-            exec sudo /lxc-ci/bin/maas-run name=argos focal ga-20.04 nvidia bin/test-lxd-gpu-mig
+            exec sudo /lxc-ci/bin/maas-run name=argos focal ga-20.04 nvidia-mig bin/test-lxd-gpu-mig
         fi
 
         if [ "${platform}" = "nvidia" ] && [ "${target}" = "vm" ]; then
