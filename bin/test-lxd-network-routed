@@ -36,6 +36,10 @@ lxd waitready --timeout=300
 lxc project switch default
 lxc storage create default zfs
 
+# Set global sysctl.
+sysctl net.ipv6.conf.all.forwarding=1
+sysctl net.ipv6.conf.all.proxy_ndp=1
+
 # Setup dummy parent interface.
 ip link add dummy0 type dummy
 sysctl net.ipv6.conf.dummy0.proxy_ndp=1
