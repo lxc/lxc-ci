@@ -8,7 +8,7 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        exec sudo /lxc-ci/bin/maas-run tags=virtual focal ga-20.04 default bin/test-lxd-network-routed
+        exec sudo /lxc-ci/bin/maas-run tags=physical focal ga-20.04 default bin/test-lxd-network-routed
 
     properties:
     - build-discarder:
