@@ -18,7 +18,6 @@
         type: user-defined
         values:
         - current
-        - 2.0.20210525.0
 
     - axis:
         name: variant
@@ -34,9 +33,8 @@
         ARCH=${architecture}
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
         [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
-        
-        REL=${release}
-        [ "${REL}" = "current" ] && REL=$(curl -sI https://cdn.amazonlinux.com/os-images/latest/ | sed -En 's/location:.*os-images\/([^\/]+)\/.*/\1/p')
+
+        REL=$(curl -sI https://cdn.amazonlinux.com/os-images/latest/ | sed -En 's/location:.*os-images\/([^\/]+)\/.*/\1/p')
 
         TYPE="container"
 
