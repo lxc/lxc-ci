@@ -57,9 +57,9 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 # Setup dependencies
 echo "===> Copying pre-built dependencies"
 VERSION=$(go version | cut -d' ' -f3)
-[ -d "/lxc-ci/build/cache/go/bin.${VERSION}" ] && cp -Ra "/lxc-ci/build/cache/go/bin.${VERSION}" "${GOPATH}/bin"
-[ -d "/lxc-ci/build/cache/go/pkg" ] && cp -Ra "/lxc-ci/build/cache/go/pkg" "${GOPATH}/pkg"
-[ -d "/lxc-ci/build/cache/go/src" ] && cp -Ra "/lxc-ci/build/cache/go/src" "${GOPATH}/src"
+[ -d "/lxc-ci/build/cache/go/bin.${VERSION}" ] && cp -Ral "/lxc-ci/build/cache/go/bin.${VERSION}" "${GOPATH}/bin"
+[ -d "/lxc-ci/build/cache/go/pkg" ] && cp -Ral "/lxc-ci/build/cache/go/pkg" "${GOPATH}/pkg"
+[ -d "/lxc-ci/build/cache/go/src" ] && cp -Ral "/lxc-ci/build/cache/go/src" "${GOPATH}/src"
 
 # Setup Git
 mkdir -p "${GOPATH}/src/github.com/lxc"
