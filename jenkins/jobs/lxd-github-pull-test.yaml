@@ -7,7 +7,7 @@
 
     builders:
     - shell: |-
-        exec /usr/bin/script /dev/null -e -q -c "/lxc-ci/bin/build-lxd ${compiler} https://github.com/lxc/lxd ${GIT_COMMIT} ${backend}"
+        exec /usr/bin/script /dev/null -e -q -c "/lxc-ci/bin/build-lxd ${compiler} https://github.com/lxc/lxd ${GIT_COMMIT} ${backend} ${section}"
 
     properties:
     - build-discarder:
@@ -87,6 +87,13 @@
         values:
         - amd64
         - arm64
+
+    - section:
+        name: section
+        type: user-defined
+        values:
+        - cluster
+        - standalone
 
     execution-strategy:
       combination-filter: '!(arch=="arm64" && backend=="lvm") && !(arch=="arm64" && backend=="ceph") && !(arch=="arm64" && backend=="random") && !(backend!="dir" && compiler!="golang-1.17")'
