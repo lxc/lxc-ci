@@ -96,7 +96,6 @@ cd "${TEMP_DIR}"
 
 # Build the Go cache and binaries
 export GOPATH="${TEMP_DIR}/go"
-export GOCACHE="${GOPATH}/pkg"
 
 OLD_PATH=${PATH}
 for version in 1.13 1.17 tip; do
@@ -117,19 +116,15 @@ for version in 1.13 1.17 tip; do
     done
 
     mkdir -p "${GOPATH}/bin" && mv "${GOPATH}/bin" "${GOPATH}/bin.$(go version | cut -d' ' -f3)"
-    mkdir -p "${GOPATH}/pkg" && mv "${GOPATH}/pkg" "${GOPATH}/pkg.$(go version | cut -d' ' -f3)"
 done
 
 cd "${TEMP_DIR}"
 
 # Setup the Go cache
 export PATH="/snap/go_tip/current/bin:${OLD_PATH}"
-mkdir -p "${TEMP_DIR}/go"
-
 git clone https://github.com/lxc/lxd
 cd lxd
 go get -d -t ./...
-cd "${TEMP_DIR}"
 
 # Move things into place
 rm -Rf /lxc-ci/build/cache.new
