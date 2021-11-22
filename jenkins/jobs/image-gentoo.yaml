@@ -26,7 +26,7 @@
         name: variant
         type: user-defined
         values:
-        - default
+        - openrc
         - cloud
         - systemd
 
@@ -46,8 +46,10 @@
         fi
 
         EXTRA_ARGS=""
-        if [ "${variant}" = "systemd" ]; then
-            EXTRA_ARGS="-o source.variant=systemd"
+        if [ "${variant}" = "cloud" ]; then
+            EXTRA_ARGS="-o source.variant=openrc"
+        else
+            EXTRA_ARGS="-o source.variant=${variant}"
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/gentoo.yaml \
