@@ -73,6 +73,17 @@ do
         echo "==> Checking VM root disk size is 10GB"
         lxc exec v1 -- df -B1000000000 | grep sda2 | grep 10
 
+        echo "==> Checking running VM snapshot"
+        lxc snapshot v1
+        lxc copy v1/snap0 v2
+        lxc start v2
+        sleep 90
+
+        echo "==> Checking VM snapshot copy root disk size is 10GB"
+        lxc exec v2 -- df -B1000000000 | grep sda2 | grep 10
+        lxc delete -f v2
+        lxc delete v1/snap0
+
         echo "==> Check QEMU crash behavior and recovery"
         uuid=$(lxc config get v1 volatile.uuid)
         ps aux | grep -v grep | grep "${uuid}"
