@@ -3,6 +3,20 @@ set -eux
 
 # This test uses openat2 which requires kernel >= 5.6 (so use Focal HWE).
 
+waitSnapdSeed() {
+  set +x
+  for i in $(seq 60); do # Wait up to 60s.
+    if systemctl show snapd.seeded.service --value --property SubState | grep -qx exited; then
+      return 0 # Success.
+    fi
+
+    sleep 1
+  done
+
+  echo "snapd not seeded after ${i}s"
+  return 1 # Failed.
+}
+
 cleanup() {
     echo ""
     if [ "${FAIL}" = "1" ]; then
@@ -19,7 +33,7 @@ FAIL=1
 trap cleanup EXIT HUP INT TERM
 
 # Wait for snapd seeding
-sleep 1m
+waitSnapdSeed
 
 # Configure to use the proxy
 curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh
