@@ -66,7 +66,7 @@ do
         elif [ "${poolDriver}" = "ceph" ]; then
                 lxc storage create "${poolName}" "${poolDriver}" source="${poolName}"
         else
-                lxc storage create "${poolName}" "${poolDriver}" size=20GB
+                lxc storage create "${poolName}" "${poolDriver}" size=20GiB
         fi
 
         echo "==> Create VM and boot"
@@ -86,8 +86,8 @@ do
         ! lxc exec v1 -- touch /srv/lxd-test || false
         lxc exec v1 -- umount /srv
 
-        echo "==> Checking VM root disk size is 10GB"
-        lxc exec v1 -- df -B 1GB --output=source,size | grep sda2 | grep -w 10
+        echo "==> Checking VM root disk size is 10GiB"
+        lxc exec v1 -- df -B 1G --output=source,size | grep sda2 | grep -w 10
 
         echo "==> Checking running VM snapshot"
         lxc snapshot v1
@@ -95,8 +95,8 @@ do
         lxc start v2
         waitVMAgent v2
 
-        echo "==> Checking VM snapshot copy root disk size is 10GB"
-        lxc exec v2 -- df -B 1GB --output=source,size | grep sda2 | grep -w 10
+        echo "==> Checking VM snapshot copy root disk size is 10GiB"
+        lxc exec v2 -- df -B 1G --output=source,size | grep sda2 | grep -w 10
         lxc delete -f v2
         lxc delete v1/snap0
 
@@ -133,18 +133,18 @@ do
         lxc exec v1 -- ps aux | grep lxd-agent # Check booted OK.
 
         echo "==> Increasing VM root disk size for next boot"
-        lxc config device set v1 root size=11GB
+        lxc config device set v1 root size=11GiB
         lxc config get v1 volatile.root.apply_quota | grep true
         lxc stop -f v1
         lxc start v1
         waitVMAgent v1
 
-        echo "==> Checking VM root disk size is 11GB"
+        echo "==> Checking VM root disk size is 11GiB"
         sleep 5 # Wait for resize to happen inside guest.
-        lxc exec v1 -- df -B 1GB --output=source,size | grep sda2 | grep -w 11
+        lxc exec v1 -- df -B 1G --output=source,size | grep sda2 | grep -w 11
 
         echo "==> Check VM shrink is blocked"
-        ! lxc config device set v1 root size=10GB || false
+        ! lxc config device set v1 root size=10GiB || false
 
         echo "==> Checking additional disk device support"
         lxc stop -f v1
@@ -220,15 +220,15 @@ do
         lxc delete -f v1
 
         echo "==> Change volume.size on pool and create VM"
-        lxc storage set "${poolName}" volume.size 6GB
+        lxc storage set "${poolName}" volume.size 6GiB
         lxc init images:ubuntu/20.04/cloud v1 --vm -s "${poolName}"
         lxc start v1
         waitVMAgent v1
         lxc info v1
 
-        echo "==> Checking VM root disk size is 6GB"
+        echo "==> Checking VM root disk size is 6GiB"
         sleep 5 # Wait for resize to happen inside guest.
-        lxc exec v1 -- df -B 1GB --output=source,size | grep sda2 | grep -w 6
+        lxc exec v1 -- df -B 1G --output=source,size | grep sda2 | grep -w 6
 
         echo "==> Deleting VM and reset pool volume.size"
         lxc delete -f v1
@@ -253,15 +253,15 @@ do
 
         echo "==> Create VM from profile with small disk size"
         lxc profile copy default vmsmall
-        lxc profile device add vmsmall root disk pool="${poolName}" path=/ size=7GB
+        lxc profile device add vmsmall root disk pool="${poolName}" path=/ size=7GiB
         lxc init images:ubuntu/20.04/cloud v1 --vm -p vmsmall
         lxc start v1
         waitVMAgent v1
         lxc info v1
 
-        echo "==> Checking VM root disk size is 7GB"
+        echo "==> Checking VM root disk size is 7GiB"
         sleep 5 # Wait for resize to happen inside guest.
-        lxc exec v1 -- df -B 1GB --output=source,size | grep sda2 | grep -w 7
+        lxc exec v1 -- df -B 1G --output=source,size | grep sda2 | grep -w 7
         lxc stop -f v1
 
         echo "==> Copy to different storage pool and check size"
@@ -270,27 +270,27 @@ do
                 dstPoolDriver=lvm # Use something different when testing ZFS.
         fi
 
-        lxc storage create "${poolName}2" "${dstPoolDriver}" size=20GB
+        lxc storage create "${poolName}2" "${dstPoolDriver}" size=20GiB
         lxc copy v1 v2 -s "${poolName}2"
         lxc start v2
         waitVMAgent v2
         lxc info v2
 
-        echo "==> Checking copied VM root disk size is 7GB"
-        lxc exec v2 -- df -B 1GB --output=source,size | grep sda2 | grep -w 7
+        echo "==> Checking copied VM root disk size is 7GiB"
+        lxc exec v2 -- df -B 1G --output=source,size | grep sda2 | grep -w 7
         sleep 5 # Wait for resize to happen inside guest.
         lxc delete -f v2
 
         echo "==> Grow above default volume size and copy to different storage pool"
-        lxc config device override v1 root size=11GB
+        lxc config device override v1 root size=11GiB
         lxc copy v1 v2 -s "${poolName}2"
         lxc start v2
         waitVMAgent v2
         lxc info v2
 
-        echo "==> Checking copied VM root disk size is 11GB"
+        echo "==> Checking copied VM root disk size is 11GiB"
         sleep 5 # Wait for resize to happen inside guest.
-        lxc exec v2 -- df -B 1GB --output=source,size | grep sda2 | grep -w 11
+        lxc exec v2 -- df -B 1G --output=source,size | grep sda2 | grep -w 11
         lxc delete -f v2
 
         echo "==> Publishing larger VM"
@@ -300,7 +300,7 @@ do
         lxc stop -f v1
         lxc publish v1 --alias vmbig
         lxc delete -f v1
-        lxc storage set "${poolName}" volume.size 9GB
+        lxc storage set "${poolName}" volume.size 9GiB
 
         echo "==> Check VM create fails when image larger than volume.size"
         ! lxc init vmbig v1 --vm -s "${poolName}" || false
@@ -312,9 +312,9 @@ do
         waitVMAgent v1
         lxc info v1
 
-        echo "==> Checking new VM root disk size is 11GB"
+        echo "==> Checking new VM root disk size is 11GiB"
         sleep 5 # Wait for resize to happen inside guest.
-        lxc exec v1 -- df -B 1GB --output=source,size | grep sda2 | grep -w 11
+        lxc exec v1 -- df -B 1G --output=source,size | grep sda2 | grep -w 11
 
         echo "===> Renaming VM"
         lxc stop -f v1
