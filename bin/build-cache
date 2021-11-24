@@ -53,7 +53,6 @@ apt-get clean
 
 # Setup snapd
 snap set system experimental.parallel-instances=true
-snap install core || true
 snap install go_113 --channel=1.13 --unaliased --classic
 snap install go_116 --channel=1.16 --unaliased --classic
 snap install go_117 --channel=1.17 --unaliased --classic
