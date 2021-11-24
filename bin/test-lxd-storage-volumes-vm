@@ -36,8 +36,27 @@ snap install lxd --channel=latest/edge
 snap install jq
 lxd waitready --timeout=300
 
+waitVMAgent() (
+  set +x
+  local vmName=$1
+  for i in $(seq 90) # Wait up to 90s.
+  do
+    if [ "$(lxc info "${vmName}" | grep 127.0.0.1)" ] ; then
+      return 0 # Success.
+    fi
+
+    sleep 1
+  done
+
+  echo VM "${vmName}" agent not running after "${i}"s
+  return 1 # Failed.
+)
+
 # Configure LXD
+lxc project switch default
 lxc network create lxdbr0
+lxc project create test -c features.images=false
+lxc project switch test
 lxc profile device add default eth0 nic network=lxdbr0
 
 poolName="vmpool$$"
@@ -62,7 +81,7 @@ do
 
 	echo "==> Start VM and add content to custom block volume"
 	lxc start v1
-	sleep 30
+	waitVMAgent v1
 
 	lxc exec v1 -- /bin/sh -c "mkfs.ext4 /dev/sdb && mount /dev/sdb /mnt && echo foo > /mnt/bar && umount /mnt"
 
@@ -86,7 +105,8 @@ do
 
 	echo "==> Start VM and check content"
 	lxc start v1
-	sleep 30
+	waitVMAgent v1
+
 	# shellcheck disable=2016
 	lxc exec v1 -- /bin/sh -c 'mount /dev/sdb /mnt && [ $(cat /mnt/bar) = foo ] && umount /mnt'
 	# shellcheck disable=2016
@@ -106,6 +126,8 @@ do
 done
 
 lxc profile device remove default eth0
+lxc project switch default
+lxc project delete test
 lxc network delete lxdbr0
 
 FAIL=0
