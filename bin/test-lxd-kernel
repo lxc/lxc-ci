@@ -4,8 +4,22 @@ set -eu
 # Print kernel version
 echo "Starting test on: $(uname -a)"
 
+waitSnapdSeed() {
+  set +x
+  for i in $(seq 60); do # Wait up to 60s.
+    if systemctl show snapd.seeded.service --value --property SubState | grep -qx exited; then
+      return 0 # Success.
+    fi
+
+    sleep 1
+  done
+
+  echo "snapd not seeded after ${i}s"
+  return 1 # Failed.
+}
+
 # Wait for snapd seeding
-sleep 1m
+waitSnapdSeed
 
 # Configure to use the proxy
 curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh
