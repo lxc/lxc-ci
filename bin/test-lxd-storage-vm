@@ -36,6 +36,22 @@ snap install lxd --channel=latest/edge
 snap install jq
 lxd waitready --timeout=300
 
+waitVMAgent() (
+  set +x
+  local vmName=$1
+  for i in $(seq 90) # Wait up to 90s.
+  do
+    if [ "$(lxc info "${vmName}" | grep 127.0.0.1)" ] ; then
+      return 0 # Success.
+    fi
+
+    sleep 1
+  done
+
+  echo VM "${vmName}" agent not running after "${i}"s
+  return 1 # Failed.
+)
+
 # Configure LXD
 lxc network create lxdbr0
 lxc profile device add default eth0 nic network=lxdbr0
@@ -56,7 +72,7 @@ do
         echo "==> Create VM and boot"
         lxc init images:ubuntu/20.04/cloud v1 --vm -s "${poolName}"
         lxc start v1
-        sleep 90
+        waitVMAgent v1
         lxc info v1
 
         echo "==> Check config drive is readonly"
@@ -77,7 +93,7 @@ do
         lxc snapshot v1
         lxc copy v1/snap0 v2
         lxc start v2
-        sleep 90
+        waitVMAgent v2
 
         echo "==> Checking VM snapshot copy root disk size is 10GB"
         lxc exec v2 -- df -B1000000000 | grep sda2 | grep 10
@@ -104,7 +120,7 @@ do
         lxc import "/tmp/lxd-test-${poolName}.tar.gz"
         rm "/tmp/lxd-test-${poolName}.tar.gz"
         lxc start v1
-        sleep 90
+        waitVMAgent v1
         lxc exec v1 -- ps aux | grep lxd-agent # Check booted OK.
 
         echo "==> Testing VM optimized export/import (while running to check config.mount is excluded)"
@@ -113,7 +129,7 @@ do
         lxc import "/tmp/lxd-test-${poolName}-optimized.tar.gz"
         rm "/tmp/lxd-test-${poolName}-optimized.tar.gz"
         lxc start v1
-        sleep 90
+        waitVMAgent v1
         lxc exec v1 -- ps aux | grep lxd-agent # Check booted OK.
 
         echo "==> Increasing VM root disk size for next boot"
@@ -121,9 +137,10 @@ do
         lxc config get v1 volatile.root.apply_quota | grep true
         lxc stop -f v1
         lxc start v1
-        sleep 90
+        waitVMAgent v1
 
         echo "==> Checking VM root disk size is 11GB"
+        sleep 5 # Wait for resize to happen inside guest.
         lxc exec v1 -- df -B1000000000 | grep sda2 | grep 11
 
         echo "==> Check VM shrink is blocked"
@@ -145,7 +162,7 @@ do
         lxc config device add v1 block1ro disk source="/tmp/lxd-test-${poolName}/lxd-test-block" readonly=true
         lxc config device add v1 block1rw disk source="/tmp/lxd-test-${poolName}/lxd-test-block"
         lxc start v1
-        sleep 90
+        waitVMAgent v1
 
         echo "==> Testing VM lxd-agent drive mounts"
         # Check there is only 1 mount for each directory disk and that it is mounted with the appropriate options.
@@ -206,10 +223,11 @@ do
         lxc storage set "${poolName}" volume.size 6GB
         lxc init images:ubuntu/20.04/cloud v1 --vm -s "${poolName}"
         lxc start v1
-        sleep 90
+        waitVMAgent v1
         lxc info v1
 
         echo "==> Checking VM root disk size is 6GB"
+        sleep 5 # Wait for resize to happen inside guest.
         lxc exec v1 -- df -B1000000000 | grep sda2 | grep 6
 
         echo "==> Deleting VM and reset pool volume.size"
@@ -221,7 +239,7 @@ do
                 lxc storage set "${poolName}" volume.block.filesystem xfs
                 lxc init images:ubuntu/20.04/cloud v1 --vm -s "${poolName}"
                 lxc start v1
-                sleep 90
+                waitVMAgent v1
                 lxc info v1
 
                 echo "==> Checking VM config disk filesyste is XFS"
@@ -238,10 +256,11 @@ do
         lxc profile device add vmsmall root disk pool="${poolName}" path=/ size=7GB
         lxc init images:ubuntu/20.04/cloud v1 --vm -p vmsmall
         lxc start v1
-        sleep 90
+        waitVMAgent v1
         lxc info v1
 
         echo "==> Checking VM root disk size is 7GB"
+        sleep 5 # Wait for resize to happen inside guest.
         lxc exec v1 -- df -B1000000000 | grep sda2 | grep 7
         lxc stop -f v1
 
@@ -254,27 +273,29 @@ do
         lxc storage create "${poolName}2" "${dstPoolDriver}" size=20GB
         lxc copy v1 v2 -s "${poolName}2"
         lxc start v2
-        sleep 90
+        waitVMAgent v2
         lxc info v2
 
         echo "==> Checking copied VM root disk size is 7GB"
         lxc exec v2 -- df -B1000000000 | grep sda2 | grep 7
+        sleep 5 # Wait for resize to happen inside guest.
         lxc delete -f v2
 
         echo "==> Grow above default volume size and copy to different storage pool"
         lxc config device override v1 root size=11GB
         lxc copy v1 v2 -s "${poolName}2"
         lxc start v2
-        sleep 90
+        waitVMAgent v2
         lxc info v2
 
         echo "==> Checking copied VM root disk size is 11GB"
+        sleep 5 # Wait for resize to happen inside guest.
         lxc exec v2 -- df -B1000000000 | grep sda2 | grep 11
         lxc delete -f v2
 
         echo "==> Publishing larger VM"
         lxc start v1 # Start to ensure cloud-init grows filesystem before publish.
-        sleep 90
+        waitVMAgent v1
         lxc info v1
         lxc stop -f v1
         lxc publish v1 --alias vmbig
@@ -288,10 +309,11 @@ do
         lxc storage unset "${poolName}" volume.size
         lxc init vmbig v1 --vm -s "${poolName}"
         lxc start v1
-        sleep 90
+        waitVMAgent v1
         lxc info v1
 
         echo "==> Checking new VM root disk size is 11GB"
+        sleep 5 # Wait for resize to happen inside guest.
         lxc exec v1 -- df -B1000000000 | grep sda2 | grep 11
 
         echo "===> Renaming VM"
