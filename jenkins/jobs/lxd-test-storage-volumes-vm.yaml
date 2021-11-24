@@ -1,7 +1,7 @@
 - job:
-    name: "lxd-test-block-storage"
+    name: "lxd-test-storage-volumes-vm"
     concurrent: false
-    description: Run block storage tests on physical hardware.
+    description: Run VM storage volume tests on physical hardware.
     node: master
     project-type: matrix
 
@@ -26,7 +26,7 @@
     - shell: |-
         set -e
         cd /lxc-ci
-        sudo -E /lxc-ci/bin/maas-run tags=physical focal ga-20.04 default bin/test-lxd-block-storage "${backend}"
+        sudo -E /lxc-ci/bin/maas-run tags=physical focal ga-20.04 default bin/test-lxd-storage-volumes-vm "${backend}"
 
     properties:
     - build-discarder:
