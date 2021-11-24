@@ -87,7 +87,7 @@ do
         lxc exec v1 -- umount /srv
 
         echo "==> Checking VM root disk size is 10GB"
-        lxc exec v1 -- df -B1000000000 | grep sda2 | grep 10
+        lxc exec v1 -- df -B 1GB --output=source,size | grep sda2 | grep -w 10
 
         echo "==> Checking running VM snapshot"
         lxc snapshot v1
@@ -96,7 +96,7 @@ do
         waitVMAgent v2
 
         echo "==> Checking VM snapshot copy root disk size is 10GB"
-        lxc exec v2 -- df -B1000000000 | grep sda2 | grep 10
+        lxc exec v2 -- df -B 1GB --output=source,size | grep sda2 | grep -w 10
         lxc delete -f v2
         lxc delete v1/snap0
 
@@ -141,7 +141,7 @@ do
 
         echo "==> Checking VM root disk size is 11GB"
         sleep 5 # Wait for resize to happen inside guest.
-        lxc exec v1 -- df -B1000000000 | grep sda2 | grep 11
+        lxc exec v1 -- df -B 1GB --output=source,size | grep sda2 | grep -w 11
 
         echo "==> Check VM shrink is blocked"
         ! lxc config device set v1 root size=10GB || false
@@ -228,7 +228,7 @@ do
 
         echo "==> Checking VM root disk size is 6GB"
         sleep 5 # Wait for resize to happen inside guest.
-        lxc exec v1 -- df -B1000000000 | grep sda2 | grep 6
+        lxc exec v1 -- df -B 1GB --output=source,size | grep sda2 | grep -w 6
 
         echo "==> Deleting VM and reset pool volume.size"
         lxc delete -f v1
@@ -261,7 +261,7 @@ do
 
         echo "==> Checking VM root disk size is 7GB"
         sleep 5 # Wait for resize to happen inside guest.
-        lxc exec v1 -- df -B1000000000 | grep sda2 | grep 7
+        lxc exec v1 -- df -B 1GB --output=source,size | grep sda2 | grep -w 7
         lxc stop -f v1
 
         echo "==> Copy to different storage pool and check size"
@@ -277,7 +277,7 @@ do
         lxc info v2
 
         echo "==> Checking copied VM root disk size is 7GB"
-        lxc exec v2 -- df -B1000000000 | grep sda2 | grep 7
+        lxc exec v2 -- df -B 1GB --output=source,size | grep sda2 | grep -w 7
         sleep 5 # Wait for resize to happen inside guest.
         lxc delete -f v2
 
@@ -290,7 +290,7 @@ do
 
         echo "==> Checking copied VM root disk size is 11GB"
         sleep 5 # Wait for resize to happen inside guest.
-        lxc exec v2 -- df -B1000000000 | grep sda2 | grep 11
+        lxc exec v2 -- df -B 1GB --output=source,size | grep sda2 | grep -w 11
         lxc delete -f v2
 
         echo "==> Publishing larger VM"
@@ -314,7 +314,7 @@ do
 
         echo "==> Checking new VM root disk size is 11GB"
         sleep 5 # Wait for resize to happen inside guest.
-        lxc exec v1 -- df -B1000000000 | grep sda2 | grep 11
+        lxc exec v1 -- df -B 1GB --output=source,size | grep sda2 | grep -w 11
 
         echo "===> Renaming VM"
         lxc stop -f v1
