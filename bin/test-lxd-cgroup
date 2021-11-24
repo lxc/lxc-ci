@@ -29,9 +29,8 @@ done
 apt-get remove --purge cloud-init --yes
 snap remove lxd || true
 snap install lxd --channel=latest/edge
-snap install jq
+apt-get install jq iperf3 --yes
 lxd waitready --timeout=300
-apt-get install iperf3 --yes
 
 # Configure LXD
 lxd init --auto

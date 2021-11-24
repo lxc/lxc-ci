@@ -29,7 +29,7 @@ done
 apt-get remove --purge cloud-init --yes
 snap remove lxd || true
 snap install lxd --channel=latest/edge
-snap install jq
+apt-get install jq --yes
 lxd waitready --timeout=300
 
 # Find network device
