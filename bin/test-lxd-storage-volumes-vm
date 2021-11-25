@@ -62,7 +62,7 @@ waitVMAgent() (
     sleep 1
   done
 
-  echo VM "${vmName}" agent not running after "${i}"s
+  echo "VM ${vmName} agent not running after ${i}s"
   return 1 # Failed.
 )
 
