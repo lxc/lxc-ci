@@ -46,10 +46,16 @@
         fi
 
         EXTRA_ARGS=""
-        if [ "${variant}" = "cloud" ]; then
-            EXTRA_ARGS="-o source.variant=openrc"
+        if [ "${architecture}" = "amd64" ]; then
+            if [ "${variant}" = "systemd" ]; then
+                EXTRA_ARGS="-o source.variant=${variant}"
+            fi
         else
-            EXTRA_ARGS="-o source.variant=${variant}"
+            if [ "${variant}" = "cloud" ]; then
+                EXTRA_ARGS="-o source.variant=openrc"
+            elif [ "${architecture}" != "arm64" ] ||
+                EXTRA_ARGS="-o source.variant=${variant}"
+            fi
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/gentoo.yaml \
