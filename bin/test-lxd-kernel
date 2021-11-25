@@ -4,7 +4,7 @@ set -eu
 # Print kernel version
 echo "Starting test on: $(uname -a)"
 
-waitSnapdSeed() {
+waitSnapdSeed() (
   set +x
   for i in $(seq 60); do # Wait up to 60s.
     if systemctl show snapd.seeded.service --value --property SubState | grep -qx exited; then
@@ -16,7 +16,7 @@ waitSnapdSeed() {
 
   echo "snapd not seeded after ${i}s"
   return 1 # Failed.
-}
+)
 
 # Wait for snapd seeding
 waitSnapdSeed

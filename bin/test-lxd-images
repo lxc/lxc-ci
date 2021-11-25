@@ -4,7 +4,7 @@ set -eu
 TYPE="CONTAINER"
 [ "${1:-""}" = "vm" ] && TYPE="VIRTUAL-MACHINE"
 
-waitSnapdSeed() {
+waitSnapdSeed() (
   set +x
   for i in $(seq 60); do # Wait up to 60s.
     if systemctl show snapd.seeded.service --value --property SubState | grep -qx exited; then
@@ -16,7 +16,7 @@ waitSnapdSeed() {
 
   echo "snapd not seeded after ${i}s"
   return 1 # Failed.
-}
+)
 
 cleanup() {
     echo ""
