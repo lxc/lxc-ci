@@ -3,7 +3,7 @@ set -eux
 
 # This test uses openat2 which requires kernel >= 5.6 (so use Focal HWE).
 
-waitSnapdSeed() {
+waitSnapdSeed() (
   set +x
   for i in $(seq 60); do # Wait up to 60s.
     if systemctl show snapd.seeded.service --value --property SubState | grep -qx exited; then
@@ -15,7 +15,7 @@ waitSnapdSeed() {
 
   echo "snapd not seeded after ${i}s"
   return 1 # Failed.
-}
+)
 
 cleanup() {
     echo ""
@@ -57,14 +57,14 @@ waitVMAgent() (
   local vmName=$1
   for i in $(seq 90) # Wait up to 90s.
   do
-    if [ "$(lxc info "${vmName}" | grep 127.0.0.1)" ] ; then
+    if lxc info "${vmName}" | grep -qF 127.0.0.1; then
       return 0 # Success.
     fi
 
     sleep 1
   done
 
-  echo VM "${vmName}" agent not running after "${i}"s
+  echo "VM ${vmName} agent not running after ${i}s"
   return 1 # Failed.
 )
 
