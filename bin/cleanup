@@ -1,28 +1,5 @@
 #!/bin/sh
 
-if [ "${1:-}" = "force" ]; then
-    if lxc info >/dev/null 2>&1; then
-        lxc query /1.0/containers | jq -r .[] | cut -d/ -f4- | grep -v ^cache- | xargs -r lxc delete -f
-        for entry in $(nsenter --mount=/run/snapd/ns/lxd.mnt ls -1 /var/snap/lxd/common/lxd/storage-pools/default/containers/ | grep -v ^cache); do
-            nsenter --mount=/run/snapd/ns/lxd.mnt /snap/lxd/current/bin/btrfs subvol delete "/var/snap/lxd/common/lxd/storage-pools/default/containers/${entry}/.backup"
-            nsenter --mount=/run/snapd/ns/lxd.mnt /snap/lxd/current/bin/btrfs subvol delete "/var/snap/lxd/common/lxd/storage-pools/default/containers/${entry}"
-            nsenter --mount=/run/snapd/ns/lxd.mnt rm -rf "/var/snap/lxd/common/lxd/storage-pools/default/containers/${entry}"
-        done
-
-        lxc query /1.0/images | jq -r .[] | cut -d/ -f4- | xargs -r lxc image delete
-        for entry in $(nsenter --mount=/run/snapd/ns/lxd.mnt ls -1 /var/snap/lxd/common/lxd/storage-pools/default/images/); do
-            nsenter --mount=/run/snapd/ns/lxd.mnt /snap/lxd/current/bin/btrfs subvol delete "/var/snap/lxd/common/lxd/storage-pools/default/images/${entry}"
-            nsenter --mount=/run/snapd/ns/lxd.mnt rm -rf "/var/snap/lxd/common/lxd/storage-pools/default/images/${entry}"
-        done
-    fi
-
-    nsenter --mount=/run/snapd/ns/lxd.mnt /snap/lxd/current/bin/btrfs quota disable /var/snap/lxd/common/lxd/storage-pools/default/
-    nsenter --mount=/run/snapd/ns/lxd.mnt /snap/lxd/current/bin/btrfs quota enable /var/snap/lxd/common/lxd/storage-pools/default/
-
-    rm -Rf /var/snap/lxd/common/lxd/cache/*
-    systemctl reload snap.lxd.daemon
-fi
-
 # shellcheck disable=SC2010
 if ls /lxc-ci/build/ | grep -v cache | grep -v lxc-monitord; then
     exit 0
