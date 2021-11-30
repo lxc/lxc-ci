@@ -145,11 +145,7 @@ fi
 
 # Connect and run something
 script=${5}
-shift
-shift
-shift
-shift
-shift
+shift 5
 echo "==> Running the job" >&2
 if echo "${IP}" | grep -q ":"; then
     scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "${script}" "ubuntu@[${IP}]:test-script"
