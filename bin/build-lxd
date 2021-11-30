@@ -186,7 +186,7 @@ EOF
 
 # Only run CEPH tests when on a suitable test runner
 CEPH_CLUSTER=
-if ip -6 a | grep -q 2602:fc62:b:1015; then
+if ip -6 a | grep -q 2602:fc62:b:8004:; then
     CEPH_CLUSTER=ceph
 fi
 
