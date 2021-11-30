@@ -96,8 +96,8 @@ lxc exec c1 -- nvidia-smi
 # Test with PCI addresses
 echo "==> Testing PCI address selection"
 lxc config device remove c1 gpus
-lxc config device add c1 gpu1 gpu pci=0000:07:00.0
-lxc config device add c1 gpu2 gpu pci=0000:08:00.0
+lxc config device add c1 gpu1 gpu pci=0000:06:00.0
+lxc config device add c1 gpu2 gpu pci=0000:07:00.0
 [ "$(lxc exec c1 -- ls /dev/dri/ | grep -c card)" = "2" ] || false
 lxc exec c1 -- nvidia-smi
 
