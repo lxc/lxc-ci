@@ -123,8 +123,8 @@ done
 
 # Wait for SSH
 echo "==> Waiting for SSH to respond" >&2
+IP=$(maas maas machine read "${system_id}" | jq .ip_addresses[] -r | grep ":" | head -2)
 while :; do
-    IP=$(maas maas machine read "${system_id}" | jq .ip_addresses[] -r | grep ":" | head -2)
     ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "ubuntu@${IP}" true 2>/dev/null && break
     sleep 5
 done
