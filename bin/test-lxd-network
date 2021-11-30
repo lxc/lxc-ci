@@ -2,7 +2,7 @@
 set -eu
 
 storageDevice="/dev/nvme0n1p3"
-parentNIC="enp10s0"
+parentNIC="enp5s0"
 
 waitSnapdSeed() (
   set +x
