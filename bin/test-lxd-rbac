@@ -43,7 +43,8 @@ done
 apt-get remove --purge cloud-init --yes
 snap remove lxd || true
 snap install lxd --channel=latest/edge
-apt-get install jq --yes bhttp
+apt-get install jq --yes
+snap install bhttp
 lxd waitready --timeout=300
 
 # Configure LXD
