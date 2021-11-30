@@ -53,17 +53,17 @@ deploy() {
     # Wait for the deployment to complete
     FAIL=0
     while :; do
+        sleep 2m
+
         status=$(status "${1}")
         [ "${status}" = "Deployed" ] && break
 
 
-        if [ "${status}" = "Failed deployment" ]; then
+        if [ "${status}" != "Deploying" ]; then
             FAIL=1
             echo "==> Failed to deploy" >&2
             return 1
         fi
-
-        sleep 2m
     done
 
     return 0
