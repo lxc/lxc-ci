@@ -46,14 +46,14 @@
         fi
 
         EXTRA_ARGS=""
-        if [ "${architecture}" = "amd64" ]; then
+        if [ "${architecture}" = "arm64" ]; then
             if [ "${variant}" = "systemd" ]; then
                 EXTRA_ARGS="-o source.variant=${variant}"
             fi
         else
             if [ "${variant}" = "cloud" ]; then
                 EXTRA_ARGS="-o source.variant=openrc"
-            elif [ "${architecture}" != "arm64" ] ||
+            elif [ "${architecture}" != "arm64" ]
                 EXTRA_ARGS="-o source.variant=${variant}"
             fi
         fi
