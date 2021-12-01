@@ -433,6 +433,7 @@ packages:
   cleanup: true
   sets:
   - packages:
+    - net-misc/dhcpcd
     - sudo
     action: install
 
@@ -572,7 +573,7 @@ actions:
   types:
   - vm
   variants:
-  - default
+  - openrc
   - cloud
 
 - trigger: post-files
