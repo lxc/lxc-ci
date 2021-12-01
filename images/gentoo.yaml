@@ -573,7 +573,7 @@ actions:
   types:
   - vm
   variants:
-  - default
+  - openrc
   - cloud
 
 - trigger: post-files
