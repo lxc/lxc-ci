@@ -452,6 +452,15 @@ files:
         option ifname 'eth0'
         option proto 'dhcpv6'
 
+packages:
+  manager: opkg
+  update: false
+  cleanup: true
+  sets:
+  - packages:
+    - sudo
+    action: install
+
 actions:
 - trigger: post-unpack
   action: |
@@ -461,11 +470,11 @@ actions:
   architectures:
   - amd64
 
-packages:
-  manager: opkg
-  update: false
-  cleanup: true
-  sets:
-  - packages:
-    - sudo
-    action: install
+- trigger: post-files
+  action: |
+    #!/bin/sh
+
+    # Disable process isolation to make dnsmasq work
+    sed -i 's/procd_add_jail/# \0/g' /etc/init.d/dnsmasq
+  releases:
+  - snapshot
