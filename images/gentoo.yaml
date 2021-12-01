@@ -433,6 +433,7 @@ packages:
   cleanup: true
   sets:
   - packages:
+    - net-misc/dhcpcd
     - sudo
     action: install
 
