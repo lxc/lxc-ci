@@ -53,7 +53,7 @@
         else
             if [ "${variant}" = "cloud" ]; then
                 EXTRA_ARGS="-o source.variant=openrc"
-            elif [ "${architecture}" != "arm64" ]
+            else
                 EXTRA_ARGS="-o source.variant=${variant}"
             fi
         fi
