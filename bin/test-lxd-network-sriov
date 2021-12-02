@@ -2,7 +2,7 @@
 set -eu
 
 storageDevice="/dev/nvme0n1p3"
-parentNIC="enp10s0"
+parentNIC="enp5s0"
 
 waitSnapdSeed() (
   set +x
@@ -73,12 +73,12 @@ lxc start v2
 
 echo "==> VM on alternate VLAN"
 lxc init images:ubuntu/20.04/cloud v3 --vm
-lxc config device override v3 eth0 vlan=1017
+lxc config device override v3 eth0 vlan=4000
 lxc start v3
 
 echo "==> VM on alternate VLAN with filtering"
 lxc init images:ubuntu/20.04/cloud v4 --vm
-lxc config device override v4 eth0 vlan=1017 security.mac_filtering=true
+lxc config device override v4 eth0 vlan=4000 security.mac_filtering=true
 lxc start v4
 
 # Launch a few instances
@@ -93,12 +93,12 @@ lxc start c2
 
 echo "==> Container on alternate VLAN"
 lxc init images:ubuntu/20.04/cloud c3
-lxc config device override c3 eth0 vlan=1017
+lxc config device override c3 eth0 vlan=4000
 lxc start c3
 
 echo "==> Container on alternate VLAN with filtering"
 lxc init images:ubuntu/20.04/cloud c4
-lxc config device override c4 eth0 vlan=1017 security.mac_filtering=true
+lxc config device override c4 eth0 vlan=4000 security.mac_filtering=true
 lxc start c4
 
 # Wait for things to settle
@@ -109,6 +109,12 @@ echo "=> Performing network tests"
 FAIL=0
 for url in $(lxc query "/1.0/instances" | jq -r .[]); do
     name=$(echo "${url}" | cut -d/ -f4)
+
+    case "${name}" in
+      c3|c4|v3|v4)
+        continue
+    esac
+
     echo ""
 
     # Get the addresses
