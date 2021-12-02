@@ -59,56 +59,56 @@ lxc network create lxdbr0
 lxc profile device add internal eth0 nic network=lxdbr0
 
 lxc profile create external
-lxc profile device add external eth0 nic nictype=bridged parent=br0 name=eth0 maas.subnet.ipv4=DEV-IPv4 maas.subnet.ipv6=DEV-IPv6
+lxc profile device add external eth0 nic nictype=bridged parent=br0 name=eth0 maas.subnet.ipv4=MAAS-LAB-V4 maas.subnet.ipv6=MAAS-LAB-V6
 
 # Test
 echo "==> Launching a test container on internal bridge"
 lxc launch images:ubuntu/20.04/cloud "$(hostname)-c1" -p default -p internal
 sleep 10
-! host "$(hostname)-c1.lab.maas.stgraber.net" 172.17.30.10 || false
+! host "$(hostname)-c1.lab.maas.stgraber.net" 2602:fc62:b:10::2 || false
 
 echo "==> Launching a test container on external bridge"
 lxc launch images:ubuntu/20.04/cloud "$(hostname)-c2" -p default -p external
 sleep 10
-host "$(hostname)-c2.lab.maas.stgraber.net" 172.17.30.10
+host "$(hostname)-c2.lab.maas.stgraber.net" 2602:fc62:b:10::2
 
 echo "==> Launching a test container on external bridge in different project"
 lxc project create foo -c features.profiles=false
 lxc launch images:ubuntu/20.04/cloud "$(hostname)-c3" -p default -p external --project foo
-host "$(hostname)-c3.foo.lab.maas.stgraber.net" 172.17.30.10 || false
+host "$(hostname)-c3.foo.lab.maas.stgraber.net" 2602:fc62:b:10::2 || false
 
 echo "==> Moving c1 to external bridge"
 lxc profile assign "$(hostname)-c1" default,external
 lxc restart "$(hostname)-c1"
 sleep 10
-host "$(hostname)-c1.lab.maas.stgraber.net" 172.17.30.10
+host "$(hostname)-c1.lab.maas.stgraber.net" 2602:fc62:b:10::2
 
 echo "==> Moving c2 to internal bridge"
 lxc profile assign "$(hostname)-c2" default,internal
 lxc restart "$(hostname)-c1"
 sleep 10
-! host "$(hostname)-c2.lab.maas.stgraber.net" 172.17.30.10 || false
+! host "$(hostname)-c2.lab.maas.stgraber.net" 2602:fc62:b:10::2 || false
 
 echo "==> Delete c1"
 lxc delete -f "$(hostname)-c1"
 sleep 10
-! host "$(hostname)-c1.lab.maas.stgraber.net" 172.17.30.10 || false
+! host "$(hostname)-c1.lab.maas.stgraber.net" 2602:fc62:b:10::2 || false
 
 echo "==> Launching a test container on external bridge with specific IPv6"
 lxc launch images:ubuntu/20.04/cloud "$(hostname)-c1" -p default -p external
 sleep 10
-host "$(hostname)-c1.lab.maas.stgraber.net" 172.17.30.10
+host "$(hostname)-c1.lab.maas.stgraber.net" 2602:fc62:b:10::2
 lxc list
 
 lxc stop "$(hostname)-c1"
 lxc profile assign "$(hostname)-c1" default
-lxc config device add "$(hostname)-c1" eth0 nic nictype=bridged parent=br0 maas.subnet.ipv4=DEV-IPv4 maas.subnet.ipv6=DEV-IPv6 ipv4.address=172.17.30.111 ipv6.address=2602:fc62:b:3000:2::111
+lxc config device add "$(hostname)-c1" eth0 nic nictype=bridged parent=br0 maas.subnet.ipv4=MAAS-LAB-V4 maas.subnet.ipv6=MAAS-LAB-V6 ipv4.address=172.17.30.111 ipv6.address=2602:fc62:b:3000:2::111
 lxc start "$(hostname)-c1"
 sleep 10
 lxc list
 
 echo "==> Adding a secondary device"
-lxc config device add "$(hostname)-c1" eth1 nic nictype=bridged parent=br0 name=eth1 maas.subnet.ipv4=DEV-IPv4 maas.subnet.ipv6=DEV-IPv6
+lxc config device add "$(hostname)-c1" eth1 nic nictype=bridged parent=br0 name=eth1 maas.subnet.ipv4=MAAS-LAB-V4 maas.subnet.ipv6=MAAS-LAB-V6
 
 echo "==> Removing secondary device"
 lxc config device remove "$(hostname)-c1" eth1
