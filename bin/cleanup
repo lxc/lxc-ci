@@ -1,5 +1,11 @@
 #!/bin/sh
 
+if [ "${1:-}" = "force" ]; then
+    if lxc info >/dev/null 2>&1; then
+        lxc list -cn -f csv | grep -v ^cache- | xargs -r lxc delete -f
+    fi
+fi
+
 # shellcheck disable=SC2010
 if ls /lxc-ci/build/ | grep -v cache | grep -v lxc-monitord; then
     exit 0
