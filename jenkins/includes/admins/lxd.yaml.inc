@@ -9,3 +9,5 @@
 - tych0
 - masnax
 - simondeziel
+- ru-fu
+- markylaing
