@@ -308,8 +308,22 @@ packages:
   sets:
   - packages:
     - alpine-base
+    action: install
+
+  - packages:
     - sudo
     action: install
+    releases:
+    - 3.12
+    - 3.13
+    - 3.14
+
+  - packages:
+    - doas
+    action: install
+    releases:
+    - 3.15
+    - edge
 
   - packages:
     - cloud-init
