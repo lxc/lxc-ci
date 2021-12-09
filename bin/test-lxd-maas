@@ -75,6 +75,7 @@ host "$(hostname)-c2.lab.maas.stgraber.net" 2602:fc62:b:10::2
 echo "==> Launching a test container on external bridge in different project"
 lxc project create foo -c features.profiles=false
 lxc launch images:ubuntu/20.04/cloud "$(hostname)-c3" -p default -p external --project foo
+sleep 10
 host "$(hostname)-c3.foo.lab.maas.stgraber.net" 2602:fc62:b:10::2 || false
 
 echo "==> Moving c1 to external bridge"
