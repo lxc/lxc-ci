@@ -68,9 +68,16 @@
         - amd64
         - arm64
 
+    - axis:
+        name: section
+        type: user-defined
+        values:
+        - cluster
+        - standalone
+
     builders:
     - shell: exec /usr/bin/script /dev/null -e -q -c "/lxc-ci/bin/build-lxd ${{compiler}}
-        https://github.com/lxc/lxd {branch} ${{backend}}"
+        https://github.com/lxc/lxd {branch} ${{backend}} ${{section}}"
 
     properties:
     - build-discarder:
