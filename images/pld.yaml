@@ -86,7 +86,7 @@ packages:
     clean:
       cmd: poldek
       flags: [ --clean ]
-  update: false
+  update: true
   cleanup: true
 
   sets:
