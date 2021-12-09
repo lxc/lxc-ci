@@ -51,7 +51,6 @@ deploy() {
     maas maas machine deploy "${1}" "distro_series=${2}" "hwe_kernel=${3}" >/dev/null
 
     # Wait for the deployment to complete
-    FAIL=0
     while :; do
         sleep 2m
 
@@ -60,8 +59,8 @@ deploy() {
 
 
         if [ "${status}" != "Deploying" ]; then
-            FAIL=1
             echo "==> Failed to deploy" >&2
+            maas maas machine release "${1}" >/dev/null
             return 1
         fi
     done
