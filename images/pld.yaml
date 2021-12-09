@@ -111,6 +111,30 @@ actions:
     # no systemd here
     sed -i '/^RPM_ENABLE_SYSTEMD_SERVICE=/ s/=yes/=no/' /etc/sysconfig/rpm
 
+    cat <<- EOF > PLD-3.0-Th-GPG-key.asc
+    -----BEGIN PGP PUBLIC KEY BLOCK-----
+    Version: GnuPG v1
+
+    mQGiBEezUfARBACXCHHN8F35uES1o+FhB7op/804RVJw59Jv3UGDubv4x8SPHGNN
+    b2WFLLMmW5MUucB+VSS3Xm33U27HFfg9OaeJsSJu3b5RE+UnPTZihV5+vENdtsfI
+    DJBOjgTcbEXYW75OV9Qnxczx4fGUOfEU23a3q/yXXXnarjbTLRizBCJkBwCgrJvT
+    zbDuECHrs74gm84E7unI26kD/1Kd1Qm3QEsOkcuIW75zq6GiQE4S+jEEqKwyyVxE
+    NPN+o3+MRG3J/s3XV0hCnczueQZrEQu/PNTm0t2d0rSlQg/Pm6Z46IpZ50UY2/CP
+    IB3GaRT505Q4+gk15RulIQjR/4zUN/NB9P8ijo3p4yAqhvPqDXhcigH94WH+NDsv
+    C4+uA/90oyzRpnT1qSmReTwcmseU2mm/l6Uxl+LMtlBNTkrvWs9aBpFCK1j27ngI
+    G4xdhDqNYMIwUv8C3FH6wh4nwa/o70gu4Hnr0Dezz+WZxHcg6VWyBuu0NpBftCvw
+    S1YLWQ3tRMnNhuok1Ulur9ocW//wby+5z7qj49AnzpxxrRXJ3rRBRFNBcHViIChQ
+    TEQgTGludXggRGlzdHJpYnV0aW9uIDMuMCAoVGgpKSA8dGgtYWRtaW5AcGxkLWxp
+    bnV4Lm9yZz6IYAQTEQIAIAUCR7NR8AIbAwYLCQgHAwIEFQIIAwQWAgMBAh4BAheA
+    AAoJEK8/k7zk8bwthUsAoJ44g5TWhmvGqXUiDOIAjfw6QXSvAKCLWEANVGfXOihK
+    7zxAMvXqZj2weg==
+    =0DvC
+    -----END PGP PUBLIC KEY BLOCK-----
+    EOF
+
+    rpm --import PLD-3.0-Th-GPG-key.asc
+    rm PLD-3.0-Th-GPG-key.asc
+
 - trigger: post-packages
   action: |-
       #!/bin/sh
