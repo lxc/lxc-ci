@@ -11,7 +11,7 @@
               - lvm
               - ceph
             go:
-              - golang-1.13
+              - golang-1.16
               - golang-1.17
               - golang-tip
 
