@@ -163,9 +163,11 @@ if [ "${track}" != "2.0" ]; then
     fi
 fi
 
-if [ "${track}" != "2.0" ]; then
+if [ "${track}" != "2.0" ] && [ "${track}" != "3.0" ]; then
     lxc query /1.0/resources
+fi
 
+if [ "${track}" != "2.0" ]; then
     lxc file push /usr/bin/snap unprivileged/tmp/
     echo foo | lxc file push - unprivileged/tmp/foo
     [ "$(lxc file pull unprivileged/tmp/foo -)" = "foo" ]
