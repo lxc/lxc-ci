@@ -349,6 +349,13 @@ actions:
     #!/bin/sh
     set -eux
 
+    rm -f /var/cache/apk/*
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
+
     # Rewrite configuration for LXC
     sed -i 's/#rc_sys=""/rc_sys="lxc"/' /etc/rc.conf
 
