@@ -49,14 +49,16 @@ deploy() {
     # Deploy an image on the machine (systemd_id, distribution, kernel)
     while :; do
         status=$(status "${1}")
-        [ "${status}" = "Deployed" ] && break
 
         if [ "${status}" = "Ready" ]; then
+            # Needs deploying.
             echo "==> Deploying ${2} with kernel ${3}" >&2
             maas maas machine deploy "${1}" "distro_series=${2}" "hwe_kernel=${3}" >/dev/null
-        fi
-
-        if [ "${status}" != "Deploying" ]; then
+        elif [ "${status}" = "Deployed" ]; then
+            # Deployment done.
+            break
+        elif [ "${status}" != "Deploying" ]; then
+            # Failed to deploy.
             echo "==> Failed to deploy" >&2
             return 1
         fi
