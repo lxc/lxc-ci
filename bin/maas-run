@@ -50,7 +50,7 @@ deploy() {
     while :; do
         status=$(status "${1}")
 
-        if [ "${status}" = "Ready" ]; then
+        if [ "${status}" = "Allocated" ]; then
             # Needs deploying.
             echo "==> Deploying ${2} with kernel ${3}" >&2
             maas maas machine deploy "${1}" "distro_series=${2}" "hwe_kernel=${3}" >/dev/null
