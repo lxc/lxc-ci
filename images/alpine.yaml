@@ -308,6 +308,7 @@ packages:
   sets:
   - packages:
     - alpine-base
+    - logrotate
     action: install
 
   - packages:
@@ -343,6 +344,13 @@ packages:
     - vm
 
 actions:
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    rm -f /var/cache/apk/*
+
 - trigger: post-packages
   action: |-
     #!/bin/sh
