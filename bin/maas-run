@@ -47,22 +47,21 @@ status() {
 
 deploy() {
     # Deploy an image on the machine (systemd_id, distribution, kernel)
-    echo "==> Deploying ${2} with kernel ${3}" >&2
-    maas maas machine deploy "${1}" "distro_series=${2}" "hwe_kernel=${3}" >/dev/null
-
-    # Wait for the deployment to complete
     while :; do
-        sleep 2m
-
         status=$(status "${1}")
         [ "${status}" = "Deployed" ] && break
 
+        if [ "${status}" = "Ready" ]; then
+            echo "==> Deploying ${2} with kernel ${3}" >&2
+            maas maas machine deploy "${1}" "distro_series=${2}" "hwe_kernel=${3}" >/dev/null
+        fi
 
         if [ "${status}" != "Deploying" ]; then
             echo "==> Failed to deploy" >&2
-            maas maas machine release "${1}" >/dev/null
             return 1
         fi
+
+        sleep 2m
     done
 
     return 0
