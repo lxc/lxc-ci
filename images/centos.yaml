@@ -368,6 +368,7 @@ files:
   releases:
   - 8
   - 8-Stream
+  - 9-Stream
 
 - generator: fstab
   types:
@@ -410,6 +411,7 @@ files:
     ENV{ID_NET_DRIVER}=="veth", ENV{NM_UNMANAGED}="0"
   releases:
   - 8-Stream
+  - 9-Stream
 
 - name: network
   path: /etc/sysconfig/network
@@ -476,6 +478,7 @@ files:
   releases:
   - 8
   - 8-Stream
+  - 9-Stream
 
 - name: user-data
   generator: cloud-init
@@ -498,7 +501,6 @@ packages:
   sets:
   - packages:
     - cronie
-    - cronie-noanacron
     - curl
     - dhclient
     - glibc-langpack-en
@@ -512,6 +514,21 @@ packages:
     - rsyslog
     - vim-minimal
     action: install
+
+  - packages:
+    - cronie-noanacron
+    action: install
+    releases:
+    - 7
+    - 8
+    - 8-Stream
+
+  - packages:
+    - cronie-anacron
+    - NetworkManager
+    action: install
+    releases:
+    - 9-Stream
 
   - packages:
     - glibc-locale-source
@@ -585,6 +602,7 @@ packages:
     - 7
     - 8
     - 8-Stream
+    - 9-Stream
 
   - packages:
     - kernel-plus
@@ -602,6 +620,7 @@ packages:
     - vm
     releases:
     - 8-Stream
+    - 9-Stream
 
   - packages:
     - grub2-efi-x64
@@ -612,6 +631,7 @@ packages:
     - 7
     - 8
     - 8-Stream
+    - 9-Stream
     architectures:
     - x86_64
 
@@ -663,6 +683,7 @@ actions:
   - 7
   - 8
   - 8-Stream
+  - 9-Stream
 
 - trigger: post-packages
   action: |-
@@ -740,6 +761,25 @@ actions:
     #!/bin/sh
     set -eux
 
+    sed -ri 's#^options .+#options $kernelopts#g' /boot/loader/entries/*
+
+    target=/boot/efi/EFI/centos/grub.cfg
+    grub2-mkconfig -o "${target}"
+    sed -i "s#root=[^ ]*#root=/dev/sda2#g" "${target}"
+
+    # Regenerate initramfs
+    kver=$(ls /boot/initramfs-*.img | sed -r 's#.*initramfs-(.+)\.img#\1#')
+    dracut --kver "${kver}" -f
+  types:
+  - vm
+  releases:
+  - 9-Stream
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
     systemctl enable NetworkManager.service
   types:
   - vm
@@ -780,3 +820,16 @@ actions:
   - 8-Stream
   architectures:
   - armhfp
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    mkdir -p /etc/NetworkManager/conf.d/
+    printf "[main]\ndhcp=dhclient" > /etc/NetworkManager/conf.d/dhcp-client.conf
+
+    systemctl enable NetworkManager.service
+  releases:
+  - 9-Stream
+

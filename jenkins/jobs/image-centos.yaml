@@ -23,6 +23,7 @@
         - 7
         - 8
         - 8-Stream
+        - 9-Stream
 
     - axis:
         name: variant
@@ -47,8 +48,12 @@
             EXTRA_ARGS="-o source.url=http://mirror.math.princeton.edu/pub/centos-altarch/ -o source.skip_verification=true"
         fi
 
-        if [ "${architecture}" != "armhf" ] && ([ "${release}" = "8" ] || [ "${release}" = "8-Stream" ]); then
+        if [ "${architecture}" != "armhf" ] && ([ "${release}" = "8" ] || [ "${release}" = "8-Stream" ] || [ "${release}" = "9-Stream" ]); then
             EXTRA_ARGS="${EXTRA_ARGS} -o source.variant=boot"
+        fi
+
+        if [ "${release}" = "9-Stream" ]; then
+            EXTRA_ARGS="${EXTRA_ARGS} -o source.url=https://mirror1.hs-esslingen.de/pub/Mirrors/centos-stream"
         fi
 
         TYPE="container"
@@ -63,7 +68,8 @@
 
     execution-strategy:
       combination-filter: '
-      !(architecture=="armhf" && release == "8-Stream")
+      !(architecture=="armhf" && release == "9-Stream")
+      && !(architecture=="armhf" && release == "8-Stream")
       && !(architecture=="i386" && release != "7")'
 
     properties:
