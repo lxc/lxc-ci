@@ -31,6 +31,8 @@ while :; do
     sleep 1
 done
 
+sleep 30
+
 ARCHIVE="http://us.archive.ubuntu.com/ubuntu"
 if grep -q ports /etc/apt/sources.list; then
     ARCHIVE="http://us.ports.ubuntu.com/ubuntu-ports"
