@@ -13,7 +13,8 @@ ARCH="$1"
 TARGET="$2"
 
 # Create the container
-lxc init "images:ubuntu/bionic/${ARCH}" build-distrobuilder-cache \
+#lxc init "images:ubuntu/bionic/${ARCH}" build-distrobuilder-cache \
+lxc init "ubuntu:bionic/${ARCH}" build-distrobuilder-cache \
     -c security.privileged=true -c security.nesting=true \
     -c raw.lxc="lxc.cgroup.devices.allow = b 259:* rw"
 

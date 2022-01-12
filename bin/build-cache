@@ -13,7 +13,8 @@ ARCH="$1"
 TARGET="$2"
 
 # Create the container
-lxc init "images:ubuntu/bionic/${ARCH}" build-lxd-cache
+#lxc init "images:ubuntu/bionic/${ARCH}" build-lxd-cache
+lxc init "ubuntu:bionic/${ARCH}" build-lxd-cache
 
 # Start the container
 lxc start build-lxd-cache
