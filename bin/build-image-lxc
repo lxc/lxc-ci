@@ -34,9 +34,10 @@ done
 
 sleep 30
 
-ARCHIVE="http://us.archive.ubuntu.com/ubuntu"
-if grep -q ^deb.*ports /etc/apt/sources.list; then
-    ARCHIVE="http://us.ports.ubuntu.com/ubuntu-ports"
+ARCH=$(uname -m)
+ARCHIVE="http://us.ports.ubuntu.com/ubuntu-ports"
+if [ "${ARCH}" = "x86_64" ] || [ "${ARCH}" = "i686" ]; then
+    ARCHIVE="http://us.archive.ubuntu.com/ubuntu"
 fi
 
 # Setup clean sources
