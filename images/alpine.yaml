@@ -280,6 +280,14 @@ files:
 
 - name: network-config
   generator: cloud-init
+  content: |-
+    version: 1
+    config:
+    - type: physical
+      name: eth0
+      subnets:
+      - type: dhcp
+        control: auto
   variants:
   - cloud
 
@@ -385,6 +393,19 @@ actions:
     grub-install --target=${TARGET}-efi --no-nvram
   types:
   - vm
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    for svc_name in sshd; do
+        ln -fs /etc/init.d/${svc_name} /etc/runlevels/default/${svc_name}
+    done
+  types:
+  - vm
+  variants:
+  - cloud
 
 - trigger: post-files
   action: |-
