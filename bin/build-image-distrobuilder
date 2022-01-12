@@ -60,7 +60,7 @@ sleep 30
 
 ARCH=$(uname -m)
 ARCHIVE="http://us.ports.ubuntu.com/ubuntu-ports"
-if [ "${ARCH}" = "x86_64" ] || [ "${ARCH}" = "i686" ]; then
+if [ "${ARCH}" = "x86_64" ] || [ "${ARCH}" = "i386" ]; then
     ARCHIVE="http://us.archive.ubuntu.com/ubuntu"
 fi
 
