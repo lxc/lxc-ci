@@ -31,8 +31,6 @@ while :; do
     sleep 1
 done
 
-sleep 30
-
 ARCHIVE="http://us.ports.ubuntu.com/ubuntu-ports"
 if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "i386" ]; then
     ARCHIVE="http://us.archive.ubuntu.com/ubuntu"
