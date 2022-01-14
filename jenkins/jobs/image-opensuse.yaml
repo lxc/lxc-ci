@@ -20,7 +20,6 @@
         name: release
         type: user-defined
         values:
-        - "15.2"
         - "15.3"
         - "tumbleweed"
 
@@ -55,8 +54,7 @@
 
     execution-strategy:
       combination-filter: '
-      !(architecture=="s390x" && release == "15.2")
-      && !(architecture=="i386" && release!="tumbleweed")
+      !(architecture=="i386" && release!="tumbleweed")
       && !(architecture != "amd64" && variant == "desktop-kde")'
 
     properties:

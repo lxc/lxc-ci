@@ -279,7 +279,6 @@ files:
     MTU=
     DHCP_HOSTNAME=LXC_NAME
   releases:
-  - 8
   - 8-Stream
   types:
   - container
@@ -312,7 +311,6 @@ files:
     DHCP_HOSTNAME={{ container.name }}
     IPV6INIT=yes
   releases:
-  - 8
   - 8-Stream
   types:
   - container
@@ -329,7 +327,6 @@ files:
     MTU=
     DHCP_HOSTNAME={{ container.name }}
   releases:
-  - 8
   - 8-Stream
   types:
   - vm
@@ -366,7 +363,6 @@ files:
   types:
   - vm
   releases:
-  - 8
   - 8-Stream
   - 9-Stream
 
@@ -476,7 +472,6 @@ files:
   variants:
   - cloud
   releases:
-  - 8
   - 8-Stream
   - 9-Stream
 
@@ -520,7 +515,6 @@ packages:
     action: install
     releases:
     - 7
-    - 8
     - 8-Stream
 
   - packages:
@@ -547,7 +541,6 @@ packages:
     variants:
     - default
     releases:
-    - 8
     - 8-Stream
     architectures:
     - x86_64
@@ -563,7 +556,6 @@ packages:
     variants:
     - default
     releases:
-    - 8
     - 8-Stream
     architectures:
     - armhfp
@@ -600,7 +592,6 @@ packages:
     - vm
     releases:
     - 7
-    - 8
     - 8-Stream
     - 9-Stream
 
@@ -611,7 +602,6 @@ packages:
     - vm
     releases:
     - 7
-    - 8
 
   - packages:
     - kernel
@@ -629,7 +619,6 @@ packages:
     - vm
     releases:
     - 7
-    - 8
     - 8-Stream
     - 9-Stream
     architectures:
@@ -642,7 +631,6 @@ packages:
     - vm
     releases:
     - 7
-    - 8
     - 8-Stream
     architectures:
     - aaarch64
@@ -663,25 +651,12 @@ actions:
 - trigger: post-unpack
   action: |-
     #!/bin/sh
-    set -eux
-
-    # Enable the centosplus repo which has a kernel with 9p support
-    sed -i 's/^enabled=0/enabled=1/' /etc/yum.repos.d/CentOS-Linux-Plus.repo
-  types:
-  - vm
-  releases:
-  - 8
-
-- trigger: post-unpack
-  action: |-
-    #!/bin/sh
     # Generate machine-id in order for the kernel stuff to be configured properly
     systemd-machine-id-setup
   types:
   - vm
   releases:
   - 7
-  - 8
   - 8-Stream
   - 9-Stream
 
@@ -753,7 +728,6 @@ actions:
   types:
   - vm
   releases:
-  - 8
   - 8-Stream
 
 - trigger: post-files
@@ -797,7 +771,6 @@ actions:
   variants:
   - default
   releases:
-  - 8
   - 8-Stream
   architectures:
   - x86_64
@@ -816,7 +789,6 @@ actions:
   variants:
   - default
   releases:
-  - 8
   - 8-Stream
   architectures:
   - armhfp
@@ -832,4 +804,3 @@ actions:
     systemctl enable NetworkManager.service
   releases:
   - 9-Stream
-

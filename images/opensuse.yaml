@@ -107,7 +107,6 @@ files:
   - container
   - vm
   releases:
-  - 15.2
   - 15.3
 
 - name: ifcfg-enp5s0
@@ -156,7 +155,6 @@ files:
   types:
   - vm
   release:
-  - 15.2
   - 15.3
 
 - path: /etc/fstab
@@ -255,7 +253,6 @@ packages:
     - hardlink
     action: install
     releases:
-    - 15.2
     - tumbleweed
 
   - packages:
@@ -369,18 +366,6 @@ actions:
     sed -i "s|'opensuse'|'opensuse-tumbleweed'|" $(find /usr -wholename '*/cloudinit/net/sysconfig.py')
   releases:
   - tumbleweed
-  variants:
-  - cloud
-
-- trigger: post-packages
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    # Have the sysconfig network renderer support openSUSE Leap
-    sed -i "s|'opensuse'|'opensuse-leap'|" $(find /usr -wholename '*/cloudinit/net/sysconfig.py')
-  releases:
-  - 15.2
   variants:
   - cloud
 
