@@ -24,6 +24,7 @@
         - ulyana
         - ulyssa
         - uma
+        - una
 
     - axis:
         name: variant
@@ -37,7 +38,7 @@
         cd /lxc-ci
 
         suite=bionic
-        if [ "${release}" = "ulyana" ] || [ "${release}" = "ulyssa" ] || [ "${release}" = "uma" ]; then
+        if [ "${release}" = "ulyana" ] || [ "${release}" = "ulyssa" ] || [ "${release}" = "uma" ] || [ "${release}" = "una" ]; then
             suite=focal
         fi
 
@@ -51,7 +52,9 @@
       combination-filter: '
       !(architecture=="i386" && release == "ulyana")
       && !(architecture=="i386" && release == "ulyssa")
-      && !(architecture=="i386" && release == "uma")'
+      && !(architecture=="i386" && release == "uma")
+      && !(architecture=="i386" && release == "una")'
+
 
     properties:
     - build-discarder:
