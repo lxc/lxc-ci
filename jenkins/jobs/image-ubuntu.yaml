@@ -63,6 +63,7 @@
       !(architecture!="amd64" && variant == "desktop") &&
       !(release=="xenial" && variant == "desktop") &&
       !(release=="bionic" && variant == "desktop") &&
+      !(release=="jammy" && variant == "desktop") &&
       !(architecture=="i386" && release == "focal") &&
       !(architecture=="i386" && release == "hirsute") &&
       !(architecture=="i386" && release == "impish") &&
