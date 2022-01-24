@@ -147,3 +147,8 @@ for url in $(curl -s --unix-socket /var/snap/lxd/common/lxd/unix.socket "lxd/1.0
         FAIL=1
     fi
 done
+
+# Create some snapshots (catch possible error in sqlite_sequence)
+lxc snapshot c1
+lxc snapshot c1
+lxc snapshot c1
