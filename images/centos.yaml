@@ -489,6 +489,16 @@ files:
   types:
   - vm
 
+- name: ipmi_si
+  path: /etc/modprobe.d/blacklist-ipmi.conf
+  generator: dump
+  content: |-
+    blacklist ipmi_si
+  types:
+  - vm
+  releases:
+  - 8-Stream
+
 packages:
   manager: yum
   update: true
