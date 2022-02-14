@@ -475,6 +475,10 @@ actions:
         echo pf:12345:powerwait:/sbin/halt >> /etc/inittab
     fi
 
+    # Resolve locale issues
+    echo en_US.UTF-8 UTF-8 > /etc/locale.gen
+    locale-gen
+
 - trigger: post-unpack
   action: |-
     #!/bin/sh
@@ -570,6 +574,9 @@ actions:
     set -eux
     rc-update add syslog-ng boot
     rc-update add acpid default
+
+    ln -s net.lo /etc/init.d/net.enp5s0
+    rc-update add net.enp5s0
   types:
   - vm
   variants:
