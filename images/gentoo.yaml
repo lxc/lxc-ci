@@ -574,6 +574,9 @@ actions:
     set -eux
     rc-update add syslog-ng boot
     rc-update add acpid default
+
+    ln -s net.lo /etc/init.d/net.enp5s0
+    rc-update add net.enp5s0
   types:
   - vm
   variants:
