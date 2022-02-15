@@ -646,6 +646,9 @@ actions:
     systemctl enable systemd-networkd
     systemctl enable systemd-resolved
 
+    # Fix ping
+    setcap cap_net_raw=ep /usr/bin/ping || chmod +s /usr/bin/ping
+
 - trigger: post-packages
   action: |-
     #!/bin/sh
