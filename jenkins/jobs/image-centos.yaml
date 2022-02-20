@@ -15,7 +15,6 @@
         - armhf
         - i386
         - ppc64el
-        - s390x
 
     - axis:
         name: release
@@ -70,8 +69,7 @@
       combination-filter: '
       !(architecture=="armhf" && release == "9-Stream")
       && !(architecture=="armhf" && release == "8-Stream")
-      && !(architecture=="i386" && release != "7")
-      && !(architecture=="s390x" && release != "9-Stream")'
+      && !(architecture=="i386" && release != "7")'
 
     properties:
     - build-discarder:
