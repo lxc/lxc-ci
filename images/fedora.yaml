@@ -152,14 +152,12 @@ packages:
   sets:
   - packages:
     - cpio
-    - dhcp-client
     - file
     - findutils
     - fipscheck
     - gettext
     - glibc-all-langpacks
     - hardlink
-    - initscripts
     - ipcalc
     - iproute
     - iproute-tc
@@ -179,7 +177,6 @@ packages:
 
   - packages:
     - cloud-init
-    - network-scripts
     - NetworkManager
     - openssh-server
     action: install
