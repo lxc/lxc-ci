@@ -18,6 +18,22 @@ waitSnapdSeed() (
   return 1 # Failed.
 )
 
+waitVMAgent() (
+  set +x
+  local vmName=$1
+  for i in $(seq 90) # Wait up to 90s.
+  do
+    if lxc info "${vmName}" | grep -qF 127.0.0.1; then
+      return 0 # Success.
+    fi
+
+    sleep 1
+  done
+
+  echo "VM ${vmName} agent not running after ${i}s"
+  return 1 # Failed.
+)
+
 cleanup() {
     echo ""
     if [ "${FAIL}" = "1" ]; then
@@ -220,6 +236,21 @@ sleep 10
 # Check the IPs are re-added
 lxc list
 networkTests
+
+# Check bridged NIC type works with "agent.rename_interfaces".
+echo "=> Performing bridged NIC agent.rename_interfaces tests"
+lxc stop v1-physical -f
+lxc config set v1-physical agent.rename_interfaces=true
+lxc start v1-physical
+
+# Wait for lxd-agent to rename the interface.
+waitLXDAgent v1-physical
+
+# Interface "eth0" should exist in the VM.
+lxc exec v1-physical -- ip link show eth0
+
+# Default VM interface enp5s0 should not exist in the VM.
+! lxc exec v1-physical -- ip link show enp5s0 || false
 
 # Cleanup
 echo "=> Cleanup"
