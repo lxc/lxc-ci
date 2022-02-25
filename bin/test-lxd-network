@@ -1,7 +1,12 @@
 #!/bin/sh
 set -eu
 
-storageDevice="/dev/nvme0n1p3"
+# Default to loop storage pool if /dev/nvme0n1p3 doesn't exist.
+storageDevice=""
+if [ -f "/dev/nvme0n1p3" ]; then
+  storageDevice="/dev/nvme0n1p3"
+fi
+
 parentNIC="enp5s0"
 
 waitSnapdSeed() (
