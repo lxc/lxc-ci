@@ -1,7 +1,12 @@
 #!/bin/sh
 set -eu
 
-storageDevice="/dev/nvme0n1p3"
+# Default to loop storage pool if /dev/nvme0n1p3 doesn't exist.
+storageDevice=""
+if [ -f "/dev/nvme0n1p3" ]; then
+  storageDevice="/dev/nvme0n1p3"
+fi
+
 parentNIC="enp5s0"
 
 waitSnapdSeed() (
@@ -126,8 +131,10 @@ lxc init images:ubuntu/20.04/cloud c1-sriov
 lxc config device add c1-sriov eth0 nic nictype=sriov parent="${parentNIC}" name=eth0
 lxc start c1-sriov
 
-# Wait for things to settle
-sleep 2m
+# Wait for VMs to start.
+waitVMAgent v1-physical
+waitVMAgent v1-macvlan
+waitVMAgent v1-sriov
 
 # Check that all instances have an IPv4 and IPv6 address
 networkTests() {
@@ -222,7 +229,7 @@ lxc delete -f c1-macvlan
 lxc delete -f v1-sriov
 lxc delete -f c1-sriov
 
-# Check bridged NIC type works
+# Check bridged NIC type works (also test hotlugging different NIC type).
 echo "=> Performing bridged NIC tests"
 lxc network create lxdbr0
 lxc config device remove v1-physical eth0
@@ -237,17 +244,19 @@ sleep 10
 lxc list
 networkTests
 
-# Check bridged NIC type works with "agent.rename_interfaces".
-echo "=> Performing bridged NIC agent.rename_interfaces tests"
+# Check VM "agent.nic_config" works by reconfiguring eth0 to use parent and mtu settings.
+echo "=> Performing VM bridged NIC agent.nic_config tests"
 lxc stop v1-physical -f
-lxc config set v1-physical agent.rename_interfaces=true
+lxc config set v1-physical agent.nic_config=true
+lxc config device set v1-physical eth0 nictype=bridged parent=lxdbr0 network= mtu=1400 name=eth0
 lxc start v1-physical
 
 # Wait for lxd-agent to rename the interface.
-waitLXDAgent v1-physical
+waitVMAgent v1-physical
 
-# Interface "eth0" should exist in the VM.
+# Interface "eth0" should exist in the VM with the correct MTU.
 lxc exec v1-physical -- ip link show eth0
+lxc exec v1-physical -- grep -Fx 1400 /sys/class/net/eth0/mtu
 
 # Default VM interface enp5s0 should not exist in the VM.
 ! lxc exec v1-physical -- ip link show enp5s0 || false
