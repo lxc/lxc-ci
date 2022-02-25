@@ -229,7 +229,7 @@ lxc delete -f c1-macvlan
 lxc delete -f v1-sriov
 lxc delete -f c1-sriov
 
-# Check bridged NIC type works
+# Check bridged NIC type works (also test hotlugging different NIC type).
 echo "=> Performing bridged NIC tests"
 lxc network create lxdbr0
 lxc config device remove v1-physical eth0
