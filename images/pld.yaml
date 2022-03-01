@@ -168,8 +168,8 @@ actions:
 
       # locale
       cat << EOF >> /etc/sysconfig/i18n
-      LANG="C.UTF-8"
-      SUPPORTED_LOCALES="C.UTF-8/UTF-8"
+      LANG="en_US.UTF-8"
+      SUPPORTED_LOCALES="en_US.UTF-8/UTF-8"
       EOF
 
       localedb-gen
