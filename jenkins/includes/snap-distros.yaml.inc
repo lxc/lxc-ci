@@ -16,7 +16,6 @@
 - ubuntu-16.04
 - ubuntu-18.04
 - ubuntu-20.04
-- ubuntu-21.04
 - ubuntu-core-16
 - ubuntu-core-18
 - ubuntu-core-20

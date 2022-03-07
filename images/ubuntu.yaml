@@ -341,7 +341,6 @@ files:
   releases:
   - bionic
   - focal
-  - hirsute
   - impish
   - jammy
   types:
@@ -380,7 +379,6 @@ files:
   releases:
   - bionic
   - focal
-  - hirsute
   - impish
   - jammy
   types:
@@ -511,7 +509,6 @@ packages:
     - disco
     - eoan
     - focal
-    - hirsute
     - impish
     - jammy
     types:
@@ -532,7 +529,6 @@ packages:
     - bionic
     - eoan
     - focal
-    - hirsute
     - impish
     - jammy
     types:
@@ -602,7 +598,6 @@ actions:
   releases:
   - bionic
   - focal
-  - hirsute
   - impish
   - jammy
 

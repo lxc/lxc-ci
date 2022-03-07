@@ -52,7 +52,6 @@
         values:
         - bionic
         - focal
-        - hirsute
         - impish
 
     - axis:
