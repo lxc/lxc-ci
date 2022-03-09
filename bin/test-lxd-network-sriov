@@ -1,7 +1,12 @@
 #!/bin/sh
 set -eu
 
-storageDevice="/dev/nvme0n1p3"
+# Default to loop storage pool if /dev/nvme0n1p3 doesn't exist.
+storageDevice=""
+if [ -f "/dev/nvme0n1p3" ]; then
+  storageDevice="/dev/nvme0n1p3"
+fi
+
 parentNIC="enp5s0"
 
 waitSnapdSeed() (
@@ -18,6 +23,22 @@ waitSnapdSeed() (
   return 1 # Failed.
 )
 
+waitVMAgent() (
+  set +x
+  local vmName=$1
+  for i in $(seq 90) # Wait up to 90s.
+  do
+    if lxc info "${vmName}" | grep -qF 127.0.0.1; then
+      return 0 # Success.
+    fi
+
+    sleep 1
+  done
+
+  echo "VM ${vmName} agent not running after ${i}s"
+  return 1 # Failed.
+)
+
 cleanup() {
     echo ""
     if [ "${FAIL}" = "1" ]; then
@@ -27,6 +48,66 @@ cleanup() {
 
     echo "Test passed"
     exit 0
+}
+
+
+# Check that all instances have an IPv4 and IPv6 address
+networkTests() {
+    local FAIL=0
+
+    echo "=> Performing network tests"
+    for url in $(lxc query "/1.0/instances" | jq -r .[]); do
+        name=$(echo "${url}" | cut -d/ -f4)
+
+        case "${name}" in
+        c3|c4|v3|v4)
+            continue # Can't test instances on different VLAN.
+        esac
+
+        echo ""
+
+        # Get the addresses
+        address=$(lxc query "${url}/state" | jq -r ".network.eth0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
+        if [ -z "${address}" ]; then
+            address=$(lxc query "${url}/state" | jq -r ".network.enp5s0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
+        fi
+
+        if [ -z "${address}" ]; then
+            echo "FAIL: No network interface: ${name}"
+            FAIL=1
+            continue
+        fi
+
+        # IPv4 address
+        if echo "${address}" | grep "\." -q; then
+            echo "PASS: IPv4 address: ${name}"
+        else
+            echo "FAIL: IPv4 address: ${name}"
+            FAIL=1
+        fi
+
+        # IPv6 address
+        if echo "${address}" | grep ":" -q; then
+            echo "PASS: IPv6 address: ${name}"
+        else
+            echo "FAIL: IPv6 address: ${name}"
+            FAIL=1
+        fi
+
+        # DNS resolution
+        if lxc exec "${name}" -- getent hosts linuxcontainers.org >/dev/null 2>&1 || lxc exec "${name}" -- ping -c1 -W1 linuxcontainers.org >/dev/null 2>&1; then
+            echo "PASS: DNS resolution: ${name}"
+        else
+            echo "FAIL: DNS resolution: ${name}"
+            FAIL=1
+        fi
+    done
+
+    if [ "${FAIL}" = "1" ]; then
+        return 1
+    fi
+
+    return 0
 }
 
 FAIL=1
@@ -50,7 +131,7 @@ apt-get install jq --yes
 lxd waitready --timeout=300
 
 # Enable SR-IOV on nic and bring up
-echo 8 > "/sys/class/net/${parentNIC}/device/sriov_numvfs"
+echo 7 > "/sys/class/net/${parentNIC}/device/sriov_numvfs"
 ip link set "${parentNIC}" up
 sleep 10
 ethtool "${parentNIC}"
@@ -60,7 +141,7 @@ lxc storage create default zfs source="${storageDevice}"
 lxc profile device add default root disk path=/ pool=default
 lxc profile device add default eth0 nic nictype=sriov parent="${parentNIC}" name=eth0
 
-# Launch a few VMs
+# Launch a few VMs.
 # Do this first before containers to ensure VF free search handles VFs unbound from host.
 echo "==> VM on default VLAN"
 lxc init images:ubuntu/20.04/cloud v1 --vm
@@ -81,7 +162,20 @@ lxc init images:ubuntu/20.04/cloud v4 --vm
 lxc config device override v4 eth0 vlan=4000 security.mac_filtering=true
 lxc start v4
 
-# Launch a few instances
+# Wait for VMs to start.
+waitVMAgent v1
+waitVMAgent v2
+waitVMAgent v3
+waitVMAgent v4
+
+lxc list
+networkTests
+
+# Delete all VMs except v1 to free up VFs for container tests.
+# Leave v1 so that the first VF is unbound to check that containers don't mistake it as free.
+lxc delete -f v2 v3 v4
+
+# Launch a few containers.
 echo "==> Container on default VLAN"
 lxc init images:ubuntu/20.04/cloud c1
 lxc start c1
@@ -101,66 +195,17 @@ lxc init images:ubuntu/20.04/cloud c4
 lxc config device override c4 eth0 vlan=4000 security.mac_filtering=true
 lxc start c4
 
-# Wait for things to settle
-sleep 2m
-
-# Check that all instances have an IPv4 and IPv6 address
-echo "=> Performing network tests"
-FAIL=0
-for url in $(lxc query "/1.0/instances" | jq -r .[]); do
-    name=$(echo "${url}" | cut -d/ -f4)
-
-    case "${name}" in
-      c3|c4|v3|v4)
-        continue
-    esac
-
-    echo ""
-
-    # Get the addresses
-    address=$(lxc query "${url}/state" | jq -r ".network.eth0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
-    if [ -z "${address}" ]; then
-        address=$(lxc query "${url}/state" | jq -r ".network.enp5s0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
-    fi
-
-    if [ -z "${address}" ]; then
-        echo "FAIL: No network interface: ${name}"
-        FAIL=1
-        continue
-    fi
-
-    # IPv4 address
-    if echo "${address}" | grep "\." -q; then
-        echo "PASS: IPv4 address: ${name}"
-    else
-        echo "FAIL: IPv4 address: ${name}"
-        FAIL=1
-    fi
-
-    # IPv6 address
-    if echo "${address}" | grep ":" -q; then
-        echo "PASS: IPv6 address: ${name}"
-    else
-        echo "FAIL: IPv6 address: ${name}"
-        FAIL=1
-    fi
-
-    # DNS resolution
-    if lxc exec "${name}" -- getent hosts linuxcontainers.org >/dev/null 2>&1 || lxc exec "${name}" -- ping -c1 -W1 linuxcontainers.org >/dev/null 2>&1; then
-        echo "PASS: DNS resolution: ${name}"
-    else
-        echo "FAIL: DNS resolution: ${name}"
-        FAIL=1
-    fi
-done
+# Wait for containers to start.
+sleep 30s
 
 lxc list
+networkTests
 
-for url in $(lxc query "/1.0/instances" | jq -r .[]); do
-    name=$(echo "${url}" | cut -d/ -f4)
-    lxc delete -f "${name}"
-done
+# Delete remaining instances.
+lxc delete -f v1 c1 c2 c3 c4
 
 lxc profile device remove default eth0
 lxc profile device remove default root
 lxc storage delete default
+
+FAIL=0
