@@ -189,8 +189,8 @@ fi
 return 0
 }
 
-networkTests
 lxc list
+networkTests
 
 # Hot unplug the NICs and check they are removed
 lxc config device remove v1-physical eth0
