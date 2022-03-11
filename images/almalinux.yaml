@@ -3,7 +3,7 @@ image:
 
 source:
   downloader: almalinux-http
-  url: https://mirror.12z.eu/pub/linux/almalinux
+  url: https://almalinux-mirror.keepsec.ca/
   keys:
   # RPM-GPG-KEY-AlmaLinux-8
   - |-
