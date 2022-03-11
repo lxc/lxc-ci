@@ -86,7 +86,12 @@ snap install distrobuilder --classic --edge
 snap refresh
 
 # Workaround LP: #1964636
-[ -e /var/lib/snapd/apparmor/snap-confine/cap-bpf ] && > /var/lib/snapd/apparmor/snap-confine/cap-bpf
+if [ -e /var/lib/snapd/apparmor/snap-confine/cap-bpf ]; then
+    > /var/lib/snapd/apparmor/snap-confine/cap-bpf
+fi
+
+# All done
+exit 0
 EOF
 ) | lxc exec build-distrobuilder-cache -- sh
 
