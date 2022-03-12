@@ -90,6 +90,12 @@ if [ -e /var/lib/snapd/apparmor/snap-confine/cap-bpf ]; then
     > /var/lib/snapd/apparmor/snap-confine/cap-bpf
 fi
 
+# Detect broken snapd
+if [ ! -d /var/lib/snapd/apparmor/profiles ]; then
+    echo "Broken snapd (no apparmor profiles)"
+    exit 1
+fi
+
 # All done
 exit 0
 EOF
