@@ -60,6 +60,9 @@ if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "i386" ]; then
     ARCHIVE="http://us.archive.ubuntu.com/ubuntu"
 fi
 
+# Workaround apparmor issues on older distributions.
+umount -l /sys/devices/system/cpu || true
+
 # Setup clean sources
 echo force-unsafe-io >> /etc/dpkg/dpkg.cfg
 cat > /etc/apt/sources.list << EOL
