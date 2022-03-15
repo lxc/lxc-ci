@@ -72,6 +72,11 @@ ovn_basic_tests() {
     sleep 2
     lxc network list | grep ovn-virtual-network
 
+    echo "==> Check we can get the network state (MAC address and MTU are reported in network info)"
+    lxc network info ovn-virtual-network | grep -P 'MAC address: [0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}'
+    lxc network info ovn-virtual-network | grep -P 'MTU: \d+'
+    lxc network info ovn-virtual-network | grep -P "Chassis: $(hostname)"
+
     echo "==> Check host connectivity to linuxcontainers.org"
     ping -c1 -4 -W5 linuxcontainers.org
     ping -c1 -6 -W5 linuxcontainers.org
