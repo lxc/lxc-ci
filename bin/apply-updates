@@ -3,6 +3,7 @@
 
 if [ "${ID}" = "arch" ]; then
     pacman -Syu --noconfirm
+    pacman -Sc
 elif [ "${ID}" = "ubuntu" ] || [ "${ID}" = "debian" ] || [ "${ID}" = "elementary" ]; then
     apt update
     apt dist-upgrade -y
