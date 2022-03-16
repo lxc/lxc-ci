@@ -611,7 +611,6 @@ packages:
 
   - packages:
     - dnssec-anchors
-    - haveged
     - ldns
     - libedit
     - net-tools
