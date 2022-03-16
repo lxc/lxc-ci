@@ -152,7 +152,7 @@ actions:
     #!/bin/sh
     set -eux
 
-    echo repository=https://repo-us.voidlinux.org/current//aarch64 > /usr/share/xbps.d/00-repository-main.conf
+    echo repository=https://repo-us.voidlinux.org/current/aarch64/ > /usr/share/xbps.d/00-repository-main.conf
   variants:
   - default
   architectures:
