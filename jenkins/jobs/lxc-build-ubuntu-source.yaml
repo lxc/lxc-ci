@@ -53,6 +53,7 @@
         - bionic
         - focal
         - impish
+        - jammy
 
     - axis:
         name: restrict
