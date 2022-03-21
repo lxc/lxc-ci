@@ -98,7 +98,7 @@ cd "${TEMP_DIR}"
 export GOPATH="${TEMP_DIR}/go"
 
 OLD_PATH=${PATH}
-for version in 1.13 1.16 1.17 1.18 tip; do
+for version in 1.13 1.17 1.18 tip; do
     VER=$(echo $version | sed "s/\.//g")
     export PATH="/snap/go_${VER}/current/bin:${OLD_PATH}"
 
