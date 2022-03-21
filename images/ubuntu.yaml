@@ -508,8 +508,6 @@ packages:
     architectures:
     - arm64
     releases:
-    - disco
-    - eoan
     - focal
     - impish
     - jammy
@@ -529,7 +527,6 @@ packages:
     action: install
     releases:
     - bionic
-    - eoan
     - focal
     - impish
     - jammy
