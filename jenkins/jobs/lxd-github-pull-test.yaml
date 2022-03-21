@@ -66,8 +66,8 @@
         name: compiler
         type: user-defined
         values:
-        - golang-1.16
         - golang-1.17
+        - golang-1.18
         - golang-tip
 
     - axis:
@@ -96,7 +96,7 @@
         - standalone
 
     execution-strategy:
-      combination-filter: '!(arch=="arm64" && backend=="lvm") && !(arch=="arm64" && backend=="ceph") && !(arch=="arm64" && backend=="random") && !(backend!="dir" && compiler!="golang-1.17")'
+      combination-filter: '!(arch=="arm64" && backend=="lvm") && !(arch=="arm64" && backend=="ceph") && !(arch=="arm64" && backend=="random") && !(backend!="dir" && compiler!="golang-1.18")'
 
     publishers:
       - archive:
