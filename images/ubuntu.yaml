@@ -515,7 +515,7 @@ packages:
     - vm
 
   - packages:
-    - linux-virtual-hwe-16.04
+    - linux-image-virtual-hwe-16.04
     action: install
     releases:
     - xenial
@@ -523,7 +523,7 @@ packages:
     - vm
 
   - packages:
-    - linux-virtual
+    - linux-image-virtual
     action: install
     releases:
     - bionic
