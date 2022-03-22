@@ -653,17 +653,14 @@ actions:
     echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/${USERNAME}
     chmod 600 /etc/sudoers.d/${USERNAME}
 
-    (
-    cat << EOF
+    cat << EOF > /etc/gdm3/custom.conf
     [daemon]
     AutomaticLogin=${USERNAME}
     AutomaticLoginEnable=true
     EOF
-    ) > /etc/gdm3/custom.conf
 
     # Automatic disk resize
-    (
-    cat << EOF
+    cat << EOF > /etc/systemd/system/lxd-growpart.service
     [Unit]
     Description=LXD - grow root partition
 
@@ -675,7 +672,6 @@ actions:
     [Install]
     WantedBy=default.target
     EOF
-    ) > /etc/systemd/system/lxd-growpart.service
     systemctl enable lxd-growpart
 
     # Disable automatic screensaver lock
