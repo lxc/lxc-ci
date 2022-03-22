@@ -677,6 +677,10 @@ actions:
     EOF
     ) > /etc/systemd/system/lxd-growpart.service
     systemctl enable lxd-growpart
+
+    # Disable automatic screensaver lock
+    gsettings set org.gnome.desktop.screensaver lock-enabled false
+
   variants:
   - desktop
 
