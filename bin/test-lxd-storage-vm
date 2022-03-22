@@ -234,6 +234,44 @@ do
         echo "==> Deleting VM"
         lxc delete -f v1
 
+        # Create directory with a file for directory disk tests.
+        mkdir "/tmp/lxd-test-${poolName}"
+
+        # Create empty block file for block disk tests.
+        truncate -s 5m "/tmp/lxd-test-${poolName}/lxd-test-block"
+
+        echo "==> Checking disk device hotplug support"
+        lxc storage volume create "${poolName}" vol1 --type=block size=10MB
+        lxc init images:ubuntu/20.04/cloud v1 --vm -s "${poolName}"
+        lxc start v1
+        waitVMAgent v1
+
+        # Hotplug disks
+        lxc storage volume attach "${poolName}" vol1 v1
+        lxc exec v1 -- stat -c "%F" /dev/sdb | grep "block special file"
+        lxc storage volume detach "${poolName}" vol1 v1
+        ! lxc exec v1 -- stat -c "%F" /dev/sdb || false
+
+        lxc config device add v1 block1 disk source="/tmp/lxd-test-${poolName}/lxd-test-block" readonly=true
+        [ "$(lxc exec v1 -- cat /sys/block/sdb/ro)" -eq 1 ]
+        lxc config device set v1 block1 readonly=false
+        [ "$(lxc exec v1 -- cat /sys/block/sdb/ro)" -eq 0 ]
+
+        # Hotplugging directories is not allowed and will fail
+        lxc storage volume create "${poolName}" vol2 source="/tmp/lxd-test-${poolName}"
+
+        ! lxc storage volume attach "${poolName}" vol2 v1 || false
+        ! lxc config device add v1 dir1 disk source="/tmp/lxd-test-${poolName}" || false
+
+        # Remove temporary directory.
+        echo "==> Stopping VM"
+        lxc stop -f v1
+        rm "/tmp/lxd-test-${poolName}/lxd-test-block"
+        rmdir "/tmp/lxd-test-${poolName}"
+
+        echo "==> Deleting VM"
+        lxc delete -f v1
+
         echo "==> Change volume.size on pool and create VM"
         lxc storage set "${poolName}" volume.size 6GiB
         lxc init images:ubuntu/20.04/cloud v1 --vm -s "${poolName}"
