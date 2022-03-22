@@ -196,24 +196,6 @@ files:
   variants:
   - desktop-kde
 
-- path: /etc/systemd/system/lxd-growpart.service
-  generator: dump
-  content: |-
-    [Unit]
-    Description=LXD - grow root partition
-
-    [Service]
-    Type=oneshot
-    ExecStartPre=-/usr/bin/growpart /dev/sda 2
-    ExecStart=/usr/sbin/resize2fs /dev/sda2
-
-    [Install]
-    WantedBy=default.target
-  types:
-  - vm
-  variants:
-  - desktop-kde
-
 - path: /home/opensuse/.config/kscreenlockerrc
   generator: dump
   content: |-
@@ -436,6 +418,19 @@ actions:
     #!/bin/sh
     set -eux
 
+    # Automatic disk resize
+    cat << EOF > /etc/systemd/system/lxd-growpart.service
+    [Unit]
+    Description=LXD - grow root partition
+
+    [Service]
+    Type=oneshot
+    ExecStartPre=-/usr/bin/growpart /dev/sda 2
+    ExecStart=/usr/sbin/resize2fs /dev/sda2
+
+    [Install]
+    WantedBy=default.target
+    EOF
     systemctl enable lxd-growpart
   types:
   - vm
