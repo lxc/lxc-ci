@@ -39,7 +39,8 @@
 
     execution-strategy:
       combination-filter: '
-      !(artifact!="distrobuilder-image" && (architecture!="amd64" && architecture!="i386" && architecture!="arm64"))'
+      !(artifact!="distrobuilder-image" && (architecture!="amd64" && architecture!="i386" && architecture!="arm64")) &&
+      !(artifact=="lxd-cache" && (architecture!="amd64" && architecture!="arm64"))'
 
     builders:
     - shell: |-
