@@ -462,6 +462,20 @@ packages:
   sets:
   - packages:
     - fuse
+    releases:
+    - xenial
+    - bionic
+    - focal
+    - impish
+    action: install
+
+  - packages:
+    - fuse3
+    releases:
+    - jammy
+    action: install
+
+  - packages:
     - language-pack-en
     - openssh-client
     - sudo
