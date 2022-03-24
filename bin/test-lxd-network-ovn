@@ -72,6 +72,11 @@ ovn_basic_tests() {
     sleep 2
     lxc network list | grep ovn-virtual-network
 
+    echo "==> Check we can get the network state (MAC address and MTU are reported in network info)"
+    lxc network info ovn-virtual-network | grep -P 'MAC address: [0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}'
+    lxc network info ovn-virtual-network | grep -P 'MTU: \d+'
+    lxc network info ovn-virtual-network | grep -P "Chassis: $(hostname)"
+
     echo "==> Check host connectivity to linuxcontainers.org"
     ping -c1 -4 -W5 linuxcontainers.org
     ping -c1 -6 -W5 linuxcontainers.org
@@ -1005,11 +1010,37 @@ ovn_peering_tests() {
     ! lxc exec ovn2 -T -n --project=ovn2 -- ping -c1 -4 -W5 "${ovn1NICIPv4}" || false
     ! lxc exec ovn2 -T -n --project=ovn2 -- ping -c1 -6 -W5 "${ovn1NICIPv6}" || false
 
-    lxc network acl rule add ovn1 ingress source=@ovn1/ovn1foo action=allow --project=ovn1
+    lxc network acl rule add ovn1 ingress source=@ovn1/ovn1foo action=allow state=logged --project=ovn1
     lxc exec ovn1 -T -n --project=ovn1 -- ping -c1 -4 -W5 "${ovn2NICIPv4}"
     lxc exec ovn1 -T -n --project=ovn1 -- ping -c1 -6 -W5 "${ovn2NICIPv6}"
     lxc exec ovn2 -T -n --project=ovn2 -- ping -c1 -4 -W5 "${ovn1NICIPv4}"
     lxc exec ovn2 -T -n --project=ovn2 -- ping -c1 -6 -W5 "${ovn1NICIPv6}"
+
+    # Check that acl rule for ovn ingress has all the expected values
+    lxc network acl show-log ovn1 --project=ovn1 | while IFS= read -r logline; do
+      proto=$(echo "$logline" | jq -r '.proto')
+      src=$(echo "$logline" | jq -r '.src')
+      dst=$(echo "$logline" | jq -r '.dst')
+      icmp_type=$(echo "$logline" | jq -r '.icmp_type')
+      icmp_code=$(echo "$logline" | jq -r '.icmp_code')
+      action=$(echo "$logline" | jq -r '.action')
+
+      [ "$action" = "allow" ] || false
+
+      if [ "$proto" = "icmp" ]; then
+        # IPv4 ping from ovn2 to ovn1 allowed
+        [ "$src" = "${ovn2NICIPv4}" ] || false
+        [ "$dst" = "${ovn1NICIPv4}" ] || false
+        [ "$icmp_type" = "8" ] || false
+        [ "$icmp_code" = "0" ] || false
+      elif [ "$proto" = "icmp6" ]; then
+        # IPv6 ping from ovn2 to ovn1 allowed
+        [ "$src" = "${ovn2NICIPv6}" ] || false
+        [ "$dst" = "${ovn1NICIPv6}" ] || false
+        [ "$icmp_type" = "128" ] || false
+        [ "$icmp_code" = "0" ] || false
+      fi
+    done
 
     # Check cannot add an ACL to a network NIC that references a peer connection from another network.
     lxc network create ovn1b --type=ovn network=lxdbr0 --project=ovn1
