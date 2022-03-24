@@ -76,7 +76,7 @@ echo "==> Installing LXD snap from ${track}/${channel}"
 snap remove lxd || true
 snap version
 snap list
-snap install lxd --channel="${snapd_channel}"
+snap install lxd --channel="${snapd_channel}" --cohort=+
 
 # shellcheck disable=SC2034
 for i in $(seq 60); do
