@@ -82,7 +82,7 @@ lxc list
 if [ "${1}" = "nvidia" ]; then
     # Validate NVIDIA vGPU
     lxc exec v10 -- apt-get update
-    lxc exec v10 -- apt-get install build-essential wget pciutils --yes
+    lxc exec v10 -- apt-get install build-essential wget pciutils linux-headers-virtual --yes
     lxc exec v10 -- wget -6 http://canonical-lxd.stgraber.org/nvidia/v12.2-beta/nvidia-vgpu-kvm.run
     lxc exec v10 -- chmod +x nvidia-vgpu-kvm.run
     lxc exec v10 -- /root/nvidia-vgpu-kvm.run -q -s
