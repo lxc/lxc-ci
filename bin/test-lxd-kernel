@@ -25,7 +25,7 @@ waitSnapdSeed
 curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh
 
 # Install dependencies
-snap install go --classic
+snap install go --classic --channel=1.18
 apt-add-repository ppa:ubuntu-lxc/daily --yes
 apt-get dist-upgrade --yes
 apt-get install libudev-dev liblxc-dev liblz4-dev libacl1-dev libuv1-dev tcl libsqlite3-dev libcap-dev dh-autoreconf build-essential acl attr easy-rsa ebtables jq pkg-config socat sqlite3 dnsmasq-base dnsutils nftables gettext --yes
