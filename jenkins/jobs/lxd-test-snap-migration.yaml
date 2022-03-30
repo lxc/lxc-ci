@@ -21,7 +21,6 @@
         name: target
         type: user-defined
         values:
-        - latest-edge
         - 3.0-edge
         - 4.0-edge
 
