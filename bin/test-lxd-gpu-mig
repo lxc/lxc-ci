@@ -77,13 +77,13 @@ UUID4=$(echo $UUIDS | cut -d' ' -f4)
 
 # Launch test containers
 lxc init images:ubuntu/20.04 nvidia-mig1 -c nvidia.runtime=true
-lxc config device add nvidia-mig1 gpu0 gpu gputype=mig mig.uuid=$UUID1 pci=09:00.0
+lxc config device add nvidia-mig1 gpu0 gpu gputype=mig mig.uuid=$UUID1 pci=07:00.0
 lxc init images:ubuntu/20.04 nvidia-mig2 -c nvidia.runtime=true
-lxc config device add nvidia-mig2 gpu0 gpu gputype=mig mig.uuid=$UUID2 pci=09:00.0
+lxc config device add nvidia-mig2 gpu0 gpu gputype=mig mig.uuid=$UUID2 pci=07:00.0
 lxc init images:ubuntu/20.04 nvidia-mig3 -c nvidia.runtime=true
-lxc config device add nvidia-mig3 gpu0 gpu gputype=mig mig.uuid=$UUID3 pci=09:00.0
+lxc config device add nvidia-mig3 gpu0 gpu gputype=mig mig.uuid=$UUID3 pci=07:00.0
 lxc init images:ubuntu/20.04 nvidia-mig4 -c nvidia.runtime=true
-lxc config device add nvidia-mig4 gpu0 gpu gputype=mig mig.uuid=$UUID4 pci=09:00.0
+lxc config device add nvidia-mig4 gpu0 gpu gputype=mig mig.uuid=$UUID4 pci=07:00.0
 lxc start nvidia-mig1
 lxc exec nvidia-mig1 -- nvidia-smi
 lxc start nvidia-mig2
