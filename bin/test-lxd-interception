@@ -38,7 +38,7 @@ curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh
 # Install LXD
 while :; do
     [ ! -e /usr/bin/lxd ] && break
-    apt remove --purge lxd lxd-client --yes && break
+    apt-get remove --purge lxd lxd-client --yes && break
 done
 apt-get remove --purge cloud-init --yes
 snap remove lxd || true

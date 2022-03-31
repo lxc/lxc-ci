@@ -5,9 +5,9 @@ if [ "${ID}" = "arch" ]; then
     pacman -Syu --noconfirm
     pacman -Sc --noconfirm
 elif [ "${ID}" = "ubuntu" ] || [ "${ID}" = "debian" ] || [ "${ID}" = "elementary" ]; then
-    apt update
-    apt dist-upgrade -y
-    apt autoremove --purge -y
+    apt-get update
+    apt-get dist-upgrade -y
+    apt-get autoremove --purge -y
 elif [ "${ID}" = "ubuntu-core" ]; then
     snap refresh
 elif [ "${ID}" = "fedora" ]; then
