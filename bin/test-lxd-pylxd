@@ -20,17 +20,17 @@ trap cleanup EXIT HUP INT TERM
 
 # Make sure we're up to date
 while :; do
-    apt update && break
+    apt-get update && break
     sleep 10
 done
 
 while :; do
-    apt dist-upgrade --yes && break
+    apt-get dist-upgrade --yes && break
     sleep 10
 done
 
 # Remove pre-installed LXD
-apt remove --purge lxd lxd-client lxcfs --yes
+apt-get remove --purge lxd lxd-client lxcfs --yes
 
 # Install the LXD snap
 if [ "${track}" = "latest" ]; then

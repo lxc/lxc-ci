@@ -43,17 +43,17 @@ trap cleanup EXIT HUP INT TERM
 
 # Make sure we're up to date
 while :; do
-    apt update && break
+    apt-get update && break
     sleep 10
 done
 
 while :; do
-    apt dist-upgrade --yes && break
+    apt-get dist-upgrade --yes && break
     sleep 10
 done
 
 # Setup the environment
-apt remove --purge lxd lxd-client lxcfs liblxc1 --yes
+apt-get remove --purge lxd lxd-client lxcfs liblxc1 --yes
 
 # Configure ceph
 if [ "${LXD_BACKEND}" = "ceph" ]; then

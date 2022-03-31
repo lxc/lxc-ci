@@ -38,7 +38,7 @@ curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh
 # Install LXD
 while :; do
     [ ! -e /usr/bin/lxd ] && break
-    apt remove --purge lxd lxd-client --yes && break
+    apt-get remove --purge lxd lxd-client --yes && break
 done
 apt-get remove --purge cloud-init --yes
 snap remove lxd || true
@@ -47,7 +47,7 @@ apt-get install jq --yes
 lxd waitready --timeout=300
 
 # Install OVN and dnsutils.
-apt install ovn-host ovn-central dnsutils --yes
+apt-get install ovn-host ovn-central dnsutils --yes
 
 # Configure OVN.
 ovs-vsctl set open_vswitch . \
@@ -677,7 +677,7 @@ ovn_forward_tests() {
 
     # Check DNS TCP forwarding using default target rule.
     lxc exec u1 -- systemctl mask dnsmasq
-    lxc exec u1 -- apt install dnsmasq -y
+    lxc exec u1 -- apt-get install dnsmasq -y
 cat <<EOF | lxc exec u1 -- tee /etc/dnsmasq.d/lxd_test.conf
 interface=eth0
 bind-interfaces
@@ -702,7 +702,7 @@ EOF
     U2_IPV6="$(lxc list u2 -c6 --format=csv | cut -d' ' -f1)"
 
     lxc exec u2 -- systemctl mask dnsmasq
-    lxc exec u2 -- apt install dnsmasq -y
+    lxc exec u2 -- apt-get install dnsmasq -y
 cat <<EOF | lxc exec u2 -- tee /etc/dnsmasq.d/lxd_test.conf
 interface=eth0
 bind-interfaces
@@ -902,7 +902,7 @@ ovn_peering_tests() {
 
     # Install tcpdump and check we can detect ICMP packets coming to the ovn2 instance from ovn1 instance when
     # pinging the allowed addresses.
-    lxc exec ovn2 --project=ovn2 -- apt install tcpdump -y
+    lxc exec ovn2 --project=ovn2 -- apt-get install tcpdump -y
     lxc exec ovn1 -T -n --project=ovn1 -- ping -c3 -4 -W5 "${ovn2NICIPv4}" || true &
     lxc exec ovn2 -T -n --project=ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp and src ${ovn1NICIPv4} -q -c 1 > /dev/null
     wait

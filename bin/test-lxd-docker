@@ -22,8 +22,8 @@ done
 set -eux
 
 # Install distro docker
-apt update --yes --force-yes
-apt install docker.io wget --yes --force-yes
+apt-get update --yes --force-yes
+apt-get install docker.io wget --yes --force-yes
 
 # Stop the distro docker
 systemctl stop docker.service
