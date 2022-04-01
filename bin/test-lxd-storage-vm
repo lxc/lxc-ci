@@ -91,6 +91,11 @@ do
         waitVMAgent v1
         lxc info v1
 
+        echo "==> Check /dev/disk/by-id"
+        lxc exec v1 -- test -e /dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_lxd_root
+        lxc exec v1 -- test -e /dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_lxd_root-part1
+        lxc exec v1 -- test -e /dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_lxd_root-part2
+
         echo "==> Check config drive is readonly"
         # Check 9p config drive share is exported readonly.
         lxc exec v1 -- mount -t 9p config /srv
