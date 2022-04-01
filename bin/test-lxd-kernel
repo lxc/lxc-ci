@@ -46,10 +46,8 @@ cd /root
 mkdir -p /root/go/src/github.com/lxc
 git clone https://github.com/lxc/lxd /root/go/src/github.com/lxc/lxd
 cd /root/go/src/github.com/lxc/lxd
-[ -e go.mod ] || export GO111MODULE=off
 make deps
-go get -v -tags libsqlite3 github.com/lxc/lxd/lxd
-go get -v github.com/lxc/lxd/lxc
+make
 
 # Test environment
 chmod +x /root
