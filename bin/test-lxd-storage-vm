@@ -258,9 +258,6 @@ do
         [ "$(lxc exec v1 -- cat /sys/block/sdb/ro)" -eq 0 ]
 
         # Hotplugging directories is not allowed and will fail
-        lxc storage volume create "${poolName}" vol2 source="/tmp/lxd-test-${poolName}"
-
-        ! lxc storage volume attach "${poolName}" vol2 v1 || false
         ! lxc config device add v1 dir1 disk source="/tmp/lxd-test-${poolName}" || false
 
         # Remove temporary directory.
