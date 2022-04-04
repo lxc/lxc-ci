@@ -256,6 +256,7 @@ do
         lxc exec v1 -- stat -c "%F" /dev/sdb | grep "block special file"
         lxc storage volume detach "${poolName}" vol1 v1
         ! lxc exec v1 -- stat -c "%F" /dev/sdb || false
+        lxc storage volume delete "${poolName}" vol1
 
         lxc config device add v1 block1 disk source="/tmp/lxd-test-${poolName}/lxd-test-block" readonly=true
         [ "$(lxc exec v1 -- cat /sys/block/sdb/ro)" -eq 1 ]
