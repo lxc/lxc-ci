@@ -852,6 +852,9 @@ files:
   - container
   variants:
   - default
+  releases:
+  - stretch
+  - buster
 
 - path: /etc/network/interfaces
   generator: dump
@@ -872,9 +875,6 @@ files:
   releases:
   - stretch
   - buster
-  - bullseye
-  - sid
-  - bookworm
 
 - path: /etc/network/interfaces
   generator: dump
@@ -892,6 +892,37 @@ files:
   - vm
   variants:
   - cloud
+  releases:
+  - stretch
+  - buster
+
+- path: /etc/systemd/network/eth0.network
+  generator: dump
+  content: |-
+    [Match]
+    Name=eth0
+    [Network]
+    DHCP=true
+  types:
+  - container
+  releases:
+  - bullseye
+  - bookworm
+  - sid
+
+- path: /etc/systemd/network/enp5s0.network
+  generator: dump
+  content: |-
+    [Match]
+    Name=enp5s0
+    [Network]
+    DHCP=true
+  types:
+  - vm
+  releases:
+  - bullseye
+  - bookworm
+  - sid
 
 - path: /etc/default/grub.d/50-lxd.cfg
   generator: dump
@@ -946,7 +977,6 @@ packages:
   sets:
   - packages:
     - dialog
-    - ifupdown
     - init
     - iproute2
     - iputils-ping
@@ -961,6 +991,21 @@ packages:
     action: install
 
   - packages:
+    - ifupdown
+    action: install
+    releases:
+    - buster
+    - stretch
+
+  - packages:
+    - udev
+    action: install
+    releases:
+    - bullseye
+    - bookworm
+    - sid
+
+  - packages:
     - cloud-init
     - gpg
     - resolvconf
@@ -970,6 +1015,7 @@ packages:
 
   - packages:
     - acpid
+    - policykit-1
     action: install
     architectures:
     - amd64
@@ -1049,6 +1095,74 @@ actions:
     systemctl mask systemd-networkd.service
     systemctl mask systemd-networkd.socket
     systemctl mask systemd-networkd-wait-online.service
+  releases:
+  - stretch
+  - buster
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Enable networkd socket
+    systemctl enable systemd-networkd.socket
+  types:
+  - containers
+  releases:
+  - bullseye
+  - bookworm
+  - sid
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Enable networkd
+    systemctl enable systemd-networkd.service
+  types:
+  - vm
+  variants:
+  - default
+  releases:
+  - bullseye
+  - bookworm
+  - sid
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Disable networkd
+    systemctl disable systemd-networkd.service
+  types:
+  - vm
+  variants:
+  - cloud
+  releases:
+  - bullseye
+  - bookworm
+  - sid
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Enable systemd-resolved
+    systemctl enable systemd-resolved.service
+  types:
+  - vm
+  releases:
+  - bullseye
+  - bookworm
+  - sid
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
 
     # Make sure the locale is built and functional
     echo en_US.UTF-8 UTF-8 >> /etc/locale.gen
@@ -1105,6 +1219,20 @@ actions:
   - vm
   releases:
   - stretch
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    umount -l /etc/resolv.conf || true
+    ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+  types:
+  - vm
+  releases:
+  - bullseye
+  - bookworm
+  - sid
 
 mappings:
   architecture_map: debian
