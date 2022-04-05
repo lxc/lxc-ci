@@ -246,21 +246,24 @@ do
         truncate -s 5m "/tmp/lxd-test-${poolName}/lxd-test-block"
 
         echo "==> Checking disk device hotplug support"
-        lxc storage volume create "${poolName}" vol1 --type=block size=10MB
-        lxc init images:ubuntu/20.04/cloud v1 --vm -s "${poolName}"
-        lxc start v1
+        lxc launch images:ubuntu/20.04/cloud v1 --vm -s "${poolName}"
         waitVMAgent v1
 
         # Hotplug disks
+        lxc storage volume create "${poolName}" vol1 --type=block size=10MB
         lxc storage volume attach "${poolName}" vol1 v1
+        sleep 3
         lxc exec v1 -- stat -c "%F" /dev/sdb | grep "block special file"
         lxc storage volume detach "${poolName}" vol1 v1
+        sleep 3
         ! lxc exec v1 -- stat -c "%F" /dev/sdb || false
         lxc storage volume delete "${poolName}" vol1
 
         lxc config device add v1 block1 disk source="/tmp/lxd-test-${poolName}/lxd-test-block" readonly=true
+        sleep 3
         [ "$(lxc exec v1 -- cat /sys/block/sdb/ro)" -eq 1 ]
         lxc config device set v1 block1 readonly=false
+        sleep 3
         [ "$(lxc exec v1 -- cat /sys/block/sdb/ro)" -eq 0 ]
 
         # Hotplugging directories is not allowed and will fail
