@@ -38,7 +38,7 @@
         fi
 
         if [ "${platform}" = "nvidia" ] && [ "${target}" = "vm" ]; then
-            exec sudo /lxc-ci/bin/maas-run name=argos jammy ga-22.04 iommu,nvidia-vgpu bin/test-lxd-gpu-vm nvidia
+            exec sudo /lxc-ci/bin/maas-run name=argos focal ga-20.04 iommu,nvidia-vgpu bin/test-lxd-gpu-vm nvidia
         fi
 
         if [ "${platform}" = "amd" ] && [ "${target}" = "vm" ]; then
