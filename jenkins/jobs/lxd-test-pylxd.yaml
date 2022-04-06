@@ -7,12 +7,6 @@
 
     axes:
     - axis:
-        name: source
-        type: user-defined
-        values:
-        - bionic-updates
-
-    - axis:
         name: target
         type: user-defined
         values:
@@ -32,13 +26,7 @@
         track=$(echo ${target} | cut -d- -f1)
         channel=$(echo ${target} | cut -d- -f2)
 
-        if [ "${source}" = "xenial-updates" ] || [ "${source}" = "xenial-backports" ]; then
-        exec sudo /lxc-ci/bin/maas-run tags=virtual xenial ga-16.04 default bin/test-lxd-pylxd "${track}" "${channel}"
-        elif [ "${source}" = "bionic-updates" ]; then
-        exec sudo /lxc-ci/bin/maas-run tags=virtual bionic ga-18.04 default bin/test-lxd-pylxd "${track}" "${channel}"
-        else
-        exit 1
-        fi
+        exec sudo /lxc-ci/bin/maas-run tags=virtual jammy ga-22.04 default bin/test-lxd-pylxd "${track}" "${channel}"
 
     properties:
     - build-discarder:
