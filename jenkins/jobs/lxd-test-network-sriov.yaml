@@ -8,7 +8,7 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        exec sudo /lxc-ci/bin/maas-run name=lantea focal ga-20.04 iommu bin/test-lxd-network-sriov
+        exec sudo /lxc-ci/bin/maas-run name=lantea jammy ga-22.04 iommu bin/test-lxd-network-sriov
 
     properties:
     - build-discarder:

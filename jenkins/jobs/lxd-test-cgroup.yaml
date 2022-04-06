@@ -24,7 +24,7 @@
     - shell: |-
         set -e
         cd /lxc-ci
-        sudo -E /lxc-ci/bin/maas-run tags=virtual focal ga-20.04 ${kernel} bin/test-lxd-cgroup
+        sudo -E /lxc-ci/bin/maas-run tags=virtual jammy ga-22.04 ${kernel} bin/test-lxd-cgroup
 
     properties:
     - build-discarder:

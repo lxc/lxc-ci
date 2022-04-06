@@ -24,9 +24,9 @@
     - shell: |-
         cd /lxc-ci
         if [ "${type}" = "vm" ]; then
-            exec sudo /lxc-ci/bin/maas-run name=lantea focal hwe-20.04 default bin/test-lxd-images "${type}"
+            exec sudo /lxc-ci/bin/maas-run name=lantea jammy ga-22.04 default bin/test-lxd-images "${type}"
         else
-            exec sudo /lxc-ci/bin/maas-run tags=lxd-images focal hwe-20.04 default bin/test-lxd-images "${type}"
+            exec sudo /lxc-ci/bin/maas-run tags=lxd-images jammy ga-22.04 default bin/test-lxd-images "${type}"
         fi
 
     properties:

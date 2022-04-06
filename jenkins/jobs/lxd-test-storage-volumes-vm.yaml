@@ -26,7 +26,7 @@
     - shell: |-
         set -e
         cd /lxc-ci
-        sudo -E /lxc-ci/bin/maas-run tags=physical focal ga-20.04 default bin/test-lxd-storage-volumes-vm "${backend}"
+        sudo -E /lxc-ci/bin/maas-run tags=physical jammy ga-22.04 default bin/test-lxd-storage-volumes-vm "${backend}"
 
     properties:
     - build-discarder:
