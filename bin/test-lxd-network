@@ -60,9 +60,8 @@ waitSnapdSeed
 curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh
 
 # Install LXD
-while :; do
-    [ ! -e /usr/bin/lxd ] && break
-    apt-get remove --purge lxd lxd-client --yes && break
+while [ -e /usr/bin/lxd ]; do
+    apt-get remove --purge --yes lxd lxd-client lxcfs liblxc1
 done
 apt-get remove --purge cloud-init --yes
 snap remove lxd || true

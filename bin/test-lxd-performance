@@ -53,9 +53,8 @@ while :; do
 done
 
 # Setup the environment
-while :; do
-    [ ! -e /usr/bin/lxd ] && break
-    apt-get remove --purge lxd lxd-client lxcfs liblxc1 --yes && break
+while [ -e /usr/bin/lxd ]; do
+    apt-get remove --purge --yes lxd lxd-client lxcfs liblxc1
 done
 
 # Configure ceph

@@ -30,9 +30,8 @@ while :; do
 done
 
 # Remove pre-installed LXD
-while :; do
-    [ ! -e /usr/bin/lxd ] && break
-    apt-get remove --purge lxd lxd-client lxcfs --yes && break
+while [ -e /usr/bin/lxd ]; do
+    apt-get remove --purge lxd lxd-client lxcfs --yes
 done
 
 # Install the LXD snap
