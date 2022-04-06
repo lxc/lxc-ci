@@ -26,7 +26,7 @@
     - shell: |-
         set -e
         cd /lxc-ci
-        sudo -E /lxc-ci/bin/maas-run tags=virtual impish ga-21.10 ${kernel} bin/test-lxd-kernel
+        sudo -E /lxc-ci/bin/maas-run tags=virtual jammy ga-22.04 ${kernel} bin/test-lxd-kernel
 
     properties:
     - build-discarder:
