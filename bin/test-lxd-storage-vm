@@ -110,11 +110,20 @@ do
         echo "==> Checking VM root disk size is 10GiB"
         [ $(($(lxc exec v1 -- blockdev --getsize64 /dev/sda)/${GiB})) -eq "10" ]
 
-        echo "==> Checking running VM snapshot"
+        echo "foo" | lxc exec v1 -- tee /root/foo.txt
+        lxc exec v1 -- sync
         lxc snapshot v1
+
+        echo "==> Checking restore VM snapshot"
+        lxc restore v1 snap0
+        waitVMAgent v1
+        lxc exec v1 -- cat /root/foo.txt | grep -Fx "foo"
+
+        echo "==> Checking running copied VM snapshot"
         lxc copy v1/snap0 v2
         lxc start v2
         waitVMAgent v2
+        lxc exec v2 -- cat /root/foo.txt | grep -Fx "foo"
 
         echo "==> Checking VM snapshot copy root disk size is 10GiB"
         [ $(($(lxc exec v2 -- blockdev --getsize64 /dev/sda)/${GiB})) -eq "10" ]
