@@ -79,9 +79,8 @@ case "$i" in
         apt-get update
         apt-get dist-upgrade --yes
         apt-get install build-essential --yes
-        curl http://canonical-lxd.stgraber.org/nvidia/v12.2-beta/nvidia-vgpu-kvm.run -o /root/nvidia-vgpu-kvm.run
-        chmod +x /root/nvidia-vgpu-kvm.run
-        /root/nvidia-vgpu-kvm.run -q -s
+        curl http://canonical-lxd.stgraber.org/nvidia/v14.0/nvidia-host.deb -o /root/nvidia-host.deb
+        apt-get install --yes /root/nvidia-host.deb
 
         echo "blacklist nouveau" > /etc/modprobe.d/blacklist-nouveau.conf
         echo "options nouveau modeset=0" >> /etc/modprobe.d/blacklist-nouveau.conf
