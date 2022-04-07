@@ -253,6 +253,47 @@ do
         # Create empty block file for block disk tests.
         truncate -s 5m "/tmp/lxd-test-${poolName}/lxd-test-block"
 
+        echo "==> Checking disk device hotplug support"
+        lxc launch images:ubuntu/20.04/cloud v1 --vm -s "${poolName}"
+        waitVMAgent v1
+
+        # Hotplug disks
+        lxc storage volume create "${poolName}" vol1 --type=block size=10MB
+        lxc storage volume attach "${poolName}" vol1 v1
+        sleep 3
+        lxc exec v1 -- stat -c "%F" /dev/sdb | grep "block special file"
+        lxc storage volume detach "${poolName}" vol1 v1
+        sleep 3
+        ! lxc exec v1 -- stat -c "%F" /dev/sdb || false
+        lxc storage volume delete "${poolName}" vol1
+
+        lxc config device add v1 block1 disk source="/tmp/lxd-test-${poolName}/lxd-test-block" readonly=true
+        sleep 3
+        [ "$(lxc exec v1 -- cat /sys/block/sdb/ro)" -eq 1 ]
+        lxc config device set v1 block1 readonly=false
+        sleep 3
+        [ "$(lxc exec v1 -- cat /sys/block/sdb/ro)" -eq 0 ]
+
+        # Hotplugging directories is not allowed and will fail
+        ! lxc config device add v1 dir1 disk source="/tmp/lxd-test-${poolName}" || false
+
+        # Hot plug cloud-init:config ISO.
+        lxc config device add v1 cloudinit disk source=cloud-init:config
+        sleep 3
+        lxc exec v1 -- mount -t iso9660 -o ro /dev/sr0 /mnt
+        lxc exec v1 -- umount /dev/sr0
+        lxc config device remove v1 cloudinit
+        ! lxc exec v1 -- stat /dev/sr0 || false
+
+        # Remove temporary directory.
+        echo "==> Stopping VM"
+        lxc stop -f v1
+        rm "/tmp/lxd-test-${poolName}/lxd-test-block"
+        rmdir "/tmp/lxd-test-${poolName}"
+
+        echo "==> Deleting VM"
+        lxc delete -f v1
+
         echo "==> Change volume.size on pool and create VM"
         lxc storage set "${poolName}" volume.size 6GiB
         lxc init images:ubuntu/20.04/cloud v1 --vm -s "${poolName}"
@@ -353,39 +394,6 @@ do
         lxc delete -f v1renamed
         lxc image delete vmbig
         lxc profile delete vmsmall
-
-        echo "==> Checking disk device hotplug support"
-        lxc launch images:ubuntu/20.04/cloud v1 --vm -s "${poolName}"
-        waitVMAgent v1
-
-        # Hotplug disks
-        lxc storage volume create "${poolName}" vol1 --type=block size=10MB
-        lxc storage volume attach "${poolName}" vol1 v1
-        sleep 3
-        lxc exec v1 -- stat -c "%F" /dev/sdb | grep "block special file"
-        lxc storage volume detach "${poolName}" vol1 v1
-        sleep 3
-        ! lxc exec v1 -- stat -c "%F" /dev/sdb || false
-        lxc storage volume delete "${poolName}" vol1
-
-        lxc config device add v1 block1 disk source="/tmp/lxd-test-${poolName}/lxd-test-block" readonly=true
-        sleep 3
-        [ "$(lxc exec v1 -- cat /sys/block/sdb/ro)" -eq 1 ]
-        lxc config device set v1 block1 readonly=false
-        sleep 3
-        [ "$(lxc exec v1 -- cat /sys/block/sdb/ro)" -eq 0 ]
-
-        # Hotplugging directories is not allowed and will fail
-        ! lxc config device add v1 dir1 disk source="/tmp/lxd-test-${poolName}" || false
-
-        # Remove temporary directory.
-        echo "==> Stopping VM"
-        lxc stop -f v1
-        rm "/tmp/lxd-test-${poolName}/lxd-test-block"
-        rmdir "/tmp/lxd-test-${poolName}"
-
-        echo "==> Deleting VM"
-        lxc delete -f v1
 
         echo "==> Deleting storage pool"
         lxc storage delete "${poolName}2"
