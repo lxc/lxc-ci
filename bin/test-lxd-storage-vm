@@ -277,6 +277,14 @@ do
         # Hotplugging directories is not allowed and will fail
         ! lxc config device add v1 dir1 disk source="/tmp/lxd-test-${poolName}" || false
 
+        # Hot plug cloud-init:config ISO.
+        lxc config device add v1 cloudinit disk source=cloud-init:config
+        sleep 3
+        lxc exec v1 -- mount -t iso9660 -o ro /dev/sr0 /mnt
+        lxc exec v1 -- umount /dev/sr0
+        lxc config device remove v1 cloudinit
+        ! lxc exec v1 -- stat /dev/sr0 || false
+
         # Remove temporary directory.
         echo "==> Stopping VM"
         lxc stop -f v1
