@@ -49,7 +49,7 @@ export PATH="/snap/bin/:${PATH}"
 lxd waitready --timeout=120
 
 # Generate local certs
-rm -rf ~/.config/lxc ~/snap
+rm -rf ~/.config/lxc/ ~/snap/lxd/common/config/
 lxc remote add localhost --accept-certificate --password=abc 2>/dev/null || true
 
 # Run the pylxd tests
