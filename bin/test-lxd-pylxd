@@ -42,7 +42,7 @@ else
 fi
 
 # Configure to use the proxy
-curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh
+curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh || true
 
 snap install lxd --channel="${snapd_channel}"
 export PATH="/snap/bin/:${PATH}"
