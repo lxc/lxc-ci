@@ -50,7 +50,7 @@ lxd waitready --timeout=120
 
 # Generate local certs
 rm -rf ~/.config/lxc ~/snap
-lxc remote add localhost --accept-certificate --password=abc || true
+lxc remote add localhost --accept-certificate --password=abc 2>/dev/null || true
 
 # Run the pylxd tests
 git clone https://github.com/lxc/pylxd
