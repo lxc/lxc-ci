@@ -42,17 +42,17 @@ else
 fi
 
 # Configure to use the proxy
-curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh
+curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh || true
 
 snap install lxd --channel="${snapd_channel}"
 export PATH="/snap/bin/:${PATH}"
 lxd waitready --timeout=120
 
 # Generate local certs
-rm -rf ~/.config/lxc ~/snap
-lxc remote add localhost --accept-certificate --password=abc || true
+rm -rf ~/.config/lxc/ ~/snap/lxd/common/config/
+lxc remote add localhost --accept-certificate --password=abc 2>/dev/null || true
 
 # Run the pylxd tests
-git clone https://github.com/lxc/pylxd
+[ -d pylxd ] || git clone https://github.com/lxc/pylxd
 cd pylxd
 integration/run-integration-tests
