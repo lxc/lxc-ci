@@ -82,6 +82,10 @@ lxc profile device add default root disk pool=default path=/
 # Create the instances
 echo "=> Creating the instances"
 for i in $(lxc image list images: | grep x86_64 | grep "${TYPE}" | grep "more" | awk '{print $2}'); do
+    # Skip images requiring CGroupV1 as the testserver uses CGroupV2
+    if [ "${TYPE}" = "CONTAINER" ] && lxc image info "images:${i}" | grep -q "requirements.cgroup: v1"; then
+        continue
+    fi
     name=$(echo "${i}" | sed -e "s/\//-/g" -e "s/\.//g")
     if [ "${TYPE}" = "VIRTUAL-MACHINE" ]; then
         lxc init "images:${i}" "${name}" --vm -c security.secureboot=false -c limits.cpu=4 -c limits.memory=4GB
