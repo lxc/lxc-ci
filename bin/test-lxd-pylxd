@@ -44,6 +44,7 @@ fi
 # Configure to use the proxy
 curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh || true
 
+snap remove lxd || true
 snap install lxd --channel="${snapd_channel}"
 export PATH="/snap/bin/:${PATH}"
 lxd waitready --timeout=120
