@@ -171,7 +171,7 @@ fi
 # Run the unit tests
 if [ "${LXD_BACKEND}" = "dir" ] && [ "${LXD_TESTSUITE}" != "cluster" ]; then
     echo "==> UNIT BEGIN: all tests"
-    if [ "${GO_VERSION}" = "tip" ]; then
+    if [ "${GO_VERSION}" = "golang-tip" ]; then
         echo "Skipping static analysis due to https://github.com/go-swagger/go-swagger/issues/2759"
     else
         GO_DQLITE_MULTITHREAD=1 go test -tags libsqlite3 ./...
