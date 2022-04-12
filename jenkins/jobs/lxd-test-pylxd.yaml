@@ -13,6 +13,7 @@
         - latest-edge
         - 3.0-edge
         - 4.0-edge
+        - 5.0-edge
 
     - axis:
         name: restrict

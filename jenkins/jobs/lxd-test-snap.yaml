@@ -41,6 +41,18 @@
             track: 4.0
             channel: stable
 
+        - "lxd-test-snap-{track}-{channel}":
+            track: 5.0
+            channel: edge
+
+        - "lxd-test-snap-{track}-{channel}":
+            track: 5.0
+            channel: candidate
+
+        - "lxd-test-snap-{track}-{channel}":
+            track: 5.0
+            channel: stable
+
 
 - job-template:
     name: "lxd-test-snap-{track}-{channel}"
