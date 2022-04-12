@@ -7,6 +7,14 @@ case "$i" in
         exit 0
       ;;
 
+      cgroup1)
+        echo "===> CGroup1"
+
+        # shellcheck disable=SC2016
+        echo 'GRUB_CMDLINE_LINUX="${GRUB_CMDLINE_LINUX} systemd.unified_cgroup_hierarchy=0"' > /etc/default/grub.d/99-cgroup.cfg
+        update-grub
+      ;;
+
       cgroup2)
         echo "===> CGroup2"
 
