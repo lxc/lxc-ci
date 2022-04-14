@@ -168,6 +168,9 @@ if [ "$(uname -m)" != "x86_64" ]; then
     unset LXD_CEPH_CLUSTER
 fi
 
+# Fix file ownership
+chown -R root:root "${TEST_DIR}"
+
 # Run the unit tests
 if [ "${LXD_BACKEND}" = "dir" ] && [ "${LXD_TESTSUITE}" != "cluster" ]; then
     echo "==> UNIT BEGIN: all tests"
