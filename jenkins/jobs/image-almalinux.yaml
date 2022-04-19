@@ -12,6 +12,7 @@
         values:
         - amd64
         - arm64
+        - ppc64el
 
     - axis:
         name: release
@@ -34,6 +35,7 @@
         ARCH=${architecture}
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
         [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
+        [ "${ARCH}" = "ppc64el" ] && ARCH="ppc64le"
 
         EXTRA_ARGS="-o source.variant=boot"
 
