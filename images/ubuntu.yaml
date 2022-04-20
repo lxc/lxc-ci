@@ -580,7 +580,6 @@ packages:
     - vm
 
   - packages:
-    - linux-image-generic
     - ubuntu-desktop-minimal
     action: install
     variants:
