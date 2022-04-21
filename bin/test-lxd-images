@@ -229,6 +229,8 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
             DNS=1
             break
         fi
+
+        sleep 1
     done
     if [ "${DNS}" = "1" ]; then
         echo "PASS: DNS resolution: ${name}"
