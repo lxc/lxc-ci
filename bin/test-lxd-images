@@ -189,6 +189,20 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
         continue
     fi
 
+    # Systemd cleanliness
+    if lxc exec "${name}" -- sh -c "type systemctl" >/dev/null 2>&1; then
+        if lxc exec "${name}" -- systemctl --failed 2>&1 | grep -q '\sfailed\s'; then
+            echo "FAIL: systemd clean: ${name}"
+            # Show the systemd failures
+            lxc exec "${name}" -- systemctl --failed
+            FAIL=1
+        else
+            echo "PASS: systemd clean: ${name}"
+        fi
+    else
+        echo "SKIP: systemd clean: ${name}"
+    fi
+
     # Get the addresses
     address=$(lxc query "${url}/state" | jq -r ".network.eth0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
     if [ -z "${address}" ]; then
@@ -256,20 +270,6 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
             echo "FAIL: cloud-init vendor-data provisioning: ${name}"
             FAIL=1
         fi
-    fi
-
-    # Systemd cleanliness
-    if lxc exec "${name}" -- sh -c "type systemctl" >/dev/null 2>&1; then
-        if lxc exec "${name}" -- systemctl --failed 2>&1 | grep -q failed; then
-            echo "FAIL: systemd clean: ${name}"
-            # Show the systemd failures
-            lxc exec "${name}" -- systemctl --failed
-            FAIL=1
-        else
-            echo "PASS: systemd clean: ${name}"
-        fi
-    else
-        echo "SKIP: systemd clean: ${name}"
     fi
 done
 
