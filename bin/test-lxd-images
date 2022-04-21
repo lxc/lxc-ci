@@ -194,6 +194,7 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
         if lxc exec "${name}" -- systemctl --failed 2>&1 | grep -q '\sfailed\s'; then
             echo "FAIL: systemd clean: ${name}"
             # Show the systemd failures
+            echo "DEBUG: systemd failed: ${name}"
             lxc exec "${name}" -- systemctl --failed
             FAIL=1
         else
@@ -212,6 +213,7 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
     if [ -z "${address}" ]; then
         echo "FAIL: No network interface: ${name}"
         # Show the network state
+        echo "DEBUG: network state: ${name}"
         lxc info "${name}"
         FAIL=1
         continue
