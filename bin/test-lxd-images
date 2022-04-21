@@ -211,6 +211,8 @@ for url in $(lxc query "/1.0/instances" | jq -r .[]); do
 
     if [ -z "${address}" ]; then
         echo "FAIL: No network interface: ${name}"
+        # Show the network state
+        lxc info "${name}"
         FAIL=1
         continue
     fi
