@@ -164,7 +164,7 @@ actions:
 environment:
   variables:
   - key: TMPDIR
-    set: false
+    value: false
 
 mappings:
   architecture_map: altlinux
