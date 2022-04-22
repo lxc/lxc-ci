@@ -919,10 +919,27 @@ files:
     DHCP=true
   types:
   - vm
+  variants:
+  - default
   releases:
   - bullseye
   - bookworm
   - sid
+
+- path: /etc/systemd/network/enp5s0.network
+  generator: dump
+  content: |-
+    [Match]
+    Name=enp5s0
+    [Network]
+    DHCP=true
+  types:
+  - vm
+  variants:
+  - cloud
+  releases:
+  - bullseye
+  - bookworm
 
 - path: /etc/default/grub.d/50-lxd.cfg
   generator: dump
@@ -1149,6 +1166,20 @@ actions:
     #!/bin/sh
     set -eux
 
+    # Enable networkd
+    systemctl enable systemd-networkd.service
+  types:
+  - vm
+  variants:
+  - cloud
+  releases:
+  - sid
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
+
     # Disable networkd
     systemctl disable systemd-networkd.service
   types:
@@ -1158,7 +1189,6 @@ actions:
   releases:
   - bullseye
   - bookworm
-  - sid
 
 - trigger: post-packages
   action: |-
