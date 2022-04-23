@@ -93,10 +93,5 @@ actions:
     systemctl enable systemd-networkd.service
     systemctl enable systemd-resolved.service
 
-environment:
-  variables:
-  - key: TMPDIR
-    value: false
-
 mappings:
   architecture_map: debian
