@@ -1123,6 +1123,7 @@ actions:
 
     # Disable networkd service; this prevents the container from getting 2 IPv4 addresses on
     # startup. This only happens on debian/bullseye/cloud images.
+    systemctl disable systemd-networkd.socket
     systemctl disable systemd-networkd.service
   types:
   - container
