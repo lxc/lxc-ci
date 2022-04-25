@@ -1123,6 +1123,7 @@ actions:
 
     # Disable networkd service; this prevents the container from getting 2 IPv4 addresses on
     # startup. This only happens on debian/bullseye/cloud images.
+    systemctl disable systemd-networkd.socket
     systemctl disable systemd-networkd.service
   types:
   - container
@@ -1141,7 +1142,6 @@ actions:
   types:
   - container
   releases:
-  - bullseye
   - bookworm
   - sid
 
@@ -1271,9 +1271,32 @@ actions:
     umount -l /etc/resolv.conf || true
     ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
   releases:
-  - bullseye
   - bookworm
   - sid
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    umount -l /etc/resolv.conf || true
+    ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+  releases:
+  - bullseye
+  variants:
+  - default
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    umount -l /etc/resolv.conf || true
+    ln -sf /run/resolvconf/resolv.conf /etc/resolv.conf
+  releases:
+  - bullseye
+  variants:
+  - cloud
 
 mappings:
   architecture_map: debian
