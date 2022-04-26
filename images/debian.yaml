@@ -1135,6 +1135,20 @@ actions:
 - trigger: post-packages
   action: |-
     #!/bin/sh
+    set -eu
+
+    systemctl enable systemd-networkd.socket
+    systemctl enable systemd-networkd.service
+  types:
+  - container
+  variants:
+  - default
+  releases:
+  - bullseye
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
     set -eux
 
     # Enable networkd socket
