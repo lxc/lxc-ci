@@ -1212,9 +1212,32 @@ actions:
     # Enable systemd-resolved
     systemctl enable systemd-resolved.service
   releases:
-  - bullseye
   - bookworm
   - sid
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Enable systemd-resolved
+    systemctl enable systemd-resolved.service
+  variants:
+  - default
+  releases:
+  - bullseye
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Disable systemd-resolved
+    systemctl disable systemd-resolved.service
+  variants:
+  - cloud
+  releases:
+  - bullseye
 
 - trigger: post-packages
   action: |-
