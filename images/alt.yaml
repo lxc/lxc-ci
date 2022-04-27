@@ -161,10 +161,5 @@ actions:
   variants:
   - cloud
 
-environment:
-  variables:
-  - key: TMPDIR
-    value: false
-
 mappings:
   architecture_map: altlinux
