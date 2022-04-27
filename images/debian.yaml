@@ -938,7 +938,6 @@ files:
   variants:
   - cloud
   releases:
-  - bullseye
   - bookworm
 
 - path: /etc/default/grub.d/50-lxd.cfg
