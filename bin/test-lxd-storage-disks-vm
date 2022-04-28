@@ -28,7 +28,6 @@ cleanup() {
     exit 0
 }
 
-poolDriverList="${1:-dir btrfs lvm zfs ceph}"
 FAIL=1
 trap cleanup EXIT HUP INT TERM
 
