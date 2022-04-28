@@ -26,7 +26,7 @@ cleanup() {
     exit 0
 }
 
-poolDriverList="${1:-dir btrfs lvm zfs ceph}"
+poolDriverList="${1:-dir btrfs lvm lvm-thin zfs ceph}"
 FAIL=1
 trap cleanup EXIT HUP INT TERM
 
@@ -80,6 +80,10 @@ do
                 lxc storage create "${poolName}" "${poolDriver}"
         elif [ "${poolDriver}" = "ceph" ]; then
                 lxc storage create "${poolName}" "${poolDriver}" source="${poolName}"
+        elif [ "${poolDriver}" = "lvm" ]; then
+                lxc storage create "${poolName}" "${poolDriver}" size=40GiB lvm.use_thinpool=false
+        elif [ "${poolDriver}" = "lvm-thin" ]; then
+                lxc storage create "${poolName}" lvm size=20GiB
         else
                 lxc storage create "${poolName}" "${poolDriver}" size=20GiB
         fi
@@ -338,7 +342,7 @@ do
         lxc stop -f v1
 
         echo "==> Copy to different storage pool and check size"
-        dstPoolDriver=zfs # Use ZFS storage pool as that fixed volumes not files.
+        dstPoolDriver=zfs # Use ZFS storage pool as that has fixed volumes not files.
         if [ "${poolDriver}" = "zfs" ]; then
                 dstPoolDriver=lvm # Use something different when testing ZFS.
         fi
