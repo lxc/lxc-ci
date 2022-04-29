@@ -605,6 +605,9 @@ actions:
 
     systemctl enable systemd-resolved
     systemctl enable systemd-networkd
+
+    # Disable systemd-binfmt as it doesn't work in containers
+    systemctl disable systemd-binfmt.service
   variants:
   - systemd
 
