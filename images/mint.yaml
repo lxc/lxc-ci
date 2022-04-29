@@ -402,5 +402,8 @@ actions:
     # Cleanup temporary shadow paths
     rm /etc/*-
 
+    # Disable systemd timers and service files which fail
+    systemctl disable ua-timer.timer
+
 mappings:
   architecture_map: debian
