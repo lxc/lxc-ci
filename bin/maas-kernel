@@ -42,6 +42,7 @@ case "$i" in
       nvidia)
         echo "===> Installing the NVIDIA driver"
 
+        echo "MODULES=dep" > /etc/initramfs-tools/conf.d/modules.conf
         apt-get update
         apt-get dist-upgrade --yes
         apt-get install linux-generic --yes
@@ -50,12 +51,13 @@ case "$i" in
 
         echo "blacklist nouveau" > /etc/modprobe.d/blacklist-nouveau.conf
         echo "options nouveau modeset=0" >> /etc/modprobe.d/blacklist-nouveau.conf
-        sudo update-initramfs -u
+        update-initramfs -u
       ;;
 
       nvidia-mig)
         echo "===> Installing the NVIDIA MIG driver"
 
+        echo "MODULES=dep" > /etc/initramfs-tools/conf.d/modules.conf
         apt-get update
         apt-get dist-upgrade --yes
         apt-get install linux-generic --yes
@@ -64,12 +66,13 @@ case "$i" in
 
         echo "blacklist nouveau" > /etc/modprobe.d/blacklist-nouveau.conf
         echo "options nouveau modeset=0" >> /etc/modprobe.d/blacklist-nouveau.conf
-        sudo update-initramfs -u
+        update-initramfs -u
       ;;
 
       amd-vgpu)
         echo "===> Installing the AMD vGPU driver"
 
+        echo "MODULES=dep" > /etc/initramfs-tools/conf.d/modules.conf
         apt-get update
         apt-get dist-upgrade --yes
         apt-get install build-essential --yes
@@ -78,12 +81,13 @@ case "$i" in
         depmod -a
 
         echo "blacklist amdgpu" > /etc/modprobe.d/blacklist-amdgpu.conf
-        sudo update-initramfs -u
+        update-initramfs -u
       ;;
 
       nvidia-vgpu)
         echo "===> Installing the NVIDIA vGPU driver"
 
+        echo "MODULES=dep" > /etc/initramfs-tools/conf.d/modules.conf
         apt-get update
         apt-get dist-upgrade --yes
         apt-get install build-essential --yes
@@ -92,12 +96,13 @@ case "$i" in
 
         echo "blacklist nouveau" > /etc/modprobe.d/blacklist-nouveau.conf
         echo "options nouveau modeset=0" >> /etc/modprobe.d/blacklist-nouveau.conf
-        sudo update-initramfs -u
+        update-initramfs -u
       ;;
 
       ubuntu)
         echo "===> Ensuring default kernel is up to date"
 
+        echo "MODULES=dep" > /etc/initramfs-tools/conf.d/modules.conf
         apt-get update
         apt-get dist-upgrade --yes
       ;;
@@ -117,6 +122,7 @@ case "$i" in
       ubuntu-bootstrap)
         echo "===> Installing the current bootstrap kernel"
 
+        echo "MODULES=dep" > /etc/initramfs-tools/conf.d/modules.conf
         apt-get update
         apt-get install software-properties-common --yes
         apt-add-repository ppa:canonical-kernel-team/bootstrap --yes
@@ -127,6 +133,7 @@ case "$i" in
       ubuntu-unstable)
         echo "===> Installing the current unstable kernel"
 
+        echo "MODULES=dep" > /etc/initramfs-tools/conf.d/modules.conf
         apt-get update
         apt-get install software-properties-common --yes
         apt-add-repository ppa:canonical-kernel-team/unstable --yes
@@ -139,6 +146,7 @@ case "$i" in
 
         wget -e robots=off -r --no-parent -A '*all*.deb' -R '*lpae*' -R '*lowlatency*' https://kernel.ubuntu.com/~kernel-ppa/mainline/daily/current/
         wget -e robots=off -r --no-parent -A '*amd64*.deb' -R '*lpae*' -R '*lowlatency*' https://kernel.ubuntu.com/~kernel-ppa/mainline/daily/current/
+        echo "MODULES=dep" > /etc/initramfs-tools/conf.d/modules.conf
         apt-get update
         apt-get install ./kernel.ubuntu.com/~kernel-ppa/mainline/daily/current/amd64/*.deb --yes
         apt-get dist-upgrade --yes
