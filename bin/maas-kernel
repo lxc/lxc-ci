@@ -50,7 +50,7 @@ case "$i" in
 
         echo "blacklist nouveau" > /etc/modprobe.d/blacklist-nouveau.conf
         echo "options nouveau modeset=0" >> /etc/modprobe.d/blacklist-nouveau.conf
-        sudo update-initramfs -u
+        update-initramfs -u
       ;;
 
       nvidia-mig)
@@ -64,7 +64,7 @@ case "$i" in
 
         echo "blacklist nouveau" > /etc/modprobe.d/blacklist-nouveau.conf
         echo "options nouveau modeset=0" >> /etc/modprobe.d/blacklist-nouveau.conf
-        sudo update-initramfs -u
+        update-initramfs -u
       ;;
 
       amd-vgpu)
@@ -78,7 +78,7 @@ case "$i" in
         depmod -a
 
         echo "blacklist amdgpu" > /etc/modprobe.d/blacklist-amdgpu.conf
-        sudo update-initramfs -u
+        update-initramfs -u
       ;;
 
       nvidia-vgpu)
@@ -92,7 +92,7 @@ case "$i" in
 
         echo "blacklist nouveau" > /etc/modprobe.d/blacklist-nouveau.conf
         echo "options nouveau modeset=0" >> /etc/modprobe.d/blacklist-nouveau.conf
-        sudo update-initramfs -u
+        update-initramfs -u
       ;;
 
       ubuntu)
