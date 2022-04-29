@@ -298,6 +298,15 @@ files:
   variants:
   - default
 
+- path: /etc/systemd/system/systemd-tmpfiles-setup.service.d/override.conf
+  generator: dump
+  content: |-
+    [Service]
+    ExecStart=
+    ExecStart=/bin/systemd-tmpfiles --clean
+  releases:
+  - tara
+
 - name: meta-data
   generator: cloud-init
   variants:
@@ -392,6 +401,9 @@ actions:
 
     # Cleanup temporary shadow paths
     rm /etc/*-
+
+    # Disable systemd timers and service files which fail
+    systemctl disable ua-timer.timer
 
 mappings:
   architecture_map: debian
