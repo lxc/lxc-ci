@@ -131,6 +131,7 @@ lxc config device add c1-sriov eth0 nic nictype=sriov parent="${parentNIC}" name
 lxc start c1-sriov
 
 # Wait for VMs to start.
+sleep 30
 waitVMAgent v1-physical
 waitVMAgent v1-macvlan
 waitVMAgent v1-sriov
