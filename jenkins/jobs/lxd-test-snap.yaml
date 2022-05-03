@@ -77,11 +77,7 @@
 
     builders:
     - shell: |-
-        if [ "${{dist}}" = "ubuntu-core-16" ] || [ "${{dist}}" = "ubuntu-core-18" ] || [ "${{dist}}" = "ubuntu-core-20" ]; then
-        cd ~/lxc-ci
-        else
-        cd /lxc-ci
-        fi
+        cd /lxc-ci || cd ~/lxc-ci
         exec sudo bin/test-lxd-snapd {track} {channel}
 
     properties:
