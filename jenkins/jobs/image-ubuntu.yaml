@@ -26,6 +26,7 @@
         - focal
         - impish
         - jammy
+        - kinetic
 
     - axis:
         name: variant
@@ -64,7 +65,8 @@
       !(release=="bionic" && variant == "desktop") &&
       !(architecture=="i386" && release == "focal") &&
       !(architecture=="i386" && release == "impish") &&
-      !(architecture=="i386" && release == "jammy")'
+      !(architecture=="i386" && release == "jammy") &&
+      !(architecture=="i386" && release == "kinetic")'
 
     properties:
     - build-discarder:
