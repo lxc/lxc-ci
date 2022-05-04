@@ -926,20 +926,6 @@ files:
   - bookworm
   - sid
 
-- path: /etc/systemd/network/enp5s0.network
-  generator: dump
-  content: |-
-    [Match]
-    Name=enp5s0
-    [Network]
-    DHCP=true
-  types:
-  - vm
-  variants:
-  - cloud
-  releases:
-  - bookworm
-
 - path: /etc/default/grub.d/50-lxd.cfg
   generator: dump
   content: |-
