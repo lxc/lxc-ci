@@ -1172,6 +1172,7 @@ actions:
   variants:
   - cloud
   releases:
+  - bookworm
   - sid
 
 - trigger: post-packages
@@ -1187,7 +1188,6 @@ actions:
   - cloud
   releases:
   - bullseye
-  - bookworm
 
 - trigger: post-packages
   action: |-
