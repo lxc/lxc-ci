@@ -926,20 +926,6 @@ files:
   - bookworm
   - sid
 
-- path: /etc/systemd/network/enp5s0.network
-  generator: dump
-  content: |-
-    [Match]
-    Name=enp5s0
-    [Network]
-    DHCP=true
-  types:
-  - vm
-  variants:
-  - cloud
-  releases:
-  - bookworm
-
 - path: /etc/default/grub.d/50-lxd.cfg
   generator: dump
   content: |-
@@ -1186,6 +1172,7 @@ actions:
   variants:
   - cloud
   releases:
+  - bookworm
   - sid
 
 - trigger: post-packages
@@ -1201,7 +1188,6 @@ actions:
   - cloud
   releases:
   - bullseye
-  - bookworm
 
 - trigger: post-packages
   action: |-
@@ -1305,7 +1291,7 @@ actions:
     set -eux
 
     umount -l /etc/resolv.conf || true
-    ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+    ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
   releases:
   - bookworm
   - sid
@@ -1316,7 +1302,7 @@ actions:
     set -eux
 
     umount -l /etc/resolv.conf || true
-    ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+    ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
   releases:
   - bullseye
   variants:
