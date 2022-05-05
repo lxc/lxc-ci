@@ -38,11 +38,6 @@
               !include: ../includes/admins/lxcfs.yaml.inc
 
         - "{repo}-github-pull-dco":
-            repo: lxd
-            admins:
-              !include: ../includes/admins/lxd.yaml.inc
-
-        - "{repo}-github-pull-dco":
             repo: lxd-demo-server
             admins:
               !include: ../includes/admins/lxd-demo-server.yaml.inc
@@ -57,11 +52,6 @@
             repo: linuxcontainers.org
             admins:
               !include: ../includes/admins/linuxcontainers.org.yaml.inc
-
-        - "{repo}-github-pull-dco":
-            repo: stable-maintenance
-            admins:
-              !include: ../includes/admins/stable-maintenance.yaml.inc
 
         # Packaging
         - "{repo}-github-pull-dco":
