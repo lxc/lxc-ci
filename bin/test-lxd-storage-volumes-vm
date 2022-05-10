@@ -26,7 +26,7 @@ cleanup() {
     exit 0
 }
 
-poolDriverList="${1:-dir btrfs lvm zfs ceph}"
+poolDriverList="${1:-dir btrfs lvm lvm-thin zfs ceph}"
 FAIL=1
 trap cleanup EXIT HUP INT TERM
 
@@ -81,6 +81,10 @@ do
 		lxc storage create "${poolName}" "${poolDriver}" volume.size=5GB
 	elif [ "${poolDriver}" = "ceph" ]; then
 		lxc storage create "${poolName}" "${poolDriver}" source="${poolName}" volume.size=5GB
+        elif [ "${poolDriver}" = "lvm" ]; then
+                lxc storage create "${poolName}" "${poolDriver}" size=40GiB lvm.use_thinpool=false volume.size=5GB
+        elif [ "${poolDriver}" = "lvm-thin" ]; then
+                lxc storage create "${poolName}" lvm size=20GiB volume.size=5GB
 	else
 		lxc storage create "${poolName}" "${poolDriver}" size=20GB volume.size=5GB
 	fi
@@ -109,6 +113,8 @@ do
 	echo "==> Import custom block volume"
 	lxc storage volume import "${poolName}" vol1.tar.gz vol2
 	lxc storage volume import "${poolName}" vol1-optimized.tar.gz vol3
+	rm vol1.tar.gz
+	rm vol1-optimized.tar.gz
 
 	echo "==> Attach custom block volumes to VM"
 	# Both volumes can be attached at the same time. The VM will have /dev/sdb and /dev/sdc.
