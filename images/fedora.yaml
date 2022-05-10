@@ -178,12 +178,20 @@ packages:
 
   - packages:
     - cloud-init
-    - initscripts
-    - NetworkManager
     - openssh-server
     action: install
     variants:
     - cloud
+
+  - packages:
+    - initscripts
+    - NetworkManager
+    action: install
+    variants:
+    - cloud
+    releases:
+    - 34
+    - 35
 
   - packages:
     - cloud-utils-growpart
@@ -243,8 +251,26 @@ actions:
 - trigger: post-packages
   action: |-
     #!/bin/sh
+    systemctl enable systemd-networkd
+  variants:
+  - cloud
+  releases:
+  - 36
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
     systemctl disable systemd-networkd
     systemctl enable NetworkManager
+  variants:
+  - cloud
+  releases:
+  - 34
+  - 35
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
     systemctl enable cloud-init
     systemctl enable cloud-config
     systemctl enable cloud-final
