@@ -113,6 +113,8 @@ do
 	echo "==> Import custom block volume"
 	lxc storage volume import "${poolName}" vol1.tar.gz vol2
 	lxc storage volume import "${poolName}" vol1-optimized.tar.gz vol3
+	rm vol1.tar.gz
+	rm vol1-optimized.tar.gz
 
 	echo "==> Attach custom block volumes to VM"
 	# Both volumes can be attached at the same time. The VM will have /dev/sdb and /dev/sdc.
