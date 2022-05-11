@@ -363,6 +363,7 @@ ovn_basic_tests() {
     lxc network delete ovn-virtual-network --project testovn
     lxc image delete "${FINGERPRINT}" --project testovn
     lxc project delete testovn
+
     lxc network delete dummy --project default
     ip link delete dummy0
 
@@ -594,6 +595,12 @@ ovn_forward_tests() {
     # Add routes to the uplink network and check we can create forwards.
     lxc network set lxdbr0 ipv4.routes=192.0.2.0/24 ipv6.routes=2001:db8:1:2::/64 --project=default
 
+    # Add a static route to SNAT address on uplink to OVN network's router (simulating BGP route advert to uplink).
+    ovnIPv4="$(lxc network get ovn-virtual-network volatile.network.ipv4.address)"
+    ovnIPv6="$(lxc network get ovn-virtual-network volatile.network.ipv6.address)"
+    ip r add 192.0.2.1/32 via "${ovnIPv4}" dev lxdbr0
+    ip r add 2001:db8:1:2::1/128 via "${ovnIPv6}" dev lxdbr0
+
     # Check forwards can be created with no target address.
     lxc network forward create ovn-virtual-network 192.0.2.1
     lxc network forward create ovn-virtual-network 2001:db8:1:2::1
@@ -669,8 +676,10 @@ ovn_forward_tests() {
     # Add forward to u1 and test working.
     lxc network forward create ovn-virtual-network 192.0.2.1 target_address="${U1_IPV4}"
     lxc network forward create ovn-virtual-network 2001:db8:1:2::1 target_address="${U1_IPV6}"
+    sleep 2
 
-    # Check forward is working (including neighbour adverts) by pinging it.
+    # Check forward is working by pinging it.
+    # Relies on static route (above) rather than neighbour adverts see https://github.com/ovn-org/ovn/issues/124
     ping -c1 -4 -W5 192.0.2.1
     ping -c1 -6 -W5 2001:db8:1:2::1
 
