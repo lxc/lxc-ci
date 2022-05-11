@@ -676,6 +676,7 @@ ovn_forward_tests() {
     # Add forward to u1 and test working.
     lxc network forward create ovn-virtual-network 192.0.2.1 target_address="${U1_IPV4}"
     lxc network forward create ovn-virtual-network 2001:db8:1:2::1 target_address="${U1_IPV6}"
+    sleep 2
 
     # Check forward is working by pinging it.
     # Relies on static route (above) rather than neighbour adverts see https://github.com/ovn-org/ovn/issues/124
