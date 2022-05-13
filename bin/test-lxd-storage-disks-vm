@@ -163,6 +163,13 @@ waitVMAgent v1
 [ "$(lxc exec v1 --project restricted  -- stat /mnt/foo1 -c '%u:%g')" = "1000:1000" ] || false
 [ "$(lxc exec v1 --project restricted  -- stat /mnt/foo2 -c '%u:%g')" = "65534:65534" ] || false
 
+# Check security.secureboot setting is applied to running VM at next start up.
+lxc exec v1 -- mokutil --sb-state | grep -Fx "SecureBoot enabled"
+lxc profile set default security.secureboot=false
+lxc restart -f v1
+waitVMAgent v1
+lxc exec v1 -- mokutil --sb-state | grep -Fx "SecureBoot disabled"
+
 echo "==> Cleanup"
 lxc delete -f v1
 lxc project switch default
