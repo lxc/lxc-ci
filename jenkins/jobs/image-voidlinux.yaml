@@ -13,7 +13,6 @@
         - amd64
         - arm64
         - armhf
-        - i386
 
     - axis:
         name: release
@@ -37,7 +36,6 @@
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
         [ "${ARCH}" = "armhf" ] && ARCH="armv7l"
         [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
-        [ "${ARCH}" = "i386" ] && ARCH="i686"
 
         if [ "${variant}" != "default" ]; then
             exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/voidlinux.yaml \
@@ -52,23 +50,12 @@
             -o image.architecture=${ARCH} -o image.release=${release} \
             -o source.url="https://repo-us.voidlinux.org/live/current/"
 
-    execution-strategy:
-      combination-filter: '!(architecture=="i386" && variant=="musl")'
-
     properties:
     - build-discarder:
         num-to-keep: 2
 
     - raw:
         !include: ../includes/webhook.yaml.inc
-
-    - groovy-label:
-        script: |-
-            if (binding.getVariables().get("architecture") == "i386") {
-                return "native-amd64";
-            }
-
-            return null;
 
     publishers:
     - archive:
@@ -77,7 +64,6 @@
 
     - workspace-cleanup:
         fail-build: false
-
 
     - naginator:
         rerun-unstable-builds: true
