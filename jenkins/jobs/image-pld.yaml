@@ -11,7 +11,6 @@
         type: slave
         values:
         - amd64
-        - i386
 
     - axis:
         name: release
@@ -32,7 +31,6 @@
 
         ARCH=${architecture}
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
-        [ "${ARCH}" = "i386" ] && ARCH="i686"
 
         TYPE="container"
 
@@ -47,14 +45,6 @@
 
     - raw:
         !include: ../includes/webhook.yaml.inc
-
-    - groovy-label:
-        script: |-
-            if (binding.getVariables().get("architecture") == "i386") {
-                return "native-amd64";
-            }
-
-            return null;
 
     publishers:
     - archive:
