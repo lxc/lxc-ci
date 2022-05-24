@@ -12,7 +12,6 @@
         values:
         - amd64
         - armhf
-        - i386
         # - arm64
 
     - axis:
@@ -35,7 +34,6 @@
         ARCH=${architecture}
         [ "${ARCH}" = "armhf" ] && ARCH="armv7a_vfpv3_hardfp"
         [ "${ARCH}" = "aarch64" ] && ARCH="arm64_generic"
-        [ "${ARCH}" = "i386" ] && ARCH="generic_32"
         [ "${ARCH}" = "amd64" ] && ARCH="generic_64"
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/funtoo.yaml \
@@ -48,14 +46,6 @@
 
     - raw:
         !include: ../includes/webhook.yaml.inc
-
-    - groovy-label:
-        script: |-
-            if (binding.getVariables().get("architecture") == "i386") {
-                return "native-amd64";
-            }
-
-            return null;
 
     publishers:
     - archive:
