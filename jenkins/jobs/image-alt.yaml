@@ -13,7 +13,6 @@
         - amd64
         - arm64
         - armhf
-        - i386
         - ppc64el
 
     - axis:
@@ -37,7 +36,6 @@
         LXD_ARCHITECTURE="${architecture}"
 
         ARCH=${architecture}
-        [ "${ARCH}" = "i386" ] && ARCH="i586"
         [ "${ARCH}" = "ppc64el" ] && ARCH="ppc64le"
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/alt.yaml \
