@@ -13,7 +13,6 @@
         - amd64
         - armhf
         - arm64
-        - i386
         - ppc64el
 
     - axis:
@@ -38,7 +37,6 @@
         ARCH=${architecture}
         [ "${ARCH}" = "armhf" ] && ARCH="armv7a_hardfp"
         [ "${ARCH}" = "ppc64el" ] && ARCH="ppc64le"
-        [ "${ARCH}" = "i386" ] && ARCH="i686"
 
         TYPE="container"
         if [ "${architecture}" = "amd64" ] || [ "${architecture}" = "arm64" ]; then
@@ -58,7 +56,7 @@
 
     execution-strategy:
       combination-filter: '
-      !(variant == "cloud" && architecture != "amd64" && architecture != "i386")
+      !(variant == "cloud" && architecture != "amd64")
       && !(variant == "systemd" && architecture == "s390x")'
 
     properties:
@@ -67,14 +65,6 @@
 
     - raw:
         !include: ../includes/webhook.yaml.inc
-
-    - groovy-label:
-        script: |-
-            if (binding.getVariables().get("architecture") == "i386") {
-                return "native-amd64";
-            }
-
-            return null;
 
     publishers:
     - archive:
