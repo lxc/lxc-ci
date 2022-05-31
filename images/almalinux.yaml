@@ -141,20 +141,6 @@ files:
   types:
   - container
 
-- name: ifcfg-enp5s0.lxd
-  path: /etc/sysconfig/network-scripts/ifcfg-enp5s0
-  generator: template
-  content: |-
-    DEVICE=enp5s0
-    BOOTPROTO=dhcp
-    ONBOOT=yes
-    HOSTNAME={{ container.name }}
-    TYPE=Ethernet
-    MTU=
-    DHCP_HOSTNAME={{ container.name }}
-  types:
-  - vm
-
 - path: /etc/default/grub
   generator: dump
   content: |-
