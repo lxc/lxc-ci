@@ -341,7 +341,7 @@ do
         [ $(($(lxc exec v1 -- blockdev --getsize64 /dev/sda)/${GiB})) -eq "7" ]
         lxc stop -f v1
 
-        echo "==> Copy to different storage pool and check size"
+        echo "==> Copy to different storage pool with different driver and check size"
         dstPoolDriver=zfs # Use ZFS storage pool as that has fixed volumes not files.
         if [ "${poolDriver}" = "zfs" ]; then
                 dstPoolDriver=lvm # Use something different when testing ZFS.
@@ -355,6 +355,11 @@ do
 
         echo "==> Checking copied VM root disk size is 7GiB"
         [ $(($(lxc exec v2 -- blockdev --getsize64 /dev/sda)/${GiB})) -eq "7" ]
+        lxc delete -f v2
+
+        echo "==> Copy to different storage pool with same driver"
+        lxc storage create "${poolName}3" "${poolDriver}" size=20GiB
+        lxc copy v1 v2 -s "${poolName}3"
         lxc delete -f v2
 
         echo "==> Grow above default volume size and copy to different storage pool"
