@@ -54,7 +54,7 @@
 
     execution-strategy:
       combination-filter: '
-      !(architecture == "ppc64el" && release != "34")'
+      !(architecture == "armhf" && release != "36")'
 
     properties:
     - build-discarder:
