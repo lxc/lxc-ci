@@ -405,6 +405,7 @@ do
         lxc profile delete vmsmall
 
         echo "==> Deleting storage pool"
+        lxc storage delete "${poolName}3"
         lxc storage delete "${poolName}2"
         lxc storage delete "${poolName}"
 done
