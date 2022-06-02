@@ -358,7 +358,7 @@ do
         lxc delete -f v2
 
         echo "==> Copy to different storage pool with same driver"
-        lxc storage create "${poolName}3" "${poolDriver}" size=20GiB
+        lxc storage create "${poolName}3" "${poolDriver}"
         lxc copy v1 v2 -s "${poolName}3"
         lxc delete -f v2
 
