@@ -58,8 +58,10 @@ git checkout "${COMMIT}"
 
 # Build LXC
 cd /build/source/
-./autogen.sh
-CC=clang ./configure --disable-python3 --enable-tests --prefix=/usr/ --sysconfdir=/etc/ --localstatedir=/var/
+if [ -e autogen.sh ]; then
+    ./autogen.sh
+    CC=clang ./configure --disable-python3 --enable-tests --prefix=/usr/ --sysconfdir=/etc/ --localstatedir=/var/
+fi
 make
 make install
 
