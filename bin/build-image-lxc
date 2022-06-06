@@ -13,7 +13,7 @@ ARCH="$1"
 TARGET="$2"
 
 # Create the container
-lxc init "images:ubuntu/bionic/${ARCH}" build-lxc-cache \
+lxc init "images:ubuntu/jammy/${ARCH}" build-lxc-cache \
     -c security.nesting=true
 
 # Start the container
@@ -39,10 +39,10 @@ fi
 # Setup clean sources
 echo force-unsafe-io >> /etc/dpkg/dpkg.cfg
 cat > /etc/apt/sources.list << EOL
-deb \${ARCHIVE} bionic main universe restricted multiverse
-deb \${ARCHIVE} bionic-updates main universe restricted multiverse
-deb \${ARCHIVE} bionic-security main universe restricted multiverse
-deb \${ARCHIVE} bionic-backports main universe restricted multiverse
+deb \${ARCHIVE} jammy main universe restricted multiverse
+deb \${ARCHIVE} jammy-updates main universe restricted multiverse
+deb \${ARCHIVE} jammy-security main universe restricted multiverse
+deb \${ARCHIVE} jammy-backports main universe restricted multiverse
 EOL
 apt-get update --yes
 
