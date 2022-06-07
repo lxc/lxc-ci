@@ -60,7 +60,7 @@ git checkout "${COMMIT}"
 cd /build/source/
 if [ -e autogen.sh ]; then
     ./autogen.sh
-    CC=clang ./configure --disable-python3 --enable-tests --prefix=/usr/ --sysconfdir=/etc/ --localstatedir=/var/
+    CC=clang CC_LD=gold ./configure --disable-python3 --enable-tests --prefix=/usr/ --sysconfdir=/etc/ --localstatedir=/var/
     make
     make install
 else
