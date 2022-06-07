@@ -64,7 +64,7 @@ if [ -e autogen.sh ]; then
     make
     make install
 else
-    CC=clang meson setup build/ -Dtests=true -Dpam-cgroup=true -Db_sanitize=address -Dprefix=/usr/ -Dsysconfdir=/etc/ -Dlocalstatedir=/var/
+    CC=clang meson setup build/ -Dtests=true -Dpam-cgroup=true -Dprefix=/usr/ -Dsysconfdir=/etc/ -Dlocalstatedir=/var/
     ninja -C build
     ninja -C build install
 fi
