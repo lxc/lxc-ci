@@ -50,10 +50,10 @@ apt-get update --yes
 apt-get install --yes --no-install-recommends \
     apparmor automake autoconf bash-completion bridge-utils build-essential \
     busybox-static clang cloud-image-utils curl dbus debhelper debootstrap \
-    devscripts dh-apparmor dh-autoreconf dnsmasq-base \
-    docbook2x doxygen ed fakeroot file gcc gnupg graphviz git iptables meson \
-    net-tools libapparmor-dev libcap-dev libgnutls28-dev liblua5.2-dev \
-    libpam0g-dev libseccomp-dev libselinux1-dev libtool linux-libc-dev \
+    devscripts dh-apparmor dh-autoreconf dnsmasq-base docbook2x doxygen ed \
+    fakeroot file gcc gnupg graphviz git iptables meson net-tools \
+    libapparmor-dev libcap-dev libgnutls28-dev liblua5.2-dev libpam0g-dev \
+    libseccomp-dev libselinux1-dev libssl-dev libtool linux-libc-dev \
     lsb-release make openssl pkg-config python3-all-dev \
     python3-setuptools rsync squashfs-tools uidmap unzip uuid-runtime \
     wget xz-utils
