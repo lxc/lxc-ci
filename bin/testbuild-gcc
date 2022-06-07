@@ -61,9 +61,13 @@ cd /build/source/
 if [ -e autogen.sh ]; then
     ./autogen.sh
     ./configure --enable-tests --prefix=/usr/ --sysconfdir=/etc/ --localstatedir=/var/
+    make
+    make install
+else
+    meson setup build/ -Dtests=true -Dpam-cgroup=true -Db_sanitize=address -Dprefix=/usr/ -Dsysconfdir=/etc/ -Dlocalstatedir=/var/
+    ninja -C build
+    ninja -C build install
 fi
-make
-make install
 
 # Prepare for tests
 (
