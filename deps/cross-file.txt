@@ -1,0 +1,22 @@
+[binaries]
+c       = '/build/ndk/bin/armv7a-linux-androideabi29-clang'
+cpp     = '/build/ndk/bin/armv7a-linux-androideabi29-clang'
+ar      = '/build/ndk/bin/llvm-ar'
+as      = '/build/ndk/bin/llvm-as'
+ranlib  = '/build/ndk/bin/llvm-ranlib'
+ld      = '/build/ndk/bin/ld'
+strip   = '/build/ndk/bin/llvm-strip'
+pkgconfig = 'false'
+
+[host_machine]
+system = 'android'
+cpu_family = 'arm'
+cpu = 'arm'
+endian = 'little'
+
+[built-in options]
+c_args = [
+	'--sysroot=/build/ndk/sysroot/',
+	'-I/build/libcap/libcap/include/']
+c_link_args = [
+	'--sysroot=/build/ndk/sysroot/']

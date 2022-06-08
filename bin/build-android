@@ -30,6 +30,9 @@ lxc copy "cache-lxc-${ARCH}" "${CNAME}"
 # Start the container
 lxc start "${CNAME}"
 
+# Copy the cross-file script
+lxc file push /lxc-ci/deps/cross-file.txt "${CNAME}/build/"
+
 set -x
 
 (
@@ -52,26 +55,36 @@ cd /build/source
 git fetch "${REPO}" "+refs/pull/*:refs/remotes/origin/pr/*"
 git checkout "${COMMIT}"
 
-# Environment
-export PATH=/build/ndk/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/:${PATH}
-export CC="arm-linux-androideabi-gcc --sysroot=/build/ndk/platforms/android-21/arch-arm/"
-export DESTDIR=/build/android
-export BUILD_CC=gcc
-export LD=arm-linux-androideabi-ld
-
 # Copy libcap
 mkdir -p /build/android/data/lxc/lxc/lib/
 cp -P /build/libcap/libcap/libcap.so* /build/android/data/lxc/lxc/lib/
 
-# Build LXC
-cd /build/source/
-./autogen.sh
-./configure --host=arm-eabi CFLAGS=-I/build/libcap/libcap/include/ \
-    --disable-api-docs --disable-lua --disable-python --enable-tests \
-    --disable-examples --prefix=/data/lxc/lxc --host=arm-linux-androideabi \
-    --with-runtime-path=/cache/ --with-config-path=/data/lxc/containers/
-make
-make install
+if [ -e autogen.sh ]; then
+    # Environment
+    export PATH=/build/ndk/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/:${PATH}
+    export CC="arm-linux-androideabi-gcc --sysroot=/build/ndk/platforms/android-21/arch-arm/"
+    export DESTDIR=/build/android
+    export BUILD_CC=gcc
+    export LD=arm-linux-androideabi-ld
+
+    # Build LXC
+    cd /build/source/
+    ./autogen.sh
+    ./configure --host=arm-eabi CFLAGS=-I/build/libcap/libcap/include/ \
+        --disable-api-docs --disable-lua --disable-python --enable-tests \
+        --disable-examples --prefix=/data/lxc/lxc --host=arm-linux-androideabi \
+        --with-runtime-path=/cache/ --with-config-path=/data/lxc/containers/
+    make
+    make install
+else
+    meson setup build/ --cross-file /build/cross-file.txt \
+        -Dprefix=/data/lxc/lxc -Dinit-script=[] -Dman=false \
+        -Dpam-cgroup=false -Dtests=true \
+        -Dglobal-config-path=/data/lxc/containers/ \
+        -Druntime-path=/cache/
+    ninja -C build
+    ninja -C build install
+fi
 
 # Generate tarball
 tar -zcf /build/lxc-android.tar.gz -C /build/android data
