@@ -70,19 +70,27 @@ fi
 # Override the GPG server
 sed -i "s/^DOWNLOAD_VALIDATE.*/DOWNLOAD_VALIDATE=\"false\"/" /usr/share/lxc/templates/lxc-download
 export DOWNLOAD_KEYSERVER="hkp://keyserver.ubuntu.com:80"
+cd /usr/bin
 
 # The actual tests
 ## Default testsuite
-for testbin in /usr/bin/lxc-test-*; do
+for testbin in lxc-test-*; do
+    [ -x "$testbin" ] || continue
+    echo "${testbin}" | grep -qv "\.in$" || continue
     STRING="lxc-tests: $testbin"
-    [ ! -x "$testbin" ] && continue
 
     # Some tests can't be run standalone
-    [ "$testbin" = "/usr/bin/lxc-test-may-control" ] && continue
+    [ "$testbin" = "lxc-test-may-control" ] && continue
 
     # Skip some tests when running in a container
     if [ -f /run/container_type ] || (type systemd-detect-virt >/dev/null 2>&1 && systemd-detect-virt  --container >/dev/null 2>&1); then
-        [ "$testbin" = "/usr/bin/lxc-test-reboot" ] && \
+        [ "$testbin" = "lxc-test-apparmor" ] && \
+            ignore "$STRING" && continue
+
+        [ "$testbin" = "lxc-test-device-add-remove" ] && \
+            ignore "$STRING" && continue
+
+        [ "$testbin" = "lxc-test-reboot" ] && \
             ignore "$STRING" && continue
     fi
 
@@ -90,26 +98,46 @@ for testbin in /usr/bin/lxc-test-*; do
     if [ -f /proc/self/uid_map ] && \
             ! grep -q "4294967295$" /proc/self/uid_map; then
 
-        [ "$testbin" = "/usr/bin/lxc-test-unpriv" ] && \
+        [ "$testbin" = "lxc-test-unpriv" ] && \
             ignore "$STRING" && continue
 
-        [ "$testbin" = "/usr/bin/lxc-test-usernic" ] && \
+        [ "$testbin" = "lxc-test-usernic" ] && \
             ignore "$STRING" && continue
     fi
 
     # Skip some tests on old kernels
     if [ ! -f /proc/self/uid_map ] || [ ! -f /etc/subuid ] || \
        [ ! -f /etc/subgid ]; then
-        [ "$testbin" = "/usr/bin/lxc-test-unpriv" ] && \
+        [ "$testbin" = "lxc-test-unpriv" ] && \
             ignore "$STRING" && continue
 
-        [ "$testbin" = "/usr/bin/lxc-test-usernic" ] && \
+        [ "$testbin" = "lxc-test-usernic" ] && \
+            ignore "$STRING" && continue
+    fi
+
+    # Skip some tests because of broken busybox
+    [ "$testbin" = "lxc-test-state-server" ] && \
+        ignore "$STRING" && continue
+
+    # Skip some tests due to cgroup v2 incompatibility
+    if [ -e /sys/fs/cgroup/system.slice/memory.current ]; then
+
+        [ "$testbin" = "lxc-test-apparmor-mount" ] && \
+            ignore "$STRING" && continue
+
+        [ "$testbin" = "lxc-test-autostart" ] && \
+            ignore "$STRING" && continue
+
+        [ "$testbin" = "lxc-test-no-new-privs" ] && \
+            ignore "$STRING" && continue
+
+        [ "$testbin" = "lxc-test-unpriv" ] && \
             ignore "$STRING" && continue
     fi
 
     OUT=$(mktemp)
     START_TIME=$(date +%s)
-    $testbin >$OUT 2>&1 && pass "$STRING" || fail "$STRING" "$testbin" "$OUT"
+    ./$testbin >$OUT 2>&1 && pass "$STRING" || fail "$STRING" "$testbin" "$OUT"
     rm $OUT
 done
 
