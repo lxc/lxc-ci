@@ -133,6 +133,9 @@ for testbin in lxc-test-*; do
 
         [ "$testbin" = "lxc-test-unpriv" ] && \
             ignore "$STRING" && continue
+
+        [ "$testbin" = "lxc-test-usernic" ] && \
+            ignore "$STRING" && continue
     fi
 
     OUT=$(mktemp)
