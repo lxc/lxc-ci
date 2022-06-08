@@ -68,7 +68,6 @@ EOF
 # Install Android dependencies
 if [ "${ARCH}" = "amd64" ]; then
     lxc file push deps/android-ndk-linux-x86_64.zip build-lxc-cache/root/ndk.zip
-    lxc file push deps/genetlink.h build-lxc-cache/root/genetlink.h
     (
     cat << EOF
 #!/bin/sh
@@ -79,24 +78,10 @@ cd /build/ndk/
 
 # Unpack the Android NDK
 unzip -q /root/ndk.zip
-mv android-ndk-*/* .
-rmdir android-ndk-*
+mv android-ndk-*/toolchains/llvm/prebuilt/linux-x86_64/* .
+rm -Rf android-ndk-*
+
 rm /root/ndk.zip
-
-# Workaround missing header
-mv /root/genetlink.h /build/ndk/platforms/android-21/arch-arm/usr/include/linux/genetlink.h
-
-# Cleanup ndk
-for i in /build/ndk/platforms/android-*; do [ "\$(echo \$i | sed "s/.*\///g")" != "android-21" ] && rm -rf \$i; done
-for i in /build/ndk/toolchains/*; do [ "\$(echo \$i | sed "s/.*\///g")" != "arm-linux-androideabi-4.9" ] && rm -rf \$i; done
-rm -rf /build/ndk/build/
-rm -rf /build/ndk/CHANGELOG.md
-rm -rf /build/ndk/ndk-*
-rm -rf /build/ndk/prebuilt
-rm -rf /build/ndk/python-packages/
-rm -rf /build/ndk/shader-tools/
-rm -rf /build/ndk/source.properties
-rm -rf /build/ndk/sources
 
 # Get specific libcap source
 git clone git://git.kernel.org/pub/scm/linux/kernel/git/morgan/libcap.git /build/libcap
@@ -104,19 +89,19 @@ cd /build/libcap
 git checkout 0ee94211e95096750ede752acd13b163aa6d5046
 
 # Environment
-export PATH=/build/ndk/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/:\${PATH}
-export CC="arm-linux-androideabi-gcc --sysroot=/build/ndk/platforms/android-21/arch-arm/"
+export PATH=/build/ndk/bin/:\${PATH}
+export CC="armv7a-linux-androideabi29-clang --sysroot=/build/ndk/sysroot/"
 export DESTDIR=/build/android
-export BUILD_CC=gcc
+export BUILD_CC=clang
 
 # Build and install libcap
 cd /build/libcap/libcap/
 make -e LIBATTR=no
 
-cp -P /build/libcap/libcap/libcap.so* /build/ndk/platforms/android-21/arch-arm/usr/lib/
-cp -P /build/libcap/libcap/libcap.a /build/ndk/platforms/android-21/arch-arm/usr/lib/
-cp -P /build/libcap/libcap/include/sys/capability.h /build/ndk/platforms/android-21/arch-arm/usr/include/sys/
-cp -P /build/libcap/libcap/include/uapi/linux/capability.h /build/ndk/platforms/android-21/arch-arm/usr/include/linux/
+cp -P /build/libcap/libcap/libcap.so* /build/ndk/sysroot/usr/lib/
+cp -P /build/libcap/libcap/libcap.a /build/ndk/sysroot/usr/lib/
+cp -P /build/libcap/libcap/include/sys/capability.h /build/ndk/sysroot/usr/include/sys/
+cp -P /build/libcap/libcap/include/uapi/linux/capability.h /build/ndk/sysroot/usr/include/linux/
 EOF
     ) | lxc exec build-lxc-cache -- sh
 fi
