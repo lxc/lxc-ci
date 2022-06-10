@@ -231,6 +231,15 @@ packages:
     - vm
 
 actions:
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
+    # Increase connection timeout
+    echo timeout=60 >> /etc/dnf/dnf.conf
+
+    # Let dnf find the fastest mirror
+    echo fastestmirror=True >> /etc/dnf/dnf.conf
+
 - trigger: post-packages
   action: |-
     #!/bin/sh
