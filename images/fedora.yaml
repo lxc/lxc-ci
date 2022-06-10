@@ -190,7 +190,6 @@ packages:
     variants:
     - cloud
     releases:
-    - 34
     - 35
 
   - packages:
@@ -265,7 +264,6 @@ actions:
   variants:
   - cloud
   releases:
-  - 34
   - 35
 
 - trigger: post-packages
