@@ -54,19 +54,32 @@ git checkout "${COMMIT}"
 
 # Build the dist tarball
 cd /build/source/
-./autogen.sh
-./configure --enable-doc --enable-apidoc --enable-python \
-    --prefix=/usr/ --sysconfdir=/etc/ --localstatedir=/var/
+if [ -e autogen.sh ]; then
+    ./autogen.sh
+    ./configure --enable-doc --enable-apidoc --enable-python \
+        --prefix=/usr/ --sysconfdir=/etc/ --localstatedir=/var/
+fi
 
 make dist
 mv *.tar.gz /build/lxc.tar.gz
 
 # Build API doc
-make -C doc
+if [ -e autogen.sh ]; then
+    make -C doc
+else
+    make
+    ( cd doc/api/ && doxygen Doxyfile )
+fi
+
 tar -zcf /build/apidoc.tar.gz -C /build/source/doc/api/html/ .
 
 # Build manpages
-cd /build/source/doc/
+if [ -e autogen.sh ]; then
+    cd /build/source/doc/
+else
+    cd /build/source/build/doc/
+fi
+
 find . | grep \\\\.[0-9]$ | while read line; do
     dst_file="/build/man/\${line}"
     mkdir -p \$(dirname \$dst_file)
