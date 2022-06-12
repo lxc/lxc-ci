@@ -156,7 +156,7 @@ if echo "${IP}" | grep -q ":"; then
 else
     scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "${script}" "ubuntu@${IP}:test-script"
 fi
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "ubuntu@${IP}" sudo sh test-script "$@"
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa -tt "ubuntu@${IP}" sudo sh test-script "$@"
 
 if [ -n "${WORKSPACE:-}" ]; then
     ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa "ubuntu@${IP}" sudo cat artifacts.tar.gz | tar zxvf - -C "${WORKSPACE}" >/dev/null 2>&1 || true
