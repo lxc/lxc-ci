@@ -454,6 +454,7 @@ actions:
     printf "[main]\ndhcp=dhclient" > /etc/NetworkManager/conf.d/dhcp-client.conf
 
     systemctl enable NetworkManager.service
+    systemctl mask systemd-firstboot.service
   types:
   - container
   variants:
