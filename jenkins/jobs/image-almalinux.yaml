@@ -13,7 +13,6 @@
         - amd64
         - arm64
         - ppc64el
-        - s390x
 
     - axis:
         name: release
@@ -50,10 +49,6 @@
             ${LXD_ARCHITECTURE} ${TYPE} 7200 ${WORKSPACE} \
             -o image.architecture=${ARCH} -o image.release=${release} \
             -o image.variant=${variant} ${EXTRA_ARGS}
-
-    execution-strategy:
-      combination-filter: '
-      !(architecture=="s390x" && release!="9")'
 
     properties:
     - build-discarder:
