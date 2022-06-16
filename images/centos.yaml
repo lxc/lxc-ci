@@ -661,6 +661,85 @@ actions:
 - trigger: post-unpack
   action: |-
     #!/bin/sh
+    set -eux
+
+    # Note: This will be reverted at the end of the build
+
+    # Disable fastestmirror plugin
+    if [ -f /etc/yum/pluginconf.d/fastestmirror.conf ]; then
+      sed -ri 's/enabled=1/enabled=0/g' /etc/yum/pluginconf.d/fastestmirror.conf
+    fi
+
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Note: This will be reverted at the end of the build
+
+    # Use baseurl instead of mirrorlist to avoid networking issues
+    for repo in $(ls /etc/yum.repos.d/*.repo); do
+      grep -q '^#baseurl' "${repo}" || continue
+
+      cp "${repo}" "${repo}.bak"
+
+      sed -ri 's/^mirrorlist=.*/#\0/g;s@^#(baseurl=)http://mirror.centos.org/(.*)@\1https://muug.ca/mirror/\2@g' "${repo}"
+    done
+  releases:
+  - 7
+  - 8-Stream
+
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Note: This will be reverted at the end of the build
+
+    for repo in $(ls /etc/yum.repos.d/*.repo); do
+      cp "${repo}" "${repo}.bak"
+    done
+
+    cat << "EOF" > /etc/yum.repos.d/centos.repo
+    [baseos]
+    name=CentOS Stream $releasever - BaseOS
+    baseurl=https://mirror.xenyth.net/centos-stream/$stream/BaseOS/$basearch/os/
+    gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
+    gpgcheck=1
+    repo_gpgcheck=0
+    metadata_expire=6h
+    countme=1
+    enabled=1
+
+    [appstream]
+    name=CentOS Stream $releasever - AppStream
+    baseurl=https://mirror.xenyth.net/centos-stream/$stream/AppStream/$basearch/os/
+    metalink=https://mirrors.centos.org/metalink?repo=centos-appstream-$stream&arch=$basearch&protocol=https,http
+    gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
+    gpgcheck=1
+    repo_gpgcheck=0
+    metadata_expire=6h
+    countme=1
+    enabled=1
+    EOF
+
+    cat << "EOF" > /etc/yum.repos.d/centos-addons.repo
+    [extras-common]
+    name=CentOS Stream $releasever - Extras packages
+    baseurl=https://mirror.xenyth.net/centos-stream/SIGs/$stream/extras/$basearch/extras-common
+    gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-Extras-SHA512
+    gpgcheck=1
+    repo_gpgcheck=0
+    metadata_expire=6h
+    countme=1
+    enabled=1
+    EOF
+  releases:
+  - 9-Stream
+
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
     # Generate machine-id in order for the kernel stuff to be configured properly
     systemd-machine-id-setup
   types:
@@ -814,3 +893,18 @@ actions:
     systemctl enable NetworkManager.service
   releases:
   - 9-Stream
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Restore repos
+    for repo in $(ls /etc/yum.repos.d/*.bak); do
+      mv "${repo}" ${repo%.*}
+    done
+
+    # Enable fastestmirror plugin
+    if [ -f /etc/yum/pluginconf.d/fastestmirror.conf ]; then
+      sed -ri 's/enabled=0/enabled=1/g' /etc/yum/pluginconf.d/fastestmirror.conf
+    fi
