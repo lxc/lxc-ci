@@ -270,7 +270,7 @@ actions:
     for repo in $(ls /etc/yum.repos.d/*.repo); do
       grep -q '^#baseurl' "${repo}" || continue
 
-      sed -ri 's/^metalink=.*/#\0/g;s@^#(baseurl=)http://download.example/pub/linux(.*)@\1https://muug.ca/mirror/fedora-secondary\2@g' "${repo}"
+      sed -ri 's/^metalink=.*/#\0/g;s@^#(baseurl=)http://download.example/pub/fedora/linux(.*)@\1https://muug.ca/mirror/fedora-secondary\2@g' "${repo}"
     done
   architectures:
   - ppc64le
