@@ -51,7 +51,7 @@
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/gentoo.yaml \
-            ${LXD_ARCHITECTURE} ${TYPE} 10800 ${WORKSPACE} \
+            ${LXD_ARCHITECTURE} ${TYPE} 14400 ${WORKSPACE} \
             -o image.architecture=${ARCH} -o image.variant=${variant} ${EXTRA_ARGS}
 
     execution-strategy:
