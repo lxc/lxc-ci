@@ -111,6 +111,31 @@ packages:
     action: install
 
 actions:
+
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    echo repository=https://mirrors.servercentral.com/voidlinux/current/ > /usr/share/xbps.d/00-repository-main.conf
+  variants:
+  - default
+  architectures:
+  - x86_64
+  - i686
+  - armv7l
+
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    echo repository=https://mirrors.servercentral.com/voidlinux/current/aarch64/ > /usr/share/xbps.d/00-repository-main.conf
+  variants:
+  - default
+  architectures:
+  - aarch64
+
 - trigger: post-unpack
   action: |-
     #!/bin/sh
