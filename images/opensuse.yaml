@@ -104,7 +104,6 @@ files:
     STARTMODE='auto'
     BOOTPROTO='dhcp'
   types:
-  - container
   - vm
   releases:
   - 15.3
