@@ -104,10 +104,10 @@ files:
     STARTMODE='auto'
     BOOTPROTO='dhcp'
   types:
-  - container
   - vm
   releases:
   - 15.3
+  - 15.4
 
 - name: ifcfg-enp5s0
   path: /etc/sysconfig/network/ifcfg-enp5s0
@@ -156,6 +156,15 @@ files:
   - vm
   releases:
   - 15.3
+
+- path: /etc/dracut.conf.d/lxd.conf
+  generator: dump
+  content: |-
+    add_drivers+=" virtio_scsi virtio_pci sd_mod "
+  types:
+  - vm
+  releases:
+  - 15.4
 
 - path: /etc/fstab
   generator: dump
