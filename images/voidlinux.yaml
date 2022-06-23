@@ -118,8 +118,6 @@ actions:
     set -eux
 
     echo repository=https://mirrors.servercentral.com/voidlinux/current/ > /usr/share/xbps.d/00-repository-main.conf
-  variants:
-  - default
   architectures:
   - x86_64
   - i686
@@ -131,8 +129,6 @@ actions:
     set -eux
 
     echo repository=https://mirrors.servercentral.com/voidlinux/current/aarch64/ > /usr/share/xbps.d/00-repository-main.conf
-  variants:
-  - default
   architectures:
   - aarch64
 
@@ -165,8 +161,6 @@ actions:
     set -eux
 
     echo repository=https://mirrors.servercentral.com/voidlinux/current/ > /usr/share/xbps.d/00-repository-main.conf
-  variants:
-  - default
   architectures:
   - x86_64
   - i686
@@ -178,8 +172,6 @@ actions:
     set -eux
 
     echo repository=https://mirrors.servercentral.com/voidlinux/current/aarch64/ > /usr/share/xbps.d/00-repository-main.conf
-  variants:
-  - default
   architectures:
   - aarch64
 
