@@ -689,6 +689,7 @@ actions:
   - 7
   architectures:
   - x86_64
+  - i386
 
 - trigger: post-unpack
   action: |-
