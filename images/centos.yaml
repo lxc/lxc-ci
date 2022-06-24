@@ -689,7 +689,6 @@ actions:
   - 7
   architectures:
   - x86_64
-  - i386
 
 - trigger: post-unpack
   action: |-
@@ -712,6 +711,7 @@ actions:
   - aarch64
   - armhfp
   - ppc64le
+  - i386
 
 - trigger: post-unpack
   action: |-
