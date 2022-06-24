@@ -122,6 +122,21 @@ actions:
   - x86_64
   - i686
   - armv7l
+  variants:
+  - default
+
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    echo repository=https://mirrors.servercentral.com/voidlinux/current/musl/ > /usr/share/xbps.d/00-repository-main.conf
+  architectures:
+  - x86_64
+  - i686
+  - armv7l
+  variants:
+  - musl
 
 - trigger: post-unpack
   action: |-
@@ -165,6 +180,21 @@ actions:
   - x86_64
   - i686
   - armv7l
+  variants:
+  - default
+
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    echo repository=https://mirrors.servercentral.com/voidlinux/current/musl/ > /usr/share/xbps.d/00-repository-main.conf
+  architectures:
+  - x86_64
+  - i686
+  - armv7l
+  variants:
+  - musl
 
 - trigger: post-unpack
   action: |-
