@@ -165,6 +165,7 @@ files:
   - vm
   releases:
   - 15.4
+  - tumbleweed
 
 - path: /etc/fstab
   generator: dump
@@ -390,7 +391,7 @@ actions:
     rm /etc/resolv.conf
     ln -sf /var/run/netconfig/resolv.conf /etc/resolv.conf
 
-    mkinitrd
+    dracut --regenerate-all --force
     mount -t tmpfs tmpfs /sys/firmware
     mkdir /sys/firmware/efi
     grub2-mkconfig -o /boot/grub2/grub.cfg
