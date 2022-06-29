@@ -441,15 +441,21 @@ files:
 - name: network-config
   generator: cloud-init
   content: |-
-    {% if config_get("user.network-config", "") == "" %}version: 1
+    {%- if config_get("cloud-init.network-config", "") == "" -%}
+    {%- if config_get("user.network-config", "") == "" -%}
+    version: 1
     config:
-      - type: physical
-        name: eth0
-        subnets:
-          - type: {% if config_get("user.network_mode", "") == "link-local" %}manual{% else %}dhcp{% endif %}
-            control: auto
-          - type: dhcp6
-            control: auto{% else %}{{ config_get("user.network-config", "") }}{% endif %}
+    - type: physical
+      name: eth0
+      subnets:
+      - type: dhcp
+        control: auto
+    {%- else -%}
+    {{- config_get("user.network-config", "") -}}
+    {%- endif -%}
+    {%- else -%}
+    {{- config_get("cloud-init.network-config", "") -}}
+    {%- endif %}
   variants:
   - cloud
   releases:
@@ -459,26 +465,10 @@ files:
 
 - name: network-config
   generator: cloud-init
-  content: |-
-    {% if config_get("user.network-config", "") == "" %}version: 1
-    config:
-      - type: physical
-        name: {% if instance.type == "virtual-machine" %}enp5s0{% else %}eth0{% endif %}
-        subnets:
-          - type: {% if config_get("user.network_mode", "") == "link-local" %}manual{% else %}dhcp{% endif %}
-            control: auto
-          - type: dhcp6
-            control: auto{% else %}{{ config_get("user.network-config", "") }}{% endif %}
   variants:
   - cloud
   releases:
   - 8-Stream
-
-- name: network-config
-  generator: cloud-init
-  variants:
-  - cloud
-  releases:
   - 9-Stream
 
 - name: user-data
