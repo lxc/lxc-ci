@@ -92,7 +92,7 @@
         predefined-parameters: |-
           sha1=${{GIT_COMMIT}}
           pkg_version={pkg_version}
-          pkg_branch=ppa-daily
+          pkg_branch=ppa-{branch}
           upload_target=lxc-git-{branch}
           branch={branch}
     scm:
