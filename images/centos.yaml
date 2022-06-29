@@ -473,6 +473,12 @@ files:
   - cloud
   releases:
   - 8-Stream
+
+- name: network-config
+  generator: cloud-init
+  variants:
+  - cloud
+  releases:
   - 9-Stream
 
 - name: user-data
