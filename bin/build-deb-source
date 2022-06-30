@@ -95,7 +95,7 @@ rm -f debian/changelog
 dch --create --package lxc -v \${version}-0${DIST}1~${RELEASE} --distribution ${RELEASE} \
     "Automated snapshot build."
 
-debuild -S -sa -us -uc
+debuild -S -sa -us -uc -d
 mkdir /build/pkg
 mv /build/lxc_* /build/pkg/
 exit 0
