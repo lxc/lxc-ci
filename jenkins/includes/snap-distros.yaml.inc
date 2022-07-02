@@ -5,7 +5,6 @@
 - centos-8-stream
 - debian-bullseye
 - debian-buster
-- debian-stretch
 - fedora-33
 # - fedora-34
 - manjaro

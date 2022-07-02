@@ -22,7 +22,6 @@
         name: release
         type: user-defined
         values:
-        - stretch
         - buster
         - bullseye
         - sid
