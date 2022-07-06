@@ -4,7 +4,7 @@ image:
 source:
   downloader: alpinelinux-http
   same_as: 3.12
-  url: http://dl-cdn.alpinelinux.org/alpine/
+  url: https://mirror.csclub.uwaterloo.ca/alpine/
   keys:
   # 0482D84022F52DF1C4E7CD43293ACD0907D9495A
   - |-
