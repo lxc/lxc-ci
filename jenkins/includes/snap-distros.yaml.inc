@@ -1,20 +1,21 @@
 - almalinux-8
+#- almalinux-9
 - archlinux
 - centos-7
-- centos-8
 - centos-8-stream
+#- centos-9-stream
 - debian-bullseye
 - debian-buster
-- fedora-33
-# - fedora-34
+#- fedora-35
+#- fedora-36
 - manjaro
-- opensuse-15.2
 - opensuse-15.3
+#- opensuse-15.4
 - opensuse-tumbleweed
 - rockylinux-8
-- ubuntu-16.04
 - ubuntu-18.04
 - ubuntu-20.04
-- ubuntu-core-16
+#- ubuntu-22.04
 - ubuntu-core-18
 - ubuntu-core-20
+#- ubuntu-core-22
