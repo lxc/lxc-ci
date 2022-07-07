@@ -606,6 +606,10 @@ ovn_forward_tests() {
     lxc network forward create ovn-virtual-network 2001:db8:1:2::1
     ovn-nbctl list load_balancer | grep name -c | grep 0
 
+    # Check load balancer cannot be created on same listen address as forward.
+    ! lxc network load-balancer create ovn-virtual-network 192.0.2.1 || false
+    ! lxc network load-balancer create ovn-virtual-network 2001:db8:1:2::1 || false
+
     # Check user config is allowed, but unknown keys are not.
     lxc network forward set ovn-virtual-network 192.0.2.1 user.foo=bar
     lxc network forward show ovn-virtual-network 192.0.2.1 | grep 'user.foo: bar'
@@ -762,6 +766,229 @@ EOF
     lxc delete -f u2
     lxc image delete "${FINGERPRINT}"
     lxc network delete ovn-virtual-network
+    ovn-nbctl list load_balancer | grep name -c | grep 0
+    lxc project switch default
+    lxc project delete testovn
+    lxc network delete lxdbr0
+}
+
+ovn_load_balancer_tests() {
+    # Create lxdbr0 bridge to act as uplink network.
+    lxc network create lxdbr0 \
+        ipv4.address=10.10.10.1/24 ipv4.nat=true \
+        ipv4.dhcp.ranges=10.10.10.2-10.10.10.199 \
+        ipv4.ovn.ranges=10.10.10.200-10.10.10.254 \
+        ipv6.address=fd42:4242:4242:1010::1/64 ipv6.nat=true \
+        ipv6.ovn.ranges=fd42:4242:4242:1010::200-fd42:4242:4242:1010::254
+
+    # Create OVN network using physical uplink network.
+    lxc project create testovn -c features.networks=true
+    lxc project switch testovn
+    lxc network create ovn-virtual-network --type=ovn network=lxdbr0
+    sleep 2
+    lxc network show ovn-virtual-network
+    ip4AddressPrefix=$(lxc network get ovn-virtual-network ipv4.address | sed 's/\.1\/24$//g')
+    ip6AddressPrefix=$(lxc network get ovn-virtual-network ipv6.address | sed 's/::1\/64$//g')
+
+    # Check no load balancer can be created with a listen address set that is not in the uplink's routes.
+    ! lxc network load-balancer create ovn-virtual-network 192.0.2.1 || false
+    ! lxc network load-balancer create ovn-virtual-network 2001:db8:1:2::1 || false
+
+    # Add routes to the uplink network and check we can create load balancers.
+    lxc network set lxdbr0 ipv4.routes=192.0.2.0/24 ipv6.routes=2001:db8:1:2::/64 --project=default
+
+    # Add a static route to SNAT address on uplink to OVN network's router (simulating BGP route advert to uplink).
+    ovnIPv4="$(lxc network get ovn-virtual-network volatile.network.ipv4.address)"
+    ovnIPv6="$(lxc network get ovn-virtual-network volatile.network.ipv6.address)"
+    ip r add 192.0.2.1/32 via "${ovnIPv4}" dev lxdbr0
+    ip r add 2001:db8:1:2::1/128 via "${ovnIPv6}" dev lxdbr0
+
+    # Check load balancers can be created.
+    lxc network load-balancer create ovn-virtual-network 192.0.2.1
+    lxc network load-balancer create ovn-virtual-network 2001:db8:1:2::1
+
+    # Check no OVN config yet as not fully setup.
+    ovn-nbctl list load_balancer | grep name -c | grep 0
+
+    # Check forward cannot be created on same listen address as load balancer.
+    ! lxc network forward create ovn-virtual-network 192.0.2.1 || false
+    ! lxc network forward create ovn-virtual-network 2001:db8:1:2::1 || false
+
+    # Check user config is allowed, but unknown keys are not.
+    lxc network load-balancer set ovn-virtual-network 192.0.2.1 user.foo=bar
+    lxc network load-balancer show ovn-virtual-network 192.0.2.1 | grep 'user.foo: bar'
+    ! lxc network load-balancer set ovn-virtual-network 192.0.2.1 foo=bar || false
+
+    # Check duplicate load balancers cannot be created.
+    ! lxc network load-balancer create ovn-virtual-network 192.0.2.1 || false
+    ! lxc network load-balancer create ovn-virtual-network 2001:db8:1:2::1 || false
+
+    # Check a load balancer on another ovn network connected to same uplink cannot conflict with an existing load balancer.
+    lxc network create ovn-virtual-network2 --type=ovn network=lxdbr0
+    ip4AddressPrefix2=$(lxc network get ovn-virtual-network2 ipv4.address | sed 's/\.1\/24$//g')
+    ip6AddressPrefix2=$(lxc network get ovn-virtual-network2 ipv6.address | sed 's/::1\/64$//g')
+
+    ! lxc network load-balancer create ovn-virtual-network2 192.0.2.1 || false
+    ! lxc network load-balancer create ovn-virtual-network2 2001:db8:1:2::1|| false
+    lxc network load-balancer create ovn-virtual-network2 192.0.2.2
+    lxc network load-balancer create ovn-virtual-network2 2001:db8:1:2::2
+
+    # Check an external route on another network's NIC prevents another network from setting up a load balancer listener.
+    lxc init images:ubuntu/20.04 u1 -n ovn-virtual-network2 -s default
+    lxc config device set u1 eth0 \
+        ipv4.routes.external=192.0.2.3/32,192.0.2.4/32 \
+        ipv6.routes.external=2001:db8:1:2::3/128,2001:db8:1:2::4/128
+    ! lxc network load-balancer create ovn-virtual-network 192.0.2.3 || false
+    ! lxc network load-balancer create ovn-virtual-network 2001:db8:1:2::3 || false
+    lxc delete -f u1
+    lxc network load-balancer create ovn-virtual-network 192.0.2.3
+    lxc network load-balancer create ovn-virtual-network 2001:db8:1:2::3
+
+    # Check basic load balancer with backend and port configuration produces config in OVN.
+    lxc network load-balancer backend add ovn-virtual-network2 192.0.2.2 test-backend "${ip4AddressPrefix2}.2"
+    lxc network load-balancer backend add ovn-virtual-network2 2001:db8:1:2::2 test-backend "${ip6AddressPrefix2}::2"
+    lxc network load-balancer port add ovn-virtual-network2 192.0.2.2 tcp 53 test-backend
+    lxc network load-balancer port add ovn-virtual-network2 2001:db8:1:2::2 tcp 53 test-backend
+
+    # Check changing network's subnet(s) are prevented if load balancers backends exist that conflict.
+    ! lxc network set ovn-virtual-network2 ipv4.address=192.168.0.1/24 || false
+    ! lxc network set ovn-virtual-network2 ipv6.address=2001:db8:1:3::1/64 || false
+
+    # Check network load balancers are removed when network is removed.
+    ovn-nbctl list load_balancer | grep name -c | grep 2
+    lxc network delete ovn-virtual-network2
+    ovn-nbctl list load_balancer | grep name -c | grep 0
+
+    # Create instance connected to ovn-virtual-network.
+    lxc launch images:ubuntu/20.04 u1 -n ovn-virtual-network -s default
+    FINGERPRINT="$(lxc image ls -cf --format=csv)"
+    sleep 5
+    lxc list
+    U1_IPV4="$(lxc list u1 -c4 --format=csv | cut -d' ' -f1)"
+    U1_IPV6="$(lxc list u1 -c6 --format=csv | cut -d' ' -f1)"
+
+    # Check IP is unused and not working.
+    ! ping -c1 -4 -W5 192.0.2.1 || false
+    ! ping -c1 -6 -W5 2001:db8:1:2::1 || false
+
+    # Add incompatible load balancer backend for u1.
+    lxc network load-balancer backend add ovn-virtual-network 192.0.2.1 u1 "${U1_IPV4}" 53-63,80
+    lxc network load-balancer backend add ovn-virtual-network 2001:db8:1:2::1 u1 "${U1_IPV6}" 53-63,80
+    ! lxc network load-balancer port add ovn-virtual-network 192.0.2.1 tcp 53 u1 || false
+    ! lxc network load-balancer port add ovn-virtual-network 2001:db8:1:2::1 tcp 53 u1 || false
+
+    # Add compatible explicit single port backend for u1.
+    lxc network load-balancer backend remove ovn-virtual-network 192.0.2.1 u1
+    lxc network load-balancer backend remove ovn-virtual-network 2001:db8:1:2::1 u1
+    lxc network load-balancer backend add ovn-virtual-network 192.0.2.1 u1 "${U1_IPV4}" 54
+    lxc network load-balancer backend add ovn-virtual-network 2001:db8:1:2::1 u1 "${U1_IPV6}" 54
+    lxc network load-balancer port add ovn-virtual-network 192.0.2.1 tcp 53 u1
+    lxc network load-balancer port add ovn-virtual-network 2001:db8:1:2::1 tcp 53 u1
+
+    # Check can't remove backend in use.
+    ! lxc network load-balancer backend remove ovn-virtual-network 192.0.2.1 u1 || false
+    ! lxc network load-balancer backend remove ovn-virtual-network 2001:db8:1:2::1 u1 || false
+    lxc network load-balancer port remove ovn-virtual-network 192.0.2.1 tcp 53
+    lxc network load-balancer port remove ovn-virtual-network 2001:db8:1:2::1 tcp 53
+    lxc network load-balancer backend remove ovn-virtual-network 192.0.2.1 u1
+    lxc network load-balancer backend remove ovn-virtual-network 2001:db8:1:2::1 u1
+
+    # Add load balancer ports towards u1 using no port target.
+    lxc network load-balancer backend add ovn-virtual-network 192.0.2.1 u1 "${U1_IPV4}"
+    lxc network load-balancer backend add ovn-virtual-network 2001:db8:1:2::1 u1 "${U1_IPV6}"
+    lxc network load-balancer port add ovn-virtual-network 192.0.2.1 tcp 53 u1
+    lxc network load-balancer port add ovn-virtual-network 2001:db8:1:2::1 tcp 53 u1
+
+    # Check DNS TCP forwarding towards u1.
+    # Relies on static route (above) rather than neighbour adverts see https://github.com/ovn-org/ovn/issues/124
+    lxc exec u1 -- systemctl mask dnsmasq
+    lxc exec u1 -- apt-get install dnsmasq -y
+cat <<EOF | lxc exec u1 -- tee /etc/dnsmasq.d/lxd_test.conf
+interface=eth0
+bind-interfaces
+interface-name=u1.lxd,eth0
+host-record=lxd.localdomain,127.0.0.1
+EOF
+
+    lxc exec u1 -- systemctl unmask dnsmasq
+    lxc exec u1 -- systemctl start dnsmasq
+    dig a +tcp @192.0.2.1 u1.lxd
+    dig aaaa +tcp @2001:db8:1:2::1 u1.lxd
+
+    # Check stopping the DNS service and checking we get no connection.
+    lxc exec u1 -- systemctl stop dnsmasq
+    ! dig a +tcp @192.0.2.1 u1.lxd || false
+    ! dig aaaa +tcp @2001:db8:1:2::1 u1.lxd || false
+    lxc exec u1 -- systemctl stop dnsmasq
+
+    # Check changing DNS TCP forwarding towards u2.
+    lxc launch images:ubuntu/20.04 u2 -n ovn-virtual-network -s default
+    sleep 5
+    lxc list
+    U2_IPV4="$(lxc list u2 -c4 --format=csv | cut -d' ' -f1)"
+    U2_IPV6="$(lxc list u2 -c6 --format=csv | cut -d' ' -f1)"
+
+    # Add load balancer backends for u2.
+    lxc network load-balancer backend add ovn-virtual-network 192.0.2.1 u2 "${U2_IPV4}"
+    lxc network load-balancer backend add ovn-virtual-network 2001:db8:1:2::1 u2 "${U2_IPV6}"
+
+    # Change load balancer ports towards u2.
+    lxc network load-balancer port remove ovn-virtual-network 192.0.2.1 tcp 53
+    lxc network load-balancer port remove ovn-virtual-network 2001:db8:1:2::1 tcp 53
+    lxc network load-balancer port add ovn-virtual-network 192.0.2.1 tcp 53 u2
+    lxc network load-balancer port add ovn-virtual-network 2001:db8:1:2::1 tcp 53 u2
+
+    # Check DNS TCP forwarding towards u2.
+    lxc exec u2 -- systemctl mask dnsmasq
+    lxc exec u2 -- apt-get install dnsmasq -y
+cat <<EOF | lxc exec u2 -- tee /etc/dnsmasq.d/lxd_test.conf
+interface=eth0
+bind-interfaces
+interface-name=u2.lxd,eth0
+host-record=lxd.localdomain,127.0.0.2
+EOF
+
+    lxc exec u2 -- systemctl unmask dnsmasq
+    lxc exec u2 -- systemctl start dnsmasq
+
+    dig a +tcp @192.0.2.1 u2.lxd
+    dig aaaa +tcp @2001:db8:1:2::1 u2.lxd
+
+    # Change load balancer ports towards u1 and u2.
+    lxc network load-balancer port remove ovn-virtual-network 192.0.2.1 tcp 53
+    lxc network load-balancer port remove ovn-virtual-network 2001:db8:1:2::1 tcp 53
+    lxc network load-balancer port add ovn-virtual-network 192.0.2.1 tcp 53 u1,u2
+    lxc network load-balancer port add ovn-virtual-network 2001:db8:1:2::1 tcp 53 u1,u2
+
+    # Check OVN config mentions both backend target IPs.
+    ovn-nbctl list load_balancer | grep -F "{\"192.0.2.1:53\"=\"${U1_IPV4}:53,${U2_IPV4}:53\"}"
+    ovn-nbctl list load_balancer | grep -F "{\"[2001:db8:1:2::1]:53\"=\"[${U1_IPV6}]:53,[${U2_IPV6}]:53\"}"
+
+    # Check DNS load balancing working.
+    lxc exec u1 -- systemctl start dnsmasq
+
+    for i in {1..5}
+    do
+        dig a +tcp @192.0.2.1 lxd.localdomain
+        dig aaaa +tcp @2001:db8:1:2::1 lxd.localdomain
+    done
+
+    # Check stopping dnsmasq on both instances stop forward from working.
+    lxc exec u1 -- systemctl stop dnsmasq
+    lxc exec u2 -- systemctl stop dnsmasq
+
+    for i in {1..5}
+    do
+        ! dig a +tcp @192.0.2.1 lxd.localdomain || false
+        ! dig aaaa +tcp @2001:db8:1:2::1 lxd.localdomain || false
+    done
+
+    # Clean up.
+    lxc delete -f u1
+    lxc delete -f u2
+    lxc image delete "${FINGERPRINT}"
+    lxc network delete ovn-virtual-network
+    ovn-nbctl list load_balancer | grep name -c | grep 0
     lxc project switch default
     lxc project delete testovn
     lxc network delete lxdbr0
@@ -1081,6 +1308,7 @@ else
     # Otherwise run full suite.
     ovn_basic_tests
     ovn_forward_tests
+    ovn_load_balancer_tests
     ovn_peering_tests
 fi
 
