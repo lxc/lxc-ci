@@ -692,8 +692,49 @@ actions:
 
     # Enable GDM
     systemctl enable gdm
+
+    cat << EOF > /home/archlinux/firstboot.sh
+    #!/bin/sh
+
+    set -e
+
+    # Disable automatic screensaver lock
+    gsettings set org.gnome.desktop.screensaver lock-enabled false
+
+    # Change power button action to poweroff. This will cause the VM to shut down when `lxc stop` is called.
+    gsettings set org.gnome.settings-daemon.plugins.power power-button-action interactive
+
+    # Disable 60-second logout prompt when `lxc stop` is called.
+    gsettings set org.gnome.SessionManager logout-prompt false
+
+    # Delete this script
+    rm /home/archlinux/firstboot.sh
+    EOF
+
+    chown archlinux:archlinux /home/archlinux/firstboot.sh
+    chmod +x /home/archlinux/firstboot.sh
+
+    cat << EOF > /etc/systemd/user/firstboot.service
+    [Unit]
+    Description=One time boot script
+    After=dbus.service
+    After=display-manager.service
+    ConditionFirstBoot=yes
+
+    [Service]
+    Type=oneshot
+    ExecStart=/home/archlinux/firstboot.sh
+
+    [Install]
+    WantedBy=default.target
+    EOF
+
+    export XDG_RUNTIME_DIR=/run/user/$(id -u archlinux)
+    sudo -u archlinux -- systemctl --user enable firstboot.service
   variants:
   - desktop-gnome
+  types:
+  - vm
 
 - trigger: post-files
   action: |-
@@ -726,6 +767,16 @@ actions:
   - cloud
   architectures:
   - x86_64
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Remove machine-id as this is necessary for systemd units with ConditionFirstBoot=yes
+    rm /etc/machine-id
+  types:
+  - vm
 
 mappings:
   architecture_map: archlinux
