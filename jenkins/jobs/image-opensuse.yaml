@@ -12,7 +12,6 @@
         values:
         - amd64
         - arm64
-        - i386
         - ppc64el
         - s390x
 
@@ -40,7 +39,6 @@
         ARCH=${architecture}
         [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
         [ "${ARCH}" = "ppc64el" ] && ARCH="ppc64le"
-        [ "${ARCH}" = "i386" ] && ARCH="i686"
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
 
         TYPE="container"
@@ -58,9 +56,7 @@
             -o image.variant=${variant}
 
     execution-strategy:
-      combination-filter: '
-      !(architecture=="i386" && release!="tumbleweed")
-      && !(architecture != "amd64" && variant == "desktop-kde")'
+      combination-filter: '!(architecture != "amd64" && variant == "desktop-kde")'
 
     properties:
     - build-discarder:
@@ -68,14 +64,6 @@
 
     - raw:
         !include: ../includes/webhook.yaml.inc
-
-    - groovy-label:
-        script: |-
-            if (binding.getVariables().get("architecture") == "i386") {
-                return "native-amd64";
-            }
-
-            return null;
 
     publishers:
     - archive:
