@@ -1,0 +1,133 @@
+#!/bin/sh
+set -eux
+
+waitSnapdSeed() (
+  set +x
+  for i in $(seq 60); do # Wait up to 60s.
+    if systemctl show snapd.seeded.service --value --property SubState | grep -qx exited; then
+      return 0 # Success.
+    fi
+
+    sleep 1
+  done
+
+  echo "snapd not seeded after ${i}s"
+  return 1 # Failed.
+)
+
+cleanup() {
+    echo ""
+    if [ "${FAIL}" = "1" ]; then
+        echo "Test failed"
+        exit 1
+    fi
+
+    echo "Test passed"
+    exit 0
+}
+
+FAIL=1
+trap cleanup EXIT HUP INT TERM
+
+# Wait for snapd seeding
+waitSnapdSeed
+
+# Configure to use the proxy
+curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh
+
+# Configure for ceph use
+curl -s http://canonical-lxd.stgraber.org/config/ceph.sh | sh
+
+# Install LXD
+while [ -e /usr/bin/lxd ]; do
+    apt-get remove --purge --yes lxd lxd-client lxcfs liblxc1
+done
+apt-get remove --purge cloud-init --yes
+snap remove lxd || true
+snap install lxd --channel=latest/edge
+apt-get install jq --yes
+lxd waitready --timeout=300
+
+waitVMAgent() (
+  set +x
+  local vmName=$1
+  for i in $(seq 90) # Wait up to 90s.
+  do
+    if lxc info "${vmName}" | grep -qF 127.0.0.1; then
+      return 0 # Success.
+    fi
+
+    sleep 1
+  done
+
+  echo "VM ${vmName} agent not running after ${i}s"
+  return 1 # Failed.
+)
+
+# Configure LXD
+lxc network create lxdbr0
+lxc profile device add default eth0 nic network=lxdbr0
+
+poolName="vmpool$$"
+poolDriver=dir
+
+echo "==> Create storage pool using driver ${poolDriver}"
+lxc storage create "${poolName}" "${poolDriver}"
+
+echo "==> Create VM and boot"
+lxc init images:ubuntu/20.04/cloud v1 --vm -s "${poolName}"
+lxc start v1
+waitVMAgent v1
+lxc info v1
+
+# Install curl
+lxc exec v1 -- sh -c "apt update && apt install -y curl"
+
+echo "==> Checking devlxd is working"
+
+# devlxd is enabled by default and should work
+lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0 | jq
+lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0/devices | jq
+lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0/config | jq
+lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0/meta-data | grep -q '#cloud-config'
+
+lxc restart -f v1
+waitVMAgent v1
+
+# devlxd should be running after restart
+lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0 | jq
+lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0/devices | jq
+lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0/config | jq
+lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0/meta-data | grep -q '#cloud-config'
+
+# Disable devlxd
+lxc config set v1 security.devlxd false
+
+echo "==> Checking devlxd is not working"
+
+! lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0 || false
+
+lxc restart -f v1
+waitVMAgent v1
+
+# devlxd should not be running after restart
+! lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0 || false
+
+echo "==> Checking devlxd can be enabled live"
+
+# Enable devlxd
+lxc config set v1 security.devlxd true
+
+# devlxd should be running after the config is enabled
+lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0 | jq
+lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0/devices | jq
+lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0/config | jq
+lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0/meta-data | grep -q '#cloud-config'
+
+echo "==> Deleting VM"
+lxc delete -f v1
+
+echo "==> Deleting storage pool"
+lxc storage delete "${poolName}"
+
+FAIL=0
