@@ -86,32 +86,32 @@ lxc exec v1 -- sh -c "apt update && apt install -y curl"
 echo "==> Checking devlxd is working"
 
 # devlxd is enabled by default and should work
-lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0 | jq
-lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0/devices | jq
-lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0/config | jq
-lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0/meta-data | grep -q '#cloud-config'
+lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock http://custom.socket/1.0 | jq
+lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock http://custom.socket/1.0/devices | jq
+lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock http://custom.socket/1.0/config | jq
+lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock http://custom.socket/1.0/meta-data | grep -q '#cloud-config'
 
 lxc restart -f v1
 waitVMAgent v1
 
 # devlxd should be running after restart
-lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0 | jq
-lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0/devices | jq
-lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0/config | jq
-lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0/meta-data | grep -q '#cloud-config'
+lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock http://custom.socket/1.0 | jq
+lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock http://custom.socket/1.0/devices | jq
+lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock http://custom.socket/1.0/config | jq
+lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock http://custom.socket/1.0/meta-data | grep -q '#cloud-config'
 
 # Disable devlxd
 lxc config set v1 security.devlxd false
 
 echo "==> Checking devlxd is not working"
 
-! lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0 || false
+! lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock http://custom.socket/1.0 || false
 
 lxc restart -f v1
 waitVMAgent v1
 
 # devlxd should not be running after restart
-! lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0 || false
+! lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock http://custom.socket/1.0 || false
 
 echo "==> Checking devlxd can be enabled live"
 
@@ -119,10 +119,10 @@ echo "==> Checking devlxd can be enabled live"
 lxc config set v1 security.devlxd true
 
 # devlxd should be running after the config is enabled
-lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0 | jq
-lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0/devices | jq
-lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0/config | jq
-lxc exec v1 -- curl --unix-socket /dev/lxd/sock http://custom.socket/1.0/meta-data | grep -q '#cloud-config'
+lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock http://custom.socket/1.0 | jq
+lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock http://custom.socket/1.0/devices | jq
+lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock http://custom.socket/1.0/config | jq
+lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock http://custom.socket/1.0/meta-data | grep -q '#cloud-config'
 
 echo "==> Deleting VM"
 lxc delete -f v1
