@@ -75,7 +75,7 @@ echo "==> Create storage pool using driver ${poolDriver}"
 lxc storage create "${poolName}" "${poolDriver}"
 
 echo "==> Create VM and boot"
-lxc init images:ubuntu/20.04/cloud v1 --vm -s "${poolName}"
+lxc init images:ubuntu/22.04/cloud v1 --vm -s "${poolName}"
 lxc start v1
 waitVMAgent v1
 lxc info v1
