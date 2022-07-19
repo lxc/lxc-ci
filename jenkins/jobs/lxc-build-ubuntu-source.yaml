@@ -52,7 +52,6 @@
         values:
         - bionic
         - focal
-        - impish
         - jammy
 
     - axis:
