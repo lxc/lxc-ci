@@ -341,7 +341,6 @@ files:
   releases:
   - bionic
   - focal
-  - impish
   - jammy
   - kinetic
   types:
@@ -380,7 +379,6 @@ files:
   releases:
   - bionic
   - focal
-  - impish
   - jammy
   - kinetic
   types:
@@ -416,7 +414,6 @@ files:
   - xenial
   - bionic
   - focal
-  - impish
 
 - name: network-config
   generator: cloud-init
@@ -426,7 +423,6 @@ files:
   - xenial
   - bionic
   - focal
-  - impish
 
 - name: user-data
   generator: cloud-init
@@ -436,7 +432,6 @@ files:
   - xenial
   - bionic
   - focal
-  - impish
 
 - name: vendor-data
   generator: cloud-init
@@ -446,7 +441,6 @@ files:
   - xenial
   - bionic
   - focal
-  - impish
 
 - name: ext4
   generator: fstab
@@ -488,7 +482,6 @@ packages:
     - xenial
     - bionic
     - focal
-    - impish
     action: install
 
   - packages:
@@ -546,7 +539,6 @@ packages:
     - arm64
     releases:
     - focal
-    - impish
     - jammy
     - kinetic
     types:
@@ -566,7 +558,6 @@ packages:
     releases:
     - bionic
     - focal
-    - impish
     - jammy
     - kinetic
     types:
@@ -635,7 +626,6 @@ actions:
   releases:
   - bionic
   - focal
-  - impish
   - jammy
   - kinetic
 
