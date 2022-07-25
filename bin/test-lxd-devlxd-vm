@@ -124,6 +124,19 @@ lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock http://custom.socket/1.0/devi
 lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock http://custom.socket/1.0/config | jq
 lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock http://custom.socket/1.0/meta-data | grep -q '#cloud-config'
 
+# test instance Ready state
+lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock -X PATCH -d '{"state":"Ready"}' http://custom.socket/1.0
+[ "$(lxc config get v1 volatile.last_state.ready)" = "true" ]
+
+lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock -X PATCH -d '{"state":"Started"}' http://custom.socket/1.0
+[ "$(lxc config get v1 volatile.last_state.ready)" = "false" ]
+
+lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock -X PATCH -d '{"state":"Ready"}' http://custom.socket/1.0
+[ "$(lxc config get v1 volatile.last_state.ready)" = "true" ]
+lxd stop -f v1
+sleep 5
+[ "$(lxc config get v1 volatile.last_state.ready)" = "false" ]
+
 echo "==> Deleting VM"
 lxc delete -f v1
 
