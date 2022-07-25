@@ -16,6 +16,11 @@
             suffix: "-{branch}"
             pkg_version: 1:4.0.12+stable
 
+        - "lxc-github-commit{suffix}":
+            branch: stable-5.0
+            suffix: "-{branch}"
+            pkg_version: 1:5.0.0+stable
+
 - job-template:
     name: "lxc-github-commit{suffix}"
     concurrent: false
