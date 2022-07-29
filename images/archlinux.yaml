@@ -636,6 +636,15 @@ packages:
     - desktop-gnome
 
 actions:
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Update pacman-keyring to ensure package installs will not break because of GPG issues
+    pacman -Sy --needed
+     --noconfirm archlinux-keyring
+
 - trigger: post-packages
   action: |-
     #!/bin/sh
