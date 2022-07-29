@@ -34,11 +34,6 @@
               !include: ../includes/admins/lxc-templates.yaml.inc
 
         - "{repo}-github-pull-target":
-            repo: lxcfs
-            admins:
-              !include: ../includes/admins/lxcfs.yaml.inc
-
-        - "{repo}-github-pull-target":
             repo: lxd-demo-server
             admins:
               !include: ../includes/admins/lxd-demo-server.yaml.inc
