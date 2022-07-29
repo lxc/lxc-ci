@@ -642,8 +642,7 @@ actions:
     set -eux
 
     # Update pacman-keyring to ensure package installs will not break because of GPG issues
-    pacman -Sy --needed
-     --noconfirm archlinux-keyring
+    pacman -Sy --needed --noconfirm archlinux-keyring
 
 - trigger: post-packages
   action: |-
