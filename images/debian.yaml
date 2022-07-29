@@ -933,6 +933,8 @@ files:
     Name=eth0
     [Network]
     DHCP=true
+    [DHCPv4]
+    UseDomains=true
   types:
   - container
   releases:
@@ -947,6 +949,8 @@ files:
     Name=enp5s0
     [Network]
     DHCP=true
+    [DHCPv4]
+    UseDomains=true
   types:
   - vm
   variants:
