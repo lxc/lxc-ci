@@ -24,7 +24,8 @@
         - "3.13"
         - "3.14"
         - "3.15"
-        - "3.16"
+        # TODO: Enable this once the package issue has been fixed upstream.
+        # - "3.16"
         - "edge"
 
     - axis:
