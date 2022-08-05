@@ -133,7 +133,7 @@ lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock -X PATCH -d '{"state":"Starte
 
 lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock -X PATCH -d '{"state":"Ready"}' http://custom.socket/1.0
 [ "$(lxc config get v1 volatile.last_state.ready)" = "true" ]
-lxd stop -f v1
+lxc stop -f v1
 sleep 5
 [ "$(lxc config get v1 volatile.last_state.ready)" = "false" ]
 
