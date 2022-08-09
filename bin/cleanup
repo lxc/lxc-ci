@@ -46,3 +46,5 @@ fi
 if [ -d /etc/lvm/archive/ ]; then
     find /etc/lvm/archive -type f -delete
 fi
+
+chown -R jenkins:jenkins /home/jenkins
