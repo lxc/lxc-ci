@@ -1056,7 +1056,6 @@ packages:
     - cloud
 
   - packages:
-    - acpid
     - policykit-1
     action: install
     architectures:
