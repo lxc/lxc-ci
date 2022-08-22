@@ -1048,6 +1048,14 @@ packages:
     - sid
 
   - packages:
+    - dbus
+    - systemd-resolved
+    action: install
+    early: true
+    releases:
+    - sid
+
+  - packages:
     - cloud-init
     - gpg
     - resolvconf
