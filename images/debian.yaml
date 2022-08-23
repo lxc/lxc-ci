@@ -1058,10 +1058,19 @@ packages:
   - packages:
     - cloud-init
     - gpg
+    action: install
+    variants:
+    - cloud
+
+  - packages:
     - resolvconf
     action: install
     variants:
     - cloud
+    releases:
+    - buster
+    - bullseye
+    - bookworm
 
   - packages:
     - policykit-1
