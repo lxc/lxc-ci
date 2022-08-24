@@ -88,6 +88,7 @@ files:
     DHCP_HOSTNAME=`cat /proc/sys/kernel/hostname`
   releases:
   - 8
+  - 9
 
 - name: ifcfg-eth0.lxd
   path: /etc/sysconfig/network-scripts/ifcfg-eth0
@@ -103,6 +104,7 @@ files:
     IPV6INIT=yes
   releases:
   - 8
+  - 9
 
 - name: network
   path: /etc/sysconfig/network
@@ -140,6 +142,7 @@ files:
   - cloud
   releases:
   - 8
+  - 9
 
 - name: user-data
   generator: cloud-init
@@ -185,6 +188,7 @@ packages:
     action: install
     releases:
     - 8
+    - 9
 
   - packages:
     - cloud-init
@@ -205,6 +209,7 @@ packages:
       gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
     releases:
     - 8
+    - 9
     variants:
     - cloud
 
