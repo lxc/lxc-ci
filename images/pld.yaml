@@ -83,7 +83,7 @@ packages:
     clean:
       cmd: poldek
       flags: [ --clean ]
-  update: true
+  update: false
   cleanup: true
 
   sets:
@@ -136,6 +136,10 @@ actions:
   action: |-
       #!/bin/sh
       set -eux
+
+      # Upgrade system after the packages have been installed, otherwise the system upgrade will
+      # fail.
+      poldek -Oparticle_install=no --noprogress --noask --upgrade-dist
 
       # system config
       for op in RC_PROMPT RUN_DEPMOD SELINUX SET_SLINKS \
