@@ -24,6 +24,7 @@
         - ulyssa
         - uma
         - una
+        - vanessa
 
     - axis:
         name: variant
@@ -39,6 +40,8 @@
         suite=bionic
         if [ "${release}" = "ulyana" ] || [ "${release}" = "ulyssa" ] || [ "${release}" = "uma" ] || [ "${release}" = "una" ]; then
             suite=focal
+        elif [ "${release}" = "vanessa" ]; then
+            suite=jammy
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/mint.yaml \
