@@ -115,7 +115,18 @@ for version in 1.13 1.17 1.18 tip; do
         fi
     done
 
-    mkdir -p "${GOPATH}/bin" && mv "${GOPATH}/bin" "${GOPATH}/bin.$(go version | cut -d' ' -f3)"
+    mkdir -p "${GOPATH}/bin"
+
+    # Build MinIO (requires at least Go 1.18).
+    if [ "${version}" != "1.13" ] && [ "${version}" != "1.17" ]; then
+        git clone https://github.com/minio/minio
+        cd minio
+        make build
+        mv minio "${GOPATH}/bin/minio"
+        cd -
+    fi
+
+    mv "${GOPATH}/bin" "${GOPATH}/bin.$(go version | cut -d' ' -f3)"
 done
 
 cd "${TEMP_DIR}"
