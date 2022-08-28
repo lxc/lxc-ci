@@ -97,6 +97,9 @@ cd "${TEMP_DIR}"
 # Build the Go cache and binaries
 export GOPATH="${TEMP_DIR}/go"
 
+# Download MinIO source
+git clone https://github.com/minio/minio
+
 OLD_PATH=${PATH}
 for version in 1.13 1.17 1.18 tip; do
     VER=$(echo $version | sed "s/\.//g")
@@ -119,7 +122,6 @@ for version in 1.13 1.17 1.18 tip; do
 
     # Build MinIO (requires at least Go 1.18).
     if [ "${version}" != "1.13" ] && [ "${version}" != "1.17" ]; then
-        git clone https://github.com/minio/minio
         cd minio
         make build
         mv minio "${GOPATH}/bin/minio"
