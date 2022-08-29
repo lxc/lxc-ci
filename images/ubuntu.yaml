@@ -580,6 +580,8 @@ packages:
     action: install
     variants:
     - desktop
+    types:
+    - vm
 
   repositories:
   - name: sources.list
@@ -703,11 +705,44 @@ actions:
     EOF
     systemctl enable lxd-growpart
 
+    cat << EOF > /home/ubuntu/firstboot.sh
+    #!/bin/sh
+
+    set -e
+
     # Disable automatic screensaver lock
     gsettings set org.gnome.desktop.screensaver lock-enabled false
 
+    # Delete this script
+    rm /home/ubuntu/firstboot.sh
+    EOF
+
+    chown ubuntu:ubuntu /home/ubuntu/firstboot.sh
+    chmod +x /home/ubuntu/firstboot.sh
+
+    cat << EOF > /etc/systemd/user/firstboot.service
+    [Unit]
+    Description=One time boot script
+    After=dbus.service
+    After=display-manager.service
+    ConditionPathExists=/home/ubuntu/firstboot.sh
+
+    [Service]
+    Type=oneshot
+    ExecStart=/home/ubuntu/firstboot.sh
+
+    [Install]
+    WantedBy=default.target
+    EOF
+
+    mkdir -p /home/ubuntu/.config/systemd/user/default.target.wants
+    ln -s /etc/systemd/user/firstboot.service /home/ubuntu/.config/systemd/user/default.target.wants/firstboot.service
+
+    chown -R ubuntu:ubuntu /home/ubuntu/.config
   variants:
   - desktop
+  types:
+  - vm
 
 mappings:
   architecture_map: debian
