@@ -580,6 +580,8 @@ packages:
     action: install
     variants:
     - desktop
+    types:
+    - vm
 
   repositories:
   - name: sources.list
@@ -739,6 +741,8 @@ actions:
     chown -R ubuntu:ubuntu /home/ubuntu/.config
   variants:
   - desktop
+  types:
+  - vm
 
 mappings:
   architecture_map: debian
