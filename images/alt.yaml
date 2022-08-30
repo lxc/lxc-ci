@@ -158,6 +158,10 @@ actions:
 
     # Enable the cloud-init systemd service
     systemctl enable cloud-init.service cloud-config.service cloud-final.service
+
+    # Remove this file as it will override the network renderers to only include
+    # NetworkManager although we use netplan.
+    rm -f /etc/cloud/cloud.cfg.d/01_network-manager.cfg
   variants:
   - cloud
 
