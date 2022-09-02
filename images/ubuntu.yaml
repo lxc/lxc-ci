@@ -492,11 +492,31 @@ packages:
     action: install
 
   - packages:
-    - language-pack-en
     - openssh-client
     - sudo
     - vim
     action: install
+
+  - packages:
+    - language-pack-en
+    action: install
+    architectures:
+    - amd64
+    - arm64
+    - armhf
+    - powerpc
+    - powerpc64
+
+  - packages:
+    - language-pack-en
+    action: install
+    architectures:
+    - ppc64el
+    releases:
+    - xenial
+    - bionic
+    - jammy
+    - kinetic
 
   - packages:
     - cloud-init
