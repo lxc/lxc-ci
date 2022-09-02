@@ -97,8 +97,14 @@ cd "${TEMP_DIR}"
 # Build the Go cache and binaries
 export GOPATH="${TEMP_DIR}/go"
 
-# Download MinIO source
-git clone https://github.com/minio/minio
+arch="$(dpkg --print-architecture)"
+
+# Download MinIO binary
+if [ "${arch}" = "amd64" ]; then
+    wget https://dl.min.io/server/minio/release/linux-amd64/minio -o "${GOPATH}/minio"
+elif [ "${arch}" = "arm64" ]; then
+    wget https://dl.min.io/server/minio/release/linux-arm64/minio -o "${GOPATH}/minio"
+fi
 
 OLD_PATH=${PATH}
 for version in 1.13 1.17 1.18 tip; do
@@ -120,12 +126,11 @@ for version in 1.13 1.17 1.18 tip; do
 
     mkdir -p "${GOPATH}/bin"
 
-    # Build MinIO (requires at least Go 1.18).
+    # Copy the MinIO binary so its in the PATH.
+    # We don't use MinIO until LXD versions that require Go 1.18 or later.
     if [ "${version}" != "1.13" ] && [ "${version}" != "1.17" ]; then
-        cd minio
-        make build
-        mv minio "${GOPATH}/bin/minio"
-        cd -
+        cp "${GOPATH}/minio" "${GOPATH}/bin/minio"
+        chmod +x "${GOPATH}/bin/minio"
     fi
 
     mv "${GOPATH}/bin" "${GOPATH}/bin.$(go version | cut -d' ' -f3)"
