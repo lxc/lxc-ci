@@ -100,11 +100,16 @@ export GOPATH="${TEMP_DIR}/go"
 arch="$(dpkg --print-architecture)"
 
 # Download MinIO binary
-if [ "${arch}" = "amd64" ]; then
-    curl --silent --show-error https://dl.min.io/server/minio/release/linux-amd64/minio -o "${GOPATH}/minio"
-elif [ "${arch}" = "arm64" ]; then
-    curl --silent --show-error https://dl.min.io/server/minio/release/linux-arm64/minio -o "${GOPATH}/minio"
-fi
+while :; do
+    rm -f "${GOPATH}/minio"
+    if [ "${arch}" = "amd64" ]; then
+        curl --silent --show-error https://dl.min.io/server/minio/release/linux-amd64/minio -o "${GOPATH}/minio" || continue
+    elif [ "${arch}" = "arm64" ]; then
+        curl --silent --show-error https://dl.min.io/server/minio/release/linux-arm64/minio -o "${GOPATH}/minio" || continue
+    fi
+
+    break
+done
 
 OLD_PATH=${PATH}
 for version in 1.13 1.17 1.18 tip; do
