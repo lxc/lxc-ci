@@ -100,16 +100,13 @@ export GOPATH="${TEMP_DIR}/go"
 arch="$(dpkg --print-architecture)"
 
 # Download MinIO binary
-mkdir -p "${GOPATH}/bin"
+mkdir -p "${GOPATH}"
 
 if [ "${arch}" = "amd64" ]; then
-    wget https://dl.min.io/server/minio/release/linux-amd64/minio -O "${GOPATH}/bin/minio" || continue
-    chmod +x "${GOPATH}/bin/minio"
+    wget https://dl.min.io/server/minio/release/linux-amd64/minio -O "${GOPATH}/minio"
 elif [ "${arch}" = "arm64" ]; then
-    wget https://dl.min.io/server/minio/release/linux-arm64/minio -O "${GOPATH}/bin/minio" || continue
-    chmod +x "${GOPATH}/bin/minio"
+    wget https://dl.min.io/server/minio/release/linux-arm64/minio -O "${GOPATH}/minio"
 fi
-
 
 OLD_PATH=${PATH}
 for version in 1.13 1.17 1.18 tip; do
@@ -129,8 +126,17 @@ for version in 1.13 1.17 1.18 tip; do
         fi
     done
 
+    if [ -f "${GOPATH}/minio" ]; then
+        cp "${GOPATH}/minio" "${GOPATH}/bin/minio"
+        chmod +x "${GOPATH}/bin/minio"
+    fi
+
     mv "${GOPATH}/bin" "${GOPATH}/bin.$(go version | cut -d' ' -f3)"
 done
+
+if [ -f "${GOPATH}/minio" ]; then
+    rm "${GOPATH}/minio"
+fi
 
 cd "${TEMP_DIR}"
 
