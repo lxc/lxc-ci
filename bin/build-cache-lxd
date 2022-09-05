@@ -100,16 +100,16 @@ export GOPATH="${TEMP_DIR}/go"
 arch="$(dpkg --print-architecture)"
 
 # Download MinIO binary
-while :; do
-    rm -f "${GOPATH}/minio"
-    if [ "${arch}" = "amd64" ]; then
-        wget https://dl.min.io/server/minio/release/linux-amd64/minio -O "${GOPATH}/minio" || continue
-    elif [ "${arch}" = "arm64" ]; then
-        wget https://dl.min.io/server/minio/release/linux-arm64/minio -O "${GOPATH}/minio" || continue
-    fi
+mkdir -p "${GOPATH}/bin"
 
-    break
-done
+if [ "${arch}" = "amd64" ]; then
+    wget https://dl.min.io/server/minio/release/linux-amd64/minio -O "${GOPATH}/bin/minio" || continue
+    chmod +x "${GOPATH}/bin/minio"
+elif [ "${arch}" = "arm64" ]; then
+    wget https://dl.min.io/server/minio/release/linux-arm64/minio -O "${GOPATH}/bin/minio" || continue
+    chmod +x "${GOPATH}/bin/minio"
+fi
+
 
 OLD_PATH=${PATH}
 for version in 1.13 1.17 1.18 tip; do
@@ -128,15 +128,6 @@ for version in 1.13 1.17 1.18 tip; do
             go install "${pkg}@latest" >/dev/null || true
         fi
     done
-
-    mkdir -p "${GOPATH}/bin"
-
-    # Copy the MinIO binary so its in the PATH.
-    # We don't use MinIO until LXD versions that require Go 1.18 or later.
-    if [ "${version}" != "1.13" ] && [ "${version}" != "1.17" ]; then
-        cp "${GOPATH}/minio" "${GOPATH}/bin/minio"
-        chmod +x "${GOPATH}/bin/minio"
-    fi
 
     mv "${GOPATH}/bin" "${GOPATH}/bin.$(go version | cut -d' ' -f3)"
 done
