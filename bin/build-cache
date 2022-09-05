@@ -48,7 +48,7 @@ apt-get update --yes
 # Install dependencies
 apt-get install --yes --no-install-recommends \
     git build-essential libtool libuv1-dev libsqlite3-dev make pkg-config tcl \
-    autoconf automake autopoint curl snapd liblz4-dev
+    autoconf automake autopoint curl snapd liblz4-dev wget
 apt-get clean
 
 # Setup snapd
