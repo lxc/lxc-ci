@@ -103,9 +103,9 @@ arch="$(dpkg --print-architecture)"
 while :; do
     rm -f "${GOPATH}/minio"
     if [ "${arch}" = "amd64" ]; then
-        curl --silent --show-error https://dl.min.io/server/minio/release/linux-amd64/minio -o "${GOPATH}/minio" || continue
+        wget https://dl.min.io/server/minio/release/linux-amd64/minio -O "${GOPATH}/minio" || continue
     elif [ "${arch}" = "arm64" ]; then
-        curl --silent --show-error https://dl.min.io/server/minio/release/linux-arm64/minio -o "${GOPATH}/minio" || continue
+        wget https://dl.min.io/server/minio/release/linux-arm64/minio -O "${GOPATH}/minio" || continue
     fi
 
     break
