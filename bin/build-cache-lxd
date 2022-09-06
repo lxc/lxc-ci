@@ -115,7 +115,7 @@ for version in 1.13 1.17 1.18 tip; do
 
     for pkg in github.com/rogpeppe/godeps \
                github.com/tsenart/deadcode \
-               github.com/snapcore/snapd/i18n/xgettext-go \
+               github.com/snapcore/snapd/i18n/xgettext-go@2.57.1 \
                github.com/client9/misspell/cmd/misspell \
                github.com/gordonklaus/ineffassign \
                golang.org/x/lint/golint; do
