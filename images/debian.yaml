@@ -1053,6 +1053,7 @@ packages:
     action: install
     early: true
     releases:
+    - bookworm
     - sid
 
   - packages:
