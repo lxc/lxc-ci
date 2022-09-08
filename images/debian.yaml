@@ -1071,7 +1071,6 @@ packages:
     releases:
     - buster
     - bullseye
-    - bookworm
 
   - packages:
     - policykit-1
