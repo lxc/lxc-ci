@@ -679,7 +679,7 @@ actions:
 
       cp "${repo}" "${repo}.bak"
 
-      sed -ri 's/^mirrorlist=.*/#\0/g;s@^#(baseurl=)http://mirror.centos.org/(.*)@\1https://muug.ca/mirror/\2@g' "${repo}"
+      sed -ri 's/^mirrorlist=.*/#\0/g;s@^#(baseurl=)http://mirror.centos.org/(.*)@\1https://mirror.csclub.uwaterloo.ca/\2@g' "${repo}"
     done
   releases:
   - 7
@@ -722,7 +722,7 @@ actions:
 
       cp "${repo}" "${repo}.bak"
 
-      sed -ri 's/^mirrorlist=.*/#\0/g;s@^#(baseurl=)http://mirror.centos.org/(.*)@\1https://muug.ca/mirror/\2@g' "${repo}"
+      sed -ri 's/^mirrorlist=.*/#\0/g;s@^#(baseurl=)http://mirror.centos.org/(.*)@\1https://mirror.csclub.uwaterloo.ca/\2@g' "${repo}"
     done
   releases:
   - 8-Stream
