@@ -113,16 +113,16 @@ for version in 1.13 1.17 1.18 tip; do
     VER=$(echo $version | sed "s/\.//g")
     export PATH="/snap/go_${VER}/current/bin:${OLD_PATH}"
 
-    for pkg in github.com/rogpeppe/godeps \
-               github.com/tsenart/deadcode \
+    for pkg in github.com/rogpeppe/godeps@latest \
+               github.com/tsenart/deadcode@latest \
                github.com/snapcore/snapd/i18n/xgettext-go@2.57.1 \
-               github.com/client9/misspell/cmd/misspell \
-               github.com/gordonklaus/ineffassign \
-               golang.org/x/lint/golint; do
+               github.com/client9/misspell/cmd/misspell@latest \
+               github.com/gordonklaus/ineffassign@latest \
+               golang.org/x/lint/golint@latest; do
         if [ "${version}" = "1.13" ]; then
-            go get "${pkg}" >/dev/null || true
+            GO111MODULE=on go get "${pkg}" >/dev/null || true
         else
-            go install "${pkg}@latest" >/dev/null || true
+            go install "${pkg}" >/dev/null || true
         fi
     done
 
