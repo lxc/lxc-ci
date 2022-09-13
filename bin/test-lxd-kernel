@@ -76,4 +76,4 @@ fi
 # Run tests
 cd /root/go/src/github.com/lxc/lxd/test
 uname -a
-LXD_SKIP_STATIC=1 LXD_OFFLINE=0 LXD_TMPFS=1 LXD_VERBOSE=1 time -p ./main.sh
+LXD_SKIP_STATIC=1 LXD_SKIP_TESTS=storage_buckets LXD_OFFLINE=0 LXD_TMPFS=1 LXD_VERBOSE=1 time -p ./main.sh
