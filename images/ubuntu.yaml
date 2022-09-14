@@ -525,6 +525,12 @@ packages:
     - cloud
 
   - packages:
+    - systemd-resolved
+    action: install
+    releases:
+    - kinetic
+
+  - packages:
     - acpid
     action: install
     architectures:
