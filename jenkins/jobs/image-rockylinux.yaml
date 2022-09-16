@@ -12,6 +12,8 @@
         values:
         - amd64
         - arm64
+        - ppc64el
+        - s390x
 
     - axis:
         name: release
@@ -35,6 +37,7 @@
         ARCH=${architecture}
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
         [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
+        [ "${ARCH}" = "ppc64el" ] && ARCH="ppc64le"
 
         EXTRA_ARGS="-o source.variant=boot"
 
@@ -47,6 +50,11 @@
             ${LXD_ARCHITECTURE} ${TYPE} 7200 ${WORKSPACE} \
             -o image.architecture=${ARCH} -o image.release=${release} \
             -o image.variant=${variant} ${EXTRA_ARGS}
+
+    execution-strategy:
+      combination-filter: '
+      !(release!="9" && architecture == "ppc64el") &&
+      !(release!="9" && architecture == "s390x")'
 
     properties:
     - build-discarder:
