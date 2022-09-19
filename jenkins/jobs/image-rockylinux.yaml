@@ -13,7 +13,6 @@
         - amd64
         - arm64
         - ppc64el
-        - s390x
 
     - axis:
         name: release
@@ -53,8 +52,7 @@
 
     execution-strategy:
       combination-filter: '
-      !(release!="9" && architecture == "ppc64el") &&
-      !(release!="9" && architecture == "s390x")'
+      !(release!="9" && architecture == "ppc64el")'
 
     properties:
     - build-discarder:
