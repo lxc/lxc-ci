@@ -37,7 +37,7 @@ waitSnapdSeed
 curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh
 
 # Configure for ceph use
-curl -s http://canonical-lxd.stgraber.org/config/ceph.sh | sh
+eval "$(curl -s http://canonical-lxd.stgraber.org/config/ceph.sh)"
 
 # Install LXD
 while [ -e /usr/bin/lxd ]; do
