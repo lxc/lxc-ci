@@ -62,7 +62,7 @@ do
   if [ "${poolDriver}" = "dir" ]; then
     lxc storage create "${poolName}" "${poolDriver}" volume.size=5GB
   elif [ "${poolDriver}" = "ceph" ]; then
-    lxc storage create "${poolName}" "${poolDriver}" source="${poolName}" volume.size=5GB
+    lxc storage create "${poolName}" cephobject cephobject.radosgw.endpoint="${LXD_CEPH_CEPHOBJECT_RADOSGW}"
   elif [ "${poolDriver}" = "lvm" ]; then
     lxc storage create "${poolName}" "${poolDriver}" size=40GiB lvm.use_thinpool=false volume.size=5GB
   elif [ "${poolDriver}" = "lvm-thin" ]; then
@@ -71,9 +71,7 @@ do
     lxc storage create "${poolName}" "${poolDriver}" size=20GB volume.size=5GB
   fi
 
-  if [ "${poolDriver}" = "ceph" ]; then
-    lxc storage create s3 cephobject cephobject.radosgw.endpoint="${LXD_CEPH_CEPHOBJECT_RADOSGW}"
-  else
+  if [ "${poolDriver}" != "ceph" ]; then
     lxc config set core.storage_buckets_address "127.0.0.1:9000"
   fi
 
