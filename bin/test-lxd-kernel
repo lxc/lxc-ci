@@ -76,4 +76,6 @@ fi
 # Run tests
 cd /root/go/src/github.com/lxc/lxd/test
 uname -a
-LXD_SKIP_STATIC=1 LXD_SKIP_TESTS=storage_buckets LXD_OFFLINE=0 LXD_TMPFS=1 LXD_VERBOSE=1 time -p ./main.sh
+
+# LXD_SHIFTFS_DISABLE=1 because of kernel regression https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1990849
+LXD_SKIP_STATIC=1 LXD_SKIP_TESTS=storage_buckets LXD_OFFLINE=0 LXD_TMPFS=1 LXD_SHIFTFS_DISABLE=1 LXD_VERBOSE=1 time -p ./main.sh
