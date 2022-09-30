@@ -1300,6 +1300,85 @@ ovn_peering_tests() {
     lxc project delete ovn2
 }
 
+ovn_dhcp_reservation_tests() {
+    lxc network create lxdbr0 \
+        ipv4.address=10.10.10.1/24 ipv4.nat=true \
+        ipv4.dhcp.ranges=10.10.10.2-10.10.10.199 \
+        ipv4.ovn.ranges=10.10.10.200-10.10.10.254 \
+        ipv6.address=fd42:4242:4242:1010::1/64 ipv6.nat=true \
+        ipv6.ovn.ranges=fd42:4242:4242:1010::200-fd42:4242:4242:1010::254
+
+    # Create OVN network.
+    lxc network create ovn1 --type=ovn \
+        network=lxdbr0 \
+        ipv4.address=10.10.11.1/24 ipv4.nat=true \
+        ipv6.address=fd42:4242:4242:1011::1/64 ipv6.nat=true
+
+    sleep 2
+    lxc network list | grep ovn1
+
+    # Check there are no dns records entries and only the gateway IP is reserved.
+    [ "$(ovn-nbctl list dns | grep -Fc 'records')" = "0" ] || false
+    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1"')" = "1" ] || false
+
+    # Create instance and check empty DNS record entry is created (showing successfully adding a NIC).
+    lxc init images:ubuntu/20.04 u1 -s default -n ovn1
+    [ "$(ovn-nbctl list dns | grep -Fc 'records')" = "1" ] || false
+
+    # Check specifying a static IP is added to DHCP reservations.
+    lxc config device set u1 eth0 ipv4.address=10.10.11.200
+    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1 10.10.11.200"')" = "1" ] || false
+
+    # Check changing static IP is reflected in DHCP reservations.
+    lxc config device set u1 eth0 ipv4.address=10.10.11.2
+    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1 10.10.11.2"')" = "1" ] || false
+
+    # Launch new dynamic IP instance and check its not allocated the reserved IP.
+    lxc launch images:ubuntu/20.04 u2 -s default -n ovn1
+    sleep 10
+    lxc list
+    U2_IPV4="$(lxc list u2 -c4 --format=csv | cut -d' ' -f1)"
+    [ "${U2_IPV4}" != "10.10.11.2" ] || false
+    lxc delete -f u2
+
+    # Copy instance with static IP so it creates an IP conflict.
+    lxc copy u1 u2
+
+    # Check neither instances are allowed to start.
+    ! lxc start u1 || false
+    ! lxc start u2 || false
+
+    # Check there is only 1 DNS record entry and only 1 reserved instance IP.
+    [ "$(ovn-nbctl list dns | grep -Fc 'records')" = "1" ] || false
+    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1 10.10.11.2"')" = "1" ] || false
+
+    # Delete the new copy which caused the conflict and check the DNS record entry and reserved IP for the original
+    # instance is left alone.
+    lxc delete -f u2
+    [ "$(ovn-nbctl list dns | grep -Fc 'records')" = "1" ] || false
+    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1 10.10.11.2"')" = "1" ] || false
+
+    # Create conflict again, but this time delete the original instance, checking that the DNS record entry is
+    # removed along with the original instance's IP reservation.
+    lxc copy u1 u2
+    lxc delete -f u1
+    [ "$(ovn-nbctl list dns | grep -Fc 'records')" = "0" ] || false
+    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1"')" = "1" ] || false
+
+    # Check that starting the instance copy creates the missing DNS record entry and IP reservation.
+    lxc start u2
+    [ "$(ovn-nbctl list dns | grep -Fc 'records')" = "1" ] || false
+    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1 10.10.11.2"')" = "1" ] || false
+
+    # Check that deleting the instance copy after successful start removes the DNS record entry and IP allocation.
+    lxc delete -f u2
+    [ "$(ovn-nbctl list dns | grep -Fc 'records')" = "0" ] || false
+    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1"')" = "1" ] || false
+
+    lxc network delete ovn1
+    lxc network delete lxdbr0
+}
+
 # Allow for running a specific set of tests.
 if [ "$#" -gt 0 ]; then
   TEST_CURRENT="ovn_${1}_tests"
@@ -1310,6 +1389,7 @@ else
     ovn_forward_tests
     ovn_load_balancer_tests
     ovn_peering_tests
+    ovn_dhcp_reservation_tests
 fi
 
 lxc storage delete default
