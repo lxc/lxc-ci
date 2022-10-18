@@ -56,7 +56,9 @@
             -o image.variant=${variant}
 
     execution-strategy:
-      combination-filter: '!(architecture != "amd64" && variant == "desktop-kde")'
+      combination-filter: '
+      !(architecture != "amd64" && variant == "desktop-kde") &&
+      !(architecture == "s390x" && variant == "cloud" && release == "tumbleweed")'
 
     properties:
     - build-discarder:
