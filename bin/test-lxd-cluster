@@ -1,4 +1,6 @@
 #!/bin/sh -eu
+
+set -x
 PREFIX="cluster-$(uuidgen)"
 
 if [ -z "${1:-""}" ] || [ -z "${2:-""}" ] || [ -z "${3:-""}" ]; then
@@ -52,19 +54,22 @@ lxc exec "${PREFIX}-1" -- apt-get install snapd fuse curl --yes
 lxc exec "${PREFIX}-1" -- sh -c "curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh"
 lxc exec "${PREFIX}-1" -- snap install core18
 lxc exec "${PREFIX}-1" -- snap install core20
-lxc exec "${PREFIX}-1" -- snap install lxd --channel="$2"
+lxc stop "${PREFIX}-1"
 
 for i in $(seq 2 "$1"); do
     lxc copy "${PREFIX}-1" "${PREFIX}-$i"
-    lxc start "${PREFIX}-$i"
 done
 
 for i in $(seq "$1"); do
+    lxc start "${PREFIX}-$i"
+
     # Wait for network
     while :; do
         lxc exec "${PREFIX}-$i" -- ping -W1 -c1 linuxcontainers.org >/dev/null 2>&1 && break
         sleep 1
     done
+
+    lxc exec "${PREFIX}-$i" -- snap install lxd --channel="$2"
 
     # Configure the cluster
     if [ "$i" = "1" ]; then
