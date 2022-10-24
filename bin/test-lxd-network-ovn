@@ -283,7 +283,16 @@ ovn_basic_tests() {
     ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "2001:db8:1:2::/122,"
     ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "203.0.113.1,"
     ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "2001:db8:2:2::1,"
+
+    # Check instance can be started with DHCP disabled when using device routes.
+    # We expect OVN to still allow dynamic IPs to the switch port so that device routes can work correctly.
+    lxc network set ovn-virtual-network --project testovn ipv4.dhcp=false ipv6.dhcp=false
+    lxc stop -f u1 --project testovn
+    lxc start u1 --project testovn
+    lxc stop -f u1 --project testovn
     lxc network unset ovn-virtual-network --project testovn ipv4.dhcp
+    lxc network unset ovn-virtual-network --project testovn ipv6.dhcp
+    lxc start u1 --project testovn
 
     # Check DNAT_AND_SNAT NAT rules get removed when switching to routed ingress mode.
     natRulesBeforeRouted=$(ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l)
