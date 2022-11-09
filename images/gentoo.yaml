@@ -561,7 +561,7 @@ actions:
   action: |-
     #!/bin/sh
     set -eux
-    rc-update add cloud-init-local default
+    rc-update add cloud-init-local boot
     rc-update add cloud-init default
     rc-update add cloud-config default
     rc-update add cloud-final default
@@ -599,6 +599,7 @@ actions:
 - trigger: post-packages
   action: |-
     #!/bin/sh
+    set -eux
     umount -l /etc/resolv.conf || true
     rm /etc/resolv.conf
     ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
