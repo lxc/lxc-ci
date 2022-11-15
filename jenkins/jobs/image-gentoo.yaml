@@ -26,7 +26,8 @@
         type: user-defined
         values:
         - openrc
-        - cloud
+        # TODO: include cloud images once build issues have been resolved
+        # - cloud
         - systemd
 
     builders:
