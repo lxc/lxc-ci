@@ -315,7 +315,6 @@ packages:
     - sudo
     action: install
     releases:
-    - 3.13
     - 3.14
 
   - packages:
