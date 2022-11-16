@@ -4,7 +4,7 @@ image:
 
 source:
   downloader: debootstrap
-  url: http://kali.download/kali
+  url: http://kali.download/kali/
   same_as: sid
   keys:
   # 0x44C6513A8E4FB3D30875F758ED444FF07D8D0BF6

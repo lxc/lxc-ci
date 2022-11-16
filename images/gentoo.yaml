@@ -3,7 +3,7 @@ image:
 
 source:
   downloader: gentoo-http
-  url: https://mirror.csclub.uwaterloo.ca/gentoo-distfiles
+  url: https://mirror.csclub.uwaterloo.ca/gentoo-distfiles/
   keys:
   # 0x13EBBDBEDE7A12775DFDB1BABB572E0E2D182910
   - |-

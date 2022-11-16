@@ -3,7 +3,7 @@ image:
 
 source:
   downloader: rockylinux-http
-  url: http://download.rockylinux.org/pub/rocky
+  url: http://download.rockylinux.org/pub/rocky/
   keys:
   # RPM-GPG-KEY-rockylinux-8
   - |-

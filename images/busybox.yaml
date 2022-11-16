@@ -3,7 +3,7 @@ image:
 
 source:
   downloader: busybox
-  url: https://busybox.net/downloads
+  url: https://busybox.net/downloads/
 
 files:
 - path: /etc/inittab

@@ -3,7 +3,7 @@ image:
 
 source:
   downloader: funtoo-http
-  url: http://build.funtoo.org
+  url: http://build.funtoo.org/
   keys:
   # 30737D12308C9D0C882FC34B57CB0A121BAECB2E
   - |-

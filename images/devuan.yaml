@@ -3,7 +3,7 @@ image:
 
 source:
   downloader: debootstrap
-  url: http://deb.devuan.org/merged
+  url: http://deb.devuan.org/merged/
   same_as: sid
   keys:
   # 0x72E3CB773315DFA2E464743D94532124541922FB

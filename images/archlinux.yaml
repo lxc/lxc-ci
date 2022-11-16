@@ -3,7 +3,7 @@ image:
 
 source:
   downloader: archlinux-http
-  url: https://archive.archlinux.org/iso
+  url: https://archive.archlinux.org/iso/
   keys:
   # 0x4AA4767BBC9C4B1D18AE28B77F2D434B9741E8AC
   - |-
