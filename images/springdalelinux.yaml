@@ -3,7 +3,7 @@ image:
 
 source:
   downloader: springdalelinux-http
-  url: http://puias.princeton.edu/data/puias
+  url: http://puias.princeton.edu/data/puias/
   keys:
   - |-
     -----BEGIN PGP PUBLIC KEY BLOCK-----

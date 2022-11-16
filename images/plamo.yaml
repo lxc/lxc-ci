@@ -3,7 +3,7 @@ image:
 
 source:
   downloader: plamolinux-http
-  url: https://repository.plamolinux.org/pub/linux/Plamo
+  url: https://repository.plamolinux.org/pub/linux/Plamo/
 
 targets:
   lxc:
