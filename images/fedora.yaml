@@ -300,6 +300,7 @@ actions:
   - cloud
   releases:
   - 36
+  - 37
 
 - trigger: post-packages
   action: |-
