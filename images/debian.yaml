@@ -4,7 +4,7 @@ image:
 source:
   downloader: debootstrap
   same_as: sid
-  url: http://deb.debian.org/debian/
+  url: https://deb.debian.org/debian/
   keys:
   # 0x126C0D24BD8A2942CC7DF8AC7638D0442B90D010
   - |-

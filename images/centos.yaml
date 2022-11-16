@@ -3,7 +3,7 @@ image:
 
 source:
   downloader: centos-http
-  url: http://mirror.math.princeton.edu/pub/centos/
+  url: https://mirror.math.princeton.edu/pub/centos/
   keys:
   # RPM-GPG-KEY-CentOS-6
   - |-
