@@ -1778,15 +1778,5 @@ actions:
   variants:
   - cloud
 
-- trigger: post-packages
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    # Mask systemd-binfmt service to ensure it's not called
-    systemctl mask systemd-binfmt.service
-  types:
-  - container
-
 mappings:
   architecture_map: debian
