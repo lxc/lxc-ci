@@ -19,6 +19,7 @@
         values:
         - 7
         - 8
+        - 9
 
     - axis:
         name: variant
@@ -44,7 +45,8 @@
 
     execution-strategy:
       combination-filter: '
-      !(architecture=="i386" && release == "8")'
+      !(architecture=="i386" && release == "8")
+      && !(architecture=="i386" && release == "9")'
 
     properties:
     - build-discarder:
