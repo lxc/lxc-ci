@@ -158,6 +158,19 @@ files:
   path: /etc/fstab
   generator: dump
 
+- name: cloud-init-system_info-distro
+  path: /etc/cloud/cloud.cfg.d/99_lxd.cfg
+  generator: dump
+  content: |-
+    # Set distro to Fedora as cloud-init doesn't support Oracle Linux.
+    # If not set, it will use Ubuntu as the fallback distro, and fail.
+    system_info:
+        distro: fedora
+  variants:
+  - cloud
+  releases:
+  - 8
+
 packages:
   manager: yum
   update: true
