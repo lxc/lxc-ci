@@ -31,6 +31,9 @@ lxc config device add "${CNAME}" loop-control unix-char source=/dev/loop-control
 # Mark as privileged
 lxc config set "${CNAME}" security.privileged true
 
+# Allow all mounts
+lxc config set "${CNAME}" raw.apparmor mount,
+
 # Start the container
 lxc start "${CNAME}"
 
