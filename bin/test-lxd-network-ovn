@@ -267,7 +267,7 @@ ovn_basic_tests() {
     ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "198.51.100.63,198.51.100.63,dnat_and_snat"
     ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "2001:db8:1:2::,2001:db8:1:2::,dnat_and_snat"
     ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | grep "2001:db8:1:2::3f,2001:db8:1:2::3f,dnat_and_snat"
-    ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l | grep 132
+    ovn-nbctl --bare --format=csv --column=external_ip,logical_ip,type find nat | wc -l | grep -xF 132
 
     # Add internal static route to instance NIC.
     lxc config device set u1 eth0 ipv4.routes=203.0.113.1/32 ipv6.routes=2001:db8:2:2::1/128 --project testovn
@@ -340,14 +340,14 @@ ovn_basic_tests() {
     lxc network set ovn-virtual-network dns.domain=testdhcp --project testovn
 
     # Look for DHCP options mentioning our testdhcp domain name, there should be two.
-    ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep testdhcp | wc -l | grep 2
+    ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep -cF testdhcp | grep -xF 2
 
     # Only enable IPv6 DHCP.
     lxc init images:ubuntu/20.04 u1 --project testovn -s default
     lxc network set ovn-virtual-network ipv4.dhcp=false ipv6.dhcp=true --project testovn
 
     # Look for DHCP options mentioning our testdhcp domain name, there should be one.
-    ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep testdhcp | wc -l | grep 1
+    ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep -cF testdhcp | grep -xF 1
 
     # Check container can start with IPv4 DHCP disabled.
     lxc start u1 --project testovn
@@ -357,7 +357,7 @@ ovn_basic_tests() {
     lxc network set ovn-virtual-network ipv4.dhcp=true ipv6.dhcp=false --project testovn
 
     # Look for DHCP options mentioning our testdhcp domain name, there should be one.
-    ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep testdhcp | wc -l | grep 1
+    ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep -cF testdhcp | grep -xF 1
 
     # Check container can start with IPv6 DHCP disabled.
     lxc start u1 --project testovn
@@ -367,7 +367,7 @@ ovn_basic_tests() {
     lxc network set ovn-virtual-network ipv4.dhcp=false ipv6.dhcp=false --project testovn
 
     # Look for DHCP options mentioning our testdhcp domain name, there shouldn't be any.
-    ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep testdhcp | wc -l | grep 0
+    ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep -cF testdhcp | grep -xF 0
 
     lxc network delete ovn-virtual-network --project testovn
     lxc image delete "${FINGERPRINT}" --project testovn
@@ -469,16 +469,16 @@ ovn_basic_tests() {
         ipv4.ovn.ranges=192.0.2.10-192.0.2.19
     lxc network create ovn-virtual-network --type=ovn network=dummy
     sleep 2
-    bridge link show | grep dummybr0 | wc -l | grep 1 # Check we have one port connected to the uplink bridge.
-    ovs-vsctl list-br | grep ovn | wc  -l | grep 1 # Check we have one OVS bridge.
+    bridge link show | grep -cF dummybr0 | grep -xF 1 # Check we have one port connected to the uplink bridge.
+    ovs-vsctl list-br | grep -cF ovn | grep -xF 1 # Check we have one OVS bridge.
     ovnIPv4="$(lxc network get ovn-virtual-network volatile.network.ipv4.address)"
     ovnIPv6="$(lxc network get ovn-virtual-network volatile.network.ipv6.address)"
     ping -c1 -4 "${ovnIPv4}" # Check IPv4 connectivity over dummy bridge to OVN router.
     ping -c1 -6 "${ovnIPv6}" # Check IPv6 connectivity over dummy bridge to OVN router.
     lxc network delete ovn-virtual-network
     lxc network delete dummy
-    bridge link show | grep dummybr0 | wc -l | grep 0 # Check the port is removed from the uplink bridge.
-    ovs-vsctl list-br | grep ovn | wc  -l | grep 0 # Check the OVS bridge is removed.
+    bridge link show | grep -cF dummybr0 | grep -xF 0 # Check the port is removed from the uplink bridge.
+    ovs-vsctl list-br | grep -cF ovn | grep -xF 0 # Check the OVS bridge is removed.
     ip link delete dummybr0 # Remove dummy uplink bridge.
 
     # Test physical uplinks using OVS bridge.
@@ -493,14 +493,14 @@ ovn_basic_tests() {
         ipv4.ovn.ranges=192.0.2.10-192.0.2.19
     lxc network create ovn-virtual-network --type=ovn network=dummy
     sleep 2
-    ovs-vsctl list-ports dummybr0 | grep patch-lxd-net | wc -l | grep 1 # Check bridge has an OVN patch port connected.
+    ovs-vsctl list-ports dummybr0 | grep -cF patch-lxd-net | grep -xF 1 # Check bridge has an OVN patch port connected.
     ovnIPv4="$(lxc network get ovn-virtual-network volatile.network.ipv4.address)"
     ovnIPv6="$(lxc network get ovn-virtual-network volatile.network.ipv6.address)"
     ping -c1 -4 "${ovnIPv4}" # Check IPv4 connectivity over dummy bridge to OVN router.
     ping -c1 -6 "${ovnIPv6}" # Check IPv6 connectivity over dummy bridge to OVN router.
     lxc network delete ovn-virtual-network
     lxc network delete dummy
-    ovs-vsctl list-ports dummybr0 | grep patch-lxd-net | wc -l | grep 0 # Check bridge has no OVN patch port connected.
+    ovs-vsctl list-ports dummybr0 | grep -cF patch-lxd-net | grep -xF 0 # Check bridge has no OVN patch port connected.
     ovs-vsctl del-br dummybr0 # Remove dummy uplink bridge.
 
     # Test external SNAT address for network.
@@ -613,7 +613,7 @@ ovn_forward_tests() {
     # Check forwards can be created with no target address.
     lxc network forward create ovn-virtual-network 192.0.2.1
     lxc network forward create ovn-virtual-network 2001:db8:1:2::1
-    ovn-nbctl list load_balancer | grep name -c | grep 0
+    ovn-nbctl list load_balancer | grep -cF name | grep -xF 0
 
     # Check load balancer cannot be created on same listen address as forward.
     ! lxc network load-balancer create ovn-virtual-network 192.0.2.1 || false
@@ -627,15 +627,15 @@ ovn_forward_tests() {
     # Check basic forward default target address can be set (to non-existent target address).
     lxc network forward set ovn-virtual-network 192.0.2.1 target_address="${ip4AddressPrefix}.2"
     lxc network forward set ovn-virtual-network 2001:db8:1:2::1  target_address="${ip6AddressPrefix}::2"
-    ovn-nbctl list load_balancer | grep name -c | grep 2
+    ovn-nbctl list load_balancer | grep -cF name | grep -xF 2
     lxc network forward delete ovn-virtual-network 192.0.2.1
     lxc network forward delete ovn-virtual-network 2001:db8:1:2::1
-    ovn-nbctl list load_balancer | grep name -c | grep 0
+    ovn-nbctl list load_balancer | grep -cF name | grep -xF 0
 
     # Check basic forward can be created with target address (to non-existent target address).
     lxc network forward create ovn-virtual-network 192.0.2.1 target_address="${ip4AddressPrefix}.2"
     lxc network forward create ovn-virtual-network 2001:db8:1:2::1 target_address="${ip6AddressPrefix}::2"
-    ovn-nbctl list load_balancer | grep name -c | grep 2
+    ovn-nbctl list load_balancer | grep -cF name | grep -xF 2
 
     # Check duplicate forwards cannot be created.
     ! lxc network forward create ovn-virtual-network 192.0.2.1 target_address="${ip4AddressPrefix}.2" || false
@@ -667,9 +667,9 @@ ovn_forward_tests() {
     ! lxc network set ovn-virtual-network2 ipv6.address=2001:db8:1:3::1/64 || false
 
     # Check network forwards are removed when network is removed.
-    ovn-nbctl list load_balancer | grep name -c | grep 4
+    ovn-nbctl list load_balancer | grep -cF name | grep -xF 4
     lxc network delete ovn-virtual-network2
-    ovn-nbctl list load_balancer | grep name -c | grep 2
+    ovn-nbctl list load_balancer | grep -cF name | grep -xF 2
 
     # Create instance connected to ovn-virtual-network.
     lxc launch images:ubuntu/20.04 u1 -n ovn-virtual-network -s default
@@ -775,7 +775,7 @@ EOF
     lxc delete -f u2
     lxc image delete "${FINGERPRINT}"
     lxc network delete ovn-virtual-network
-    ovn-nbctl list load_balancer | grep name -c | grep 0
+    ovn-nbctl list load_balancer | grep -cF name | grep -xF 0
     lxc project switch default
     lxc project delete testovn
     lxc network delete lxdbr0
@@ -817,7 +817,7 @@ ovn_load_balancer_tests() {
     lxc network load-balancer create ovn-virtual-network 2001:db8:1:2::1
 
     # Check no OVN config yet as not fully setup.
-    ovn-nbctl list load_balancer | grep name -c | grep 0
+    ovn-nbctl list load_balancer | grep -cF name -c | grep -xF 0
 
     # Check forward cannot be created on same listen address as load balancer.
     ! lxc network forward create ovn-virtual-network 192.0.2.1 || false
@@ -864,9 +864,9 @@ ovn_load_balancer_tests() {
     ! lxc network set ovn-virtual-network2 ipv6.address=2001:db8:1:3::1/64 || false
 
     # Check network load balancers are removed when network is removed.
-    ovn-nbctl list load_balancer | grep name -c | grep 2
+    ovn-nbctl list load_balancer | grep -cF name | grep -xF 2
     lxc network delete ovn-virtual-network2
-    ovn-nbctl list load_balancer | grep name -c | grep 0
+    ovn-nbctl list load_balancer | grep -cF name | grep -xF 0
 
     # Create instance connected to ovn-virtual-network.
     lxc launch images:ubuntu/20.04 u1 -n ovn-virtual-network -s default
@@ -995,7 +995,7 @@ EOF
     lxc delete -f u2
     lxc image delete "${FINGERPRINT}"
     lxc network delete ovn-virtual-network
-    ovn-nbctl list load_balancer | grep name -c | grep 0
+    ovn-nbctl list load_balancer | grep -cF name | grep -xF 0
     lxc project switch default
     lxc project delete testovn
     lxc network delete lxdbr0
