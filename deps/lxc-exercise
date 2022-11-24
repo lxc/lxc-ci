@@ -52,9 +52,6 @@ summary() {
     echo "SUMMARY: pass=$TEST_PASS, fail=$TEST_FAIL, ignored=$TEST_IGNORED"
 }
 
-# Source distro information
-[ -e /etc/lsb-release ] && . /etc/lsb-release
-
 # Workaround for broken gpg2
 if [ -n "${http_proxy:-}" ] && [ -e /usr/bin/dirmngr ]; then
     dpkg-divert --divert /usr/bin/dirmngr.orig --rename --add /usr/bin/dirmngr
