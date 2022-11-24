@@ -131,10 +131,23 @@ do
 	# shellcheck disable=2016
 	lxc exec v1 -- /bin/sh -c 'mount /dev/sdc /mnt && [ $(cat /mnt/bar) = foo ] && umount /mnt'
 
-	echo "==> Deleting VM"
+	echo "==> Detaching volumes"
 	lxc stop -f v1
 	lxc storage volume detach "${poolName}" vol2 v1
 	lxc storage volume detach "${poolName}" vol3 v1
+
+	echo "==> Publishing VM to image"
+	lxc storage volume create "${poolName}" images --project=default
+	lxc config set storage.images_volume "${poolName}"/images
+	lxc publish v1 --alias v1image
+	lxc launch v1image v2 -s "${poolName}"
+	waitVMAgent v2
+	lxc delete v2 -f
+	lxc image delete v1image
+	lxc config unset storage.images_volume
+	lxc storage volume delete "${poolName}" images --project=default
+
+	echo "==> Deleting VM"
 	lxc rm v1
 
 	echo "==> Deleting storage pool and volumes"
