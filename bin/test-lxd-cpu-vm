@@ -120,3 +120,5 @@ lxc config unset v1 limits.cpu
 
 # Unsetting the limit should leave the VM with 1 CPU
 [ "$(lxc exec v1 -- ls /sys/devices/system/cpu | grep -Ec 'cpu[[:digit:]]+')" -eq "1" ]
+
+FAIL=0
