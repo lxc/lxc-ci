@@ -274,15 +274,15 @@ ovn_basic_tests() {
 
     # Check static routes get added when starting intance port with external and internal routes, and that they remain
     # when the network is modified while the instance NIC is running.
-    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "198.51.100.0/26,"
-    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "2001:db8:1:2::/122,"
-    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "203.0.113.1,"
-    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "2001:db8:2:2::1,"
+    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep -F "198.51.100.0/26,"
+    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep -F "2001:db8:1:2::/122,"
+    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep -F "203.0.113.1,"
+    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep -F "2001:db8:2:2::1,"
     lxc network set ovn-virtual-network --project testovn ipv4.dhcp=false
-    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "198.51.100.0/26,"
-    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "2001:db8:1:2::/122,"
-    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "203.0.113.1,"
-    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep "2001:db8:2:2::1,"
+    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep -F "198.51.100.0/26,"
+    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep -F "2001:db8:1:2::/122,"
+    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep -F "203.0.113.1,"
+    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep -F "2001:db8:2:2::1,"
 
     # Check instance can be started with DHCP disabled when using device routes.
     # We expect OVN to still allow dynamic IPs to the switch port so that device routes can work correctly.
@@ -530,8 +530,8 @@ ovn_basic_tests() {
     lxc network set dummy ovn.ingress_mode=routed
     lxc network set ovn-virtual-network ipv4.nat.address=198.51.100.1
     lxc network set ovn-virtual-network ipv6.nat.address=2001:db8:1:2::1
-    ovn-nbctl list nat | grep 198.51.100.1
-    ovn-nbctl list nat | grep 2001:db8:1:2::1
+    ovn-nbctl list nat | grep -F 198.51.100.1
+    ovn-nbctl list nat | grep -F 2001:db8:1:2::1
 
     # Add a static route to SNAT address on uplink to OVN network's router (simulating BGP route advert to uplink).
     ovnIPv4="$(lxc network get ovn-virtual-network volatile.network.ipv4.address)"
@@ -825,7 +825,7 @@ ovn_load_balancer_tests() {
 
     # Check user config is allowed, but unknown keys are not.
     lxc network load-balancer set ovn-virtual-network 192.0.2.1 user.foo=bar
-    lxc network load-balancer show ovn-virtual-network 192.0.2.1 | grep 'user.foo: bar'
+    lxc network load-balancer show ovn-virtual-network 192.0.2.1 | grep -F 'user.foo: bar'
     ! lxc network load-balancer set ovn-virtual-network 192.0.2.1 foo=bar || false
 
     # Check duplicate load balancers cannot be created.
@@ -1118,22 +1118,22 @@ ovn_peering_tests() {
     lxc exec ovn2 --project=ovn2 -- ping -c1 -6 -W5 2001:db8:1:2::2
 
     # Check address set entries added for running instances.
-    ovn-nbctl list address_set | grep 198.51.100.1/32
-    ovn-nbctl list address_set | grep 2001:db8:1:2::1/128
-    ovn-nbctl list address_set | grep 198.51.100.2/32
-    ovn-nbctl list address_set | grep 2001:db8:1:2::2/128
+    ovn-nbctl list address_set | grep -F 198.51.100.1/32
+    ovn-nbctl list address_set | grep -F 2001:db8:1:2::1/128
+    ovn-nbctl list address_set | grep -F 198.51.100.2/32
+    ovn-nbctl list address_set | grep -F 2001:db8:1:2::2/128
 
     # Check address set entries deleted for instance NIC when stopped and added when started again.
     lxc stop -f ovn1 --project=ovn1
-    ! ovn-nbctl list address_set | grep 198.51.100.1/32 || false
-    ! ovn-nbctl list address_set | grep 2001:db8:1:2::1/128 || false
-    ! ovn-nbctl list address_set | grep 198.51.100.2/32 || false
-    ! ovn-nbctl list address_set | grep 2001:db8:1:2::2/128 || false
+    ! ovn-nbctl list address_set | grep -F 198.51.100.1/32 || false
+    ! ovn-nbctl list address_set | grep -F 2001:db8:1:2::1/128 || false
+    ! ovn-nbctl list address_set | grep -F 198.51.100.2/32 || false
+    ! ovn-nbctl list address_set | grep -F 2001:db8:1:2::2/128 || false
     lxc start ovn1 --project=ovn1
-    ovn-nbctl list address_set | grep 198.51.100.1/32
-    ovn-nbctl list address_set | grep 2001:db8:1:2::1/128
-    ovn-nbctl list address_set | grep 198.51.100.2/32
-    ovn-nbctl list address_set | grep 2001:db8:1:2::2/128
+    ovn-nbctl list address_set | grep -F 198.51.100.1/32
+    ovn-nbctl list address_set | grep -F 2001:db8:1:2::1/128
+    ovn-nbctl list address_set | grep -F 198.51.100.2/32
+    ovn-nbctl list address_set | grep -F 2001:db8:1:2::2/128
 
     # Check security policies prevent spoofed packets using peer connection.
     sleep 5
