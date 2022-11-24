@@ -134,16 +134,16 @@ do
 
         echo "==> Check QEMU crash behavior and recovery"
         uuid=$(lxc config get v1 volatile.uuid)
-        ps aux | grep -v grep | grep "${uuid}"
+        pgrep -af "${uuid}"
         nsenter --mount=/run/snapd/ns/lxd.mnt -- rm /var/snap/lxd/common/lxd/logs/v1/qemu.monitor
         systemctl reload snap.lxd.daemon
         sleep 5
         lxc ls v1 | grep ERROR
         ! lxc stop v1 || false
         ! lxc start v1 || false
-        ps aux | grep -v grep | grep "${uuid}"
+        pgrep -af "${uuid}"
         lxc stop v1 -f
-        ! ps aux | grep -v grep | grep "${uuid}" || false
+        ! pgrep -af "${uuid}" || false
         lxc start v1
 
         echo "==> Testing VM non-optimized export/import (while running to check config.mount is excluded)"
