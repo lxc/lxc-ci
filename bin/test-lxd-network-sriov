@@ -25,7 +25,8 @@ waitSnapdSeed() (
 
 waitVMAgent() (
   set +x
-  local vmName=$1
+  # shellcheck disable=SC3043
+  local vmName="$1"
   for i in $(seq 90) # Wait up to 90s.
   do
     if lxc info "${vmName}" | grep -qF 127.0.0.1; then
@@ -53,6 +54,7 @@ cleanup() {
 
 # Check that all instances have an IPv4 and IPv6 address
 networkTests() {
+    # shellcheck disable=SC3043
     local FAIL=0
 
     echo "=> Performing network tests"
