@@ -2,8 +2,8 @@
 set -eu
 
 export DEBIAN_FRONTEND=noninteractive
-export LXD_BACKEND=$1
-export LXD_DEVICE=$2
+export LXD_BACKEND="$1"
+export LXD_DEVICE="$2"
 
 cleanup() {
     set +e

@@ -1146,11 +1146,11 @@ ovn_peering_tests() {
     # pinging the allowed addresses.
     lxc exec ovn2 --project=ovn2 -- apt-get install tcpdump -y
     lxc exec ovn1 -T -n --project=ovn1 -- ping -c3 -4 -W5 "${ovn2NICIPv4}" || true &
-    lxc exec ovn2 -T -n --project=ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp and src ${ovn1NICIPv4} -q -c 1 > /dev/null
+    lxc exec ovn2 -T -n --project=ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp and src "${ovn1NICIPv4}" -q -c 1 > /dev/null
     wait
 
     lxc exec ovn1 -T -n --project=ovn1 -- ping -c3 -6 -W5 "${ovn2NICIPv6}" || true &
-    lxc exec ovn2 -T -n --project=ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp6 and src ${ovn1NICIPv6} -q -c 1 > /dev/null
+    lxc exec ovn2 -T -n --project=ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp6 and src "${ovn1NICIPv6}" -q -c 1 > /dev/null
     wait
 
     # Now reconfigure ovn1's IP address inside the instance to an unknown IP and try pinging ovn2.
