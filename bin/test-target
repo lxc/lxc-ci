@@ -1,6 +1,6 @@
 #!/bin/sh
-if [ "${ghprbTargetBranch}" != "${1}" ]; then
-    echo "Target branch ${ghprbTargetBranch} isn't the ${1} branch"
+if [ "${ghprbTargetBranch:-}" != "${1}" ]; then
+    echo "Target branch ${ghprbTargetBranch:-} isn't the ${1} branch"
     exit 1
 fi
 
