@@ -6,7 +6,7 @@ export https_proxy
 cd /lxc-ci
 
 # Update the repository
-for i in $(seq 10); do
+for _ in $(seq 10); do
     git pull -q && break
     sleep 30
 done
