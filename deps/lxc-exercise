@@ -135,10 +135,14 @@ for testbin in lxc-test-*; do
             ignore "$STRING" && continue
     fi
 
-    OUT=$(mktemp)
-    START_TIME=$(date +%s)
-    ./$testbin >$OUT 2>&1 && pass "$STRING" || fail "$STRING" "$testbin" "$OUT"
-    rm $OUT
+    OUT="$(mktemp)"
+    START_TIME="$(date +%s)"
+    if "./$testbin" > "$OUT" 2>&1; then
+        pass "$STRING"
+    else
+        fail "$STRING" "$testbin" "$OUT"
+    fi
+    rm "$OUT"
 done
 
 ## Python3 testsuite
@@ -146,15 +150,18 @@ STRING="python3: API"
 if [ ! -f /usr/share/doc/python3-lxc/examples/api_test.py.gz ]; then
     ignore "$STRING"
 else
-    OUT=$(mktemp)
+    OUT="$(mktemp)"
 
-    PYTEST=$(mktemp)
-    cat /usr/share/doc/python3-lxc/examples/api_test.py.gz | gzip -d > $PYTEST
-    python3 $PYTEST >$OUT 2>&1 && pass "$STRING" || \
+    PYTEST="$(mktemp)"
+    zcat /usr/share/doc/python3-lxc/examples/api_test.py.gz > "$PYTEST"
+    if python3 "$PYTEST" > "$OUT" 2>&1; then
+        pass "$STRING"
+    else
         fail "$STRING" "python3" "$OUT"
-    rm $PYTEST
+    fi
+    rm "$PYTEST"
 
-    rm $OUT
+    rm "$OUT"
 fi
 
 # Workaround for broken gpg2
