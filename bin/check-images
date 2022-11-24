@@ -1,6 +1,7 @@
 #!/bin/sh -eu
 export PATH="/snap/bin/:${PATH}"
 
+# shellcheck disable=SC1091
 [ -e /lxc-ci/etc/config ] && . /lxc-ci/etc/config
 
 check_distrobuilder() {

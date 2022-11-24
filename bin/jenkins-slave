@@ -1,4 +1,5 @@
 #!/bin/sh -eu
+# shellcheck disable=SC1091
 [ -e /lxc-ci/etc/config ] && . /lxc-ci/etc/config
 
 if [ -z "${JENKINS_HOST:-}" ] || [ -z "${JENKINS_KEY:-}" ] || [ -z "${JENKINS_NAME:-}" ]; then
