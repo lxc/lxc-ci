@@ -170,6 +170,7 @@ files:
   - cloud
   releases:
   - 8
+  - 9
 
 packages:
   manager: yum
@@ -238,4 +239,3 @@ actions:
 
     # Disable loginuid in PAM stack
     sed -i '/^session.*pam_loginuid.so/s/^session/# session/' /etc/pam.d/*
-
