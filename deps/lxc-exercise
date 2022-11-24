@@ -12,10 +12,10 @@ IGNORE_LIST=""
 
 # Helper functions
 pass() {
-    TEST_PASS=$((${TEST_PASS}+1))
+    TEST_PASS="$((TEST_PASS+1))"
 
-    CURRENT_TIME=$(date +%s)
-    DURATION=$((CURRENT_TIME-START_TIME))
+    CURRENT_TIME="$(date +%s)"
+    DURATION="$((CURRENT_TIME-START_TIME))"
 
     echo "PASS: $1 (${DURATION}s)"
 }
@@ -23,27 +23,27 @@ pass() {
 fail() {
     for entry in $IGNORE_LIST; do
         if [ "$entry" = "$2" ]; then
-            ignore $1
+            ignore "$1"
             return
         fi
     done
 
-    TEST_FAIL=$((${TEST_FAIL}+1))
+    TEST_FAIL="$((TEST_FAIL+1))"
 
-    CURRENT_TIME=$(date +%s)
-    DURATION=$((CURRENT_TIME-START_TIME))
+    CURRENT_TIME="$(date +%s)"
+    DURATION="$((CURRENT_TIME-START_TIME))"
 
     echo "FAIL: $1 (${DURATION}s)"
 
     if [ -f "$3" ]; then
         echo "---"
-        cat $3
+        cat "$3"
         echo "---"
     fi
 }
 
 ignore() {
-    TEST_IGNORED=$((${TEST_IGNORED}+1))
+    TEST_IGNORED="$((TEST_IGNORED+1))"
     echo "IGNORED: $*"
 }
 
