@@ -976,8 +976,7 @@ EOF
     # Check DNS load balancing working.
     lxc exec u1 -- systemctl start dnsmasq
 
-    for i in {1..5}
-    do
+    for _ in $(seq 5); do
         dig a +tcp @192.0.2.1 lxd.localdomain
         dig aaaa +tcp @2001:db8:1:2::1 lxd.localdomain
     done
@@ -986,8 +985,7 @@ EOF
     lxc exec u1 -- systemctl stop dnsmasq
     lxc exec u2 -- systemctl stop dnsmasq
 
-    for i in {1..5}
-    do
+    for _ in $(seq 5); do
         ! dig a +tcp @192.0.2.1 lxd.localdomain || false
         ! dig aaaa +tcp @2001:db8:1:2::1 lxd.localdomain || false
     done
