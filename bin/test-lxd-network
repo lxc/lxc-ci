@@ -139,55 +139,56 @@ waitVMAgent v1-sriov
 
 # Check that all instances have an IPv4 and IPv6 address
 networkTests() {
-local FAIL=0
+    # shellcheck disable=SC3043
+    local FAIL=0
 
-echo "=> Performing network tests"
-for url in $(lxc query "/1.0/instances" | jq -r .[]); do
-    name=$(echo "${url}" | cut -d/ -f4)
-    echo ""
+    echo "=> Performing network tests"
+    for url in $(lxc query "/1.0/instances" | jq -r .[]); do
+        name=$(echo "${url}" | cut -d/ -f4)
+        echo ""
 
-    # Get the addresses
-    address=$(lxc query "${url}/state" | jq -r ".network.eth0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
-    if [ -z "${address}" ]; then
-        address=$(lxc query "${url}/state" | jq -r ".network.enp5s0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
+        # Get the addresses
+        address=$(lxc query "${url}/state" | jq -r ".network.eth0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
+        if [ -z "${address}" ]; then
+            address=$(lxc query "${url}/state" | jq -r ".network.enp5s0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
+        fi
+
+        if [ -z "${address}" ]; then
+            echo "FAIL: No network interface: ${name}"
+            FAIL=1
+            continue
+        fi
+
+        # IPv4 address
+        if echo "${address}" | grep -qF "."; then
+            echo "PASS: IPv4 address: ${name}"
+        else
+            echo "FAIL: IPv4 address: ${name}"
+            FAIL=1
+        fi
+
+        # IPv6 address
+        if echo "${address}" | grep -qF ":"; then
+            echo "PASS: IPv6 address: ${name}"
+        else
+            echo "FAIL: IPv6 address: ${name}"
+            FAIL=1
+        fi
+
+        # DNS resolution
+        if lxc exec "${name}" -- getent hosts linuxcontainers.org >/dev/null 2>&1 || lxc exec "${name}" -- ping -c1 -W1 linuxcontainers.org >/dev/null 2>&1; then
+            echo "PASS: DNS resolution: ${name}"
+        else
+            echo "FAIL: DNS resolution: ${name}"
+            FAIL=1
+        fi
+    done
+
+    if [ "${FAIL}" = "1" ]; then
+        return 1
     fi
 
-    if [ -z "${address}" ]; then
-        echo "FAIL: No network interface: ${name}"
-        FAIL=1
-        continue
-    fi
-
-    # IPv4 address
-    if echo "${address}" | grep "\." -q; then
-        echo "PASS: IPv4 address: ${name}"
-    else
-        echo "FAIL: IPv4 address: ${name}"
-        FAIL=1
-    fi
-
-    # IPv6 address
-    if echo "${address}" | grep ":" -q; then
-        echo "PASS: IPv6 address: ${name}"
-    else
-        echo "FAIL: IPv6 address: ${name}"
-        FAIL=1
-    fi
-
-    # DNS resolution
-    if lxc exec "${name}" -- getent hosts linuxcontainers.org >/dev/null 2>&1 || lxc exec "${name}" -- ping -c1 -W1 linuxcontainers.org >/dev/null 2>&1; then
-        echo "PASS: DNS resolution: ${name}"
-    else
-        echo "FAIL: DNS resolution: ${name}"
-        FAIL=1
-    fi
-done
-
-if [ "${FAIL}" = "1" ]; then
-    return 1
-fi
-
-return 0
+    return 0
 }
 
 lxc list
