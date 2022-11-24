@@ -183,9 +183,9 @@ ovn_basic_tests() {
         ipv6.nat=false || false
 
     # Check uplink dns.nameservers changes are applied to dependent OVN networks.
-    ovn-nbctl --format=csv --bare --column=options find dhcp_option cidr=198.51.100.0/24 | grep dns_server={192.0.2.53}
+    ovn-nbctl --format=csv --bare --column=options find dhcp_option cidr=198.51.100.0/24 | grep -F "dns_server={192.0.2.53}"
     lxc network set dummy dns.nameservers=192.0.2.54 --project default
-    ovn-nbctl --format=csv --bare --column=options find dhcp_option cidr=198.51.100.0/24 | grep dns_server={192.0.2.54}
+    ovn-nbctl --format=csv --bare --column=options find dhcp_option cidr=198.51.100.0/24 | grep -F "dns_server={192.0.2.54}"
     lxc network set dummy dns.nameservers=192.0.2.53 --project default
 
     # Check network external subnet overlap check relaxation when uplink has anycast routed ingress mode enabled.
