@@ -2,8 +2,8 @@
 set -eu
 
 export DEBIAN_FRONTEND=noninteractive
-export LXD_BACKEND=$1
-export LXD_DEVICE=$2
+export LXD_BACKEND="$1"
+export LXD_DEVICE="$2"
 
 cleanup() {
     set +e
@@ -27,7 +27,7 @@ cleanup() {
 }
 
 run_benchmark() {
-    # shellcheck disable=SC2039
+    # shellcheck disable=SC3043
     local label description
     label="$1"
     description="$2"

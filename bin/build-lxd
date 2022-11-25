@@ -34,7 +34,7 @@ TEST_DIR=$(mktemp -d -p /lxc-ci/build/)
 chmod +x "${TEST_DIR}"
 trap cleanup EXIT HUP INT TERM
 
-export TMPDIR=${TEST_DIR}/tmp
+export TMPDIR="${TEST_DIR}/tmp"
 mkdir -p "${TMPDIR}"
 chmod 1777 "${TMPDIR}"
 
@@ -43,15 +43,15 @@ echo "===> Setting up Go compiler"
 if [ "${GO_VERSION}" = "golang-tip" ]; then
     export PATH="/snap/go_tip/current/bin/:${PATH}"
 else
-    VER=$(echo ${GO_VERSION} | cut -d- -f2 | sed "s/\.//g")
+    VER="$(echo "${GO_VERSION}" | cut -d- -f2 | sed "s/\.//g")"
     export PATH="/snap/go_${VER}/current/bin/:${PATH}"
 fi
 
 # Setup build environment
 echo "===> Setting up environment variables"
 mkdir -p "${TEST_DIR}/go"
-export GOPATH=${TEST_DIR}/go
-export PATH=${GOPATH}/bin:${PATH}
+export GOPATH="${TEST_DIR}/go"
+export PATH="${GOPATH}/bin:${PATH}"
 export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 
 # Setup dependencies

@@ -51,7 +51,8 @@ lxd waitready --timeout=300
 
 waitVMAgent() (
   set +x
-  local vmName=$1
+  # shellcheck disable=SC3043
+  local vmName="$1"
   for i in $(seq 90) # Wait up to 90s.
   do
     if lxc info "${vmName}" | grep -qF 127.0.0.1; then
@@ -109,7 +110,7 @@ do
         lxc exec v1 -- umount /srv
 
         echo "==> Checking VM root disk size is 10GiB"
-        [ $(($(lxc exec v1 -- blockdev --getsize64 /dev/sda)/${GiB})) -eq "10" ]
+        [ $(($(lxc exec v1 -- blockdev --getsize64 /dev/sda)/"${GiB}")) -eq "10" ]
 
         echo "foo" | lxc exec v1 -- tee /root/foo.txt
         lxc exec v1 -- sync
@@ -127,22 +128,22 @@ do
         lxc exec v2 -- cat /root/foo.txt | grep -Fx "foo"
 
         echo "==> Checking VM snapshot copy root disk size is 10GiB"
-        [ $(($(lxc exec v2 -- blockdev --getsize64 /dev/sda)/${GiB})) -eq "10" ]
+        [ $(($(lxc exec v2 -- blockdev --getsize64 /dev/sda)/"${GiB}")) -eq "10" ]
         lxc delete -f v2
         lxc delete v1/snap0
 
         echo "==> Check QEMU crash behavior and recovery"
         uuid=$(lxc config get v1 volatile.uuid)
-        ps aux | grep -v grep | grep "${uuid}"
+        pgrep -af "${uuid}"
         nsenter --mount=/run/snapd/ns/lxd.mnt -- rm /var/snap/lxd/common/lxd/logs/v1/qemu.monitor
         systemctl reload snap.lxd.daemon
         sleep 5
         lxc ls v1 | grep ERROR
         ! lxc stop v1 || false
         ! lxc start v1 || false
-        ps aux | grep -v grep | grep "${uuid}"
+        pgrep -af "${uuid}"
         lxc stop v1 -f
-        ! ps aux | grep -v grep | grep "${uuid}" || false
+        ! pgrep -af "${uuid}" || false
         lxc start v1
 
         echo "==> Testing VM non-optimized export/import (while running to check config.mount is excluded)"
@@ -171,7 +172,7 @@ do
         waitVMAgent v1
 
         echo "==> Checking VM root disk size is 11GiB"
-        [ $(($(lxc exec v1 -- blockdev --getsize64 /dev/sda)/${GiB})) -eq "11" ]
+        [ $(($(lxc exec v1 -- blockdev --getsize64 /dev/sda)/"${GiB}")) -eq "11" ]
 
         echo "==> Check VM shrink is blocked"
         ! lxc config device set v1 root size=10GiB || false
@@ -304,7 +305,7 @@ do
         lxc info v1
 
         echo "==> Checking VM root disk size is 6GiB"
-        [ $(($(lxc exec v1 -- blockdev --getsize64 /dev/sda)/${GiB})) -eq "6" ]
+        [ $(($(lxc exec v1 -- blockdev --getsize64 /dev/sda)/"${GiB}")) -eq "6" ]
 
         echo "==> Deleting VM and reset pool volume.size"
         lxc delete -f v1
@@ -336,7 +337,7 @@ do
         lxc info v1
 
         echo "==> Checking VM root disk size is 7GiB"
-        [ $(($(lxc exec v1 -- blockdev --getsize64 /dev/sda)/${GiB})) -eq "7" ]
+        [ $(($(lxc exec v1 -- blockdev --getsize64 /dev/sda)/"${GiB}")) -eq "7" ]
         lxc stop -f v1
 
         echo "==> Copy to different storage pool with same driver and check size"
@@ -356,7 +357,7 @@ do
         lxc info v2
 
         echo "==> Checking copied VM root disk size is 7GiB"
-        [ $(($(lxc exec v2 -- blockdev --getsize64 /dev/sda)/${GiB})) -eq "7" ]
+        [ $(($(lxc exec v2 -- blockdev --getsize64 /dev/sda)/"${GiB}")) -eq "7" ]
         lxc delete -f v2
         lxc storage delete "${poolName}2"
 
@@ -373,7 +374,7 @@ do
         lxc info v2
 
         echo "==> Checking copied VM root disk size is 7GiB"
-        [ $(($(lxc exec v2 -- blockdev --getsize64 /dev/sda)/${GiB})) -eq "7" ]
+        [ $(($(lxc exec v2 -- blockdev --getsize64 /dev/sda)/"${GiB}")) -eq "7" ]
         lxc delete -f v2
 
         echo "==> Grow above default volume size and copy to different storage pool"
@@ -384,7 +385,7 @@ do
         lxc info v2
 
         echo "==> Checking copied VM root disk size is 11GiB"
-        [ $(($(lxc exec v2 -- blockdev --getsize64 /dev/sda)/${GiB})) -eq "11" ]
+        [ $(($(lxc exec v2 -- blockdev --getsize64 /dev/sda)/"${GiB}")) -eq "11" ]
         lxc delete -f v2
         lxc storage delete "${poolName}2"
 
@@ -408,7 +409,7 @@ do
         lxc info v1
 
         echo "==> Checking new VM root disk size is 11GiB"
-        [ $(($(lxc exec v1 -- blockdev --getsize64 /dev/sda)/${GiB})) -eq "11" ]
+        [ $(($(lxc exec v1 -- blockdev --getsize64 /dev/sda)/"${GiB}")) -eq "11" ]
 
         echo "===> Renaming VM"
         lxc stop -f v1

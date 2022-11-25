@@ -74,7 +74,7 @@ firewallTests() {
 
     managed=0
 
-    if echo $(lxc config show c1 --expanded) | grep "network: lxdbr0" -q; then
+    if lxc config show c1 --expanded | grep -qF "network: lxdbr0"; then
         echo "=> Performing basic DHCP/SLAAC ping tests"
         lxc exec c1 -- ping -c1 192.0.2.1
         lxc exec c1 -- ping -c1 2001:db8::1

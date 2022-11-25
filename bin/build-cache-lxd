@@ -1,4 +1,5 @@
 #!/bin/sh -eu
+# shellcheck disable=SC1091
 [ -e /lxc-ci/etc/config ] && . /lxc-ci/etc/config
 
 if [ "${LXD_GOCACHE:-}" != "true" ]; then
@@ -72,7 +73,7 @@ user.foo: {{ config_get("user.foo", "_unset_") }}
 EOF
 ) > templates/template.tpl
 
-tar -C . -Jcf "${TEMP_DIR}/testimage.tar.xz" *
+tar -C . -Jcf "${TEMP_DIR}/testimage.tar.xz" -- *
 rm -rf "${TEMP_DIR}/image"
 cd "${TEMP_DIR}"
 

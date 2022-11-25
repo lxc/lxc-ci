@@ -68,21 +68,21 @@ nvidia-smi mig -cci 1g.5gb -gi 13
 nvidia-smi mig -cci 1c.2g.10gb,1c.2g.10gb -gi 5
 nvidia-smi
 
-UUIDS=$(nvidia-smi -L | grep MIG- | sed -e "s/.*UUID: //g" -e "s/).*//g")
-UUID1=$(echo $UUIDS | cut -d' ' -f1)
-UUID2=$(echo $UUIDS | cut -d' ' -f2)
-UUID3=$(echo $UUIDS | cut -d' ' -f3)
-UUID4=$(echo $UUIDS | cut -d' ' -f4)
+UUIDS="$(nvidia-smi -L | grep MIG- | sed -e "s/.*UUID: //g" -e "s/).*//g")"
+UUID1="$(echo "$UUIDS" | cut -d' ' -f1)"
+UUID2="$(echo "$UUIDS" | cut -d' ' -f2)"
+UUID3="$(echo "$UUIDS" | cut -d' ' -f3)"
+UUID4="$(echo "$UUIDS" | cut -d' ' -f4)"
 
 # Launch test containers
 lxc init images:ubuntu/20.04 nvidia-mig1 -c nvidia.runtime=true
-lxc config device add nvidia-mig1 gpu0 gpu gputype=mig mig.uuid=$UUID1 pci=07:00.0
+lxc config device add nvidia-mig1 gpu0 gpu gputype=mig mig.uuid="$UUID1" pci=07:00.0
 lxc init images:ubuntu/20.04 nvidia-mig2 -c nvidia.runtime=true
-lxc config device add nvidia-mig2 gpu0 gpu gputype=mig mig.uuid=$UUID2 pci=07:00.0
+lxc config device add nvidia-mig2 gpu0 gpu gputype=mig mig.uuid="$UUID2" pci=07:00.0
 lxc init images:ubuntu/20.04 nvidia-mig3 -c nvidia.runtime=true
-lxc config device add nvidia-mig3 gpu0 gpu gputype=mig mig.uuid=$UUID3 pci=07:00.0
+lxc config device add nvidia-mig3 gpu0 gpu gputype=mig mig.uuid="$UUID3" pci=07:00.0
 lxc init images:ubuntu/20.04 nvidia-mig4 -c nvidia.runtime=true
-lxc config device add nvidia-mig4 gpu0 gpu gputype=mig mig.uuid=$UUID4 pci=07:00.0
+lxc config device add nvidia-mig4 gpu0 gpu gputype=mig mig.uuid="$UUID4" pci=07:00.0
 lxc start nvidia-mig1
 lxc exec nvidia-mig1 -- nvidia-smi
 lxc start nvidia-mig2
@@ -93,8 +93,8 @@ lxc start nvidia-mig4
 lxc exec nvidia-mig4 -- nvidia-smi
 
 lxc stop nvidia-mig4
-lxc config device add nvidia-mig4 gpu1 gpu gputype=mig mig.uuid=$UUID1 vendorid=10de productid=20f1
-lxc config device add nvidia-mig4 gpu2 gpu gputype=mig mig.uuid=$UUID2 vendorid=10de productid=20f1
+lxc config device add nvidia-mig4 gpu1 gpu gputype=mig mig.uuid="$UUID1" vendorid=10de productid=20f1
+lxc config device add nvidia-mig4 gpu2 gpu gputype=mig mig.uuid="$UUID2" vendorid=10de productid=20f1
 lxc start nvidia-mig4
 lxc exec nvidia-mig4 -- nvidia-smi
 
