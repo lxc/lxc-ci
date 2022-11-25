@@ -91,6 +91,8 @@ lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock http://custom.socket/1.0/devi
 lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock http://custom.socket/1.0/config | jq
 lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock http://custom.socket/1.0/meta-data | grep -q '#cloud-config'
 
+# Run sync before forcefully restarting the VM otherwise the filesystem will be corrupted.
+lxc exec v1 -- "sync"
 lxc restart -f v1
 waitVMAgent v1
 
@@ -107,6 +109,7 @@ echo "==> Checking devlxd is not working"
 
 ! lxc exec v1 -- curl -s --unix-socket /dev/lxd/sock http://custom.socket/1.0 || false
 
+lxc exec v1 -- "sync"
 lxc restart -f v1
 waitVMAgent v1
 
