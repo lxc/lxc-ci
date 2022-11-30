@@ -1,0 +1,80 @@
+#!/bin/sh
+set -eu
+
+waitSnapdSeed() (
+  set +x
+  for i in $(seq 60); do # Wait up to 60s.
+    if systemctl show snapd.seeded.service --value --property SubState | grep -qx exited; then
+      return 0 # Success.
+    fi
+
+    sleep 1
+  done
+
+  echo "snapd not seeded after ${i}s"
+  return 1 # Failed.
+)
+
+cleanup() {
+    echo ""
+    if [ "${FAIL}" = "1" ]; then
+        echo "Test failed"
+        exit 1
+    fi
+
+    echo "Test passed"
+    exit 0
+}
+
+FAIL=1
+trap cleanup EXIT HUP INT TERM
+
+# Wait for snapd seeding
+waitSnapdSeed
+
+# Configure to use the proxy
+curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh
+
+# Install dependencies
+add-apt-repository ppa:dqlite/dev -y
+apt-get install -y libdqlite-dev pkg-config gettext make gcc jq sqlite3
+snap install go --classic
+
+# Install LXD
+while [ -e /usr/bin/lxd ]; do
+    apt-get remove --purge --yes lxd lxd-client lxcfs liblxc1
+done
+apt-get remove --purge cloud-init --yes
+snap remove lxd || true
+snap install lxd --channel=latest/edge
+lxd waitready --timeout=300
+
+# Environment
+export GOPATH=/root/go
+export CGO_CFLAGS="-I/root/go/deps/raft/include/ -I/root/go/deps/dqlite/include/"
+export CGO_LDFLAGS="-L/root/go/deps/raft/.libs -L/root/go/deps/dqlite/.libs/"
+export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
+export LD_LIBRARY_PATH="/root/go/deps/raft/.libs/:/root/go/deps/dqlite/.libs/"
+export PATH="${PATH}:/root/go/bin"
+
+# Juju and MAAS creds
+eval "$(curl -s http://canonical-lxd.stgraber.org/config/juju.sh)"
+
+# Build LXD Cloud
+cd /root
+[ -d /root/.ssh ] || mkdir -m 0700 /root/.ssh
+if ! [ -f /root/.ssh/id_ed25519 ]; then
+    touch /root/.ssh/id_ed25519
+    chmod 0600 /root/.ssh/id_ed25519
+    curl -s http://canonical-lxd.stgraber.org/config/lxd-cloud-ssh.key > /root/.ssh/id_ed25519
+fi
+git clone git@github.com:canonical/lxd-cloud.git
+cd /root/lxd-cloud
+make build
+
+# Test environment
+chmod +x /root
+
+# Test
+cd /root/lxd-cloud/test
+./main.sh test_e2e_juju_maas
