@@ -68,6 +68,11 @@ if ! [ -f /root/.ssh/id_ed25519 ]; then
     chmod 0600 /root/.ssh/id_ed25519
     curl -s http://canonical-lxd.stgraber.org/config/lxd-cloud-ssh.key > /root/.ssh/id_ed25519
 fi
+if ! [ -f /root/.ssh/known_hosts ]; then
+    touch /root/.ssh/known_hosts
+    chmod 0600 /root/.ssh/known_hosts
+    ssh-keyscan -t ed25519 github.com > /root/.ssh/known_hosts
+fi
 git clone git@github.com:canonical/lxd-cloud.git
 cd /root/lxd-cloud
 make build
