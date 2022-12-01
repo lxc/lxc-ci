@@ -4,7 +4,7 @@ image:
     openEuler {{ image.release }}
 source:
   downloader: openeuler-http
-  url: https://repo.openeuler.org
+  url: https://ru-repo.openeuler.org
   # also supported by docker
   # downloader: docker-http
   # url: openeuler/openeuler:22.03
