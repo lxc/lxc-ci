@@ -43,7 +43,7 @@ apt-get remove --purge cloud-init --yes
 snap remove lxd || true
 snap install lxd --channel=latest/edge
 snap set lxd shiftfs.enable=true
-apt-get install jq attr --yes
+apt-get install attr --yes
 lxd waitready --timeout=300
 
 # Configure LXD

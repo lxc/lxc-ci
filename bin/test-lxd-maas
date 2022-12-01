@@ -42,7 +42,6 @@ done
 apt-get remove --purge cloud-init --yes
 snap remove lxd || true
 snap install lxd --channel=latest/edge
-apt-get install jq --yes
 lxd waitready --timeout=300
 
 # Find network device
@@ -75,7 +74,7 @@ echo "==> Launching a test container on external bridge in different project"
 lxc project create foo -c features.profiles=false
 lxc launch images:ubuntu/20.04/cloud "$(hostname)-c3" -p default -p external --project foo
 sleep 10
-host "$(hostname)-c3.foo.lab.maas.stgraber.net" 2602:fc62:b:10::2 || false
+host "$(hostname)-c3.foo.lab.maas.stgraber.net" 2602:fc62:b:10::2
 
 echo "==> Moving c1 to external bridge"
 lxc profile assign "$(hostname)-c1" default,external
