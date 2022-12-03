@@ -54,6 +54,7 @@
         - bionic
         - focal
         - jammy
+        - kinetic
 
     - axis:
         name: restrict
