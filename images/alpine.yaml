@@ -340,6 +340,7 @@ packages:
     variants:
     - cloud
     releases:
+    - 3.17
     - edge
 
   - packages:
