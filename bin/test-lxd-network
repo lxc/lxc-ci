@@ -100,38 +100,39 @@ EOF
 
 # Launch instances with physical NICs
 echo "==> VM on default VLAN with physical"
-lxc init images:ubuntu/20.04/cloud v1-physical --vm
+lxc init images:ubuntu/22.04/cloud v1-physical --vm -c limits.cpu=3
 lxc config device add v1-physical eth0 nic nictype=physical parent="${parentNIC}v1" name=eth0
 lxc start v1-physical
 
 echo "==> Container on default VLAN with physical"
-lxc init images:ubuntu/20.04/cloud c1-physical
+lxc init images:ubuntu/22.04/cloud c1-physical
 lxc config device add c1-physical eth0 nic nictype=physical parent="${parentNIC}v2" name=eth0
 lxc start c1-physical
 
 # Launch instances with macvlan NICs
 echo "==> VM on default VLAN with macvlan"
-lxc init images:ubuntu/20.04/cloud v1-macvlan --vm
+lxc init images:ubuntu/22.04/cloud v1-macvlan --vm -c limits.cpu=3
 lxc config device add v1-macvlan eth0 nic nictype=macvlan parent="${parentNIC}" name=eth0
 lxc start v1-macvlan
 
 echo "==> Container on default VLAN with macvlan"
-lxc init images:ubuntu/20.04/cloud c1-macvlan
+lxc init images:ubuntu/22.04/cloud c1-macvlan
 lxc config device add c1-macvlan eth0 nic nictype=macvlan parent="${parentNIC}" name=eth0
 lxc start c1-macvlan
 
 # Launch instances with sriov NICs
 echo "==> VM on default VLAN with sriov"
-lxc init images:ubuntu/20.04/cloud v1-sriov --vm
+lxc init images:ubuntu/22.04/cloud v1-sriov --vm -c limits.cpu=3
 lxc config device add v1-sriov eth0 nic nictype=sriov parent="${parentNIC}" name=eth0
 lxc start v1-sriov
 
 echo "==> Container on default VLAN with sriov"
-lxc init images:ubuntu/20.04/cloud c1-sriov
+lxc init images:ubuntu/22.04/cloud c1-sriov
 lxc config device add c1-sriov eth0 nic nictype=sriov parent="${parentNIC}" name=eth0
 lxc start c1-sriov
 
 # Wait for VMs to start.
+echo "==> Waiting for VMs to start"
 sleep 30
 waitVMAgent v1-physical
 waitVMAgent v1-macvlan
@@ -154,7 +155,7 @@ networkTests() {
         fi
 
         if [ -z "${address}" ]; then
-            echo "FAIL: No network interface: ${name}"
+            echo "FAIL: No network interface address: ${name}"
             FAIL=1
             continue
         fi
@@ -193,6 +194,17 @@ networkTests() {
 
 lxc list
 networkTests
+
+# Reload LXD and check connectivity still works.
+# Ensures VM NICs are not dependent on any fds/fdsets from LXD.
+systemctl reload snap.lxd.daemon
+sleep 10
+lxd waitready --timeout=300
+networkTests
+
+# Check VM macvlan multi-queue support.
+lxc exec v1-macvlan -- apt-get install ethtool --yes
+lxc exec v1-macvlan -- ethtool -l enp5s0 | grep -c '^Combined:\s\+3$'  | grep -Fx 2
 
 # Hot unplug the NICs and check they are removed
 lxc config device remove v1-physical eth0
@@ -257,11 +269,15 @@ lxc start v1-physical
 waitVMAgent v1-physical
 
 # Interface "eth0" should exist in the VM with the correct MTU.
-lxc exec v1-physical -- ip link show eth0
+lxc exec v1-physical -- test -d /sys/class/net/eth0
 lxc exec v1-physical -- grep -Fx 1400 /sys/class/net/eth0/mtu
 
+# Check VM bridged multi-queue support.
+lxc exec v1-physical -- apt-get install ethtool --yes
+lxc exec v1-physical -- ethtool -l eth0 | grep -c '^Combined:\s\+3$'  | grep -Fx 2
+
 # Default VM interface enp5s0 should not exist in the VM.
-! lxc exec v1-physical -- ip link show enp5s0 || false
+! lxc exec v1-physical -- test -d /sys/class/net/enp5s0 || false
 
 # Cleanup
 echo "=> Cleanup"
