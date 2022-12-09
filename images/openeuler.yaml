@@ -3,11 +3,7 @@ image:
   description: |-
     openEuler {{ image.release }}
 source:
-  downloader: openeuler-http
-  url: https://ru-repo.openeuler.org
-  # also supported by docker
-  # downloader: docker-http
-  # url: openeuler/openeuler:22.03
+  downloader: docker-http
 targets:
   lxc:
     create_message: |
