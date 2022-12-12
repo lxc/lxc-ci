@@ -312,6 +312,14 @@ actions:
 - trigger: post-unpack
   action: |-
     #!/bin/sh
+    set -eux
+
+    # Rebuild rpm database as the failing builds suggest it's broken.
+    rpmdb --rebuilddb
+
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
     # Generate machine-id in order for the kernel stuff to be configured properly
     systemd-machine-id-setup
   types:
