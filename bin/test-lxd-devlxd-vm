@@ -145,6 +145,8 @@ sleep 5
 lxc start v1
 waitVMAgent v1
 
+# Configure to use the proxy
+curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | lxc exec v1 -- sh
 lxc exec v1 -- apt-get install --no-install-recommends snapd --yes
 lxc exec v1 -- snap install lxd --channel=latest/edge
 lxc exec v1 -- /snap/bin/lxd init --auto
