@@ -38,8 +38,8 @@ while :; do
 done
 
 # Install the LXD deb
-apt-get install -t "${series}" lxd lxd-client jq --yes
-apt-get install zfsutils-linux thin-provisioning-tools --yes
+apt-get install -t "${series}" --no-install-recommends --yes lxd lxd-client jq
+apt-get install --no-install-recommends --yes zfsutils-linux thin-provisioning-tools
 
 # Configure the LXD deb
 if [ "${series}" = "xenial-updates" ]; then

@@ -45,7 +45,7 @@ done
 apt-get remove --purge cloud-init --yes
 snap remove lxd || true
 snap install lxd --channel=latest/edge
-apt-get install jq --yes
+apt-get install --no-install-recommends --yes jq
 lxd waitready --timeout=300
 
 waitVMAgent() (
@@ -82,7 +82,7 @@ waitVMAgent v1
 lxc info v1
 
 # Install curl
-lxc exec v1 -- sh -c "apt update && apt install -y curl"
+lxc exec v1 -- sh -c "apt-get update && apt-get install --no-install-recommends --yes curl"
 
 echo "==> Checking devlxd is working"
 
@@ -145,7 +145,7 @@ sleep 5
 lxc start v1
 waitVMAgent v1
 
-lxc exec v1 -- apt-get install snapd --yes
+lxc exec v1 -- apt-get install --no-install-recommends snapd --yes
 lxc exec v1 -- snap install lxd --channel=latest/edge
 lxc exec v1 -- /snap/bin/lxd init --auto
 lxc exec v1 -- /snap/bin/lxc launch images:ubuntu/22.04/cloud v1v1 --vm

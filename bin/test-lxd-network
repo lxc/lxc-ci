@@ -67,7 +67,7 @@ done
 apt-get remove --purge cloud-init --yes
 snap remove lxd || true
 snap install lxd --channel=latest/edge
-apt-get install jq --yes
+apt-get install --no-install-recommends --yes jq
 lxd waitready --timeout=300
 
 # Enable SR-IOV on nic and bring up
@@ -203,7 +203,7 @@ lxd waitready --timeout=300
 networkTests
 
 # Check VM macvlan multi-queue support.
-lxc exec v1-macvlan -- apt-get install ethtool --yes
+lxc exec v1-macvlan -- apt-get install --no-install-recommends --yes ethtool
 lxc exec v1-macvlan -- ethtool -l enp5s0 | grep -c '^Combined:\s\+3$'  | grep -Fx 2
 
 # Hot unplug the NICs and check they are removed
@@ -273,7 +273,7 @@ lxc exec v1-physical -- test -d /sys/class/net/eth0
 lxc exec v1-physical -- grep -Fx 1400 /sys/class/net/eth0/mtu
 
 # Check VM bridged multi-queue support.
-lxc exec v1-physical -- apt-get install ethtool --yes
+lxc exec v1-physical -- apt-get install --no-install-recommends --yes ethtool
 lxc exec v1-physical -- ethtool -l eth0 | grep -c '^Combined:\s\+3$'  | grep -Fx 2
 
 # Default VM interface enp5s0 should not exist in the VM.

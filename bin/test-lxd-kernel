@@ -31,8 +31,8 @@ apt-get dist-upgrade --yes
 
 # Workaround for weird apt bug.
 apt-get install libudev1=249.11-0ubuntu3.3 libudev-dev=249.11-0ubuntu3.3 snapd --yes || true
-apt-get install libudev-dev liblxc-dev liblz4-dev libacl1-dev libuv1-dev libselinux-dev libseccomp-dev tcl libsqlite3-dev libcap-dev dh-autoreconf build-essential acl attr easy-rsa ebtables jq pkg-config socat sqlite3 dnsmasq-base dnsutils nftables gettext --yes
-apt-get remove --purge uidmap cloud-init --yes
+apt-get install --no-install-recommends --yes libudev-dev liblxc-dev liblz4-dev libacl1-dev libuv1-dev libselinux-dev libseccomp-dev tcl libsqlite3-dev libcap-dev dh-autoreconf build-essential acl attr easy-rsa ebtables jq pkg-config socat sqlite3 dnsmasq-base dnsutils nftables gettext
+apt-get remove --purge uidmap cloud-init
 rm -f /etc/subuid* /etc/subgid*
 snap remove lxd
 

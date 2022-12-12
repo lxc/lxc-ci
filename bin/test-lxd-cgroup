@@ -42,7 +42,7 @@ done
 apt-get remove --purge cloud-init --yes
 snap remove lxd || true
 snap install lxd --channel=latest/edge
-apt-get install jq iperf3 --yes
+apt-get install --no-install-recommends --yes jq iperf3
 lxd waitready --timeout=300
 
 # Configure LXD
@@ -207,7 +207,7 @@ fi
 lxc restart c1 --force
 sleep 10s
 IP=$(lxc network get lxdbr0 ipv4.address | cut -d/ -f1)
-lxc exec c1 -- apt-get install iperf3 --yes
+lxc exec c1 -- apt-get install --no-install-recommends --yes iperf3
 
 iperf3 -s -D
 lxc exec c1 -- iperf3 -c "${IP}" -J > iperf.json

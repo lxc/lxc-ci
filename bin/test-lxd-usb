@@ -62,7 +62,7 @@ lxc launch images:ubuntu/20.04/cloud c1
 sleep 10
 
 echo "==> Installing yubikey tools"
-lxc exec c1 -- apt-get install yubikey-manager --yes
+lxc exec c1 -- apt-get install --no-install-recommends --yes yubikey-manager
 
 echo "==> Validating as non-working"
 ! lxc exec c1 -- ykman info || false

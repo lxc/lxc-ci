@@ -46,7 +46,7 @@ done
 apt-get remove --purge cloud-init --yes
 snap remove lxd || true
 snap install lxd --channel=latest/edge
-apt-get install jq --yes
+apt-get install --no-install-recommends --yes jq
 lxd waitready --timeout=300
 
 waitVMAgent() (
