@@ -43,7 +43,7 @@ apt-get remove --purge cloud-init --yes
 snap remove lxd || true
 snap install lxd --channel=latest/edge
 snap set lxd shiftfs.enable=true
-apt-get install attr --yes
+apt-get install --no-install-recommends --yes attr
 lxd waitready --timeout=300
 
 # Configure LXD
@@ -54,7 +54,7 @@ set -x
 
 lxc launch images:ubuntu/20.04 c1
 sleep 10
-lxc exec c1 -- apt-get install -y attr fuse2fs
+lxc exec c1 -- apt-get install --no-install-recommends --yes attr fuse2fs
 
 ## setxattr
 lxc exec c1 -- touch xattr-test

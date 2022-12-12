@@ -42,11 +42,11 @@ done
 apt-get remove --purge cloud-init --yes
 snap remove lxd || true
 snap install lxd --channel=latest/edge
-apt-get install jq --yes
+apt-get install --no-install-recommends --yes jq
 lxd waitready --timeout=300
 
 # Install OVN and dnsutils.
-apt-get install ovn-host ovn-central dnsutils --yes
+apt-get install --no-install-recommends --yes ovn-host ovn-central dnsutils
 
 # Configure OVN.
 ovs-vsctl set open_vswitch . \
@@ -698,7 +698,7 @@ ovn_forward_tests() {
 
     # Check DNS TCP forwarding using default target rule.
     lxc exec u1 -- systemctl mask dnsmasq
-    lxc exec u1 -- apt-get install dnsmasq -y
+    lxc exec u1 -- apt-get install --no-install-recommends --yes dnsmasq
 cat <<EOF | lxc exec u1 -- tee /etc/dnsmasq.d/lxd_test.conf
 interface=eth0
 bind-interfaces
@@ -723,7 +723,7 @@ EOF
     U2_IPV6="$(lxc list u2 -c6 --format=csv | cut -d' ' -f1)"
 
     lxc exec u2 -- systemctl mask dnsmasq
-    lxc exec u2 -- apt-get install dnsmasq -y
+    lxc exec u2 -- apt-get install --no-install-recommends --yes dnsmasq
 cat <<EOF | lxc exec u2 -- tee /etc/dnsmasq.d/lxd_test.conf
 interface=eth0
 bind-interfaces
@@ -911,7 +911,7 @@ ovn_load_balancer_tests() {
     # Check DNS TCP forwarding towards u1.
     # Relies on static route (above) rather than neighbour adverts see https://github.com/ovn-org/ovn/issues/124
     lxc exec u1 -- systemctl mask dnsmasq
-    lxc exec u1 -- apt-get install dnsmasq -y
+    lxc exec u1 -- apt-get install --no-install-recommends --yes dnsmasq
 cat <<EOF | lxc exec u1 -- tee /etc/dnsmasq.d/lxd_test.conf
 interface=eth0
 bind-interfaces
@@ -949,7 +949,7 @@ EOF
 
     # Check DNS TCP forwarding towards u2.
     lxc exec u2 -- systemctl mask dnsmasq
-    lxc exec u2 -- apt-get install dnsmasq -y
+    lxc exec u2 -- apt-get install --no-install-recommends --yes dnsmasq
 cat <<EOF | lxc exec u2 -- tee /etc/dnsmasq.d/lxd_test.conf
 interface=eth0
 bind-interfaces
@@ -1144,7 +1144,7 @@ ovn_peering_tests() {
 
     # Install tcpdump and check we can detect ICMP packets coming to the ovn2 instance from ovn1 instance when
     # pinging the allowed addresses.
-    lxc exec ovn2 --project=ovn2 -- apt-get install tcpdump -y
+    lxc exec ovn2 --project=ovn2 -- apt-get install --no-install-recommends --yes tcpdump
     lxc exec ovn1 -T -n --project=ovn1 -- ping -c3 -4 -W5 "${ovn2NICIPv4}" || true &
     lxc exec ovn2 -T -n --project=ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp and src "${ovn1NICIPv4}" -q -c 1 > /dev/null
     wait

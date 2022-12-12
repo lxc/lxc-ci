@@ -53,7 +53,7 @@ lxc network create lxdbr0 \
 lxc profile device add default root disk path=/ pool=default
 
 echo "=> Setting up firewall tooling and checking versions"
-apt-get install nftables iptables ebtables -y
+apt-get install --no-install-recommends --yes nftables iptables ebtables
 update-alternatives --set iptables /usr/sbin/iptables-legacy
 update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
 update-alternatives --set ebtables /usr/sbin/ebtables-legacy
