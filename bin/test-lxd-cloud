@@ -82,4 +82,4 @@ chmod +x /root
 
 # Test
 cd /root/lxd-cloud/test
-./main.sh test_e2e_juju_maas
+./main.sh e2e_juju_maas
