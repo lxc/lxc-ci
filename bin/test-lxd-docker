@@ -23,7 +23,8 @@ set -eux
 
 # Install distro docker
 apt-get update --yes --force-yes
-apt-get install --no-install-recommends --yes --force-yes docker.io wget
+apt-get install --no-install-recommends --yes --force-yes apparmor docker.io wget
+systemctl start apparmor
 
 # Stop the distro docker
 systemctl stop docker.service
