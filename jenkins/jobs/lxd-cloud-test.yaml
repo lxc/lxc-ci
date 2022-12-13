@@ -8,7 +8,7 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        exec sudo /lxc-ci/bin/maas-run tags=virtual jammy ga-22.04 default bin/test-lxd-cloud
+        exec /lxc-ci/bin/maas-run tags=virtual jammy ga-22.04 default bin/test-lxd-cloud
 
     properties:
     - build-discarder:
