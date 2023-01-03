@@ -19,7 +19,6 @@
         name: release
         type: user-defined
         values:
-        - 35
         - 36
         - 37
 
