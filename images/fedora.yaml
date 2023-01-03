@@ -184,15 +184,6 @@ packages:
     - cloud
 
   - packages:
-    - initscripts
-    - NetworkManager
-    action: install
-    variants:
-    - cloud
-    releases:
-    - 35
-
-  - packages:
     - cloud-utils-growpart
     action: install
     types:
@@ -298,19 +289,6 @@ actions:
     systemctl enable systemd-networkd
   variants:
   - cloud
-  releases:
-  - 36
-  - 37
-
-- trigger: post-packages
-  action: |-
-    #!/bin/sh
-    systemctl disable systemd-networkd
-    systemctl enable NetworkManager
-  variants:
-  - cloud
-  releases:
-  - 35
 
 - trigger: post-packages
   action: |-
