@@ -534,6 +534,17 @@ files:
   architectures:
   - x86_64
 
+- path: /etc/sudoers.d/90-lxd
+  generator: dump
+  mode: 0440
+  content: |-
+    # User rules for archlinux
+    archlinux ALL=(ALL) NOPASSWD: ALL
+  types:
+  - vm
+  variants:
+  - desktop-gnome
+
 packages:
   manager: pacman
   update: true
@@ -681,8 +692,6 @@ actions:
     # User
     USERNAME="archlinux"
     useradd ${USERNAME} -m -U -G adm,video,users
-    echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/${USERNAME}
-    chmod 600 /etc/sudoers.d/${USERNAME}
 
     cat << EOF > /etc/gdm/custom.conf
     [daemon]

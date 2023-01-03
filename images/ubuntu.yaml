@@ -471,6 +471,17 @@ files:
   variants:
     - default
 
+- path: /etc/sudoers.d/90-lxd
+  generator: dump
+  mode: 0440
+  content: |-
+    # User rules for ubuntu
+    ubuntu ALL=(ALL) NOPASSWD:ALL
+  variants:
+  - desktop
+  types:
+  - vm
+
 packages:
   manager: apt
   update: true
@@ -717,8 +728,6 @@ actions:
     # User
     USERNAME="ubuntu"
     useradd ${USERNAME} -s /bin/bash -m -U -G adm,video,users
-    echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/${USERNAME}
-    chmod 600 /etc/sudoers.d/${USERNAME}
 
     cat << EOF > /etc/gdm3/custom.conf
     [daemon]

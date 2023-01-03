@@ -217,6 +217,17 @@ files:
   variants:
   - desktop-kde
 
+- path: /etc/sudoers.d/90-lxd
+  generator: dump
+  mode: 0440
+  content: |-
+    # User rules for opensuse
+    opensuse ALL=(ALL) NOPASSWD: ALL
+  types:
+  - vm
+  variants:
+  - desktop-kde
+
 packages:
   manager: zypper
   update: true
@@ -338,8 +349,6 @@ actions:
     # User
     USERNAME="opensuse"
     useradd ${USERNAME} -s /bin/bash -m -U -G video,users
-    echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/${USERNAME}
-    chmod 600 /etc/sudoers.d/${USERNAME}
 
     sed -ri "s#(DISPLAYMANAGER_AUTOLOGIN)=.*#\1=${USERNAME}#" /etc/sysconfig/displaymanager
 
