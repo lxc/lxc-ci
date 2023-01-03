@@ -25,6 +25,7 @@
         - uma
         - una
         - vanessa
+        - vera
 
     - axis:
         name: variant
@@ -40,7 +41,7 @@
         suite=bionic
         if [ "${release}" = "ulyana" ] || [ "${release}" = "ulyssa" ] || [ "${release}" = "uma" ] || [ "${release}" = "una" ]; then
             suite=focal
-        elif [ "${release}" = "vanessa" ]; then
+        elif [ "${release}" = "vanessa" ] || [ "${release}" = "vera" ]; then
             suite=jammy
         fi
 
