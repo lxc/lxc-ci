@@ -68,10 +68,14 @@ nvidia-smi mig -cci 1c.2g.10gb,1c.2g.10gb -gi 5
 nvidia-smi
 
 UUIDS="$(nvidia-smi -L | grep MIG- | sed -e "s/.*UUID: //g" -e "s/).*//g")"
-UUID1="$(echo "$UUIDS" | cut -d' ' -f1)"
-UUID2="$(echo "$UUIDS" | cut -d' ' -f2)"
-UUID3="$(echo "$UUIDS" | cut -d' ' -f3)"
-UUID4="$(echo "$UUIDS" | cut -d' ' -f4)"
+# shellcheck disable=SC2086
+UUID1="$(echo $UUIDS | cut -d' ' -f1)"
+# shellcheck disable=SC2086
+UUID2="$(echo $UUIDS | cut -d' ' -f2)"
+# shellcheck disable=SC2086
+UUID3="$(echo $UUIDS | cut -d' ' -f3)"
+# shellcheck disable=SC2086
+UUID4="$(echo $UUIDS | cut -d' ' -f4)"
 
 # Launch test containers
 lxc init images:ubuntu/20.04 nvidia-mig1 -c nvidia.runtime=true
