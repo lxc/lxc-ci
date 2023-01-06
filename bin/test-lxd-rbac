@@ -127,9 +127,9 @@ lxc project create test-auditor -c features.profiles=false
 # Create containers in all projects
 echo "==> Creating some instances in those projects"
 lxc launch images:alpine/edge a1 --project test-admin
-lxc launch images:alpine/edge a1 --project test-operator
-lxc launch images:alpine/edge a1 --project test-user
-lxc launch images:alpine/edge a1 --project test-auditor
+lxc launch images:alpine/edge a2 --project test-operator
+lxc launch images:alpine/edge a3 --project test-user
+lxc launch images:alpine/edge a4 --project test-auditor
 
 echo "==> Configuring rbac-user for access to projects"
 bhttp --raw --agent /var/snap/bhttp/common/rbac-test.admin https://services.stgraber.org/rbac/api/rbac/v1/resource > resources.json
@@ -163,23 +163,23 @@ lxc list rbac-user: --project test-auditor
 # Validate exec permissions
 echo "==> Validate exec permissions"
 lxc exec a1 true --project test-admin
-lxc exec a1 true --project test-operator
-lxc exec a1 true --project test-user
-#! lxc exec a1 true --project test-auditor || false
+lxc exec a2 true --project test-operator
+lxc exec a3 true --project test-user
+#! lxc exec a4 true --project test-auditor || false
 
 # Validate snapshot permissions
 echo "==> Validate snapshot permissions"
 lxc snapshot a1 --project test-admin
-lxc snapshot a1 --project test-operator
-lxc snapshot a1 --project test-user
-! lxc snapshot a1 --project test-auditor || false
+lxc snapshot a2 --project test-operator
+lxc snapshot a3 --project test-user
+! lxc snapshot a4 --project test-auditor || false
 
 # Validate create permissions
 echo "==> Validate create permissions"
-lxc launch images:alpine/edge a2 --project test-admin
-lxc launch images:alpine/edge a2 --project test-operator
-! lxc launch images:alpine/edge a2 --project test-user || false
-! lxc launch images:alpine/edge a2 --project test-auditor || false
+lxc launch images:alpine/edge a5 --project test-admin
+lxc launch images:alpine/edge a6 --project test-operator
+! lxc launch images:alpine/edge a7 --project test-user || false
+! lxc launch images:alpine/edge a8 --project test-auditor || false
 
 # Validate project permissions
 echo "==> Validate project permissions"
