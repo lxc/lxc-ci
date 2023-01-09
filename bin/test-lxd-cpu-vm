@@ -80,9 +80,8 @@ poolDriver=dir
 echo "==> Create storage pool using driver ${poolDriver}"
 lxc storage create "${poolName}" "${poolDriver}"
 
-echo "==> Create VM and boot"
-lxc init images:ubuntu/22.04 v1 --vm -s "${poolName}"
-lxc start v1
+echo "==> Create ephemeral VM and boot"
+lxc launch images:ubuntu/22.04 v1 --vm -s "${poolName}" --ephemeral
 waitVMAgent v1
 lxc info v1
 
@@ -120,5 +119,10 @@ lxc config unset v1 limits.cpu
 
 # Unsetting the limit should leave the VM with 1 CPU
 [ "$(lxc exec v1 -- ls /sys/devices/system/cpu | grep -Ec 'cpu[[:digit:]]+')" -eq "1" ]
+
+echo "==> Stopping and deleting ephemeral VM"
+# Stop VM and check its deleted.
+lxc stop -f v1
+! lxc info v1 || false
 
 FAIL=0
