@@ -125,4 +125,12 @@ echo "==> Stopping and deleting ephemeral VM"
 lxc stop -f v1
 ! lxc info v1 || false
 
+lxc profile device remove default eth0
+
+echo "==> Deleting storage pool"
+lxc storage delete "${poolName}"
+
+echo "==> Deleting storage pool"
+lxc network delete lxdbr0
+
 FAIL=0
