@@ -21,6 +21,7 @@
         values:
         - 36
         - 37
+        - Rawhide
 
     - axis:
         name: variant
