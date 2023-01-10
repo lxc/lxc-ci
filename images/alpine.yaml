@@ -373,7 +373,7 @@ actions:
     sed -i 's/-lxc//' /etc/init.d/localmount
 
     # Enable services
-    for svc_name in bootmisc syslog; do
+    for svc_name in bootmisc syslog devfs; do
         ln -s /etc/init.d/${svc_name} /etc/runlevels/boot/${svc_name}
     done
 
