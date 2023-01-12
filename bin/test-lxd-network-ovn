@@ -1156,7 +1156,7 @@ ovn_peering_tests() {
     # Now reconfigure ovn1's IP address inside the instance to an unknown IP and try pinging ovn2.
     # Check that the security policies prevent those ICMP packets from reaching ovn2 instance.
     # Disable DHCP client and SLAAC acceptance so we don't get automatic IPs added.
-    lxc exec ovn1 --project=ovn1 -- rm -f /etc/netplan/*
+    lxc exec ovn1 --project=ovn1 -- rm -fr /etc/netplan
     lxc exec ovn1 --project=ovn1 -- netplan apply
     lxc exec ovn1 --project=ovn1 -- systemctl mask systemd-networkd
     lxc exec ovn1 --project=ovn1 -- systemctl stop systemd-networkd
