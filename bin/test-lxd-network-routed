@@ -73,7 +73,7 @@ lxc start v1
 sleep 1m
 
 # Configure NIC in VM manually.
-lxc exec v1 -- rm -f /etc/netplan/*
+lxc exec v1 -- rm -fr /etc/netplan
 lxc exec v1 -- netplan apply
 lxc exec v1 -- systemctl mask systemd-networkd
 lxc exec v1 -- systemctl stop systemd-networkd

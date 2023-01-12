@@ -81,7 +81,7 @@ firewallTests() {
     fi
 
     # Disable DHCP client and SLAAC acceptance so we don't get automatic IPs added.
-    lxc exec c1 -- rm -f /etc/netplan/*
+    lxc exec c1 -- rm -fr /etc/netplan
     lxc exec c1 -- netplan apply
     lxc exec c1 -- sysctl net.ipv6.conf.eth0.accept_ra=0
 
