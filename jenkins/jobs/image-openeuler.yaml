@@ -11,7 +11,7 @@
         type: slave
         values:
         - amd64
-        - arm64
+        # - arm64
 
     - axis:
         name: release
