@@ -19,7 +19,13 @@ TARGET=${1}
 shift
 
 cleanup() {
-    lxc delete --force "${CNAME}"
+    for _ in $(seq 5); do
+        if lxc delete --force "${CNAME}"; then
+            break
+        fi
+
+        sleep 1
+    done
 }
 
 trap cleanup EXIT HUP INT TERM
