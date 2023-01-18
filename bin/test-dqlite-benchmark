@@ -1,0 +1,77 @@
+#!/bin/sh
+set -eu
+
+export DEBIAN_FRONTEND=noninteractive
+DIR=$(pwd)
+DATA_DIR=$DIR/dqlite-benchmark
+DURATION_S=$1
+
+cleanup() {
+    set +e
+
+    pkill -9 dqlite
+    rm -rf "$DATA_DIR"
+    sudo apt remove dqlite-tools -y
+
+    if [ "${FAIL}" = "1" ]; then
+        echo ""
+        echo "Test failed"
+        exit 1
+    fi
+
+    exit 0
+}
+
+run_benchmark() {
+    # shellcheck disable=SC3043
+    local masterpid
+
+    echo "Benchmark start duration:${DURATION_S}s arguments:$*"
+
+    mkdir -p "$DATA_DIR"
+
+    dqlite-benchmark "$@" --db 127.0.0.1:9001 --duration "$DURATION_S" --driver --cluster 127.0.0.1:9001,127.0.0.1:9002,127.0.0.1:9003 \
+    --workload kvreadwrite --dir "$DATA_DIR" &
+    masterpid=$!
+    dqlite-benchmark "$@" --db 127.0.0.1:9002 --join 127.0.0.1:9001 --dir "$DATA_DIR" &
+    dqlite-benchmark "$@" --db 127.0.0.1:9003 --join 127.0.0.1:9001 --dir "$DATA_DIR" &
+    wait $masterpid
+
+    echo "Write results:"
+    head -n 5 "$DATA_DIR"/127.0.0.1:9001/results/0-exec-*
+
+    echo ""
+    echo "Read results:"
+    head -n 5 "$DATA_DIR"/127.0.0.1:9001/results/0-query-*
+
+    tar -czf "dqlite-benchmark$*".tar.gz --directory="$DATA_DIR"/127.0.0.1:9001 results/
+    pkill -9 dqlite
+    rm -rf "$DATA_DIR"
+
+    echo "Benchmark completed"
+}
+
+FAIL=1
+trap cleanup EXIT HUP INT TERM
+
+# Make sure we're up to date
+while :; do
+    sudo add-apt-repository ppa:dqlite/dev -y && break
+    sudo apt-get update && break
+    sleep 10
+done
+
+while :; do
+    sudo apt-get dist-upgrade --yes && break
+    sleep 10
+done
+
+# Setup dependencies
+sudo apt-get install -y dqlite-tools
+
+# Run the tests
+run_benchmark
+sleep 2
+run_benchmark --disk
+
+FAIL=0
