@@ -19,6 +19,7 @@
         type: user-defined
         values:
         - 1.4
+        - next
 
     - axis:
         name: variant
