@@ -57,7 +57,7 @@ snap refresh distrobuilder || true
 # Build the image
 mkdir /root/build /root/build/cache
 if [ "$(uname -m)" = "x86_64" ] || [ "$(uname -m)" = "i686" ]; then
-    if ! echo "${YAML}" | grep -q -E "sabayon|gentoo|oracle|springdalelinux|openeuler" && [ "${TYPE}" != "vm" ]; then
+    if ! echo "${YAML}" | grep -q -E "sabayon|gentoo|oracle|springdalelinux|openeuler|funtoo" && [ "${TYPE}" != "vm" ]; then
         mount -t tmpfs tmpfs /root/build -o size=6G,nr_inodes=10000000
     fi
 fi
