@@ -73,5 +73,6 @@ sudo apt-get install -y dqlite-tools
 run_benchmark
 sleep 2
 run_benchmark --disk
+tar -zcf /home/ubuntu/artifacts.tar.gz dqlite-benchmark--disk.tar.gz dqlite-benchmark.tar.gz
 
 FAIL=0
