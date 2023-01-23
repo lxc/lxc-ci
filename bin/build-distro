@@ -18,11 +18,22 @@ shift
 TARGET=${1}
 shift
 
+success=0
+
 cleanup() {
     lxc delete --force "${CNAME}"
+
+    # Only show debug log if build is unsuccessful
+    if [ "${success}" -eq 0 ]; then
+        snap logs -n=1000 lxd
+    fi
 }
 
 trap cleanup EXIT HUP INT TERM
+
+# Set up debug logging
+snap set lxd daemon.debug=true
+systemctl reload snap.lxd.daemon
 
 # Create the container
 lxc copy "cache-distrobuilder-${ARCH}" "${CNAME}"
@@ -85,3 +96,5 @@ lxc exec "${CNAME}" -- tar -cf - -C /root/build/ . | tar -xvf - -C "${TARGET}"
 
 [ -n "${SUDO_UID:-}" ] && chown "${SUDO_UID}" -R "${TARGET}"
 [ -n "${SUDO_GID:-}" ] && chgrp "${SUDO_GID}" -R "${TARGET}"
+
+success=1
