@@ -41,6 +41,10 @@
             ${LXD_ARCHITECTURE} container 7200 ${WORKSPACE} \
             -o image.release=${release} -o image.architecture=${ARCH}
 
+    execution-strategy:
+      combination-filter: '
+      !(architecture=="armhf" && release == "next")'
+
     properties:
     - build-discarder:
         num-to-keep: 2
