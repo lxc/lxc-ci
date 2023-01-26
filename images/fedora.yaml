@@ -238,6 +238,8 @@ actions:
     for repo in $(ls /etc/yum.repos.d/*.repo); do
       grep -q '^#baseurl' "${repo}" || continue
 
+      cp "${repo}" "${repo}.bak"
+
       sed -ri 's/^metalink=.*/#\0/g;s@^#(baseurl=)http://download.example/pub(.*)@\1https://mirror.csclub.uwaterloo.ca/\2@g' "${repo}"
     done
   architectures:
@@ -260,6 +262,8 @@ actions:
     # Use baseurl instead of metalink to avoid networking issues
     for repo in $(ls /etc/yum.repos.d/*.repo); do
       grep -q '^#baseurl' "${repo}" || continue
+
+      cp "${repo}" "${repo}.bak"
 
       sed -ri 's/^metalink=.*/#\0/g;s@^#(baseurl=)http://download.example/pub/fedora/linux(.*)@\1https://muug.ca/mirror/fedora-secondary\2@g' "${repo}"
     done
@@ -337,3 +341,13 @@ actions:
     exit 0
   types:
   - vm
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Restore repos
+    for repo in $(ls /etc/yum.repos.d/*.bak); do
+      mv "${repo}" ${repo%.*}
+    done
