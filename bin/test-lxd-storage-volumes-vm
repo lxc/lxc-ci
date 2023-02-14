@@ -96,15 +96,20 @@ do
 	lxc storage volume create "${poolName}" vol1 --type=block size=10MB
 	lxc storage volume attach "${poolName}" vol1 v1
 
+	echo "==> Create custom volume and attach it to VM"
+	lxc storage volume create "${poolName}" vol4 size=10MB
+	lxc storage volume attach "${poolName}" vol4 v1 /foo
+
 	echo "==> Start VM and add content to custom block volume"
 	lxc start v1
 	waitVMAgent v1
 
 	lxc exec v1 -- /bin/sh -c "mkfs.ext4 /dev/sdb && mount /dev/sdb /mnt && echo foo > /mnt/bar && umount /mnt"
 
-	echo "==> Stop VM and detach custom block volume"
+	echo "==> Stop VM and detach custom volumes"
 	lxc stop -f v1
 	lxc storage volume detach "${poolName}" vol1 v1
+	lxc storage volume detach "${poolName}" vol4 v1
 
 	echo "==> Backup custom block volume"
 	lxc storage volume export "${poolName}" vol1 vol1.tar.gz
