@@ -159,6 +159,7 @@ do
 	lxc storage volume rm "${poolName}" vol1
 	lxc storage volume rm "${poolName}" vol2
 	lxc storage volume rm "${poolName}" vol3
+	lxc storage volume rm "${poolName}" vol4
 	lxc storage rm "${poolName}"
 done
 
