@@ -651,6 +651,20 @@ ovn_forward_tests() {
     lxc network forward create ovn-virtual-network2 192.0.2.2 target_address="${ip4AddressPrefix2}.2"
     lxc network forward create ovn-virtual-network2 2001:db8:1:2::2 target_address="${ip6AddressPrefix2}::2"
 
+    # Check a forward on the uplink bridge network cannot conflict with an existing OVN network forward.
+    ! lxc network forward create lxdbr0 192.0.2.1 --project default || false
+    ! lxc network forward create lxdbr0 2001:db8:1:2::1 --project default || false
+    lxc network forward create lxdbr0 192.0.2.3 --project default || false
+    lxc network forward create lxdbr0 2001:db8:1:2::3 --project default || false
+    ! lxc network forward create ovn-virtual-network2 192.0.2.3 target_address="${ip4AddressPrefix2}.2" || false
+    ! lxc network forward create ovn-virtual-network2 2001:db8:1:2::3 target_address="${ip6AddressPrefix2}::2" || false
+    lxc network forward delete lxdbr0 192.0.2.3 --project default
+    lxc network forward delete lxdbr0 2001:db8:1:2::3 --project default
+    lxc network forward create ovn-virtual-network2 192.0.2.3 target_address="${ip4AddressPrefix2}.2" || false
+    lxc network forward create ovn-virtual-network2 2001:db8:1:2::3 target_address="${ip6AddressPrefix2}::2" || false
+    lxc network forward delete ovn-virtual-network2 192.0.2.3
+    lxc network forward delete ovn-virtual-network2 2001:db8:1:2::3
+
     # Check an external route on another network's NIC prevents another network from setting up a forward listener.
     lxc init images:ubuntu/20.04 u1 -n ovn-virtual-network2 -s default
     lxc config device set u1 eth0 \
