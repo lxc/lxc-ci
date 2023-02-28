@@ -145,7 +145,7 @@ if [ "${track}" != "2.0" ]; then
         lxc launch images:alpine/edge -s test-btrfs btrfs
     fi
 
-    if modprobe -q -n zfs; then
+    if modprobe -q -n zfs && ! grep -q ^0.7 < /sys/module/zfs/version; then
         lxc storage create test-zfs zfs
         lxc launch images:alpine/edge -s test-zfs zfs
     fi
