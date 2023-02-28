@@ -17,6 +17,8 @@ elif [ "${ID}" = "centos" ]; then
     yum upgrade -y
 elif [ "${ID}" = "opensuse" ]; then
     zypper update -y
+elif [ "${ID}" = "opensuse-tumbleweed" ]; then
+    zypper update -y
 elif [ "${ID}" = "solus" ]; then
     eopkg update-repo -y
     eopkg upgrade -y
