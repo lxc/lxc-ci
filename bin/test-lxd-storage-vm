@@ -80,7 +80,7 @@ do
         if [ "${poolDriver}" = "dir" ] || [ "${poolDriver}" = "ceph" ]; then
                 lxc storage create "${poolName}" "${poolDriver}"
         elif [ "${poolDriver}" = "lvm" ]; then
-                lxc storage create "${poolName}" "${poolDriver}" size=40GiB lvm.use_thinpool=false
+                lxc storage create "${poolName}" "${poolDriver}" size=60GiB lvm.use_thinpool=false
         elif [ "${poolDriver}" = "lvm-thin" ]; then
                 lxc storage create "${poolName}" lvm size=20GiB
         else
@@ -88,7 +88,7 @@ do
         fi
 
         echo "==> Create VM and boot"
-        lxc init images:ubuntu/20.04/cloud v1 --vm -s "${poolName}"
+        lxc init images:ubuntu/22.04/cloud v1 --vm -s "${poolName}"
         lxc start v1
         waitVMAgent v1
         lxc info v1
@@ -257,7 +257,7 @@ do
         truncate -s 5m "/tmp/lxd-test-${poolName}/lxd-test-block"
 
         echo "==> Checking disk device hotplug support"
-        lxc launch images:ubuntu/20.04/cloud v1 --vm -s "${poolName}"
+        lxc launch images:ubuntu/22.04/cloud v1 --vm -s "${poolName}"
         waitVMAgent v1
 
         # Hotplug disks
@@ -299,7 +299,7 @@ do
 
         echo "==> Change volume.size on pool and create VM"
         lxc storage set "${poolName}" volume.size 6GiB
-        lxc init images:ubuntu/20.04/cloud v1 --vm -s "${poolName}"
+        lxc init images:ubuntu/22.04/cloud v1 --vm -s "${poolName}"
         lxc start v1
         waitVMAgent v1
         lxc info v1
@@ -314,7 +314,7 @@ do
         if [ "${poolDriver}" = "lvm" ]; then
                 echo "==> Change volume.block.filesystem on pool and create VM"
                 lxc storage set "${poolName}" volume.block.filesystem xfs
-                lxc init images:ubuntu/20.04/cloud v1 --vm -s "${poolName}"
+                lxc init images:ubuntu/22.04/cloud v1 --vm -s "${poolName}"
                 lxc start v1
                 waitVMAgent v1
                 lxc info v1
@@ -331,7 +331,7 @@ do
         echo "==> Create VM from profile with small disk size"
         lxc profile copy default vmsmall
         lxc profile device add vmsmall root disk pool="${poolName}" path=/ size=7GiB
-        lxc init images:ubuntu/20.04/cloud v1 --vm -p vmsmall
+        lxc init images:ubuntu/22.04/cloud v1 --vm -p vmsmall
         lxc start v1
         waitVMAgent v1
         lxc info v1
@@ -419,6 +419,57 @@ do
         lxc delete -f v1renamed
         lxc image delete vmbig
         lxc profile delete vmsmall
+
+        echo "==> Checking VM UUID while snapshotting (non-stateful mode)"
+        lxc init images:ubuntu/22.04/cloud v1 --vm -s "${poolName}"
+        lxc start v1
+        waitVMAgent v1
+        lxc info v1
+
+        initialUUID=$(lxc config get v1 volatile.uuid)
+        lxc snapshot v1 snap1
+        lxc restore v1 snap1
+        newUUID=$(lxc config get v1 volatile.uuid)
+
+        if [ "${initialUUID}" = "${newUUID}" ]; then
+                echo "==> UUID of the VM instance should be different after restoring its snapshot"
+                false
+        fi
+
+        lxc delete -f v1
+
+        echo "==> Checking VM UUID while snapshotting (stateful mode)"
+        lxc init images:ubuntu/22.04/cloud v2 --vm -s "${poolName}"
+        lxc config set v2 migration.stateful=true
+        lxc config device set v2 root size.state=1GiB
+        lxc start v2
+        waitVMAgent v2
+        lxc info v2
+
+        initialUUID=$(lxc config get v2 volatile.uuid)
+        lxc snapshot v2 snap0 --stateful
+        lxc restore v2 snap0
+        newUUID=$(lxc config get v2 volatile.uuid)
+
+        if [ "${initialUUID}" = "${newUUID}" ]; then
+                echo "==> UUID of the VM instance should be different after restoring its stateful snapshot"
+                false
+        fi
+
+        echo "==> Checking VM UUID while copying"
+        initialUUID=$(lxc config get v2 volatile.uuid)
+        lxc snapshot v2 snap1
+        lxc copy v2/snap1 v3
+        newUUID=$(lxc config get v3 volatile.uuid)
+
+        if [ "${initialUUID}" = "${newUUID}" ]; then
+                echo "==> UUID of the VM instance should be different after copying snapshot into instance"
+                false
+        fi
+
+        echo "==> Deleting remaining VMs"
+        lxc delete -f v2
+        lxc delete -f v3
 
         echo "==> Deleting storage pool"
         lxc storage delete "${poolName}"
