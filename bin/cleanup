@@ -13,6 +13,8 @@ if [ "${1:-}" = "force" ]; then
         for i in $(zfs list -o name -r default/deleted/images | grep deleted/images/); do zfs destroy -R "$i"; done
         for i in $(ls /var/snap/lxd/common/lxd/storage-pools/default/containers | grep -v cache-); do rm -Rf "/var/snap/lxd/common/lxd/storage-pools/default/containers/$i"; done
         for i in $(ls /var/snap/lxd/common/lxd/containers/ | grep -v cache-); do rm -Rf "/var/snap/lxd/common/lxd/containers/$i"; done
+
+        systemctl reload snap.lxd.daemon
     fi
 fi
 
