@@ -4,6 +4,8 @@ if [ "${1:-}" = "force" ]; then
     if lxc info >/dev/null 2>&1; then
         lxc list -cn -f csv | grep -v ^cache- | xargs -r lxc delete -f
         lxc image list -cF -fcsv | xargs -r  lxc image delete
+        lxd sql global "DELETE FROM storage_volumes WHERE name NOT LIKE 'cache-%'"
+        rm -Rf /var/snap/lxd/common/lxd/logs/*
 
         for i in $(zfs list -o name -r default/containers | grep containers/ | grep -v containers/cache-); do zfs destroy -R "$i"; done
         for i in $(zfs list -o name -r default/images | grep images/); do zfs destroy -R "$i"; done
