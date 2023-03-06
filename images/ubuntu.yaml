@@ -343,6 +343,7 @@ files:
   - focal
   - jammy
   - kinetic
+  - lunar
   types:
   - container
   variants:
@@ -381,6 +382,7 @@ files:
   - focal
   - jammy
   - kinetic
+  - lunar
   types:
   - vm
   variants:
@@ -500,6 +502,7 @@ packages:
     releases:
     - jammy
     - kinetic
+    - lunar
     action: install
 
   - packages:
@@ -528,6 +531,7 @@ packages:
     - bionic
     - jammy
     - kinetic
+    - lunar
 
   - packages:
     - cloud-init
@@ -540,6 +544,7 @@ packages:
     action: install
     releases:
     - kinetic
+    - lunar
 
   - packages:
     - acpid
@@ -578,6 +583,7 @@ packages:
     - focal
     - jammy
     - kinetic
+    - lunar
     types:
     - vm
 
@@ -597,6 +603,7 @@ packages:
     - focal
     - jammy
     - kinetic
+    - lunar
     types:
     - vm
 
@@ -667,6 +674,7 @@ actions:
   - focal
   - jammy
   - kinetic
+  - lunar
 
 - trigger: post-packages
   action: |-
@@ -677,6 +685,7 @@ actions:
     ln -sf ../run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
   releases:
   - kinetic
+  - lunar
 
 - trigger: post-packages
   action: |-
