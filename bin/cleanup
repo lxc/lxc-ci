@@ -6,6 +6,7 @@ if [ "${1:-}" = "force" ]; then
         lxc image list -cF -fcsv | xargs -r  lxc image delete
 
         for i in $(zfs list -o name -r default/containers | grep -v containers/cache- | grep deleted/containers/); do zfs destroy -R "$i"; done
+        for i in $(zfs list -o name -r default/images | grep images/); do zfs destroy -R "$i"; done
         for i in $(zfs list -o name -r default/deleted/containers | grep deleted/containers/); do zfs destroy -R "$i"; done
         for i in $(zfs list -o name -r default/deleted/images | grep deleted/images/); do zfs destroy -R "$i"; done
         for i in $(ls /var/snap/lxd/common/lxd/storage-pools/default/containers | grep -v cache-); do rm -Rf "/var/snap/lxd/common/lxd/storage-pools/default/containers/$i"; done
