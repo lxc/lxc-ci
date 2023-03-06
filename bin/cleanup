@@ -5,7 +5,7 @@ if [ "${1:-}" = "force" ]; then
         lxc list -cn -f csv | grep -v ^cache- | xargs -r lxc delete -f
         lxc image list -cF -fcsv | xargs -r  lxc image delete
 
-        for i in $(zfs list -o name -r default/containers | grep -v containers/cache- | grep deleted/containers/); do zfs destroy -R "$i"; done
+        for i in $(zfs list -o name -r default/containers | grep -v containers/cache-); do zfs destroy -R "$i"; done
         for i in $(zfs list -o name -r default/images | grep images/); do zfs destroy -R "$i"; done
         for i in $(zfs list -o name -r default/deleted/containers | grep deleted/containers/); do zfs destroy -R "$i"; done
         for i in $(zfs list -o name -r default/deleted/images | grep deleted/images/); do zfs destroy -R "$i"; done
