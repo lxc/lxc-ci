@@ -61,7 +61,7 @@
 
     properties:
     - build-discarder:
-        num-to-keep: 2
+        num-to-keep: 3
 
     - raw:
         !include: ../includes/webhook.yaml.inc
