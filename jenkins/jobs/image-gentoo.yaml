@@ -40,7 +40,7 @@
         [ "${ARCH}" = "ppc64el" ] && ARCH="ppc64le"
 
         TYPE="container"
-        if [ "${architecture}" = "amd64" ] || [ "${architecture}" = "arm64" ]; then
+        if [ "${architecture}" = "amd64" ]; then
             TYPE="container,vm"
         fi
 
