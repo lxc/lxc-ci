@@ -420,56 +420,22 @@ do
         lxc image delete vmbig
         lxc profile delete vmsmall
 
-        echo "==> Checking VM UUID while snapshotting (non-stateful mode)"
+        echo "==> Checking VM Generation UUID with QEMU"
         lxc init images:ubuntu/22.04/cloud v1 --vm -s "${poolName}"
         lxc start v1
         waitVMAgent v1
         lxc info v1
 
-        initialUUID=$(lxc config get v1 volatile.uuid)
-        lxc snapshot v1 snap1
-        lxc restore v1 snap1
-        newUUID=$(lxc config get v1 volatile.uuid)
-
-        if [ "${initialUUID}" = "${newUUID}" ]; then
-                echo "==> UUID of the VM instance should be different after restoring its snapshot"
+        # Check that the volatile.uuid.generation setting is applied to the QEMU process.
+        vmGenID=$(lxc config get v1 volatile.uuid.generation)
+        vmPID=$(lxc info v1 | awk '/^PID:/ {print $2}')
+        qemuGenID=$(sed -n 's/.*vmgenid,guid=\([0-9a-fA-F]\{8\}-[0-9a-fA-F]\{4\}-[0-9a-fA-F]\{4\}-[0-9a-fA-F]\{4\}-[0-9a-fA-F]\{12\}\).*/\1/p' "/proc/${vmPID}/cmdline")
+        if [ "${vmGenID}" != "${qemuGenID}" ]; then
+                echo "==> VM Generation ID in LXD config does not match VM Generation ID in QEMU process"
                 false
         fi
 
         lxc delete -f v1
-
-        echo "==> Checking VM UUID while snapshotting (stateful mode)"
-        lxc init images:ubuntu/22.04/cloud v2 --vm -s "${poolName}"
-        lxc config set v2 migration.stateful=true
-        lxc config device set v2 root size.state=1GiB
-        lxc start v2
-        waitVMAgent v2
-        lxc info v2
-
-        initialUUID=$(lxc config get v2 volatile.uuid)
-        lxc snapshot v2 snap0 --stateful
-        lxc restore v2 snap0
-        newUUID=$(lxc config get v2 volatile.uuid)
-
-        if [ "${initialUUID}" = "${newUUID}" ]; then
-                echo "==> UUID of the VM instance should be different after restoring its stateful snapshot"
-                false
-        fi
-
-        echo "==> Checking VM UUID while copying"
-        initialUUID=$(lxc config get v2 volatile.uuid)
-        lxc snapshot v2 snap1
-        lxc copy v2/snap1 v3
-        newUUID=$(lxc config get v3 volatile.uuid)
-
-        if [ "${initialUUID}" = "${newUUID}" ]; then
-                echo "==> UUID of the VM instance should be different after copying snapshot into instance"
-                false
-        fi
-
-        echo "==> Deleting remaining VMs"
-        lxc delete -f v2
-        lxc delete -f v3
 
         echo "==> Deleting storage pool"
         lxc storage delete "${poolName}"
