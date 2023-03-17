@@ -2,12 +2,14 @@
 CNAME="lxc-test-$(uuidgen)"
 
 # Check arguments
-if [ "${1:-}" = "" ] || [ "${2:-}" = "" ] || [ "${3:-}" = "" ] || [ "${4:-}" = "" ]; then
-    echo "Usage: ${0} <arch> <repository> <branch> <commit>"
+if [ "${1:-}" = "" ] || [ "${2:-}" = "" ] || [ "${3:-}" = "" ] || [ "${4:-}" = "" ] || [ "${5:-}" = "" ]; then
+    echo "Usage: ${0} <arch> <async-api> <repository> <branch> <commit>"
     exit 1
 fi
 
 ARCH=${1}
+shift
+ASYNC_API=${1}
 shift
 REPO=${1}
 shift
@@ -67,7 +69,11 @@ if [ -e autogen.sh ]; then
     make
     make install
 else
-    meson setup build/ -Dtests=true -Dpam-cgroup=true -Dprefix=/usr/ -Dsysconfdir=/etc/ -Dlocalstatedir=/var/
+    WANT_IO_URING="-Dio-uring-event-loop=false"
+    if [ "${ASYNC_API}" = "io_uring" ]; then
+        WANT_IO_URING="-Dio-uring-event-loop=true"
+    fi
+    meson setup build/ "${WANT_IO_URING}" -Dtests=true -Dpam-cgroup=true -Dprefix=/usr/ -Dsysconfdir=/etc/ -Dlocalstatedir=/var/
     ninja -C build
     ninja -C build install
 fi
