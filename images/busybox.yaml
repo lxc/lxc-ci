@@ -5,6 +5,32 @@ source:
   downloader: busybox
   url: https://busybox.net/downloads/
 
+targets:
+  lxc:
+    create_message: |
+      You just created an {{ image.description }} container.
+
+    config:
+    - type: all
+      before: 5
+      content: |-
+        lxc.include = LXC_TEMPLATE_CONFIG/busybox.common.conf
+    - type: user
+      before: 5
+      content: |-
+        lxc.include = LXC_TEMPLATE_CONFIG/busybox.userns.conf
+    - type: all
+      after: 4
+      content: |-
+        lxc.include = LXC_TEMPLATE_CONFIG/common.conf
+    - type: user
+      after: 4
+      content: |-
+        lxc.include = LXC_TEMPLATE_CONFIG/userns.conf
+    - type: all
+      content: |-
+        lxc.arch = {{ image.architecture_personality }}
+
 files:
 - path: /etc/inittab
   generator: dump
