@@ -56,7 +56,7 @@ apt-get install --yes --no-install-recommends \
     libseccomp-dev libselinux1-dev libssl-dev libtool linux-libc-dev \
     lsb-release make openssl pkg-config python3-all-dev \
     python3-setuptools rsync squashfs-tools uidmap unzip uuid-runtime \
-    wget xz-utils
+    wget xz-utils liburing-dev
 
 apt-get clean
 

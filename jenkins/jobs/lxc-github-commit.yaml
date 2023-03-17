@@ -37,6 +37,13 @@
         - clang
 
     - axis:
+        name: async-api
+        type: user-defined
+        values:
+        - epoll
+        - io_uring
+
+    - axis:
         name: arch
         type: slave
         values:
@@ -52,7 +59,7 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        exec sudo /lxc-ci/bin/testbuild-${{compiler}} ${{arch}} https://github.com/lxc/lxc {branch} ${{GIT_COMMIT}}
+        exec sudo /lxc-ci/bin/testbuild-${{compiler}} ${{arch}} ${async-api} https://github.com/lxc/lxc {branch} ${{GIT_COMMIT}}
 
     properties:
     - build-discarder:
