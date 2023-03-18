@@ -8,7 +8,7 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        exec sudo /lxc-ci/bin/testbuild-${compiler} ${arch} ${async-api} https://github.com/lxc/lxc master ${GIT_COMMIT}
+        exec sudo /lxc-ci/bin/testbuild-${compiler} ${arch} ${async} https://github.com/lxc/lxc master ${GIT_COMMIT}
 
     - trigger-builds:
       - project:
@@ -62,7 +62,7 @@
         - clang
 
     - axis:
-        name: async-api
+        name: async
         type: user-defined
         values:
         - epoll
