@@ -133,6 +133,7 @@ do
         lxc delete v1/snap0
 
         echo "==> Check QEMU crash behavior and recovery"
+        lxc exec v1 -- fsfreeze --freeze /
         uuid=$(lxc config get v1 volatile.uuid)
         pgrep -af "${uuid}"
         nsenter --mount=/run/snapd/ns/lxd.mnt -- rm /var/snap/lxd/common/lxd/logs/v1/qemu.monitor
@@ -145,24 +146,25 @@ do
         lxc stop v1 -f
         ! pgrep -af "${uuid}" || false
         lxc start v1
+        waitVMAgent v1
 
         echo "==> Testing VM non-optimized export/import (while running to check config.mount is excluded)"
+        lxc exec v1 -- fsfreeze --freeze /
         lxc export v1 "/tmp/lxd-test-${poolName}.tar.gz"
         lxc delete -f v1
         lxc import "/tmp/lxd-test-${poolName}.tar.gz"
         rm "/tmp/lxd-test-${poolName}.tar.gz"
         lxc start v1
         waitVMAgent v1
-        lxc exec v1 -- ps aux | grep lxd-agent # Check booted OK.
 
         echo "==> Testing VM optimized export/import (while running to check config.mount is excluded)"
+        lxc exec v1 -- fsfreeze --freeze /
         lxc export v1 "/tmp/lxd-test-${poolName}-optimized.tar.gz" --optimized-storage
         lxc delete -f v1
         lxc import "/tmp/lxd-test-${poolName}-optimized.tar.gz"
         rm "/tmp/lxd-test-${poolName}-optimized.tar.gz"
         lxc start v1
         waitVMAgent v1
-        lxc exec v1 -- ps aux | grep lxd-agent # Check booted OK.
 
         echo "==> Increasing VM root disk size for next boot"
         lxc config device set v1 root size=11GiB
