@@ -430,8 +430,7 @@ do
 
         # Check that the volatile.uuid.generation setting is applied to the QEMU process.
         vmGenID=$(lxc config get v1 volatile.uuid.generation)
-        vmPID=$(lxc info v1 | awk '/^PID:/ {print $2}')
-        qemuGenID=$(sed -n 's/.*vmgenid,guid=\([0-9a-fA-F]\{8\}-[0-9a-fA-F]\{4\}-[0-9a-fA-F]\{4\}-[0-9a-fA-F]\{4\}-[0-9a-fA-F]\{12\}\).*/\1/p' "/proc/${vmPID}/cmdline")
+        qemuGenID=$(awk '/driver = "vmgenid"/,/guid = / {print $3}' /var/snap/lxd/common/lxd/logs/v1/qemu.conf | sed -n 's/"\([0-9a-fA-F]\{8\}-[0-9a-fA-F]\{4\}-[0-9a-fA-F]\{4\}-[0-9a-fA-F]\{4\}-[0-9a-fA-F]\{12\}\)"/\1/p')
         if [ "${vmGenID}" != "${qemuGenID}" ]; then
                 echo "==> VM Generation ID in LXD config does not match VM Generation ID in QEMU process"
                 false
