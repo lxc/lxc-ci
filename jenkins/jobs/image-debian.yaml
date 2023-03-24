@@ -22,7 +22,6 @@
         name: release
         type: user-defined
         values:
-        - buster
         - bullseye
         - sid
         - bookworm
