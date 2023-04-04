@@ -19,9 +19,9 @@ trap cleanup EXIT HUP INT TERM
 # Build the test image
 git clone -q https://github.com/mirror/busybox "${TEMP_DIR}/busybox" -b 1_33_0
 cd "${TEMP_DIR}/busybox"
-make defconfig >/dev/null
+make defconfig
 echo CONFIG_STATIC=y >> .config
-make -j5 >/dev/null 2>&1
+make -j5
 cd "${TEMP_DIR}"
 
 mkdir "${TEMP_DIR}/image"
@@ -80,9 +80,9 @@ cd "${TEMP_DIR}"
 # Build the clustering bits
 git clone -q https://github.com/canonical/raft "${TEMP_DIR}/raft"
 cd "${TEMP_DIR}/raft"
-autoreconf -i >/dev/null 2>&1
-./configure --enable-debug >/dev/null 2>&1
-make >/dev/null 2>&1
+autoreconf -i
+./configure --enable-debug
+make
 cd "${TEMP_DIR}"
 
 git clone -q https://github.com/canonical/dqlite "${TEMP_DIR}/dqlite"
@@ -90,9 +90,9 @@ cd "${TEMP_DIR}/dqlite"
 export PKG_CONFIG_PATH="${TEMP_DIR}/raft"
 export CFLAGS="-I${TEMP_DIR}/raft/include"
 export LDFLAGS="-L${TEMP_DIR}/raft/.libs"
-autoreconf -i >/dev/null 2>&1
-./configure --enable-debug >/dev/null 2>&1
-make >/dev/null 2>&1
+autoreconf -i
+./configure --enable-debug
+make
 cd "${TEMP_DIR}"
 
 # Build the Go cache and binaries
