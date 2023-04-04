@@ -34,14 +34,15 @@ ARCHIVE="http://us.ports.ubuntu.com/ubuntu-ports"
 if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "i386" ]; then
     ARCHIVE="http://us.archive.ubuntu.com/ubuntu"
 fi
+DISTRO="\$(lsb_release -sc)"
 
 # Setup clean sources
 echo force-unsafe-io >> /etc/dpkg/dpkg.cfg
 cat > /etc/apt/sources.list << EOL
-deb \${ARCHIVE} focal main universe restricted multiverse
-deb \${ARCHIVE} focal-updates main universe restricted multiverse
-deb \${ARCHIVE} focal-security main universe restricted multiverse
-deb \${ARCHIVE} focal-backports main universe restricted multiverse
+deb \${ARCHIVE} \${DISTRO} main universe restricted multiverse
+deb \${ARCHIVE} \${DISTRO}-updates main universe restricted multiverse
+deb \${ARCHIVE} \${DISTRO}-security main universe restricted multiverse
+deb \${ARCHIVE} \${DISTRO}-backports main universe restricted multiverse
 EOL
 apt-get update --yes
 
