@@ -176,11 +176,6 @@ if [ "${LXD_BACKEND}" = "dir" ] && [ "${LXD_TESTSUITE}" != "cluster" ]; then
     echo "==> UNIT BEGIN: all tests"
     GO_DQLITE_MULTITHREAD=1 go test -tags libsqlite3 ./...
     echo "==> UNIT DONE: all tests"
-
-    if [ "${GO_VERSION}" = "golang-tip" ]; then
-        echo "Skipping static analysis due to https://github.com/go-swagger/go-swagger/issues/2759"
-        export LXD_SKIP_STATIC=1
-    fi
 else
     echo "==> Static analysis will be skipped (only run on dir)"
     export LXD_SKIP_STATIC=1
