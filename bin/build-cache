@@ -54,7 +54,6 @@ apt-get clean
 # Setup snapd
 snap set system experimental.parallel-instances=true
 snap install go_113 --channel=1.13 --unaliased --classic
-snap install go_117 --channel=1.17 --unaliased --classic
 snap install go_118 --channel=1.18 --unaliased --classic
 snap install go_tip --channel=latest/edge --unaliased --classic
 
