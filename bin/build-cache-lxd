@@ -110,7 +110,7 @@ elif [ "${arch}" = "arm64" ]; then
 fi
 
 OLD_PATH=${PATH}
-for version in 1.13 1.17 1.18 tip; do
+for version in 1.13 1.18 1.20 tip; do
     VER=$(echo $version | sed "s/\.//g")
     export PATH="/snap/go_${VER}/current/bin:${OLD_PATH}"
 

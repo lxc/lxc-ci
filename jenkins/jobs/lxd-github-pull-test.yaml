@@ -67,6 +67,7 @@
         type: user-defined
         values:
         - golang-1.18
+        - golang-1.20
         - golang-tip
 
     - axis:
@@ -95,7 +96,7 @@
         - standalone
 
     execution-strategy:
-      combination-filter: '!(arch=="arm64" && backend=="lvm") && !(arch=="arm64" && backend=="ceph") && !(arch=="arm64" && backend=="random") && !(backend!="dir" && compiler!="golang-1.18")'
+      combination-filter: '!(arch=="arm64" && backend=="lvm") && !(arch=="arm64" && backend=="ceph") && !(arch=="arm64" && backend=="random") && !(backend!="dir" && compiler!="golang-1.20")'
 
     publishers:
       - archive:
