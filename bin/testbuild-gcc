@@ -73,7 +73,7 @@ else
     if [ "${ASYNC_API}" = "io_uring" ]; then
         WANT_IO_URING="-Dio-uring-event-loop=true"
     fi
-    meson setup build/ "${WANT_IO_URING}" -Dtests=true -Dpam-cgroup=true -Dprefix=/usr/ -Dsysconfdir=/etc/ -Dlocalstatedir=/var/
+    meson setup build/ "\${WANT_IO_URING}" -Dtests=true -Dpam-cgroup=true -Dprefix=/usr/ -Dsysconfdir=/etc/ -Dlocalstatedir=/var/
     ninja -C build
     ninja -C build install
 fi
