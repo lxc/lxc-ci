@@ -58,6 +58,8 @@ ovs-vsctl set open_vswitch . \
 lxc project switch default
 lxc storage create default zfs
 
+instanceImage="images:ubuntu/22.04"
+
 ovn_basic_tests() {
     lxc network create lxdbr0 \
         ipv4.address=10.10.10.1/24 ipv4.nat=true \
@@ -81,18 +83,18 @@ ovn_basic_tests() {
     ping -c1 -6 -W5 linuxcontainers.org
 
     echo "==> Launching a test container on lxdbr0"
-    lxc init images:ubuntu/20.04 u1 -s default
+    lxc init "${instanceImage}" u1 -s default
     FINGERPRINT="$(lxc image ls -cf --format=csv)"
     lxc config device add u1 eth0 nic network=lxdbr0 name=eth0
     lxc start u1
 
     echo "==> Launching a first test container on ovn-virtual-network"
-    lxc init images:ubuntu/20.04 u2 -s default
+    lxc init "${instanceImage}" u2 -s default
     lxc config device add u2 eth0 nic network=ovn-virtual-network name=eth0
     lxc start u2
 
     echo "==> Launching a second test container on ovn-virtual-network"
-    lxc init images:ubuntu/20.04 u3 -s default
+    lxc init "${instanceImage}" u3 -s default
     lxc config device add u3 eth0 nic network=ovn-virtual-network name=eth0
     lxc start u3
 
@@ -202,7 +204,7 @@ ovn_basic_tests() {
     lxc network unset dummy ipv4.routes.anycast --project default
     lxc network unset dummy ipv6.routes.anycast --project default
 
-    lxc init images:ubuntu/20.04 u1 --project testovn -s default
+    lxc init "${instanceImage}" u1 --project testovn -s default
     lxc config device add u1 eth0 nic network=ovn-virtual-network name=eth0 --project testovn
 
     # Record NAT rules count before u1 started.
@@ -246,7 +248,7 @@ ovn_basic_tests() {
     lxc config device set u1 eth0 ipv6.routes.external=2001:db8:1:2::/122 --project testovn
 
     # Check NIC external route overlap detection.
-    lxc init images:ubuntu/20.04 u2 --project testovn -s default
+    lxc init "${instanceImage}" u2 --project testovn -s default
     lxc config device add u2 eth0 nic network=ovn-virtual-network name=eth0 --project testovn
     ! lxc config device set u2 eth0 ipv4.routes.external=198.51.100.1/32 --project testovn || false
     ! lxc config device set u2 eth0 ipv6.routes.external=2001:db8:1:2::1/128 --project testovn || false
@@ -343,7 +345,7 @@ ovn_basic_tests() {
     ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep -cF testdhcp | grep -xF 2
 
     # Only enable IPv6 DHCP.
-    lxc init images:ubuntu/20.04 u1 --project testovn -s default
+    lxc init "${instanceImage}" u1 --project testovn -s default
     lxc network set ovn-virtual-network ipv4.dhcp=false ipv6.dhcp=true --project testovn
 
     # Look for DHCP options mentioning our testdhcp domain name, there should be one.
@@ -391,12 +393,12 @@ ovn_basic_tests() {
     ! lxc network create ovn-virtual-network-toomany network=lxdbr0 --type=ovn || false
 
     echo "==> Launching a first test container on testovn project ovn-virtual-network"
-    lxc init images:ubuntu/20.04 u2 -s default
+    lxc init "${instanceImage}" u2 -s default
     lxc config device add u2 eth0 nic network=ovn-virtual-network name=eth0
     lxc start u2
 
     echo "==> Launching a second test container on testovn project ovn-virtual-network"
-    lxc init images:ubuntu/20.04 u3 -s default
+    lxc init "${instanceImage}" u3 -s default
     lxc config device add u3 eth0 nic network=ovn-virtual-network name=eth0
     lxc start u3
 
@@ -519,7 +521,7 @@ ovn_basic_tests() {
     lxc network create ovn-virtual-network --type=ovn network=dummy
 
     # Check connectivity back to uplink bridge without SNAT address specified.
-    lxc launch images:ubuntu/20.04 u1 -n ovn-virtual-network -s default
+    lxc launch "${instanceImage}" u1 -n ovn-virtual-network -s default
     sleep 5
     lxc exec u1 -- ping -c1 -W5 192.0.2.1
     lxc exec u1 -- ping -c1 -W5 2001:db8:1:1::1
@@ -666,7 +668,7 @@ ovn_forward_tests() {
     lxc network forward delete ovn-virtual-network2 2001:db8:1:2::3
 
     # Check an external route on another network's NIC prevents another network from setting up a forward listener.
-    lxc init images:ubuntu/20.04 u1 -n ovn-virtual-network2 -s default
+    lxc init "${instanceImage}" u1 -n ovn-virtual-network2 -s default
     lxc config device set u1 eth0 \
         ipv4.routes.external=192.0.2.3/32,192.0.2.4/32 \
         ipv6.routes.external=2001:db8:1:2::3/128,2001:db8:1:2::4/128
@@ -686,7 +688,7 @@ ovn_forward_tests() {
     ovn-nbctl list load_balancer | grep -cF name | grep -xF 2
 
     # Create instance connected to ovn-virtual-network.
-    lxc launch images:ubuntu/20.04 u1 -n ovn-virtual-network -s default
+    lxc launch "${instanceImage}" u1 -n ovn-virtual-network -s default
     FINGERPRINT="$(lxc image ls -cf --format=csv)"
     sleep 5
     lxc list
@@ -730,7 +732,7 @@ EOF
     ! dig aaaa +tcp @2001:db8:1:2::1 u1.lxd || false
 
     # Check TCP port forward of port 53 to a different host.
-    lxc launch images:ubuntu/20.04 u2 -n ovn-virtual-network -s default
+    lxc launch "${instanceImage}" u2 -n ovn-virtual-network -s default
     sleep 5
     lxc list
     U2_IPV4="$(lxc list u2 -c4 --format=csv | cut -d' ' -f1)"
@@ -857,7 +859,7 @@ ovn_load_balancer_tests() {
     lxc network load-balancer create ovn-virtual-network2 2001:db8:1:2::2
 
     # Check an external route on another network's NIC prevents another network from setting up a load balancer listener.
-    lxc init images:ubuntu/20.04 u1 -n ovn-virtual-network2 -s default
+    lxc init "${instanceImage}" u1 -n ovn-virtual-network2 -s default
     lxc config device set u1 eth0 \
         ipv4.routes.external=192.0.2.3/32,192.0.2.4/32 \
         ipv6.routes.external=2001:db8:1:2::3/128,2001:db8:1:2::4/128
@@ -883,7 +885,7 @@ ovn_load_balancer_tests() {
     ovn-nbctl list load_balancer | grep -cF name | grep -xF 0
 
     # Create instance connected to ovn-virtual-network.
-    lxc launch images:ubuntu/20.04 u1 -n ovn-virtual-network -s default
+    lxc launch "${instanceImage}" u1 -n ovn-virtual-network -s default
     FINGERPRINT="$(lxc image ls -cf --format=csv)"
     sleep 5
     lxc list
@@ -945,7 +947,7 @@ EOF
     lxc exec u1 -- systemctl stop dnsmasq
 
     # Check changing DNS TCP forwarding towards u2.
-    lxc launch images:ubuntu/20.04 u2 -n ovn-virtual-network -s default
+    lxc launch "${instanceImage}" u2 -n ovn-virtual-network -s default
     sleep 5
     lxc list
     U2_IPV4="$(lxc list u2 -c4 --format=csv | cut -d' ' -f1)"
@@ -1074,14 +1076,14 @@ ovn_peering_tests() {
     ! lxc network show ovn2 --project=ovn2 | grep ovn1 || false
 
     # Launch instance in each network (with one having NIC routes from uplink).
-    lxc init images:ubuntu/20.04 ovn1 -n ovn1 -s default --project=ovn1
+    lxc init "${instanceImage}" ovn1 -n ovn1 -s default --project=ovn1
     lxc config device set ovn1 eth0 --project=ovn1 \
         ipv4.routes=198.51.100.1/32 \
         ipv6.routes=2001:db8:1:2::1/128 \
         ipv4.routes.external=198.51.100.2/32 \
         ipv6.routes.external=2001:db8:1:2::2/128
     lxc start ovn1 --project=ovn1
-    lxc launch images:ubuntu/20.04 ovn2 -n ovn2 -s default --project=ovn2
+    lxc launch "${instanceImage}" ovn2 -n ovn2 -s default --project=ovn2
 
     # Add IPs from routes to ovn1 instance.
     sleep 2
@@ -1216,7 +1218,7 @@ ovn_peering_tests() {
     # are removed.
     lxc delete -f ovn1 --project=ovn1 # Remove as we cleared its DHCP config.
     lxc network set ovn1 ipv4.address=192.0.2.1/24 ipv6.address=2001:db8:1:1::1/64 --project=ovn1
-    lxc launch images:ubuntu/20.04 ovn1 -n ovn1 -s default --project=ovn1
+    lxc launch "${instanceImage}" ovn1 -n ovn1 -s default --project=ovn1
     sleep 5
     ovn1NICIPv4="$(lxc list ovn1 -c4 --format=csv --project=ovn1 | cut -d' ' -f1)"
     ovn1NICIPv6="$(lxc list ovn1 -c6 --format=csv --project=ovn1 | cut -d' ' -f1)"
@@ -1343,7 +1345,7 @@ ovn_dhcp_reservation_tests() {
     [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1"')" = "1" ] || false
 
     # Create instance and check empty DNS record entry is created (showing successfully adding a NIC).
-    lxc init images:ubuntu/20.04 u1 -s default -n ovn1
+    lxc init "${instanceImage}" u1 -s default -n ovn1
     [ "$(ovn-nbctl list dns | grep -Fc 'records')" = "1" ] || false
 
     # Check specifying a static IP is added to DHCP reservations.
@@ -1355,7 +1357,7 @@ ovn_dhcp_reservation_tests() {
     [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1 10.10.11.2"')" = "1" ] || false
 
     # Launch new dynamic IP instance and check its not allocated the reserved IP.
-    lxc launch images:ubuntu/20.04 u2 -s default -n ovn1
+    lxc launch "${instanceImage}" u2 -s default -n ovn1
     sleep 10
     lxc list
     U2_IPV4="$(lxc list u2 -c4 --format=csv | cut -d' ' -f1)"
@@ -1400,6 +1402,90 @@ ovn_dhcp_reservation_tests() {
     lxc network delete lxdbr0
 }
 
+ovn_nested_vlan_tests() {
+    lxc network create lxdbr0 \
+        ipv4.address=10.10.10.1/24 ipv4.nat=true \
+        ipv4.dhcp.ranges=10.10.10.2-10.10.10.199 \
+        ipv4.ovn.ranges=10.10.10.200-10.10.10.254 \
+        ipv6.address=fd42:4242:4242:1010::1/64 ipv6.nat=true \
+        ipv6.ovn.ranges=fd42:4242:4242:1010::200-fd42:4242:4242:1010::254
+
+    # Create OVN network.
+    lxc network create ovn1 --type=ovn \
+        network=lxdbr0 \
+        ipv4.address=10.10.11.1/24 ipv4.nat=true \
+        ipv6.address=fd42:4242:4242:1011::1/64 ipv6.nat=true \
+        ipv6.dhcp.stateful=true
+
+    sleep 2
+    lxc network list | grep ovn1
+    lxc launch "${instanceImage}" u1 -s default -n ovn1 -c security.nesting=true
+
+    # Add nested NICs to u1.
+    lxc config device add u1 eth1 nic \
+        network=ovn1 \
+        nested=eth0 \
+        vlan=1 \
+        ipv4.address=10.10.11.2 \
+        ipv6.address=fd42:4242:4242:1011::2
+
+    eth1MAC="$(lxc config get u1 volatile.eth1.hwaddr)"
+
+    lxc config device add u1 eth2 nic \
+        network=ovn1 \
+        nested=eth0 \
+        vlan=2 \
+        ipv4.address=10.10.11.3 \
+        ipv6.address=fd42:4242:4242:1011::3
+
+    eth2MAC="$(lxc config get u1 volatile.eth2.hwaddr)"
+
+    lxc launch "${instanceImage}" u2 -s default -n ovn1
+
+    # Configure nested VLAN 1 inside u1 in a network namespace.
+    lxc exec u1 -- ip link add link eth0 name eth0.1 address "${eth1MAC}" type vlan id 1
+    lxc exec u1 -- ip netns add vlan_nesting1
+    lxc exec u1 -- ip link set eth0.1 netns vlan_nesting1
+    lxc exec u1 -- ip netns exec vlan_nesting1 ip link set lo up
+    lxc exec u1 -- ip netns exec vlan_nesting1 ip address add 10.10.11.2/24 dev eth0.1
+    lxc exec u1 -- ip netns exec vlan_nesting1 ip address add fd42:4242:4242:1011::2/64 dev eth0.1 nodad
+    lxc exec u1 -- ip netns exec vlan_nesting1 ip link set eth0.1 up
+
+    # Configure nested VLAN 2 inside u1 in a network namespace.
+    lxc exec u1 -- ip link add link eth0 name eth0.2 address "${eth2MAC}" type vlan id 2
+    lxc exec u1 -- ip netns add vlan_nesting2
+    lxc exec u1 -- ip link set eth0.2 netns vlan_nesting2
+    lxc exec u1 -- ip netns exec vlan_nesting2 ip link set lo up
+    lxc exec u1 -- ip netns exec vlan_nesting2 ip address add 10.10.11.3/24 dev eth0.2
+    lxc exec u1 -- ip netns exec vlan_nesting2 ip address add fd42:4242:4242:1011::3/64 dev eth0.2 nodad
+    lxc exec u1 -- ip netns exec vlan_nesting2 ip link set eth0.2 up
+
+    sleep 5
+    lxc ls
+    lxc exec u1 -- ip netns exec vlan_nesting1 ip address
+    lxc exec u1 -- ip netns exec vlan_nesting2 ip address
+
+    # Check nested VLAN NICs are pingable from parent instance.
+    lxc exec u1 -- ping -c1 -4 -W5 10.10.11.2
+    lxc exec u1 -- ping -c1 -6 -W5 fd42:4242:4242:1011::2
+    lxc exec u1 -- ping -c1 -4 -W5 10.10.11.3
+    lxc exec u1 -- ping -c1 -6 -W5 fd42:4242:4242:1011::3
+
+    # Check nested VLAN 2 NIC is pingable from VLAN 1 namespace.
+    lxc exec u1 -- ip netns exec vlan_nesting1 ping -c1 -4 -W5 10.10.11.3
+    lxc exec u1 -- ip netns exec vlan_nesting1 ping -c1 -6 -W5 fd42:4242:4242:1011::3
+
+    # Check nested VLAN NICs are pingable from a different instance on the same network.
+    lxc exec u2 -- ping -c1 -4 -W5 10.10.11.2
+    lxc exec u2 -- ping -c1 -6 -W5 fd42:4242:4242:1011::2
+    lxc exec u2 -- ping -c1 -4 -W5 10.10.11.3
+    lxc exec u2 -- ping -c1 -6 -W5 fd42:4242:4242:1011::3
+
+    lxc delete -f u1 u2
+    lxc network delete ovn1
+    lxc network delete lxdbr0
+}
+
 # Allow for running a specific set of tests.
 if [ "$#" -gt 0 ]; then
   TEST_CURRENT="ovn_${1}_tests"
@@ -1411,6 +1497,7 @@ else
     ovn_load_balancer_tests
     ovn_peering_tests
     ovn_dhcp_reservation_tests
+    ovn_nested_vlan_tests
 fi
 
 lxc storage delete default
