@@ -1402,6 +1402,90 @@ ovn_dhcp_reservation_tests() {
     lxc network delete lxdbr0
 }
 
+ovn_nested_vlan_tests() {
+    lxc network create lxdbr0 \
+        ipv4.address=10.10.10.1/24 ipv4.nat=true \
+        ipv4.dhcp.ranges=10.10.10.2-10.10.10.199 \
+        ipv4.ovn.ranges=10.10.10.200-10.10.10.254 \
+        ipv6.address=fd42:4242:4242:1010::1/64 ipv6.nat=true \
+        ipv6.ovn.ranges=fd42:4242:4242:1010::200-fd42:4242:4242:1010::254
+
+    # Create OVN network.
+    lxc network create ovn1 --type=ovn \
+        network=lxdbr0 \
+        ipv4.address=10.10.11.1/24 ipv4.nat=true \
+        ipv6.address=fd42:4242:4242:1011::1/64 ipv6.nat=true \
+        ipv6.dhcp.stateful=true
+
+    sleep 2
+    lxc network list | grep ovn1
+    lxc launch "${instanceImage}" u1 -s default -n ovn1 -c security.nesting=true
+
+    # Add nested NICs to u1.
+    lxc config device add u1 eth1 nic \
+        network=ovn1 \
+        nested=eth0 \
+        vlan=1 \
+        ipv4.address=10.10.11.2 \
+        ipv6.address=fd42:4242:4242:1011::2
+
+    eth1MAC="$(lxc config get u1 volatile.eth1.hwaddr)"
+
+    lxc config device add u1 eth2 nic \
+        network=ovn1 \
+        nested=eth0 \
+        vlan=2 \
+        ipv4.address=10.10.11.3 \
+        ipv6.address=fd42:4242:4242:1011::3
+
+    eth2MAC="$(lxc config get u1 volatile.eth2.hwaddr)"
+
+    lxc launch "${instanceImage}" u2 -s default -n ovn1
+
+    # Configure nested VLAN 1 inside u1 in a network namespace.
+    lxc exec u1 -- ip link add link eth0 name eth0.1 address "${eth1MAC}" type vlan id 1
+    lxc exec u1 -- ip netns add vlan_nesting1
+    lxc exec u1 -- ip link set eth0.1 netns vlan_nesting1
+    lxc exec u1 -- ip netns exec vlan_nesting1 ip link set lo up
+    lxc exec u1 -- ip netns exec vlan_nesting1 ip address add 10.10.11.2/24 dev eth0.1
+    lxc exec u1 -- ip netns exec vlan_nesting1 ip address add fd42:4242:4242:1011::2/64 dev eth0.1 nodad
+    lxc exec u1 -- ip netns exec vlan_nesting1 ip link set eth0.1 up
+
+    # Configure nested VLAN 2 inside u1 in a network namespace.
+    lxc exec u1 -- ip link add link eth0 name eth0.2 address "${eth2MAC}" type vlan id 2
+    lxc exec u1 -- ip netns add vlan_nesting2
+    lxc exec u1 -- ip link set eth0.2 netns vlan_nesting2
+    lxc exec u1 -- ip netns exec vlan_nesting2 ip link set lo up
+    lxc exec u1 -- ip netns exec vlan_nesting2 ip address add 10.10.11.3/24 dev eth0.2
+    lxc exec u1 -- ip netns exec vlan_nesting2 ip address add fd42:4242:4242:1011::3/64 dev eth0.2 nodad
+    lxc exec u1 -- ip netns exec vlan_nesting2 ip link set eth0.2 up
+
+    sleep 5
+    lxc ls
+    lxc exec u1 -- ip netns exec vlan_nesting1 ip address
+    lxc exec u1 -- ip netns exec vlan_nesting2 ip address
+
+    # Check nested VLAN NICs are pingable from parent instance.
+    lxc exec u1 -- ping -c1 -4 -W5 10.10.11.2
+    lxc exec u1 -- ping -c1 -6 -W5 fd42:4242:4242:1011::2
+    lxc exec u1 -- ping -c1 -4 -W5 10.10.11.3
+    lxc exec u1 -- ping -c1 -6 -W5 fd42:4242:4242:1011::3
+
+    # Check nested VLAN 2 NIC is pingable from VLAN 1 namespace.
+    lxc exec u1 -- ip netns exec vlan_nesting1 ping -c1 -4 -W5 10.10.11.3
+    lxc exec u1 -- ip netns exec vlan_nesting1 ping -c1 -6 -W5 fd42:4242:4242:1011::3
+
+    # Check nested VLAN NICs are pingable from a different instance on the same network.
+    lxc exec u2 -- ping -c1 -4 -W5 10.10.11.2
+    lxc exec u2 -- ping -c1 -6 -W5 fd42:4242:4242:1011::2
+    lxc exec u2 -- ping -c1 -4 -W5 10.10.11.3
+    lxc exec u2 -- ping -c1 -6 -W5 fd42:4242:4242:1011::3
+
+    lxc delete -f u1 u2
+    lxc network delete ovn1
+    lxc network delete lxdbr0
+}
+
 # Allow for running a specific set of tests.
 if [ "$#" -gt 0 ]; then
   TEST_CURRENT="ovn_${1}_tests"
@@ -1413,6 +1497,7 @@ else
     ovn_load_balancer_tests
     ovn_peering_tests
     ovn_dhcp_reservation_tests
+    ovn_nested_vlan_tests
 fi
 
 lxc storage delete default
