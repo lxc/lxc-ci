@@ -3,7 +3,7 @@ image:
 
 source:
   downloader: almalinux-http
-  url: https://almalinux-mirror.keepsec.ca/
+  url: https://mirror.csclub.uwaterloo.ca/almalinux
   keys:
   # RPM-GPG-KEY-AlmaLinux-8
   - |-
