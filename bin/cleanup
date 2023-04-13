@@ -14,6 +14,8 @@ if [ "${1:-}" = "force" ]; then
         for i in $(ls /var/snap/lxd/common/lxd/storage-pools/default/containers | grep -v cache-); do rm -Rf "/var/snap/lxd/common/lxd/storage-pools/default/containers/$i"; done
         for i in $(ls /var/snap/lxd/common/lxd/containers/ | grep -v cache-); do rm -Rf "/var/snap/lxd/common/lxd/containers/$i"; done
 
+        lxc storage volume list default -cnt -fcsv | grep container$ | cut -d, -f1 | while read line; do lxc info $line >/dev/null 2>&1 || echo $line; done | while read line; do lxd sql global "DELETE FROM storage_volumes WHERE type=0 AND name='$line'"; rm -Rf /var/snap/lxd/common/lxd/containers/$line; rm -Rf /var/snap/lxd/common/lxd/storage-pools/default/containers/$line; done
+
         systemctl reload snap.lxd.daemon
     fi
 fi
