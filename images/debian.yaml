@@ -867,6 +867,65 @@ files:
 - path: /var/lib/dbus/machine-id
   generator: remove
 
+- path: /etc/network/interfaces
+  generator: dump
+  content: |-
+    # This file describes the network interfaces available on your system
+    # and how to activate them. For more information, see interfaces(5).
+
+    # The loopback network interface
+    auto lo
+    iface lo inet loopback
+
+    auto eth0
+    iface eth0 inet dhcp
+
+    source /etc/network/interfaces.d/*
+  types:
+  - container
+  variants:
+  - default
+  releases:
+  - buster
+
+- path: /etc/network/interfaces
+  generator: dump
+  content: |-
+    # This file describes the network interfaces available on your system
+    # and how to activate them. For more information, see interfaces(5).
+
+    # The loopback network interface
+    auto lo
+    iface lo inet loopback
+
+    auto enp5s0
+    iface enp5s0 inet dhcp
+
+    source /etc/network/interfaces.d/*
+  types:
+  - vm
+  releases:
+  - buster
+
+- path: /etc/network/interfaces
+  generator: dump
+  content: |-
+    # This file describes the network interfaces available on your system
+    # and how to activate them. For more information, see interfaces(5).
+
+    # The loopback network interface
+    auto lo
+    iface lo inet loopback
+
+    source /etc/network/interfaces.d/*
+  types:
+  - container
+  - vm
+  variants:
+  - cloud
+  releases:
+  - buster
+
 - path: /etc/systemd/network/eth0.network
   generator: dump
   content: |-
@@ -975,6 +1034,12 @@ packages:
     action: install
 
   - packages:
+    - ifupdown
+    action: install
+    releases:
+    - buster
+
+  - packages:
     - udev
     action: install
     releases:
@@ -1004,6 +1069,7 @@ packages:
     variants:
     - cloud
     releases:
+    - buster
     - bullseye
 
   - packages:
@@ -1031,6 +1097,7 @@ packages:
     architectures:
     - amd64
     releases:
+    - buster
     - bullseye
     - sid
     - bookworm
@@ -1050,6 +1117,7 @@ packages:
     types:
     - vm
     releases:
+    - buster
     - bullseye
     - sid
     - bookworm
@@ -1059,7 +1127,8 @@ packages:
     url: |-
       deb http://deb.debian.org/debian {{ image.release }} main
       {% if image.release != "sid" %}deb http://deb.debian.org/debian {{ image.release }}-updates main{% endif %}
-      {% if image.release != "sid" %}deb http://deb.debian.org/debian-security/ {{ image.release }}-security main{% endif %}
+      {% if image.release != "sid" and image.release != "buster" %}deb http://deb.debian.org/debian-security/ {{ image.release }}-security main{% endif %}
+      {% if image.release == "buster" %}deb http://deb.debian.org/debian-security/ {{ image.release }}/updates main{% endif %}
     architectures:
     - amd64
     - arm64
@@ -1087,6 +1156,18 @@ actions:
 
   variants:
   - cloud
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Disable networkd (unused)
+    systemctl mask systemd-networkd.service
+    systemctl mask systemd-networkd.socket
+    systemctl mask systemd-networkd-wait-online.service
+  releases:
+  - buster
 
 - trigger: post-packages
   action: |-
@@ -1247,6 +1328,7 @@ actions:
   types:
   - vm
   releases:
+  - buster
   - bullseye
   - sid
   - bookworm
