@@ -1486,6 +1486,370 @@ ovn_nested_vlan_tests() {
     lxc network delete lxdbr0
 }
 
+ovn_acl_tests() {
+    # Create uplink network with a special DNS record lxdbr0.test pointing to the bridge addresses.
+    lxc network create lxdbr0 \
+        ipv4.address=10.10.10.1/24 ipv4.nat=true \
+        ipv4.dhcp.ranges=10.10.10.2-10.10.10.199 \
+        ipv4.ovn.ranges=10.10.10.200-10.10.10.254 \
+        ipv6.address=fd42:4242:4242:1010::1/64 ipv6.nat=true \
+        ipv6.ovn.ranges=fd42:4242:4242:1010::200-fd42:4242:4242:1010::254 \
+        raw.dnsmasq='host-record=lxdbr0.test,10.10.10.1,fd42:4242:4242:1010::1'
+
+    # Create an ACL that allows ICMPv4 and ICMPv6 ping to lxdbr0 IP.
+    lxc network acl create lxdbr0-ping
+    lxc network acl rule add lxdbr0-ping egress action=allow protocol=icmp4 destination=10.10.10.1/32
+    lxc network acl rule add lxdbr0-ping egress action=allow protocol=icmp6 destination=fd42:4242:4242:1010::1/128
+
+    # Don't expect any OVN port groups to be created yet.
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 0
+
+    # Create OVN network with ACL, but without specifying uplink parent network (check default selection works).
+    lxc network create ovn0 --type=ovn \
+        ipv4.address=10.10.11.1/24 ipv4.nat=true \
+        ipv6.address=fd42:4242:4242:1011::1/64 ipv6.nat=true \
+        security.acls=lxdbr0-ping
+
+    ! lxc network acl delete lxdbr0-ping || false # Can't delete ACL while in use.
+
+    # Expect 3 LXD related port groups to exist (network port group, ACL port group, and per-ACL-per-network port group).
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 3
+
+    # Delete network to clean up OVN ACL port group.
+    lxc network delete ovn0
+
+    # Expect the unused OVN port groups to be cleaned up.
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 0
+
+    # Re-create network with no ACLS.
+    lxc network create ovn0 --type=ovn \
+        ipv4.address=10.10.11.1/24 ipv4.nat=true \
+        ipv6.address=fd42:4242:4242:1011::1/64 ipv6.nat=true
+
+    # Expect 1 port group (the network port group) to exist.
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 1
+
+    # Assign ACL to OVN network.
+    lxc network set ovn0 security.acls=lxdbr0-ping
+
+    # Expect 3 LXD related port groups to exist now its assigned (network port group, ACL port group, and per-ACL-per-network port group).
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 3
+
+    # Launch containers and check baseline services (DHCP, SLAAC, DNS) and lxdbr0-ping ACL.
+    lxc launch "${instanceImage}" c1 -n ovn0 -s default
+    lxc launch "${instanceImage}" c2 -n ovn0 -s default
+
+    echo "==> Wait for addresses"
+    sleep 10
+    lxc list
+
+    # Check per-NIC ACL rules added.
+    ovn-nbctl list acl | grep -c 'match.*instance.*eth0' | grep 4
+
+    # Test ping to OVN router (baseline rules).
+    lxc exec c1 -- ping -c1 -w5 -4 10.10.11.1
+    lxc exec c1 -- ping -c1 -w5 -6 fd42:4242:4242:1011::1
+
+    # Test ping to lxdbr0 IPs via DNS (baseline rules for DNS) and lxdbr0-ping ACL tests.
+    lxc exec c1 -- ping -c1 -w5 -4 lxdbr0.test
+    lxc exec c1 -- ping -c1 -w5 -6 lxdbr0.test
+
+    # Add additional IPs to lxdbr0.
+    ip a add 10.10.11.3/32 dev lxdbr0
+    ip a add fd42:4242:4242:1010::2/128 dev lxdbr0 nodad
+    ping -c1 -w5 -4 10.10.11.3
+    ping -c1 -w5 -6 fd42:4242:4242:1010::2
+
+    # Ping to additional IPs should be blocked.
+    ! lxc exec c1 -- ping -c1 -w5 -4 10.10.11.3 || false
+    ! lxc exec c1 -- ping -c1 -w5 -6 fd42:4242:4242:1010::2 || false
+
+    # Ping to other instance should be blocked.
+    ! lxc exec c1 -- ping -c1 -w5 -4 c2.lxd || false
+    ! lxc exec c1 -- ping -c1 -w5 -6 c2.lxd || false
+
+    # Check default rule action is reject (disable acl, install dig in c1, then re-enable acl).
+    lxc network unset ovn0 security.acls
+    lxc exec c1 -- apt-get install --no-install-recommends --yes dnsutils
+    lxc network set ovn0 security.acls=lxdbr0-ping
+    lxc exec c1 -- dig @10.10.11.3 +tcp +timeout=1 lxdbr0.test | grep "refused"
+    lxc exec c1 -- dig @fd42:4242:4242:1010::2 +tcp +timeout=1 lxdbr0.test | grep "refused"
+    lxc exec c1 -- ping -c1 -w5 -4 10.10.11.3 | grep "Host Unreachable"
+    lxc exec c1 -- ping -c1 -w5 -6 fd42:4242:4242:1010::2 | grep "Administratively prohibited"
+
+    # Check setting default rule action to drop takes effect.
+    lxc network set ovn0 security.acls.default.egress.action=drop
+    lxc exec c1 -- dig @10.10.11.3 +tcp +timeout=1 lxdbr0.test | grep "timed out"
+    lxc exec c1 -- dig @fd42:4242:4242:1010::2 +tcp +timeout=1 lxdbr0.test | grep "timed out"
+    ! lxc exec c1 -- ping -c1 -w5 -4 10.10.11.3 || false
+    ! lxc exec c1 -- ping -c1 -w5 -6 fd42:4242:4242:1010::2 || false
+
+    # Check setting default rule action to reject takes effect. Same as if unspecified.
+    lxc network set ovn0 security.acls.default.egress.action=reject
+    lxc exec c1 -- dig @10.10.11.3 +tcp +timeout=1 -p 5053 lxdbr0.test | grep "refused"
+    lxc exec c1 -- dig @fd42:4242:4242:1010::2 +tcp +timeout=1 -p 5053 lxdbr0.test | grep "refused"
+    lxc exec c1 -- ping -c1 -w5 -4 c2.lxd | grep "Host Unreachable"
+    lxc exec c1 -- ping -c1 -w5 -6 c2.lxd| grep "Administratively prohibited"
+
+    # Test assigning same ACL to NIC directly and unassigning from network.
+    lxc config device set c1 eth0 security.acls=lxdbr0-ping
+    lxc network unset ovn0 security.acls
+
+    # Check ACL port groups still exists.
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 3
+
+    # Check only c1 has per-NIC ACL rules.
+    ovn-nbctl list acl | grep -c 'match.*instance.*eth0' | grep 2
+    lxc config device unset c1 eth0 security.acls
+
+    # Check removing ACLs removes default per-NIC ACL rules.
+    ovn-nbctl list acl | grep -c 'match.*instance.*eth0' | grep 0
+
+    # Check assigning first ACL to a network adds per-NIC ACL rules to c1 and c2.
+    lxc network set ovn0 security.acls=lxdbr0-ping
+    ovn-nbctl list acl | grep -c 'match.*instance.*eth0' | grep 4
+    lxc network set ovn0 security.acls.default.ingress.logged=true
+    ovn-nbctl list acl | grep -c 'name.*eth0-ingress' | grep 2
+    lxc network set ovn0 security.acls.default.egress.logged=true
+    ovn-nbctl list acl | grep -c 'name.*eth0-egress' | grep 2
+    lxc network unset ovn0 security.acls
+    ovn-nbctl list acl | grep -c 'match.*instance.*eth0' | grep 0
+    ovn-nbctl list acl | grep -c 'name.*eth0-ingress' | grep 0
+    ovn-nbctl list acl | grep -c 'name.*eth0-egress' | grep 0
+    lxc config device set c1 eth0 security.acls=lxdbr0-ping
+    ovn-nbctl list acl | grep -c 'match.*instance.*eth0' | grep 2
+    ovn-nbctl list acl | grep -c 'name.*eth0-ingress' | grep 1
+    ovn-nbctl list acl | grep -c 'name.*eth0-egress' | grep 1
+    lxc network set ovn0 security.acls.default.ingress.logged=false
+    lxc network set ovn0 security.acls.default.egress.logged=false
+    ovn-nbctl list acl | grep -c 'match.*instance.*eth0' | grep 2
+    ovn-nbctl list acl | grep -c 'name.*eth0-ingress' | grep 0
+    ovn-nbctl list acl | grep -c 'name.*eth0-egress' | grep 0
+    lxc config device set c1 eth0 security.acls.default.ingress.logged=true
+    lxc config device set c1 eth0 security.acls.default.egress.logged=true
+    ovn-nbctl list acl | grep -c 'name.*eth0-ingress' | grep 1
+    ovn-nbctl list acl | grep -c 'name.*eth0-egress' | grep 1
+    lxc network unset ovn0 security.acls.default.ingress.logged
+    lxc network unset ovn0 security.acls.default.egress.logged
+    ovn-nbctl list acl | grep -c 'name.*eth0-ingress' | grep 1
+    ovn-nbctl list acl | grep -c 'name.*eth0-egress' | grep 1
+    lxc config device unset c1 eth0 security.acls.default.ingress.logged
+    lxc config device unset c1 eth0 security.acls.default.egress.logged
+    ovn-nbctl list acl | grep -c 'name.*eth0-ingress' | grep 0
+    ovn-nbctl list acl | grep -c 'name.*eth0-egress' | grep 0
+
+    # Test c1's default ingress rule defaults to reject by querying from c2 (which now has no ACLs applied).
+    lxc exec c2 -- apt-get install --no-install-recommends --yes dnsutils
+    lxc exec c2 -- dig @c1.lxd -4 +tcp +timeout=1 -p 5053 lxdbr0.test | grep "refused"
+    lxc exec c2 -- dig @c1.lxd -6 +tcp +timeout=1 -p 5053 lxdbr0.test | grep "refused"
+    lxc exec c2 -- ping -c1 -w5 -4 c1.lxd | grep "Host Unreachable"
+    lxc exec c2 -- ping -c1 -w5 -6 c1.lxd | grep "Administratively prohibited"
+
+    # Test c1's default ingress rule drop by querying from c2 (which now has no ACLs applied).
+    lxc config device set c1 eth0 security.acls.default.ingress.action=drop
+    lxc exec c2 -- dig @c1.lxd -4 +tcp +timeout=1 -p 5053 lxdbr0.test | grep "timed out"
+    lxc exec c2 -- dig @c1.lxd -6 +tcp +timeout=1 -p 5053 lxdbr0.test | grep "timed out"
+    ! lxc exec c2 -- ping -c1 -w5 -4 c1.lxd || false
+    ! lxc exec c2 -- ping -c1 -w5 -6 c1.lxd || false
+
+    # Test unassigning ACL from NIC and check OVN port group is cleaned up.
+    lxc config device unset c1 eth0 security.acls
+
+    # Expect the unused OVN port group to be cleaned up after unassignment from NIC (leaving just network port group).
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 1
+
+    # Test assigning ACL to stopped instance NIC and check OVN port group isn't created until start time.
+    lxc stop -f c1
+    lxc config device set c1 eth0 security.acls=lxdbr0-ping
+
+    # Don't expect any more OVN port groups to be created yet (just network port group).
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 1
+
+    lxc start c1
+
+    # Expect 3 LXD related port group to exist now its started (network port group, ACL port group, and per-ACL-per-network port group).
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 3
+
+    # Test delete instance and check unused OVN port group is cleaned up.
+    lxc delete -f c1
+
+    # Expect the unused OVN port groups to be cleaned up (leaving just network port group)..
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 1
+
+    # Create container with network assigned ACL and NIC specific ACL too. Check both sets of rules are applied.
+    lxc network set ovn0 ipv6.dhcp.stateful=true security.acls=lxdbr0-ping
+
+    # Expect 3 LXD related port group to exist now its assigned (network port group, ACL port group, and per-ACL-per-network port group).
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 3
+
+    lxc init "${instanceImage}" c1 -s default -n ovn0
+    lxc config device set c1 eth0 ipv4.address=10.10.11.2 ipv6.address=fd42:4242:4242:1011::2
+    lxc start c1
+
+    echo "==> Wait for addresses"
+    sleep 10
+    lxc list
+
+    # Ping to c1 instance from c2 should be blocked.
+    lxc exec c2 -- resolvectl flush-caches # c1 has changed its address since last test.
+    ! lxc exec c2 -- ping -c1 -w5 -4 c1.lxd || false
+    ! lxc exec c2 -- ping -c1 -w5 -6 c1.lxd || false
+
+    # Create new ACL to allow ingress ping, assign to NIC and test pinging static assigned IPs.
+    lxc network acl create ingress-ping
+    lxc network acl rule add ingress-ping ingress action=allow protocol=icmp4
+    lxc network acl rule add ingress-ping ingress action=allow protocol=icmp6
+
+    # Expect 3 LXD related port group to exist as new ACL not assigned to anything yet.
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 3
+
+    lxc config device set c1 eth0 security.acls=ingress-ping
+
+    # Expect 5 LXD related port group to exist now new ACL is assigned (will add new ACL port group and new per-ACL-per-network port group).
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 5
+
+    lxc exec c2 -- ping -c1 -w5 -4 10.10.11.2
+    lxc exec c2 -- ping -c1 -w5 -6 fd42:4242:4242:1011::2
+
+    # Test IP range rule.
+    lxc network acl rule remove ingress-ping ingress action=allow protocol=icmp4
+    ! lxc exec c2 -- ping -c1 -w5 -4 10.10.11.2 || false
+    lxc network acl rule add ingress-ping ingress action=allow protocol=icmp4 destination=10.10.10.1-10.10.11.2
+    lxc exec c2 -- ping -c1 -w5 -4 10.10.11.2
+    lxc network acl rule remove ingress-ping ingress action=allow protocol=icmp4 destination=10.10.10.1-10.10.11.2
+    lxc network acl rule add ingress-ping ingress action=allow protocol=icmp4 destination=10.10.10.1-10.10.11.1
+    ! lxc exec c2 -- ping -c1 -w5 -4 10.10.11.2 || false
+
+    # Test ACL rule referencing our own ACL name as source in rule.
+    lxc network acl rule remove ingress-ping ingress action=allow protocol=icmp4 destination=10.10.10.1-10.10.11.1
+    lxc network acl rule add ingress-ping ingress action=allow protocol=icmp4 source=ingress-ping
+    lxc network acl rule remove ingress-ping ingress action=allow protocol=icmp6
+    lxc network acl rule add ingress-ping ingress action=allow protocol=icmp6 source=ingress-ping
+
+    ! lxc exec c2 -- ping -c1 -w5 -4 c1.lxd || false # Expect to fail as c2 isn't part of ingress-ping ACL group yet.
+    ! lxc exec c2 -- ping -c1 -w5 -6 c1.lxd || false # Expect to fail as c2 isn't part of ingress-ping ACL group yet.
+
+    lxc config device set c2 eth0 security.acls=ingress-ping # Add c2 to ACL group.
+    lxc exec c2 -- ping -c1 -w5 -4 c1.lxd
+    lxc exec c2 -- ping -c1 -w5 -6 c1.lxd
+    lxc exec c1 -- ping -c1 -w5 -4 c2.lxd
+    lxc exec c1 -- ping -c1 -w5 -6 c2.lxd
+
+    # Create empty ACL group and then update existing rule to reference that as source to check ping stops working.
+    lxc network acl create test-empty-group
+    lxc network acl rule remove ingress-ping ingress action=allow protocol=icmp4 source=ingress-ping
+    lxc network acl rule remove ingress-ping ingress action=allow protocol=icmp6 source=ingress-ping
+
+    # Expect 5 LXD related port groups to exist as new one not assigned.
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 5
+
+    lxc network acl rule add ingress-ping ingress action=allow protocol=icmp4 source=test-empty-group
+    lxc network acl rule add ingress-ping ingress action=allow protocol=icmp6 source=test-empty-group
+
+    # Expect 6 LXD related port groups to exist as new one now used by ACL that is assigned.
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 6
+
+    ! lxc exec c2 -- ping -c1 -w5 -4 c1.lxd || false
+    ! lxc exec c2 -- ping -c1 -w5 -6 c1.lxd || false
+    ! lxc exec c1 -- ping -c1 -w5 -4 c2.lxd || false
+    ! lxc exec c1 -- ping -c1 -w5 -6 c2.lxd || false
+
+    # Clean up existing ACLs.
+    lxc network unset ovn0 security.acls
+    lxc network acl delete lxdbr0-ping
+    lxc config device unset c1 eth0 security.acls
+    lxc config device unset c2 eth0 security.acls
+    lxc network acl delete ingress-ping
+    lxc network acl delete test-empty-group
+
+    # Check only network level port group exists.
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 1
+
+    # Test using external and internal reserved classifiers.
+    lxc network acl create icmp
+    lxc network set ovn0 security.acls=icmp
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 3
+
+    # Test can't ping external uplink router IP or internal IPs.
+    ! lxc exec c1 -- ping -c1 -w5 -4 10.10.10.1 || false
+    ! lxc exec c1 -- ping -c1 -w5 -4 c2.lxd || false
+
+    # Allow external pings and test works and that internal ping still blocked (using deprecated subject).
+    lxc network acl rule add icmp egress destination='#external' action=allow protocol=icmp4
+    lxc exec c1 -- ping -c1 -w5 -4 10.10.10.1
+    ! lxc exec c1 -- ping -c1 -w5 -4 c2.lxd || false
+    lxc network acl rule remove icmp egress destination='#external' action=allow protocol=icmp4
+
+    # Allow external pings and test works and that internal ping still blocked (using current subject).
+    lxc network acl rule add icmp egress destination='@external' action=allow protocol=icmp4
+    lxc exec c1 -- ping -c1 -w5 -4 10.10.10.1
+    ! lxc exec c1 -- ping -c1 -w5 -4 c2.lxd || false
+
+    # Allow egress internal pings and test works (using deprecated subject).
+    lxc network acl rule add icmp egress destination='#internal' action=allow protocol=icmp4
+    lxc exec c1 -- ping -c1 -w5 -4 c2.lxd
+    lxc network acl rule remove icmp egress destination='#internal' action=allow protocol=icmp4
+
+    # Allow egress internal pings and test works (using current subject).
+    lxc network acl rule add icmp egress destination='@internal' action=allow protocol=icmp4
+    lxc exec c1 -- ping -c1 -w5 -4 c2.lxd
+
+    lxc network acl rule remove icmp egress destination='@internal' action=allow protocol=icmp4
+    ! lxc exec c1 -- ping -c1 -w5 -4 c2.lxd || false
+
+    # Allow ingress internal pings and test works.
+    lxc network acl rule add icmp ingress source='@internal' action=allow protocol=icmp4
+    lxc exec c1 -- ping -c1 -w5 -4 c2.lxd
+
+    # Create new network with ingress ACL and check network port grpup and per-ACL-per-network are created.
+    lxc network create ovn1 --type=ovn \
+        network=lxdbr0 \
+        ipv4.address=10.10.12.1/24 ipv4.nat=true \
+        ipv6.address=fd42:4242:4242:1012::1/64 ipv6.nat=true \
+        security.acls=icmp
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 5
+
+    # Check per-ACL-per-network is removed when unassigning ACL.
+    lxc network unset ovn1 security.acls
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 4
+
+    # Connect c2 to ovn1 with icmp ACL and check its created.
+    lxc stop -f c2
+    lxc config device set c2 eth0 network=ovn1 security.acls=icmp
+    lxc start c2
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 5
+
+    # Connect c1 to ovn1 without any explicit ACLs.
+    lxc stop -f c1
+    lxc config device set c1 eth0 network=ovn1 ipv4.address= ipv6.address=
+    lxc start c1
+
+    echo "==> Wait for addresses"
+    sleep 10
+    lxc list
+
+    # Check c2 can ping external.
+    lxc exec c2 -- ping -w5 -c1 -4 10.10.10.1
+
+    # Check c1 can ping c2 even though its not part of the ACL (should be classified as internal anyway).
+    lxc exec c1 -- ping -w5 -c1 -4 c2.lxd
+
+    # Cleanup.
+    lxc delete -f c1
+    lxc delete -f c2
+    lxc network delete ovn0 --project default
+    lxc network delete ovn1 --project default
+
+    # Expect all OVN port groups to be cleaned up.
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c lxd | grep 0
+
+    # Expect all OVN ACLs to be cleaned up.
+    ovn-nbctl list acl | wc -l | grep 0
+
+    lxc network delete lxdbr0 --project default
+    lxc network acl delete icmp --project default
+}
+
 # Allow for running a specific set of tests.
 if [ "$#" -gt 0 ]; then
   TEST_CURRENT="ovn_${1}_tests"
@@ -1498,6 +1862,7 @@ else
     ovn_peering_tests
     ovn_dhcp_reservation_tests
     ovn_nested_vlan_tests
+    ovn_acl_tests
 fi
 
 lxc storage delete default
