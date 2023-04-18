@@ -61,7 +61,8 @@
 
     execution-strategy:
       combination-filter: '
-      !(variant=="cloud" && architecture == "s390x")'
+      !(variant=="cloud" && architecture == "s390x") &&
+      !(release=="edge" && architecture == "i386")'
 
     properties:
     - build-discarder:
