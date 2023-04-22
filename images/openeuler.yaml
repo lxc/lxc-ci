@@ -3,7 +3,8 @@ image:
   description: |-
     openEuler {{ image.release }}
 source:
-  downloader: docker-http
+  downloader: openeuler-http
+  url: https://mirrors.aliyun.com/openeuler/
 targets:
   lxc:
     create_message: |
