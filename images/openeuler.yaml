@@ -307,7 +307,7 @@ packages:
     types:
     - vm
     architectures:
-    - aaarch64
+    - aarch64
 
 actions:
 - trigger: post-unpack
@@ -317,6 +317,7 @@ actions:
 
     # Rebuild rpm database as the failing builds suggest it's broken.
     rpmdb --rebuilddb
+    sed -i 's|repo.openeuler.org|mirrors.aliyun.com/openeuler|g' /etc/yum.repos.d/openEuler.repo
 
 - trigger: post-unpack
   action: |-
