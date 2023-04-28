@@ -21,7 +21,6 @@
         name: release
         type: user-defined
         values:
-        - ascii
         - beowulf
         - chimaera
 
