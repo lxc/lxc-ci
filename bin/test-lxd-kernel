@@ -29,7 +29,7 @@ snap install go --classic
 apt-add-repository ppa:ubuntu-lxc/daily --yes
 apt-get dist-upgrade --yes
 
-apt-get install --no-install-recommends --yes libudev-dev liblxc-dev liblz4-dev libacl1-dev libuv1-dev libselinux-dev libseccomp-dev tcl libsqlite3-dev libcap-dev dh-autoreconf build-essential acl attr easy-rsa ebtables jq pkg-config socat sqlite3 dnsmasq-base dnsutils nftables gettext
+apt-get install --no-install-recommends --yes libudev-dev liblxc-dev liblz4-dev libacl1-dev libuv1-dev libselinux-dev libseccomp-dev tcl libsqlite3-dev libcap-dev libdbus-1-dev dh-autoreconf build-essential acl attr easy-rsa ebtables jq pkg-config socat sqlite3 dnsmasq-base dnsutils nftables gettext
 apt-get remove --purge --yes uidmap cloud-init
 rm -f /etc/subuid* /etc/subgid*
 snap remove lxd
