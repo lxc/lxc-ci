@@ -27,6 +27,7 @@
         - jammy
         - kinetic
         - lunar
+        - mantic
 
     - axis:
         name: variant
@@ -66,7 +67,8 @@
       !(architecture=="i386" && release == "focal") &&
       !(architecture=="i386" && release == "jammy") &&
       !(architecture=="i386" && release == "kinetic") &&
-      !(architecture=="i386" && release == "lunar")'
+      !(architecture=="i386" && release == "lunar") &&
+      !(architecture=="i386" && release == "mantic")'
 
     properties:
     - build-discarder:

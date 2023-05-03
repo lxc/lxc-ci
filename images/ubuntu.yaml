@@ -344,6 +344,7 @@ files:
   - jammy
   - kinetic
   - lunar
+  - mantic
   types:
   - container
   variants:
@@ -383,6 +384,7 @@ files:
   - jammy
   - kinetic
   - lunar
+  - mantic
   types:
   - vm
   variants:
@@ -503,6 +505,7 @@ packages:
     - jammy
     - kinetic
     - lunar
+  - mantic
     action: install
 
   - packages:
@@ -532,6 +535,7 @@ packages:
     - jammy
     - kinetic
     - lunar
+    - mantic
 
   - packages:
     - cloud-init
@@ -545,6 +549,7 @@ packages:
     releases:
     - kinetic
     - lunar
+    - mantic
 
   - packages:
     - acpid
@@ -584,6 +589,7 @@ packages:
     - jammy
     - kinetic
     - lunar
+    - mantic
     types:
     - vm
 
@@ -604,6 +610,7 @@ packages:
     - jammy
     - kinetic
     - lunar
+    - mantic
     types:
     - vm
 
@@ -675,6 +682,7 @@ actions:
   - jammy
   - kinetic
   - lunar
+  - mantic
 
 - trigger: post-packages
   action: |-
@@ -686,6 +694,7 @@ actions:
   releases:
   - kinetic
   - lunar
+  - mantic
 
 - trigger: post-packages
   action: |-
