@@ -505,7 +505,7 @@ packages:
     - jammy
     - kinetic
     - lunar
-  - mantic
+    - mantic
     action: install
 
   - packages:
