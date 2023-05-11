@@ -309,22 +309,8 @@ packages:
   - packages:
     - alpine-base
     - logrotate
-    action: install
-
-  - packages:
-    - sudo
-    action: install
-    releases:
-    - 3.14
-
-  - packages:
     - doas
     action: install
-    releases:
-    - 3.15
-    - 3.16
-    - 3.17
-    - edge
 
   - packages:
     - cloud-init
