@@ -273,10 +273,10 @@ do
         lxc storage volume delete "${poolName}" vol1
 
         lxc config device add v1 block1 disk source="/tmp/lxd-test-${poolName}/lxd-test-block" readonly=true
-        sleep 3
+        sleep 5
         [ "$(lxc exec v1 -- cat /sys/block/sdb/ro)" -eq 1 ]
         lxc config device set v1 block1 readonly=false
-        sleep 3
+        sleep 5
         [ "$(lxc exec v1 -- cat /sys/block/sdb/ro)" -eq 0 ]
 
         # Hotplugging directories is not allowed and will fail
