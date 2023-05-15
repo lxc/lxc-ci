@@ -603,6 +603,7 @@ packages:
 
   - packages:
     - kernel-plus
+    - irqbalance
     action: install
     types:
     - vm
