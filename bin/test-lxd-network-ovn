@@ -84,7 +84,6 @@ ovn_basic_tests() {
 
     echo "==> Launching a test container on lxdbr0"
     lxc init "${instanceImage}" u1 -s default
-    FINGERPRINT="$(lxc image ls -cf --format=csv)"
     lxc config device add u1 eth0 nic network=lxdbr0 name=eth0
     lxc start u1
 
@@ -165,7 +164,7 @@ ovn_basic_tests() {
     [ "${U3_IPV4_OLD}" = "${U3_IPV4}" ]
 
     echo "===> Testing project restrictions"
-    lxc project create testovn -c features.networks=true -c restricted=true
+    lxc project create testovn -c features.networks=true -c features.images=false -c restricted=true
     lxc profile device add default root disk path=/ pool=default --project testovn
 
     # Test we cannot create network in restricted project with no defined uplinks.
@@ -400,14 +399,13 @@ ovn_basic_tests() {
     ovn-nbctl --format=csv --no-headings --data=bare --colum=_uuid,options find dhcp_options | grep -cF testdhcp | grep -xF 0
 
     lxc network delete ovn-virtual-network --project testovn
-    lxc image delete "${FINGERPRINT}" --project testovn
     lxc project delete testovn
 
     lxc network delete dummy --project default
     ip link delete dummy0
 
     echo "===> Testing projects"
-    lxc project create testovn -c features.networks=true -c limits.networks=1
+    lxc project create testovn -c features.networks=true -c features.images=false -c limits.networks=1
     lxc project switch testovn
     lxc profile device add default root disk path=/ pool=default
 
@@ -603,8 +601,6 @@ ovn_basic_tests() {
     lxc network delete dummy
     ip link delete dummybr0 # Remove dummy uplink bridge.
 
-    lxc image delete "${FINGERPRINT}" --project testovn
-    lxc image delete "${FINGERPRINT}" --project default
     lxc project switch default
     lxc project delete testovn
 }
@@ -619,7 +615,7 @@ ovn_forward_tests() {
         ipv6.ovn.ranges=fd42:4242:4242:1010::200-fd42:4242:4242:1010::254
 
     # Create OVN network using physical uplink network.
-    lxc project create testovn -c features.networks=true
+    lxc project create testovn -c features.networks=true -c features.images=false
     lxc project switch testovn
     lxc network create ovn-virtual-network --type=ovn network=lxdbr0
     sleep 2
@@ -717,7 +713,6 @@ ovn_forward_tests() {
 
     # Create instance connected to ovn-virtual-network.
     lxc launch "${instanceImage}" u1 -n ovn-virtual-network -s default
-    FINGERPRINT="$(lxc image ls -cf --format=csv)"
     sleep 5
     lxc list
     U1_IPV4="$(lxc list u1 -c4 --format=csv | cut -d' ' -f1)"
@@ -817,7 +812,6 @@ EOF
     # Clean up.
     lxc delete -f u1
     lxc delete -f u2
-    lxc image delete "${FINGERPRINT}"
     lxc network delete ovn-virtual-network
     ovn-nbctl list load_balancer | grep -cF name | grep -xF 0
     lxc project switch default
@@ -835,7 +829,7 @@ ovn_load_balancer_tests() {
         ipv6.ovn.ranges=fd42:4242:4242:1010::200-fd42:4242:4242:1010::254
 
     # Create OVN network using physical uplink network.
-    lxc project create testovn -c features.networks=true
+    lxc project create testovn -c features.networks=true -c features.images=false
     lxc project switch testovn
     lxc network create ovn-virtual-network --type=ovn network=lxdbr0
     sleep 2
@@ -914,7 +908,6 @@ ovn_load_balancer_tests() {
 
     # Create instance connected to ovn-virtual-network.
     lxc launch "${instanceImage}" u1 -n ovn-virtual-network -s default
-    FINGERPRINT="$(lxc image ls -cf --format=csv)"
     sleep 5
     lxc list
     U1_IPV4="$(lxc list u1 -c4 --format=csv | cut -d' ' -f1)"
@@ -1037,7 +1030,6 @@ EOF
     # Clean up.
     lxc delete -f u1
     lxc delete -f u2
-    lxc image delete "${FINGERPRINT}"
     lxc network delete ovn-virtual-network
     ovn-nbctl list load_balancer | grep -cF name | grep -xF 0
     lxc project switch default
