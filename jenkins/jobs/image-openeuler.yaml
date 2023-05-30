@@ -17,7 +17,6 @@
         name: release
         type: user-defined
         values:
-        - 22.09
         - 22.03
         - 20.03
         - 23.03
