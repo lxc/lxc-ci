@@ -18,6 +18,10 @@ if [ "${1:-}" = "force" ]; then
 
         systemctl reload snap.lxd.daemon
     fi
+
+    if [ -d "/home/jenkins/.cache/go-build" ]; then
+        rm -Rf /home/jenkins/.cache/go-build
+    fi
 fi
 
 # shellcheck disable=SC2010
