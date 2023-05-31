@@ -84,7 +84,7 @@ rm -Rf android-ndk-*
 rm /root/ndk.zip
 
 # Get specific libcap source
-git clone git://git.kernel.org/pub/scm/linux/kernel/git/morgan/libcap.git /build/libcap
+git clone https://git.kernel.org/pub/scm/libs/libcap/libcap.git /build/libcap
 cd /build/libcap
 git checkout 0ee94211e95096750ede752acd13b163aa6d5046
 
