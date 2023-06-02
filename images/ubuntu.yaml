@@ -331,6 +331,7 @@ files:
 
 - path: /etc/netplan/10-lxc.yaml
   generator: dump
+  mode: 0600
   content: |-
     network:
       version: 2
@@ -371,6 +372,7 @@ files:
 
 - path: /etc/netplan/10-lxc.yaml
   generator: dump
+  mode: 0600
   content: |-
     network:
       version: 2
