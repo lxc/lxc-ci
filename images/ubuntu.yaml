@@ -331,6 +331,7 @@ files:
 
 - path: /etc/netplan/10-lxc.yaml
   generator: dump
+  mode: 0600
   content: |-
     network:
       version: 2
@@ -371,6 +372,7 @@ files:
 
 - path: /etc/netplan/10-lxc.yaml
   generator: dump
+  mode: 0600
   content: |-
     network:
       version: 2
@@ -806,12 +808,6 @@ actions:
   - desktop
   types:
   - vm
-
-- trigger: post-files
-  action: |-
-    #!/bin/sh
-    set -eux
-    [ -f /etc/netplan/10-lxc.yaml ] && chmod 0600 /etc/netplan/10-lxc.yaml
 
 mappings:
   architecture_map: debian
