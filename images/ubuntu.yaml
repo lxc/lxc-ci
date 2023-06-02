@@ -807,5 +807,11 @@ actions:
   types:
   - vm
 
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+    [ -f /etc/netplan/10-lxc.yaml ] && chmod 0600 /etc/netplan/10-lxc.yaml
+
 mappings:
   architecture_map: debian
