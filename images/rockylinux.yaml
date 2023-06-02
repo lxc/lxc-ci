@@ -174,7 +174,7 @@ files:
 - path: /etc/dracut.conf.d/lxd.conf
   generator: dump
   content: |-
-    add_drivers+="virtio_scsi virtio_console sd_mod"
+    add_drivers+=" virtio_scsi virtio_console sd_mod "
   types:
   - vm
 
@@ -370,12 +370,15 @@ actions:
   action: |-
     #!/bin/sh
     set -eux
-    sed -ri 's#^options .+#options $kernelopts#g' /boot/loader/entries/*
+    kver=$(ls /boot/initramfs-*.img | sed -r 's#.*initramfs-(.+)\.img#\1#')
     target=/boot/efi/EFI/rocky/grub.cfg
+    # Create grub.cfg file
     grub2-mkconfig -o "${target}"
     sed -i "s#root=[^ ]*#root=/dev/sda2#g" "${target}"
+    # Update files in /boot/loader/entries/. `grubby` needs to be run after
+    # `grub2-mkconfig` as the latter overwrites files in /boot/loader/entries/.
+    grubby --update-kernel=/boot/vmlinuz-${kver} --args="root=/dev/sda2 ro"
     # Regenerate initramfs
-    kver=$(ls /boot/initramfs-*.img | sed -r 's#.*initramfs-(.+)\.img#\1#')
     dracut --kver "${kver}" -f
   types:
   - vm
