@@ -1,4 +1,6 @@
 - brauner
 - dwengen
 - hallyn
+- mihalicyn
 - stgraber
+- tych0
