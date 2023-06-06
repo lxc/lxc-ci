@@ -76,6 +76,9 @@ GiB=1073741823
 
 for poolDriver in $poolDriverList
 do
+        # FIXME: LVM on Ubuntu is broken due to the Ubuntu kernel having an io_uring regression
+        [ "${poolDriver}" = "lvm" ] && continue
+
         echo "==> Create storage pool using driver ${poolDriver}"
         if [ "${poolDriver}" = "dir" ] || [ "${poolDriver}" = "ceph" ]; then
                 lxc storage create "${poolName}" "${poolDriver}"
