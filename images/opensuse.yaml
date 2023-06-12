@@ -107,6 +107,7 @@ files:
   - vm
   releases:
   - 15.4
+  - 15.5
 
 - name: ifcfg-enp5s0
   path: /etc/sysconfig/network/ifcfg-enp5s0
@@ -153,9 +154,6 @@ files:
     add_drivers+=" virtio_scsi virtio_pci sd_mod "
   types:
   - vm
-  releases:
-  - 15.4
-  - tumbleweed
 
 - path: /etc/fstab
   generator: dump
