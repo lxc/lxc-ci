@@ -1198,6 +1198,7 @@ actions:
   - default
   releases:
   - bullseye
+  - bookworm
 
 - trigger: post-packages
   action: |-
@@ -1209,7 +1210,6 @@ actions:
   types:
   - container
   releases:
-  - bookworm
   - sid
 
 - trigger: post-packages
