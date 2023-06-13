@@ -51,6 +51,7 @@ lxc exec "${PREFIX}-1" -- apt-get update
 lxc exec "${PREFIX}-1" -- apt-get install --no-install-recommends snapd fuse curl --yes
 lxc exec "${PREFIX}-1" -- sh -c "curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh"
 lxc exec "${PREFIX}-1" -- snap install core20
+lxc exec "${PREFIX}-1" -- snap install core22
 lxc exec "${PREFIX}-1" -- snap install lxd --channel="$2"
 
 for i in $(seq 2 "$1"); do
