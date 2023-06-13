@@ -39,13 +39,11 @@ while :; do
     sleep 1
 done
 
-(
-cat << EOF
+lxc file push - "${PREFIX}-1"/etc/apt/sources.list << EOF
 deb http://us.archive.ubuntu.com/ubuntu jammy main universe
 deb http://us.archive.ubuntu.com/ubuntu jammy-updates main universe
 deb http://us.archive.ubuntu.com/ubuntu jammy-security main universe
 EOF
-) | lxc file push - "${PREFIX}-1"/etc/apt/sources.list
 
 lxc exec "${PREFIX}-1" -- apt-get update
 lxc exec "${PREFIX}-1" -- apt-get install --no-install-recommends snapd fuse3 curl --yes
@@ -82,8 +80,7 @@ for i in $(seq "$1"); do
     else
         MEMBER_IP=$(lxc exec "${PREFIX}-$i" -- ip -4 addr show dev eth0 scope global | grep inet | cut -d' ' -f6 | cut -d/ -f1)
 
-        (
-        cat << EOF
+        lxc exec "${PREFIX}-$i" -- lxd init --preseed << EOF
 cluster:
   server_name: "${PREFIX}-$i"
   enabled: true
@@ -93,7 +90,6 @@ cluster:
   server_address: ${MEMBER_IP}:8443
   cluster_password: cluster
 EOF
-        ) | lxc exec "${PREFIX}-$i" -- lxd init --preseed
     fi
 done
 
