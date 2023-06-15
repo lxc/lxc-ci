@@ -12,8 +12,6 @@
         values:
         - amd64
         - arm64
-        - ppc64el
-        - s390x
 
     - axis:
         name: release
@@ -38,7 +36,6 @@
 
         ARCH=${architecture}
         [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
-        [ "${ARCH}" = "ppc64el" ] && ARCH="ppc64le"
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
 
         TYPE="container"
@@ -57,8 +54,7 @@
 
     execution-strategy:
       combination-filter: '
-      !(architecture != "amd64" && variant == "desktop-kde") &&
-      !(architecture == "s390x" && variant == "cloud" && release == "tumbleweed")'
+      !(architecture != "amd64" && variant == "desktop-kde")'
 
     properties:
     - build-discarder:

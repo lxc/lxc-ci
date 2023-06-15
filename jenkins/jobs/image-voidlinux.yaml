@@ -12,7 +12,6 @@
         values:
         - amd64
         - arm64
-        - armhf
 
     - axis:
         name: release
@@ -34,7 +33,6 @@
 
         ARCH=${architecture}
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
-        [ "${ARCH}" = "armhf" ] && ARCH="armv7l"
         [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
 
         if [ "${variant}" != "default" ]; then

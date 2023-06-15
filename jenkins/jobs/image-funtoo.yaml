@@ -11,8 +11,7 @@
         type: slave
         values:
         - amd64
-        - armhf
-        # - arm64
+        - arm64
 
     - axis:
         name: release
@@ -33,17 +32,12 @@
         LXD_ARCHITECTURE="${architecture}"
 
         ARCH=${architecture}
-        [ "${ARCH}" = "armhf" ] && ARCH="armv7a_vfpv3_hardfp"
         [ "${ARCH}" = "aarch64" ] && ARCH="arm64_generic"
         [ "${ARCH}" = "amd64" ] && ARCH="generic_64"
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/funtoo.yaml \
             ${LXD_ARCHITECTURE} container 7200 ${WORKSPACE} \
             -o image.release=${release} -o image.architecture=${ARCH}
-
-    execution-strategy:
-      combination-filter: '
-      !(architecture=="armhf" && release == "next")'
 
     properties:
     - build-discarder:

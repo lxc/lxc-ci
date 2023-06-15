@@ -11,9 +11,7 @@
         type: slave
         values:
         - amd64
-        - armhf
         - arm64
-        - ppc64el
 
     - axis:
         name: release
@@ -26,8 +24,7 @@
         type: user-defined
         values:
         - openrc
-        # TODO: include cloud images once build issues have been resolved
-        # - cloud
+        - cloud
         - systemd
 
     builders:
@@ -36,8 +33,6 @@
         LXD_ARCHITECTURE="${architecture}"
 
         ARCH=${architecture}
-        [ "${ARCH}" = "armhf" ] && ARCH="armv7a_hardfp"
-        [ "${ARCH}" = "ppc64el" ] && ARCH="ppc64le"
 
         TYPE="container"
         if [ "${architecture}" = "amd64" ]; then
@@ -54,11 +49,6 @@
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/gentoo.yaml \
             ${LXD_ARCHITECTURE} ${TYPE} 14400 ${WORKSPACE} \
             -o image.architecture=${ARCH} -o image.variant=${variant} ${EXTRA_ARGS}
-
-    execution-strategy:
-      combination-filter: '
-      !(variant == "cloud" && architecture != "amd64")
-      && !(variant == "systemd" && architecture == "s390x")'
 
     properties:
     - build-discarder:

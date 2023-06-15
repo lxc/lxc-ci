@@ -12,7 +12,6 @@
         values:
         - amd64
         - arm64
-        - armhf
 
     - axis:
         name: release
@@ -36,7 +35,6 @@
         ARCH=${architecture}
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
         [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
-        [ "${ARCH}" = "armhf" ] && ARCH="armv7l"
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/openwrt.yaml \
             ${LXD_ARCHITECTURE} container 7200 ${WORKSPACE} \
@@ -48,14 +46,6 @@
 
     - raw:
         !include: ../includes/webhook.yaml.inc
-
-    - groovy-label:
-        script: |-
-            if (binding.getVariables().get("architecture") == "i386") {
-                return "native-amd64";
-            }
-
-            return null;
 
     publishers:
     - archive:

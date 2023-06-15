@@ -12,10 +12,6 @@
         values:
         - amd64
         - arm64
-        - armel
-        - armhf
-        - i386
-        - ppc64el
 
     - axis:
         name: release
@@ -35,17 +31,11 @@
     - shell: |-
         cd /lxc-ci
         LXD_ARCHITECTURE="${architecture}"
-        if [ "${architecture}" = "armel" ]; then
-            LXD_ARCHITECTURE="armhf"
-        fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/devuan.yaml \
             ${LXD_ARCHITECTURE} container 1800 ${WORKSPACE} \
             -o image.architecture=${architecture} \
             -o image.release=${release} -o image.variant=${variant}
-
-    execution-strategy:
-      combination-filter: '!(architecture=="ppc64el" && release == "ascii")'
 
     properties:
     - build-discarder:
@@ -53,14 +43,6 @@
 
     - raw:
         !include: ../includes/webhook.yaml.inc
-
-    - groovy-label:
-        script: |-
-            if (binding.getVariables().get("architecture") == "i386") {
-                return "native-amd64";
-            }
-
-            return null;
 
     publishers:
     - archive:

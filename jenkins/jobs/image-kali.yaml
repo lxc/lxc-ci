@@ -12,8 +12,6 @@
         values:
         - amd64
         - arm64
-        - armel
-        - armhf
 
     - axis:
         name: release
@@ -32,9 +30,6 @@
     - shell: |-
         cd /lxc-ci
         LXD_ARCHITECTURE="${architecture}"
-        if [ "${architecture}" = "armel" ]; then
-            LXD_ARCHITECTURE="armhf"
-        fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/kali.yaml \
             ${LXD_ARCHITECTURE} container 1800 ${WORKSPACE} \

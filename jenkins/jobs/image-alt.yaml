@@ -12,8 +12,6 @@
         values:
         - amd64
         - arm64
-        - armhf
-        - ppc64el
 
     - axis:
         name: release
@@ -36,7 +34,6 @@
         LXD_ARCHITECTURE="${architecture}"
 
         ARCH=${architecture}
-        [ "${ARCH}" = "ppc64el" ] && ARCH="ppc64le"
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/alt.yaml \
             ${LXD_ARCHITECTURE} container 3600 ${WORKSPACE} \
@@ -49,14 +46,6 @@
 
     - raw:
         !include: ../includes/webhook.yaml.inc
-
-    - groovy-label:
-        script: |-
-            if (binding.getVariables().get("architecture") == "i386") {
-                return "native-amd64";
-            }
-
-            return null;
 
     publishers:
     - archive:

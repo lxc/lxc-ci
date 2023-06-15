@@ -12,8 +12,6 @@
         values:
         - amd64
         - arm64
-        - ppc64el
-        - s390x
 
     - axis:
         name: release
@@ -39,7 +37,6 @@
         ARCH=${architecture}
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
         [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
-        [ "${ARCH}" = "ppc64el" ] && ARCH="ppc64le"
 
         TYPE="container"
         if [ "${architecture}" = "amd64" ] || [ "${architecture}" = "arm64" ]; then
@@ -57,14 +54,6 @@
 
     - raw:
         !include: ../includes/webhook.yaml.inc
-
-    - groovy-label:
-        script: |-
-            if (binding.getVariables().get("architecture") == "i386") {
-                return "native-amd64";
-            }
-
-            return null;
 
     publishers:
     - archive:

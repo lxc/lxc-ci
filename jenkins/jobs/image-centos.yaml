@@ -12,9 +12,6 @@
         values:
         - amd64
         - arm64
-        - armhf
-        - i386
-        - ppc64el
 
     - axis:
         name: release
@@ -39,15 +36,13 @@
         ARCH=${architecture}
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
         [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
-        [ "${ARCH}" = "armhf" ] && ARCH="armhfp"
-        [ "${ARCH}" = "ppc64el" ] && ARCH="ppc64le"
 
         EXTRA_ARGS=""
-        if { [ "${release}" = "7" ] && [ "${architecture}" != "amd64" ]; } || { [ "${architecture}" = "armhf" ]; }; then
+        if [ "${release}" = "7" ] && [ "${architecture}" != "amd64" ]; then
             EXTRA_ARGS="-o source.url=http://mirror.math.princeton.edu/pub/centos-altarch/ -o source.skip_verification=true"
         fi
 
-        if [ "${architecture}" != "armhf" ] && ([ "${release}" = "8-Stream" ] || [ "${release}" = "9-Stream" ]); then
+        if [ "${release}" = "8-Stream" ] || [ "${release}" = "9-Stream" ]; then
             EXTRA_ARGS="${EXTRA_ARGS} -o source.variant=boot"
         fi
 
@@ -65,26 +60,12 @@
             -o image.architecture=${ARCH} -o image.release=${release} \
             -o image.variant=${variant} ${EXTRA_ARGS}
 
-    execution-strategy:
-      combination-filter: '
-      !(architecture=="armhf" && release == "9-Stream")
-      && !(architecture=="armhf" && release == "8-Stream")
-      && !(architecture=="i386" && release != "7")'
-
     properties:
     - build-discarder:
         num-to-keep: 3
 
     - raw:
         !include: ../includes/webhook.yaml.inc
-
-    - groovy-label:
-        script: |-
-            if (binding.getVariables().get("architecture") == "i386") {
-                return "native-amd64";
-            }
-
-            return null;
 
     publishers:
     - archive:

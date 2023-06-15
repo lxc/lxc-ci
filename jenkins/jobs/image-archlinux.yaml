@@ -11,7 +11,6 @@
         type: slave
         values:
         - amd64
-        - armhf
         - arm64
 
     - axis:
@@ -35,7 +34,6 @@
 
         ARCH=${architecture}
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
-        [ "${ARCH}" = "armhf" ] && ARCH="armv7"
         [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
 
         TYPE="container"
@@ -47,7 +45,7 @@
             TYPE="vm"
         fi
 
-        if [ "${ARCH}" = "x86_64" ]; then
+        if [ "${architecture}" = "amd64" ]; then
             exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/archlinux.yaml \
                 ${LXD_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
                 -o image.architecture=${ARCH} -o image.variant=${variant}
@@ -69,14 +67,6 @@
 
     - raw:
         !include: ../includes/webhook.yaml.inc
-
-    - groovy-label:
-        script: |-
-            if (binding.getVariables().get("architecture") == "i386") {
-                return "native-amd64";
-            }
-
-            return null;
 
     publishers:
     - archive:

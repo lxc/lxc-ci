@@ -11,7 +11,6 @@
         type: slave
         values:
         - amd64
-        - i386
 
     - axis:
         name: release
@@ -43,25 +42,12 @@
             -o image.architecture=${ARCH} -o image.release=${release} \
             -o image.variant=${variant}
 
-    execution-strategy:
-      combination-filter: '
-      !(architecture=="i386" && release == "8")
-      && !(architecture=="i386" && release == "9")'
-
     properties:
     - build-discarder:
         num-to-keep: 3
 
     - raw:
         !include: ../includes/webhook.yaml.inc
-
-    - groovy-label:
-        script: |-
-            if (binding.getVariables().get("architecture") == "i386") {
-                return "native-amd64";
-            }
-
-            return null;
 
     publishers:
     - archive:
