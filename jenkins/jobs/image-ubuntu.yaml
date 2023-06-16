@@ -21,7 +21,6 @@
         - bionic
         - focal
         - jammy
-        - kinetic
         - lunar
         - mantic
 
@@ -54,6 +53,12 @@
             ${architecture} ${TYPE} 3600 ${WORKSPACE} \
             -o image.architecture=${architecture} -o image.release=${release} \
             -o image.variant=${variant} -o source.url=${ARCHIVE}
+
+    execution-strategy:
+      combination-filter: '
+      !(architecture!="amd64" && variant == "desktop") &&
+      !(release=="xenial" && variant == "desktop") &&
+      !(release=="bionic" && variant == "desktop")'
 
     properties:
     - build-discarder:
