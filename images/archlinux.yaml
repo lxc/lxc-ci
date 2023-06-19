@@ -652,6 +652,9 @@ actions:
     #!/bin/sh
     set -eux
 
+    # The [community] repo has moved into [extra]
+    sed -ri '/^\[community\]$/,+2d' /etc/pacman.conf
+
     # Update pacman-keyring to ensure package installs will not break because of GPG issues
     pacman -Sy --needed --noconfirm archlinux-keyring
 
