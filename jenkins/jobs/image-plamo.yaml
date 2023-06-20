@@ -16,8 +16,8 @@
         name: release
         type: user-defined
         values:
-        - 6.x
         - 7.x
+        - 8.x
 
     - axis:
         name: variant
