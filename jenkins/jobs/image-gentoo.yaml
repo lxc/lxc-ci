@@ -24,7 +24,6 @@
         type: user-defined
         values:
         - openrc
-        - cloud
         - systemd
 
     builders:
