@@ -3,11 +3,6 @@
     jobs:
         # Main repos
         - "{repo}-github-pull-target":
-            repo: cgmanager
-            admins:
-              !include: ../includes/admins/cgmanager.yaml.inc
-
-        - "{repo}-github-pull-target":
             repo: lxcri
             branch: main
             admins:
