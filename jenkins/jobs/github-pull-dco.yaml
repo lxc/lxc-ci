@@ -66,11 +66,6 @@
 
         # Bindings
         - "{repo}-github-pull-dco":
-            repo: go-lxc
-            admins:
-              !include: ../includes/admins/go-lxc.yaml.inc
-
-        - "{repo}-github-pull-dco":
             repo: lua-lxc
             admins:
               !include: ../includes/admins/lua-lxc.yaml.inc

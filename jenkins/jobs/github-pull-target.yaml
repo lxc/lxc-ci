@@ -76,12 +76,6 @@
 
         # Bindings
         - "{repo}-github-pull-target":
-            repo: go-lxc
-            branch: v2
-            admins:
-              !include: ../includes/admins/go-lxc.yaml.inc
-
-        - "{repo}-github-pull-target":
             repo: lua-lxc
             admins:
               !include: ../includes/admins/lua-lxc.yaml.inc
