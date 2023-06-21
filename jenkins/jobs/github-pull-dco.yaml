@@ -38,32 +38,6 @@
             admins:
               !include: ../includes/admins/linuxcontainers.org.yaml.inc
 
-        # Packaging
-        - "{repo}-github-pull-dco":
-            repo: distrobuilder-pkg-snap
-            admins:
-              !include: ../includes/admins/distrobuilder-pkg-snap.yaml.inc
-
-        - "{repo}-github-pull-dco":
-            repo: lxc-pkg-ubuntu
-            admins:
-              !include: ../includes/admins/lxc-pkg-ubuntu.yaml.inc
-
-        - "{repo}-github-pull-dco":
-            repo: lxd-pkg-chocolatey
-            admins:
-              !include: ../includes/admins/lxd-pkg-chocolatey.yaml.inc
-
-        - "{repo}-github-pull-dco":
-            repo: lxd-pkg-snap
-            admins:
-              !include: ../includes/admins/lxd-pkg-snap.yaml.inc
-
-        - "{repo}-github-pull-dco":
-            repo: lxd-pkg-ubuntu
-            admins:
-              !include: ../includes/admins/lxd-pkg-ubuntu.yaml.inc
-
         # Bindings
         - "{repo}-github-pull-dco":
             repo: lua-lxc

@@ -39,36 +39,6 @@
             admins:
               !include: ../includes/admins/linuxcontainers.org.yaml.inc
 
-        # Packaging
-        - "{repo}-github-pull-target":
-            repo: distrobuilder-pkg-snap
-            branch: latest-edge
-            admins:
-              !include: ../includes/admins/distrobuilder-pkg-snap.yaml.inc
-
-        - "{repo}-github-pull-target":
-            repo: lxc-pkg-ubuntu
-            branch: dpm-focal
-            admins:
-              !include: ../includes/admins/lxc-pkg-ubuntu.yaml.inc
-
-        - "{repo}-github-pull-target":
-            repo: lxd-pkg-chocolatey
-            admins:
-              !include: ../includes/admins/lxd-pkg-chocolatey.yaml.inc
-
-        - "{repo}-github-pull-target":
-            repo: lxd-pkg-snap
-            branch: latest-edge
-            admins:
-              !include: ../includes/admins/lxd-pkg-snap.yaml.inc
-
-        - "{repo}-github-pull-target":
-            repo: lxd-pkg-ubuntu
-            branch: dpm-focal
-            admins:
-              !include: ../includes/admins/lxd-pkg-ubuntu.yaml.inc
-
         # Bindings
         - "{repo}-github-pull-target":
             repo: lua-lxc
