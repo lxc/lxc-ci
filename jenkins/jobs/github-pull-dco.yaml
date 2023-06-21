@@ -3,19 +3,9 @@
     jobs:
         # Main repos
         - "{repo}-github-pull-dco":
-            repo: cgmanager
-            admins:
-              !include: ../includes/admins/cgmanager.yaml.inc
-
-        - "{repo}-github-pull-dco":
             repo: lxcri
             admins:
               !include: ../includes/admins/lxcri.yaml.inc
-
-        - "{repo}-github-pull-dco":
-            repo: distrobuilder
-            admins:
-              !include: ../includes/admins/distrobuilder.yaml.inc
 
         - "{repo}-github-pull-dco":
             repo: libresource
