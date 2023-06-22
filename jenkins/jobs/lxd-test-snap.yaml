@@ -18,18 +18,6 @@
             channel: stable
 
         - "lxd-test-snap-{track}-{channel}":
-            track: 3.0
-            channel: edge
-
-        - "lxd-test-snap-{track}-{channel}":
-            track: 3.0
-            channel: candidate
-
-        - "lxd-test-snap-{track}-{channel}":
-            track: 3.0
-            channel: stable
-
-        - "lxd-test-snap-{track}-{channel}":
             track: 4.0
             channel: edge
 

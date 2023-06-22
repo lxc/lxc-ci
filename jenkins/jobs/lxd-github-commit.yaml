@@ -16,20 +16,6 @@
               - golang-tip
 
         - "lxd-github-commit{suffix}":
-            branch: stable-3.0
-            suffix: "-{branch}"
-            storage:
-              - dir
-              - btrfs
-              - zfs
-              - lvm
-              - ceph
-            go:
-              - golang-1.13
-              - golang-1.20
-              - golang-tip
-
-        - "lxd-github-commit{suffix}":
             branch: stable-4.0
             suffix: "-{branch}"
             storage:
