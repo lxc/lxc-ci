@@ -744,6 +744,7 @@ bind-interfaces
 interface-name=u1.lxd,eth0
 EOF
 
+    lxc exec u1 -- rm /run/systemd/system/dnsmasq.service
     lxc exec u1 -- systemctl unmask dnsmasq
     lxc exec u1 -- systemctl start dnsmasq
     dig a +tcp @192.0.2.1 u1.lxd
@@ -769,6 +770,7 @@ bind-interfaces
 interface-name=u2.lxd,eth0
 EOF
 
+    lxc exec u2 -- rm /run/systemd/system/dnsmasq.service
     lxc exec u2 -- systemctl unmask dnsmasq
     lxc exec u2 -- systemctl start dnsmasq
 
@@ -956,6 +958,7 @@ interface-name=u1.lxd,eth0
 host-record=lxd.localdomain,127.0.0.1
 EOF
 
+    lxc exec u1 -- rm /run/systemd/system/dnsmasq.service
     lxc exec u1 -- systemctl unmask dnsmasq
     lxc exec u1 -- systemctl start dnsmasq
     dig a +tcp @192.0.2.1 u1.lxd
@@ -994,6 +997,7 @@ interface-name=u2.lxd,eth0
 host-record=lxd.localdomain,127.0.0.2
 EOF
 
+    lxc exec u2 -- rm /run/systemd/system/dnsmasq.service
     lxc exec u2 -- systemctl unmask dnsmasq
     lxc exec u2 -- systemctl start dnsmasq
 
@@ -1592,6 +1596,8 @@ ovn_acl_tests() {
     lxc network unset ovn0 security.acls
     lxc exec c1 -- apt-get install --no-install-recommends --yes dnsutils
     lxc network set ovn0 security.acls=lxdbr0-ping
+    sleep 2
+
     lxc exec c1 -- dig @10.10.11.3 +tcp +timeout=1 lxdbr0.test | grep "refused"
     lxc exec c1 -- dig @fd42:4242:4242:1010::2 +tcp +timeout=1 lxdbr0.test | grep "refused"
     lxc exec c1 -- ping -c1 -w5 -4 10.10.11.3 | grep "Host Unreachable"
@@ -1606,6 +1612,7 @@ ovn_acl_tests() {
 
     # Check setting default rule action to reject takes effect. Same as if unspecified.
     lxc network set ovn0 security.acls.default.egress.action=reject
+    sleep 2
     lxc exec c1 -- dig @10.10.11.3 +tcp +timeout=1 -p 5053 lxdbr0.test | grep "refused"
     lxc exec c1 -- dig @fd42:4242:4242:1010::2 +tcp +timeout=1 -p 5053 lxdbr0.test | grep "refused"
     lxc exec c1 -- ping -c1 -w5 -4 c2.lxd | grep "Host Unreachable"
@@ -1621,6 +1628,7 @@ ovn_acl_tests() {
     # Check only c1 has per-NIC ACL rules.
     ovn-nbctl list acl | grep -c 'match.*instance.*eth0' | grep 2
     lxc config device unset c1 eth0 security.acls
+    sleep 2
 
     # Check removing ACLs removes default per-NIC ACL rules.
     ovn-nbctl list acl | grep -c 'match.*instance.*eth0' | grep 0
