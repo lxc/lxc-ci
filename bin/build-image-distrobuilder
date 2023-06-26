@@ -66,6 +66,10 @@ umount -l /sys/devices/system/cpu || true
 
 # Setup clean sources
 echo force-unsafe-io >> /etc/dpkg/dpkg.cfg
+cat > /etc/apt/apt.conf.d/60lxc-ci << EOL
+APT::Get::Show-Versions "true";
+Acquire::Languages "none";
+EOL
 cat > /etc/apt/sources.list << EOL
 deb \${ARCHIVE} \${DISTRO} main universe
 deb \${ARCHIVE} \${DISTRO}-updates main universe
