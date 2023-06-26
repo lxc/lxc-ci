@@ -78,7 +78,7 @@ apt-get install --yes --no-install-recommends \
     build-essential btrfs-progs git ca-certificates gcc libc6-dev debootstrap \
     xz-utils squashfs-tools gpg dirmngr gpg-agent rsync kpartx python3 \
     subversion patch build-essential gawk libncurses-dev unzip qemu-utils \
-    gdisk dosfstools snapd
+    gdisk dosfstools snapd zstd
 apt-get clean
 export PATH=/snap/bin:\${PATH}
 
