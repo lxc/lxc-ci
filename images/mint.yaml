@@ -360,7 +360,6 @@ packages:
     early: true
 
   - packages:
-    - apt-transport-https
     - fuse
     - language-pack-en
     - linuxmint-keyring
