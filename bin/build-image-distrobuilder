@@ -81,7 +81,6 @@ apt-get install --yes --no-install-recommends \
     debootstrap \
     dirmngr \
     dosfstools \
-    gawk \
     gcc \
     gdisk \
     git \
@@ -90,6 +89,7 @@ apt-get install --yes --no-install-recommends \
     kpartx \
     libc6-dev \
     libncurses-dev \
+    mawk \
     patch \
     python3 \
     qemu-utils \
