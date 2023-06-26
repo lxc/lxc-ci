@@ -96,7 +96,6 @@ apt-get install --yes --no-install-recommends \
     rsync \
     snapd \
     squashfs-tools \
-    subversion \
     unzip \
     xz-utils \
     zstd
