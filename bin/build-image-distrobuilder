@@ -75,10 +75,31 @@ apt-get update --yes
 
 # Install dependencies
 apt-get install --yes --no-install-recommends \
-    build-essential btrfs-progs git ca-certificates gcc libc6-dev debootstrap \
-    xz-utils squashfs-tools gpg dirmngr gpg-agent rsync kpartx python3 \
-    subversion patch build-essential gawk libncurses-dev unzip qemu-utils \
-    gdisk dosfstools snapd zstd
+    btrfs-progs \
+    build-essential \
+    ca-certificates \
+    debootstrap \
+    dirmngr \
+    dosfstools \
+    gawk \
+    gcc \
+    gdisk \
+    git \
+    gpg \
+    gpg-agent \
+    kpartx \
+    libc6-dev \
+    libncurses-dev \
+    patch \
+    python3 \
+    qemu-utils \
+    rsync \
+    snapd \
+    squashfs-tools \
+    subversion \
+    unzip \
+    xz-utils \
+    zstd
 apt-get clean
 export PATH=/snap/bin:\${PATH}
 
