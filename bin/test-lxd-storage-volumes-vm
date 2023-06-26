@@ -44,6 +44,7 @@ while [ -e /usr/bin/lxd ]; do
     apt-get remove --purge --yes lxd lxd-client lxcfs liblxc1
 done
 apt-get remove --purge cloud-init --yes
+apt-get install --no-install-recommends --yes genisoimage
 snap remove lxd || true
 snap install lxd --channel=latest/edge
 lxd waitready --timeout=300
@@ -91,6 +92,7 @@ do
 
 	echo "==> Create VM"
 	lxc init images:ubuntu/20.04 v1 --vm -s "${poolName}"
+	lxc init images:ubuntu/20.04 v2 --vm -s "${poolName}"
 
 	echo "==> Create custom block volume and attach it to VM"
 	lxc storage volume create "${poolName}" vol1 --type=block size=10MB
@@ -121,25 +123,61 @@ do
 	rm vol1.tar.gz
 	rm vol1-optimized.tar.gz
 
+	echo "==> Import custom ISO volume"
+	tmp_iso_dir="$(mktemp -d)"
+	echo foo > "${tmp_iso_dir}/foo"
+	genisoimage -o vol5.iso "${tmp_iso_dir}"
+	rm -f "${tmp_iso_dir}/foo"
+	echo bar > "${tmp_iso_dir}/bar"
+	genisoimage -o vol6.iso "${tmp_iso_dir}"
+	rm -rf "${tmp_iso_dir}"
+	lxc storage volume import "${poolName}" vol5.iso vol5
+	lxc storage volume import "${poolName}" vol6.iso vol6
+	rm -f vol5.iso vol6.iso
+
 	echo "==> Attach custom block volumes to VM"
 	# Both volumes can be attached at the same time. The VM will have /dev/sdb and /dev/sdc.
 	# It doesn't matter which volume is which device as they contain the same content.
 	lxc storage volume attach "${poolName}" vol2 v1
 	lxc storage volume attach "${poolName}" vol3 v1
 
+	echo "==> Attach custom ISO volumes to VM"
+	lxc storage volume attach "${poolName}" vol5 v1
+	lxc storage volume attach "${poolName}" vol6 v1
+	lxc storage volume attach "${poolName}" vol5 v2
+	lxc storage volume attach "${poolName}" vol6 v2
+
 	echo "==> Start VM and check content"
 	lxc start v1
+	lxc start v2
 	waitVMAgent v1
+	waitVMAgent v2
 
 	# shellcheck disable=2016
 	lxc exec v1 -- /bin/sh -c 'mount /dev/sdb /mnt && [ $(cat /mnt/bar) = foo ] && umount /mnt'
 	# shellcheck disable=2016
 	lxc exec v1 -- /bin/sh -c 'mount /dev/sdc /mnt && [ $(cat /mnt/bar) = foo ] && umount /mnt'
 
+	# mount ISOs and check content
+	# shellcheck disable=2016
+	lxc exec v1 -- /bin/sh -c 'mount /dev/sr0 /mnt && [ $(cat /mnt/foo) = foo ] && ! touch /mnt/foo && umount /mnt'
+	# shellcheck disable=2016
+	lxc exec v1 -- /bin/sh -c 'mount /dev/sr1 /mnt && [ $(cat /mnt/bar) = bar ] && ! touch /mnt/bar && umount /mnt'
+
+	# concurrent readonly ISO mounts
+	# shellcheck disable=2016
+	lxc exec v1 -- /bin/sh -c 'mount /dev/sr0 /mnt && [ $(cat /mnt/foo) = foo ] && ! touch /mnt/foo'
+	# shellcheck disable=2016
+	lxc exec v2 -- /bin/sh -c 'mount /dev/sr0 /mnt && [ $(cat /mnt/foo) = foo ] && ! touch /mnt/foo'
+	lxc exec v1 -- umount /mnt
+	lxc exec v2 -- umount /mnt
+
 	echo "==> Detaching volumes"
 	lxc stop -f v1
+	lxc delete -f v2
 	lxc storage volume detach "${poolName}" vol2 v1
 	lxc storage volume detach "${poolName}" vol3 v1
+	lxc storage volume detach "${poolName}" vol6 v1
 
 	echo "==> Publishing VM to image"
 	lxc storage volume create "${poolName}" images --project=default
@@ -160,6 +198,8 @@ do
 	lxc storage volume rm "${poolName}" vol2
 	lxc storage volume rm "${poolName}" vol3
 	lxc storage volume rm "${poolName}" vol4
+	lxc storage volume rm "${poolName}" vol5
+	lxc storage volume rm "${poolName}" vol6
 	lxc storage rm "${poolName}"
 done
 
