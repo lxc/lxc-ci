@@ -56,11 +56,6 @@ if [ "${CORE}" != "stable" ]; then
     snap install snapd --channel=${CORE}
 fi
 
-# Workaround LP: #1964636
-if [ -e /var/lib/snapd/apparmor/snap-confine/cap-bpf ]; then
-    > /var/lib/snapd/apparmor/snap-confine/cap-bpf
-fi
-
 exit 0
 EOF
 ) | lxc file push - "${CNAME}/root/build.sh" --mode=755
