@@ -67,10 +67,9 @@ umount -l /sys/devices/system/cpu || true
 # Setup clean sources
 echo force-unsafe-io >> /etc/dpkg/dpkg.cfg
 cat > /etc/apt/sources.list << EOL
-deb \${ARCHIVE} \${DISTRO} main universe restricted multiverse
-deb \${ARCHIVE} \${DISTRO}-updates main universe restricted multiverse
-deb \${ARCHIVE} \${DISTRO}-security main universe restricted multiverse
-deb \${ARCHIVE} \${DISTRO}-backports main universe restricted multiverse
+deb \${ARCHIVE} \${DISTRO} main universe
+deb \${ARCHIVE} \${DISTRO}-updates main universe
+deb \${ARCHIVE} \${DISTRO}-security main universe
 EOL
 apt-get update --yes
 
