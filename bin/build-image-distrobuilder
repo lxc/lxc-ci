@@ -112,11 +112,6 @@ snap install snapd || true
 snap install distrobuilder --classic --edge
 snap refresh
 
-# Workaround LP: #1964636
-if [ -e /var/lib/snapd/apparmor/snap-confine/cap-bpf ]; then
-    > /var/lib/snapd/apparmor/snap-confine/cap-bpf
-fi
-
 # Detect broken snapd
 if [ ! -d /var/lib/snapd/apparmor/profiles ]; then
     echo "Broken snapd (no apparmor profiles)"
