@@ -329,15 +329,6 @@ files:
   variants:
   - default
 
-- path: /etc/systemd/system/systemd-tmpfiles-setup.service.d/override.conf
-  generator: dump
-  content: |-
-    [Service]
-    ExecStart=
-    ExecStart=/bin/systemd-tmpfiles --clean
-  releases:
-  - tara
-
 - name: meta-data
   generator: cloud-init
   variants:
