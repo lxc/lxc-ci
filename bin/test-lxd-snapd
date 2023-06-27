@@ -28,17 +28,13 @@ cleanup() {
         printf 'config: {}\ndevices: {}' | lxc profile edit "${profile}" || true
     done
 
-    if [ "${track}" = "2.0" ]; then
-        [ -e /sys/class/net/lxdbr0 ] && ip link del lxdbr0
-    else
-        for network in $(lxc network list | grep YES | grep "^| " | cut -d' ' -f2); do
-            lxc network delete "${network}" || true
-        done
+    for network in $(lxc network list | grep YES | grep "^| " | cut -d' ' -f2); do
+        lxc network delete "${network}" || true
+    done
 
-        for storage in $(lxc storage list | tail -n+3 | grep "^| " | cut -d' ' -f2); do
-            lxc storage delete "${storage}" || REBOOT=1
-        done
-    fi
+    for storage in $(lxc storage list | tail -n+3 | grep "^| " | cut -d' ' -f2); do
+        lxc storage delete "${storage}" || REBOOT=1
+    done
 
     echo "==> Removing LXD"
     umount -l /var/snap/lxd/common/shmounts
