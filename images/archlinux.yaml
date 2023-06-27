@@ -687,20 +687,10 @@ actions:
   types:
   - vm
 
-- trigger: post-packages
+- trigger: post-files
   action: |-
     #!/bin/sh
     set -eux
-
-    # User
-    USERNAME="archlinux"
-    useradd ${USERNAME} -m -U -G adm,video,users
-
-    cat << EOF > /etc/gdm/custom.conf
-    [daemon]
-    AutomaticLogin=${USERNAME}
-    AutomaticLoginEnable=true
-    EOF
 
     # Automatic disk resize
     cat << EOF > /etc/systemd/system/lxd-growpart.service
@@ -716,6 +706,26 @@ actions:
     WantedBy=default.target
     EOF
     systemctl enable lxd-growpart
+  variants:
+  - default
+  - desktop-gnome
+  types:
+  - vm
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # User
+    USERNAME="archlinux"
+    useradd ${USERNAME} -m -U -G adm,video,users
+
+    cat << EOF > /etc/gdm/custom.conf
+    [daemon]
+    AutomaticLogin=${USERNAME}
+    AutomaticLoginEnable=true
+    EOF
 
     # Enable GDM
     systemctl enable gdm
