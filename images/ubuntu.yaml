@@ -730,6 +730,31 @@ actions:
   types:
   - vm
 
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Automatic disk resize
+    cat << EOF > /etc/systemd/system/lxd-growpart.service
+    [Unit]
+    Description=LXD - grow root partition
+
+    [Service]
+    Type=oneshot
+    ExecStartPre=-/usr/bin/growpart /dev/sda 2
+    ExecStart=/usr/sbin/resize2fs /dev/sda2
+
+    [Install]
+    WantedBy=default.target
+    EOF
+    systemctl enable lxd-growpart
+  types:
+  - vm
+  variants:
+  - default
+  - desktop
+
 - trigger: post-packages
   action: |-
     #!/bin/sh
@@ -754,21 +779,6 @@ actions:
     AutomaticLogin=${USERNAME}
     AutomaticLoginEnable=true
     EOF
-
-    # Automatic disk resize
-    cat << EOF > /etc/systemd/system/lxd-growpart.service
-    [Unit]
-    Description=LXD - grow root partition
-
-    [Service]
-    Type=oneshot
-    ExecStartPre=-/usr/bin/growpart /dev/sda 2
-    ExecStart=/usr/sbin/resize2fs /dev/sda2
-
-    [Install]
-    WantedBy=default.target
-    EOF
-    systemctl enable lxd-growpart
 
     cat << EOF > /home/ubuntu/firstboot.sh
     #!/bin/sh
