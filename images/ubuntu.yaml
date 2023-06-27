@@ -727,6 +727,21 @@ actions:
     grub-install --uefi-secure-boot --target="${TARGET}-efi" --no-nvram --removable
     update-grub
     sed -i "s#root=[^ ]*#root=/dev/sda2#g" /boot/grub/grub.cfg
+
+    # Automatic disk resize
+    cat << EOF > /etc/systemd/system/lxd-growpart.service
+    [Unit]
+    Description=LXD - grow root partition
+
+    [Service]
+    Type=oneshot
+    ExecStartPre=-/usr/bin/growpart /dev/sda 2
+    ExecStart=/usr/sbin/resize2fs /dev/sda2
+
+    [Install]
+    WantedBy=default.target
+    EOF
+    systemctl enable lxd-growpart
   types:
   - vm
 
@@ -754,21 +769,6 @@ actions:
     AutomaticLogin=${USERNAME}
     AutomaticLoginEnable=true
     EOF
-
-    # Automatic disk resize
-    cat << EOF > /etc/systemd/system/lxd-growpart.service
-    [Unit]
-    Description=LXD - grow root partition
-
-    [Service]
-    Type=oneshot
-    ExecStartPre=-/usr/bin/growpart /dev/sda 2
-    ExecStart=/usr/sbin/resize2fs /dev/sda2
-
-    [Install]
-    WantedBy=default.target
-    EOF
-    systemctl enable lxd-growpart
 
     cat << EOF > /home/ubuntu/firstboot.sh
     #!/bin/sh
