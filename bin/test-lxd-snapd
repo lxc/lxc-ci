@@ -82,35 +82,13 @@ done
 lxc --version
 
 # LXD setup
-if [ "${track}" = "2.0" ]; then
-    (
-    cat << EOF
-USE_LXD_BRIDGE="true"
-LXD_BRIDGE="lxdbr0"
-LXD_DOMAIN="lxd"
+lxc storage create default dir
+lxc profile device add default root disk pool=default path=/
 
-LXD_IPV4_ADDR="10.214.179.1"
-LXD_IPV4_NETMASK="255.255.255.0"
-LXD_IPV4_NETWORK="10.99.58.1/24"
-LXD_IPV4_DHCP_RANGE="10.214.179.2,10.214.179.254"
-LXD_IPV4_DHCP_MAX="252"
-LXD_IPV4_NAT="true"
+lxc network create lxdbr0
+lxc profile device add default eth0 nic nictype=bridged parent=lxdbr0 name=eth0
 
-LXD_IPV6_ADDR="fdc9:2f0d:62bc:1953::1"
-LXD_IPV6_MASK="64"
-LXD_IPV6_NETWORK="fd42:4e5a:ccbc:ef6e::1/64"
-LXD_IPV6_NAT="true"
-EOF
-    ) > /var/snap/lxd/common/lxd-bridge/config
-else
-    lxc storage create default dir
-    lxc profile device add default root disk pool=default path=/
-
-    lxc network create lxdbr0
-    lxc profile device add default eth0 nic nictype=bridged parent=lxdbr0 name=eth0
-
-    snap set lxd ceph.builtin=true
-fi
+snap set lxd ceph.builtin=true
 
 systemctl restart snap.lxd.daemon.service
 
@@ -135,39 +113,35 @@ lxc launch images:alpine/edge privileged -c security.privileged=true
 lxc launch images:alpine/edge isolated -c security.idmap.isolated=true
 
 # Storage backends test
-if [ "${track}" != "2.0" ]; then
-    if modprobe -q -n btrfs; then
-        lxc storage create test-btrfs btrfs
-        lxc launch images:alpine/edge -s test-btrfs btrfs
-    fi
-
-    if modprobe -q -n zfs && ! grep -q ^0.7 < /sys/module/zfs/version; then
-        lxc storage create test-zfs zfs
-        lxc launch images:alpine/edge -s test-zfs zfs
-    fi
-
-    if [ "${ID}" != "ubuntu-core" ] && [ "${ID}" != "elementary" ] && modprobe -q -n dm_mod; then
-        lxc storage create test-lvm lvm volume.size=25MB
-        lxc launch images:alpine/edge -s test-lvm lvm
-    fi
-
-    if [ "${ID}" != "ubuntu-core" ] && [ "${VERSION_CODENAME:-""}" != "xenial" ] && [ "${ID}" != "centos" ] && modprobe -q -n rbd; then
-        curl http://canonical-lxd.stgraber.org/config/ceph-snap.sh | sh -eu
-
-        lxc storage create test-ceph ceph "ceph.osd.pool_name=$(mktemp -u snaptest-XXX)" volume.size=25MB ceph.osd.pg_num=1
-        lxc launch images:alpine/edge -s test-ceph ceph
-    fi
+if modprobe -q -n btrfs; then
+    lxc storage create test-btrfs btrfs
+    lxc launch images:alpine/edge -s test-btrfs btrfs
 fi
 
-if [ "${track}" != "2.0" ] && [ "${track}" != "3.0" ]; then
+if modprobe -q -n zfs && ! grep -q ^0.7 < /sys/module/zfs/version; then
+    lxc storage create test-zfs zfs
+    lxc launch images:alpine/edge -s test-zfs zfs
+fi
+
+if [ "${ID}" != "ubuntu-core" ] && [ "${ID}" != "elementary" ] && modprobe -q -n dm_mod; then
+    lxc storage create test-lvm lvm volume.size=25MB
+    lxc launch images:alpine/edge -s test-lvm lvm
+fi
+
+if [ "${ID}" != "ubuntu-core" ] && [ "${VERSION_CODENAME:-""}" != "xenial" ] && [ "${ID}" != "centos" ] && modprobe -q -n rbd; then
+    curl http://canonical-lxd.stgraber.org/config/ceph-snap.sh | sh -eu
+
+    lxc storage create test-ceph ceph "ceph.osd.pool_name=$(mktemp -u snaptest-XXX)" volume.size=25MB ceph.osd.pg_num=1
+    lxc launch images:alpine/edge -s test-ceph ceph
+fi
+
+if [ "${track}" != "3.0" ]; then
     lxc query /1.0/resources
 fi
 
-if [ "${track}" != "2.0" ]; then
-    lxc file push /usr/bin/snap unprivileged/tmp/
-    echo foo | lxc file push - unprivileged/tmp/foo
-    [ "$(lxc file pull unprivileged/tmp/foo -)" = "foo" ]
-fi
+lxc file push /usr/bin/snap unprivileged/tmp/
+echo foo | lxc file push - unprivileged/tmp/foo
+[ "$(lxc file pull unprivileged/tmp/foo -)" = "foo" ]
 
 # Basic validation of running containers
 for container in $(lxc list --fast | tail -n+3 | grep "^| " | cut -d' ' -f2); do
