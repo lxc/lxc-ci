@@ -442,4 +442,5 @@ actions:
   types:
   - vm
   variants:
+  - default
   - desktop-kde
