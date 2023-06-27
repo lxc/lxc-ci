@@ -16,10 +16,6 @@
         name: release
         type: user-defined
         values:
-        - tara
-        - tessa
-        - tina
-        - tricia
         - ulyana
         - ulyssa
         - uma
@@ -38,11 +34,9 @@
     - shell: |-
         cd /lxc-ci
 
-        suite=bionic
+        suite=jammy
         if [ "${release}" = "ulyana" ] || [ "${release}" = "ulyssa" ] || [ "${release}" = "uma" ] || [ "${release}" = "una" ]; then
             suite=focal
-        elif [ "${release}" = "vanessa" ] || [ "${release}" = "vera" ]; then
-            suite=jammy
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/mint.yaml \
