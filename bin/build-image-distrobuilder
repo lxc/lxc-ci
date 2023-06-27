@@ -11,9 +11,10 @@ trap cleanup EXIT HUP INT TERM
 
 ARCH="$1"
 TARGET="$2"
+DISTRO="jammy"
 
 # Create the container
-lxc init "images:ubuntu/jammy/${ARCH}" build-distrobuilder-cache \
+lxc init "images:ubuntu/${DISTRO}/${ARCH}" build-distrobuilder-cache \
     -c security.privileged=true -c security.nesting=true \
     -c raw.lxc="lxc.cgroup.devices.allow = b 259:* rw"
 
@@ -65,20 +66,43 @@ umount -l /sys/devices/system/cpu || true
 
 # Setup clean sources
 echo force-unsafe-io >> /etc/dpkg/dpkg.cfg
+cat > /etc/apt/apt.conf.d/60lxc-ci << EOL
+APT::Get::Show-Versions "true";
+Acquire::Languages "none";
+EOL
 cat > /etc/apt/sources.list << EOL
-deb \${ARCHIVE} jammy main universe restricted multiverse
-deb \${ARCHIVE} jammy-updates main universe restricted multiverse
-deb \${ARCHIVE} jammy-security main universe restricted multiverse
-deb \${ARCHIVE} jammy-backports main universe restricted multiverse
+deb \${ARCHIVE} \${DISTRO} main universe
+deb \${ARCHIVE} \${DISTRO}-updates main universe
+deb \${ARCHIVE} \${DISTRO}-security main universe
 EOL
 apt-get update --yes
 
 # Install dependencies
 apt-get install --yes --no-install-recommends \
-    build-essential btrfs-progs git ca-certificates gcc libc6-dev debootstrap \
-    xz-utils squashfs-tools gpg dirmngr gpg-agent rsync kpartx python3 \
-    subversion patch build-essential gawk libncurses-dev unzip qemu-utils \
-    gdisk dosfstools snapd zstd
+    btrfs-progs \
+    build-essential \
+    ca-certificates \
+    debootstrap \
+    dirmngr \
+    dosfstools \
+    gcc \
+    gdisk \
+    git \
+    gpg \
+    gpg-agent \
+    kpartx \
+    libc6-dev \
+    libncurses-dev \
+    mawk \
+    patch \
+    python3 \
+    qemu-utils \
+    rsync \
+    snapd \
+    squashfs-tools \
+    unzip \
+    xz-utils \
+    zstd
 apt-get clean
 export PATH=/snap/bin:\${PATH}
 
@@ -87,11 +111,6 @@ snap install snapd || true
 snap install snapd || true
 snap install distrobuilder --classic --edge
 snap refresh
-
-# Workaround LP: #1964636
-if [ -e /var/lib/snapd/apparmor/snap-confine/cap-bpf ]; then
-    > /var/lib/snapd/apparmor/snap-confine/cap-bpf
-fi
 
 # Detect broken snapd
 if [ ! -d /var/lib/snapd/apparmor/profiles ]; then
