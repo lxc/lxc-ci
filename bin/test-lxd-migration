@@ -37,55 +37,24 @@ while :; do
     sleep 10
 done
 
-# Install the LXD deb
-apt-get install -t "${series}" --no-install-recommends --yes lxd lxd-client jq
-apt-get install --no-install-recommends --yes zfsutils-linux thin-provisioning-tools
+# Install dependencies
+apt-get install --no-install-recommends --yes jq zfsutils-linux thin-provisioning-tools
 
-# Configure the LXD deb
-if [ "${series}" = "xenial-updates" ]; then
-    # LXD 2.0
-    lxd waitready --timeout=120
-    lxd init --auto --storage-backend=zfs --storage-create-loop=10 --storage-pool=lxd
+# Configure LXD
+lxd waitready --timeout=120
 
-    cat > /etc/default/lxd-bridge << EOF
-USE_LXD_BRIDGE=true
-LXD_BRIDGE=lxdbr0
-UPDATE_PROFILE=true
-LXD_CONFILE=
-LXD_DOMAIN=lxd
-LXD_IPV4_ADDR=10.0.3.1
-LXD_IPV4_NETMASK=255.255.255.0
-LXD_IPV4_NETWORK=10.0.3.0/24
-LXD_IPV4_DHCP_RANGE=10.0.3.2,10.0.3.254
-LXD_IPV4_DHCP_MAX=250
-LXD_IPV4_NAT=true
-LXD_IPV6_ADDR=2001:470:b368:4242::1
-LXD_IPV6_MASK=64
-LXD_IPV6_NETWORK=2001:470:b368:4242::/64
-LXD_IPV6_NAT=true
-LXD_IPV6_PROXY=false
-EOF
+# Base configuration
+lxc network create lxdbr0
+lxc storage create dir dir source=/mnt
+lxc storage create zfs zfs
+lxc storage create lvm lvm
+lxc storage create btrfs btrfs
 
-    systemctl restart lxd-bridge
-
-    lxd waitready --timeout=120
-else
-    # LXD 2.x
-    lxd waitready --timeout=120
-
-    # Base configuration
-    lxc network create lxdbr0
-    lxc storage create dir dir source=/mnt
-    lxc storage create zfs zfs
-    lxc storage create lvm lvm
-    lxc storage create btrfs btrfs
-
-    # Custom volumes
-    lxc storage volume create dir foo
-    lxc storage volume create zfs foo
-    lxc storage volume create lvm foo
-    lxc storage volume create btrfs foo
-fi
+# Custom volumes
+lxc storage volume create dir foo
+lxc storage volume create zfs foo
+lxc storage volume create lvm foo
+lxc storage volume create btrfs foo
 
 # Create some containers
 launch c1 dir
