@@ -115,8 +115,7 @@ system_id=$(allocate "amd64" "${1}")
 # Deploy the macine
 FAIL=1
 
-# shellcheck disable=SC2034
-for i in $(seq 3); do
+for _ in $(seq 3); do
     deploy "${system_id}" "${2}" "${3}" && FAIL=0 && break
 done
 [ "${FAIL}" = 1 ] && exit 1
