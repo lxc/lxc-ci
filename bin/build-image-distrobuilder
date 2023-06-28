@@ -71,9 +71,9 @@ APT::Get::Show-Versions "true";
 Acquire::Languages "none";
 EOL
 cat > /etc/apt/sources.list << EOL
-deb \${ARCHIVE} \${DISTRO} main universe
-deb \${ARCHIVE} \${DISTRO}-updates main universe
-deb \${ARCHIVE} \${DISTRO}-security main universe
+deb \${ARCHIVE} ${DISTRO} main universe
+deb \${ARCHIVE} ${DISTRO}-updates main universe
+deb \${ARCHIVE} ${DISTRO}-security main universe
 EOL
 apt-get update --yes
 
