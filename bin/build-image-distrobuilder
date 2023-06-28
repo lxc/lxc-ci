@@ -16,7 +16,7 @@ DISTRO="jammy"
 # Create the container
 lxc init "images:ubuntu/${DISTRO}/${ARCH}" build-distrobuilder-cache \
     -c security.privileged=true -c security.nesting=true \
-    -c raw.lxc="lxc.cgroup.devices.allow = b 259:* rw"
+    -c raw.lxc="lxc.cgroup2.devices.allow = b 259:* rw"
 
 # Setup loop devices
 (
@@ -71,9 +71,9 @@ APT::Get::Show-Versions "true";
 Acquire::Languages "none";
 EOL
 cat > /etc/apt/sources.list << EOL
-deb \${ARCHIVE} \${DISTRO} main universe
-deb \${ARCHIVE} \${DISTRO}-updates main universe
-deb \${ARCHIVE} \${DISTRO}-security main universe
+deb \${ARCHIVE} ${DISTRO} main universe
+deb \${ARCHIVE} ${DISTRO}-updates main universe
+deb \${ARCHIVE} ${DISTRO}-security main universe
 EOL
 apt-get update --yes
 
