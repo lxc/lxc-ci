@@ -318,6 +318,7 @@ actions:
     # Rebuild rpm database as the failing builds suggest it's broken.
     rpmdb --rebuilddb
     sed -i 's|repo.openeuler.org|mirrors.ocf.berkeley.edu/openeuler|g' /etc/yum.repos.d/openEuler.repo
+    sed -i '/metalink=/d' /etc/yum.repos.d/openEuler.repo
 
 - trigger: post-unpack
   action: |-
