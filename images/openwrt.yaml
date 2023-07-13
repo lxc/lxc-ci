@@ -349,7 +349,7 @@ actions:
     #!/bin/sh
 
     # Disable process isolation to make dnsmasq work
-    sed -i 's/procd_add_jail/# \0/g' /etc/init.d/dnsmasq
+    sed -i 's/procd_add_jail/: \0/g' /etc/init.d/dnsmasq
   releases:
   - snapshot
   - 22.03
