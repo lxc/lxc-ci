@@ -316,6 +316,7 @@ actions:
     set -eux
 
     systemd-machine-id-setup
+    mount -t tmpfs tmpfs /sys/firmware
   types:
   - vm
 
