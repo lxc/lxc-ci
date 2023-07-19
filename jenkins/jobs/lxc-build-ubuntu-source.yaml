@@ -53,7 +53,7 @@
         - bionic
         - focal
         - jammy
-        - kinetic
+        - lunar
 
     - axis:
         name: restrict
