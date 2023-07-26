@@ -52,6 +52,13 @@
     - workspace-cleanup:
         fail-build: false
 
+    - trigger-parameterized-builds:
+      - project:
+        - test-image
+        predefined-parameters: |-
+          image=${JOB_NAME}
+          build=${BUILD_URL}
+        condition: SUCCESS
 
     - naginator:
         rerun-unstable-builds: true
