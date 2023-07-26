@@ -1,0 +1,242 @@
+#!/bin/sh
+set -eu
+
+TEST_IMAGE="$(mktemp -u test-image-XXXXXX)"
+mkdir -p "/tmp/${TEST_IMAGE}"
+
+DIST="$1"
+RELEASE="$2"
+VARIANT="$3"
+TYPE="$4"
+META_URL="$5"
+DATA_URL="$6"
+
+cleanup() {
+    rm -Rf "/tmp/${TEST_IMAGE}"
+    lxc delete -f "${TEST_IMAGE}" 2>/dev/null || true
+    lxc delete -f "${TEST_IMAGE}-priv" 2>/dev/null || true
+    lxc delete -f "${TEST_IMAGE}-unpriv" 2>/dev/null || true
+    lxc image delete "${TEST_IMAGE}" 2>/dev/null || true
+
+    if [ "${FAIL}" = "1" ]; then
+        exit 1
+    fi
+
+    exit 0
+}
+
+FAIL=1
+trap cleanup EXIT HUP INT TERM
+
+# Skip VM tests on arm64
+if [ "${VARIANT}" = "vm" ] && [ "${ARCH}" = "arm64" ]; then
+    echo "==> SKIP: Can't test VM image on arm64 (lack nested support)"
+    exit
+fi
+
+echo "==> Fetching the image"
+curl "${META_URL}" -s -o "/tmp/${TEST_IMAGE}/meta"
+curl "${DATA_URL}" -s -o "/tmp/${TEST_IMAGE}/root"
+lxc image import "/tmp/${TEST_IMAGE}/meta" "/tmp/${TEST_IMAGE}/root" --alias "${TEST_IMAGE}"
+
+echo "==> Creating the instances"
+INSTANCES=""
+if [ "${TYPE}" = "vm" ]; then
+    lxc init "${TEST_IMAGE}" "${TEST_IMAGE}" --vm -c security.secureboot=false -c limits.cpu=4 -c limits.memory=4GB
+    INSTANCES="${TEST_IMAGE}"
+
+    # Cloud-init testing
+    if [ "${VARIANT}" = "cloud" ]; then
+        lxc config set "${TEST_IMAGE}" user.user-data "$(cat << EOF
+#cloud-config
+write_files:
+  - content: "foo\n"
+    path: /user-data
+EOF
+)"
+
+        lxc config set "${TEST_IMAGE}" user.vendor-data "$(cat << EOF
+#cloud-config
+bootcmd:
+  - "echo bar > /vendor-data"
+EOF
+)"
+    fi
+else
+    lxc init "${TEST_IMAGE}" "${TEST_IMAGE}-unpriv"
+    lxc init "${TEST_IMAGE}" "${TEST_IMAGE}-priv" -c security.privileged=true
+    INSTANCES="${TEST_IMAGE}-priv ${TEST_IMAGE}-unpriv"
+
+    if [ "${DIST}" = "voidlinux" ]; then
+        # Workaround weird init system
+        lxc config set "${TEST_IMAGE}-unpriv" raw.lxc lxc.signal.halt=SIGCONT
+        lxc config set "${TEST_IMAGE}-priv" raw.lxc lxc.signal.halt=SIGCONT
+    fi
+
+    # Cloud-init testing
+    if [ "${VARIANT}" = "cloud" ]; then
+        lxc config set "${TEST_IMAGE}-unpriv" user.user-data "$(cat << EOF
+#cloud-config
+write_files:
+  - content: "foo\n"
+    path: /user-data
+EOF
+)"
+
+        lxc config set "${TEST_IMAGE}-unpriv" user.vendor-data "$(cat << EOF
+#cloud-config
+bootcmd:
+  - "echo bar > /vendor-data"
+EOF
+)"
+
+        lxc config set "${TEST_IMAGE}-priv" user.user-data "$(cat << EOF
+#cloud-config
+write_files:
+  - content: "foo\n"
+    path: /user-data
+EOF
+)"
+
+        lxc config set "${TEST_IMAGE}-priv" user.vendor-data "$(cat << EOF
+#cloud-config
+bootcmd:
+  - "echo bar > /vendor-data"
+EOF
+)"
+    fi
+fi
+
+# Start them all
+echo "==> Starting the instances"
+for i in ${INSTANCES}; do
+    lxc start "${i}"
+done
+
+# Wait for things to settle
+echo "==> Waiting for instances to start"
+[ "${TYPE}" = "container" ] && sleep 20s
+[ "${TYPE}" = "vm" ] && sleep 1m
+lxc list "${TEST_IMAGE}"
+
+# Check that all instances have an IPv4 and IPv6 address
+echo "==> Performing network tests"
+FAIL=0
+for url in $(lxc query "/1.0/instances" | jq -r .[] | grep "${TEST_IMAGE}"); do
+    name=$(echo "${url}" | cut -d/ -f4)
+
+    # Skip busybox as it wouldn't pass any test
+    if [ "${DIST}" = "busybox" ]; then
+        echo "===> SKIP: Busybox is untestable"
+        continue
+    fi
+
+    # Skip CentOS 7 VMs due to racy agent
+    if [ "${TYPE}" = "vm" ] && [ "${DIST}" = "centos" ] && [ "${RELEASE}" = "7" ]; then
+        echo "===> SKIP: CentOS 7 has an unstable agent: ${name}"
+        continue
+    fi
+
+    # Systemd cleanliness
+    if lxc exec "${name}" -- sh -c "type systemctl" >/dev/null 2>&1; then
+        if lxc exec "${name}" -- systemctl --failed 2>&1 | grep -q '\sfailed\s'; then
+            echo "===> FAIL: systemd clean: ${name}"
+
+            # Show the systemd failures
+            echo "===> DEBUG: systemd failed: ${name}"
+            lxc exec "${name}" -- systemctl --failed
+            FAIL=1
+        else
+            echo "===> PASS: systemd clean: ${name}"
+        fi
+    else
+        echo "===> SKIP: systemd clean: ${name}"
+    fi
+
+    # Get the addresses
+    address=$(lxc query "${url}/state" | jq -r ".network.eth0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
+    if [ -z "${address}" ]; then
+        address=$(lxc query "${url}/state" | jq -r ".network.enp5s0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
+    fi
+
+    if [ -z "${address}" ]; then
+        echo "===> FAIL: No network interface: ${name}"
+
+        # Show the network state
+        echo "===> DEBUG: network state: ${name}"
+        lxc info "${name}"
+        FAIL=1
+        continue
+    fi
+
+    # IPv4 address
+    if echo "${address}" | grep "\." -q; then
+        echo "===> PASS: IPv4 address: ${name}"
+    else
+        echo "===> FAIL: IPv4 address: ${name}"
+        FAIL=1
+    fi
+
+    # IPv6 address
+    if echo "${address}" | grep ":" -q; then
+        echo "===> PASS: IPv6 address: ${name}"
+    else
+        echo "===> FAIL: IPv6 address: ${name}"
+        FAIL=1
+    fi
+
+    # DNS resolution
+    DNS=0
+    for i in $(seq 3); do
+        if lxc exec "${name}" -- getent hosts linuxcontainers.org >/dev/null 2>&1; then
+            DNS=1
+            break
+        fi
+
+        if lxc exec "${name}" -- ping -c1 -W1 linuxcontainers.org >/dev/null 2>&1; then
+            DNS=1
+            break
+        fi
+
+        sleep 1
+    done
+    if [ "${DNS}" = "1" ]; then
+        echo "===> PASS: DNS resolution: ${name}"
+    else
+        echo "===> FAIL: DNS resolution: ${name}"
+        FAIL=1
+    fi
+
+    # Cloud-init testing
+    if [ "${VARIANT}" = "cloud" ]; then
+        if [ "$(lxc file pull "${name}/user-data" - 2>/dev/null)" = "foo" ]; then
+            echo "===> PASS: cloud-init user-data provisioning: ${name}"
+        else
+            echo "===> FAIL: cloud-init user-data provisioning: ${name}"
+            FAIL=1
+        fi
+
+        if [ "$(lxc file pull "${name}/vendor-data" - 2>/dev/null)" = "bar" ]; then
+            echo "===> PASS: cloud-init vendor-data provisioning: ${name}"
+        else
+            echo "===> FAIL: cloud-init vendor-data provisioning: ${name}"
+            FAIL=1
+        fi
+    fi
+done
+
+# Check that all instances can be stopped
+echo "==> Performing shutdown test"
+STOPPED=0
+for i in $(seq 10); do
+    if lxc stop ${INSTANCES} --timeout=30 >/dev/null 2>&1; then
+        STOPPED=1
+        break
+    else
+        echo "$(lxc list | grep -c RUNNING) instances still running"
+    fi
+done
+
+lxc list "${TEST_IMAGE}"
+
+[ "${STOPPED}" = "0" ] && FAIL=1

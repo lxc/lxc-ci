@@ -1,0 +1,68 @@
+#!/usr/bin/python3
+import json
+import subprocess
+import sys
+from urllib.request import urlopen
+
+image = sys.argv[1]
+arch = sys.argv[2]
+build = sys.argv[3]
+
+def get_json(url, depth=0):
+    return json.loads(urlopen("%s/api/json?depth=%d" % (url, depth)).read().decode())
+
+build = get_json(build, 1)
+
+for run in build['runs']:
+    url = run['url']
+    raw_params = url.split("/")[-3].split(",")
+    params = {f.split("=", 1)[0]: f.split("=", 1)[1] for f in raw_params}
+    artifacts = {f['fileName']: "%sartifact/%s" % (url, f['fileName'])
+                 for f in run['artifacts']}
+
+    if params['architecture'] != arch:
+        continue
+
+    if "rootfs.squashfs" in artifacts:
+        print("=> Testing: %s/%s/%s/%s (container)" %
+                (image, params['release'],
+                 params['variant'], params['architecture']))
+
+        try:
+            subprocess.run(["bin/test-image",
+                            image,
+                            params['release'],
+                            params['variant'],
+                            "container",
+                            artifacts['lxd.tar.xz'],
+                            artifacts['rootfs.squashfs']], check=True)
+            print("==> Test passed: %s/%s/%s/%s (container)" %
+                  (image, params['release'],
+                   params['variant'], params['architecture']))
+        except subprocess.CalledProcessError:
+            print("==> Test failed: %s/%s/%s/%s (container)" %
+                  (image, params['release'],
+                   params['variant'], params['architecture']))
+            sys.exit(1)
+
+    if "disk.qcow2" in artifacts:
+        print("=> Testing: %s/%s/%s/%s (VM)" %
+                (image, params['release'],
+                 params['variant'], params['architecture']))
+
+        try:
+            subprocess.run(["bin/test-image",
+                            image,
+                            params['release'],
+                            params['variant'],
+                            "vm",
+                            artifacts['lxd.tar.xz'],
+                            artifacts['disk.qcow2']], check=True)
+            print("==> Test passed: %s/%s/%s/%s (VM)" %
+                  (image, params['release'],
+                   params['variant'], params['architecture']))
+        except subprocess.CalledProcessError:
+            print("==> Test failed: %s/%s/%s/%s (VM)" %
+                  (image, params['release'],
+                   params['variant'], params['architecture']))
+            sys.exit(1)
