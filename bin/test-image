@@ -229,6 +229,7 @@ done
 echo "==> Performing shutdown test"
 STOPPED=0
 for i in $(seq 10); do
+    # shellcheck disable=SC2086
     if lxc stop ${INSTANCES} --timeout=30 >/dev/null 2>&1; then
         STOPPED=1
         break
