@@ -69,6 +69,13 @@
     - workspace-cleanup:
         fail-build: false
 
+    - trigger-parameterized-builds:
+      - project:
+        - test-image
+        predefined-parameters: |-
+          image="alpine"
+          branch={branch}
+        condition: SUCCESS
 
     - naginator:
         rerun-unstable-builds: true

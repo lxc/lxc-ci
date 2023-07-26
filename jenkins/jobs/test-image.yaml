@@ -1,0 +1,40 @@
+- job:
+    name: test-image
+    concurrent: true
+    description: Validate the image is functional
+    node: master
+    project-type: matrix
+
+    axes:
+    - axis:
+        name: architecture
+        type: slave
+        values:
+        - amd64
+        - arm64
+
+    builders:
+    - shell: |-
+        echo "IMAGE: ${image}"
+        echo "ARCH: ${architecture}"
+        exit 0
+
+    properties:
+    - build-discarder:
+        num-to-keep: 15
+
+    - raw:
+        !include: ../includes/webhook.yaml.inc
+
+    parameters:
+    - string:
+        name: image
+        description: Image being tested
+
+    publishers:
+    - workspace-cleanup:
+        fail-build: false
+
+    wrappers:
+    - ansicolor:
+        colormap: css
