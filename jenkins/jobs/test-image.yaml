@@ -15,10 +15,8 @@
 
     builders:
     - shell: |-
-        echo "IMAGE: ${image}"
-        echo "ARCH: ${architecture}"
-        echo "URL: ${build}"
-        exit 0
+        cd /lxc-ci
+        exec sudo bin/test-image-dispatcher "${image}" "${architecture}" "${build}"
 
     properties:
     - build-discarder:
