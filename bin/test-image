@@ -233,7 +233,13 @@ for i in $(seq 10); do
         STOPPED=1
         break
     else
-        echo "$(lxc list "${TEST_IMAGE}" | grep -c RUNNING) instances still running"
+        COUNT="$(lxc list "${TEST_IMAGE}" | grep -c RUNNING)"
+        if [ "${COUNT}" = "0" ]; then
+            STOPPED=1
+            break
+        fi
+
+        echo "${COUNT} instances still running"
     fi
 done
 
