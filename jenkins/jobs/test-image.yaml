@@ -17,6 +17,7 @@
     - shell: |-
         echo "IMAGE: ${image}"
         echo "ARCH: ${architecture}"
+        echo "URL: ${build}"
         exit 0
 
     properties:
@@ -30,6 +31,9 @@
     - string:
         name: image
         description: Image being tested
+    - string:
+        name: build
+        description: URL to the build being tested
 
     publishers:
     - workspace-cleanup:

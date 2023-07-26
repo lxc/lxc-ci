@@ -73,8 +73,8 @@
       - project:
         - test-image
         predefined-parameters: |-
-          image="alpine"
-          branch={branch}
+          image=${JOB_NAME}
+          build=${BUILD_URL}
         condition: SUCCESS
 
     - naginator:
