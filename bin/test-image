@@ -117,7 +117,7 @@ done
 # Wait for things to settle
 echo "==> Waiting for instances to start"
 [ "${TYPE}" = "container" ] && sleep 1m
-[ "${TYPE}" = "vm" ] && sleep 2m
+[ "${TYPE}" = "vm" ] && sleep 3m
 lxc list "${TEST_IMAGE}"
 
 # Check that all instances have an IPv4 and IPv6 address
