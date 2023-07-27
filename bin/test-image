@@ -1,9 +1,6 @@
 #!/bin/sh
 set -eu
 
-TEST_IMAGE="$(mktemp -u test-image-XXXXXX)"
-mkdir -p "/tmp/${TEST_IMAGE}"
-
 DIST="$1"
 RELEASE="$2"
 VARIANT="$3"
@@ -30,6 +27,10 @@ if [ "${TYPE}" = "vm" ] && [ "$(uname -m)" = "aarch64" ]; then
     echo "==> SKIP: Can't test VM image on arm64 (lack nested support)"
     exit
 fi
+
+# Setup the test environment
+TEST_IMAGE="$(mktemp -u test-image-XXXXXX)"
+mkdir -p "/tmp/${TEST_IMAGE}"
 
 FAIL=1
 trap cleanup EXIT HUP INT TERM
