@@ -734,7 +734,7 @@ actions:
     [Service]
     Type=oneshot
     ExecStartPre=-/usr/bin/growpart /dev/sda 2
-    ExecStart=/usr/sbin/resize2fs /dev/sda2
+    ExecStart=/sbin/resize2fs /dev/sda2
 
     [Install]
     WantedBy=default.target
