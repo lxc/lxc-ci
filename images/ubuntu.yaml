@@ -751,6 +751,9 @@ actions:
     #!/bin/sh
     set -eux
 
+    # Disable location service
+    systemctl mask geoclue.service || true
+
     # Timezone
     rm -f /etc/localtime
     ln -s /usr/share/zoneinfo/UTC /etc/localtime
