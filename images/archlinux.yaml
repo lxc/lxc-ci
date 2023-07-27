@@ -717,6 +717,10 @@ actions:
     #!/bin/sh
     set -eux
 
+    # Reliable shutdown
+    echo HandlePowerKey=poweroff >> /etc/systemd/logind.conf
+    echo PowerKeyIgnoreInhibited=yes >> /etc/systemd/logind.conf
+
     # User
     USERNAME="archlinux"
     useradd ${USERNAME} -m -U -G adm,video,users

@@ -328,6 +328,10 @@ actions:
 
     zypper install -y -t pattern kde
 
+    # Reliable shutdown
+    echo HandlePowerKey=poweroff >> /etc/systemd/logind.conf
+    echo PowerKeyIgnoreInhibited=yes >> /etc/systemd/logind.conf
+
     # Timezone
     rm -f /etc/localtime
     ln -s /usr/share/zoneinfo/UTC /etc/localtime
