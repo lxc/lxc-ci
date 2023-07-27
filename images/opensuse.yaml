@@ -269,6 +269,7 @@ packages:
   - packages:
     - cloud-init
     - cloud-init-config-suse
+    - fdupes
     action: install
     variants:
     - cloud
