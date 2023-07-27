@@ -29,7 +29,7 @@ FAIL=1
 trap cleanup EXIT HUP INT TERM
 
 # Skip VM tests on arm64
-if [ "${VARIANT}" = "vm" ] && [ "${ARCH}" = "arm64" ]; then
+if [ "${TYPE}" = "vm" ] && [ "${ARCH}" = "arm64" ]; then
     echo "==> SKIP: Can't test VM image on arm64 (lack nested support)"
     exit
 fi
