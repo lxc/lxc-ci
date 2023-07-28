@@ -717,10 +717,6 @@ actions:
     #!/bin/sh
     set -eux
 
-    # Reliable shutdown
-    echo HandlePowerKey=poweroff >> /etc/systemd/logind.conf
-    echo PowerKeyIgnoreInhibited=yes >> /etc/systemd/logind.conf
-
     # User
     USERNAME="archlinux"
     useradd ${USERNAME} -m -U -G adm,video,users
@@ -747,6 +743,9 @@ actions:
 
     # Disable 60-second logout prompt when `lxc stop` is called.
     gsettings set org.gnome.SessionManager logout-prompt false
+
+    # Disable welcome tour.
+    gsettings set org.gnome.shell welcome-dialog-last-shown-version '4294967295'
 
     # Delete this script
     rm /home/archlinux/firstboot.sh

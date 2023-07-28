@@ -754,10 +754,6 @@ actions:
     # Disable location service
     systemctl mask geoclue.service || true
 
-    # Reliable shutdown
-    echo HandlePowerKey=poweroff >> /etc/systemd/logind.conf
-    echo PowerKeyIgnoreInhibited=yes >> /etc/systemd/logind.conf
-
     # Timezone
     rm -f /etc/localtime
     ln -s /usr/share/zoneinfo/UTC /etc/localtime
@@ -785,6 +781,9 @@ actions:
 
     # Disable automatic screensaver lock
     gsettings set org.gnome.desktop.screensaver lock-enabled false
+
+    # Disable welcome tour.
+    gsettings set org.gnome.shell welcome-dialog-last-shown-version '4294967295'
 
     # Delete this script
     rm /home/ubuntu/firstboot.sh
