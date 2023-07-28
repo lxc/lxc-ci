@@ -246,8 +246,8 @@ actions:
   action: |-
     #!/bin/sh
     set -eu
-    getfattr --absolute-names -RP -n security.ima -e hex / 2>/dev/null | grep "^# file:" | cut -d" " -f3- | while read line; do
-        setfattr -x security.ima "${line}"
+    getfattr --absolute-names -RPh -n security.ima -e hex / 2>/dev/null | grep "^# file:" | cut -d" " -f3- | while read line; do
+        setfattr -h -x security.ima "${line}" || true
     done
   types:
   - container
