@@ -333,6 +333,9 @@ actions:
     #!/bin/sh
     set -eux
 
+    # Disable auditd
+    systemctl mask auditd.service
+
     # Disable SELinux
     mkdir -p /selinux
     echo 0 > /selinux/enforce
