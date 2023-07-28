@@ -185,6 +185,7 @@ packages:
     - 7
 
   - packages:
+    - attr
     - curl
     - dhclient
     - initscripts
