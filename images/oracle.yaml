@@ -241,13 +241,13 @@ actions:
     # Disable loginuid in PAM stack
     sed -i '/^session.*pam_loginuid.so/s/^session/# session/' /etc/pam.d/*
 
-# workaround for https://discuss.linuxcontainers.org/t/help-needed-failed-to-launch-the-lxd-container/15674/6
+# Strip security.ima from all files that have it set.
 - trigger: post-files
   action: |-
     #!/bin/sh
     set -eu
-    for f in $(find /etc/dnf/protected.d/ -type f); do
-      setfattr -x security.ima "${f}" >/dev/null 2>&1 || true
+    getfattr --absolute-names -RP -n security.ima -e hex / 2>/dev/null | grep "^# file:" | cut -d" " -f3- | while read line; do
+        setfattr -x security.ima "${line}"
     done
   types:
   - container
