@@ -292,6 +292,8 @@ packages:
     - x86_64
 
   - packages:
+    - e2fsprogs
+    - growpart
     - kernel-default
     action: install
     types:
@@ -300,8 +302,6 @@ packages:
   - packages:
     - discover
     - dolphin
-    - e2fsprogs
-    - growpart
     - konsole
     - sddm
     action: install
@@ -438,7 +438,7 @@ actions:
 
     [Service]
     Type=oneshot
-    ExecStartPre=-/usr/bin/growpart /dev/sda 2
+    ExecStartPre=-/usr/sbin/growpart /dev/sda 2
     ExecStart=/usr/sbin/resize2fs /dev/sda2
 
     [Install]
