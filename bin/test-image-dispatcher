@@ -4,7 +4,7 @@ import subprocess
 import sys
 from urllib.request import urlopen
 
-image = sys.argv[1]
+image = sys.argv[1].removeprefix("image-")
 arch = sys.argv[2]
 build = sys.argv[3]
 
