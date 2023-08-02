@@ -362,6 +362,9 @@ actions:
 
     # Workaround for broken systemd in centos7
     systemctl enable lxd-agent-workaround.service
+
+    # Workaround for broken mdmonitor
+    systemctl mask mdmonitor
   types:
   - vm
 
