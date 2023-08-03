@@ -405,6 +405,9 @@ actions:
     for svc_name in sshd; do
         ln -fs /etc/init.d/${svc_name} /etc/runlevels/default/${svc_name}
     done
+
+    # Tweak to prevent cloud-init from getting stuck.
+    echo "datasource_list: ['NoCloud', 'ConfigDrive', 'LXD', 'None']" > /etc/cloud/cloud.cfg.d/99_lxc.cfg
   types:
   - vm
   variants:
