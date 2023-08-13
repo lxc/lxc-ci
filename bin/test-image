@@ -38,6 +38,8 @@ trap cleanup EXIT HUP INT TERM
 echo "==> Fetching the image"
 curl "${META_URL}" -s -o "/tmp/${TEST_IMAGE}/meta"
 curl "${DATA_URL}" -s -o "/tmp/${TEST_IMAGE}/root"
+FINGERPRINT=$(cat "/tmp/${TEST_IMAGE}/meta" "/tmp/${TEST_IMAGE}/root" | sha256sum | cut -d' ' -f1)
+lxc image delete "${FINGERPRINT}" 2>/dev/null || true
 lxc image import "/tmp/${TEST_IMAGE}/meta" "/tmp/${TEST_IMAGE}/root" --alias "${TEST_IMAGE}"
 
 echo "==> Creating the instances"
