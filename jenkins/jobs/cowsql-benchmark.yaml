@@ -1,0 +1,33 @@
+- job:
+    name: "cowsql-benchmark"
+    concurrent: false
+    description: Benchmarks cowsql performance
+    node: master
+    project-type: freestyle
+
+    builders:
+    - shell: |-
+        cd /lxc-ci
+        exec /lxc-ci/bin/maas-run name=lantea jammy ga-22.04 default bin/test-cowsql-benchmark
+
+    properties:
+    - build-discarder:
+        num-to-keep: 3
+
+    - raw:
+        !include: ../includes/webhook.yaml.inc
+
+    publishers:
+    - naginator:
+        rerun-unstable-builds: true
+        rerun-matrix-part: true
+        max-failed-builds: 3
+        progressive-delay-increment: 300
+        progressive-delay-maximum: 900
+
+    triggers:
+    - timed: '@daily'
+
+    wrappers:
+    - ansicolor:
+        colormap: css
