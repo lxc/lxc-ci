@@ -24,13 +24,14 @@ BENCHER_RELEASES_URL=https://api.github.com/repos/bencherdev/bencher/releases/la
 # List of **unused** devices that will be repartitioned and used as storage
 DEVICES="/dev/nvme0n1 /dev/sdd"
 
-# Run the benchmarks against these file systems
-FILESYSTEMS="ext4 btrfs xfs zfs"
+# Run the benchmarks against these file systems. The "raw" file system means
+# using directly the block device.
+FILESYSTEMS="ext4 btrfs xfs zfs raw"
 
 # Run raft disk benchmarks with these modes, engines and buffer sizes.
 RAFT_DISK_MODES="direct,buffer"
 RAFT_DISK_ENGINES="pwrite,kaio,uring"
-RAFT_DISK_BUFSIZES="4096,65536,262144,1048576"
+RAFT_DISK_BUFSIZES="4096,8192,65536,262144"
 
 cleanup() {
     set +e
@@ -52,6 +53,7 @@ cleanup() {
 setup_data_dir() {
     device=$1
     filesystem=$2
+    storage="${DATA_DIR}"
     sudo parted "${device}" --script mklabel gpt
     sudo parted -a optimal "${device}" --script mkpart primary ext4 2048 15GB
     sudo partprobe
@@ -82,17 +84,24 @@ setup_data_dir() {
 	    sudo zpool create -f cowsql "${partition}"
 	    sudo zfs create -o mountpoint="${DATA_DIR}" cowsql/zfs
             ;;
+        raw)
+            storage="${device}"
+            ;;
         *)
             echo "error: unknown filesystem $filesystem"
             exit 1
             ;;
     esac
 
-    sudo chown "${USER}" "${DATA_DIR}"
+    sudo chown "${USER}" "${storage}"
 }
 
 tear_down_data_dir() {
     filesystem=$1
+
+    if [ "${filesystem}" = "raw" ]; then
+        return
+    fi
 
     echo "umount $filesystem file system from ${DATA_DIR}"
     sudo umount "${DATA_DIR}"
@@ -110,11 +119,22 @@ run_benchmarks() {
     device=$1
     filesystem=$2
     testbed=lxc-$(hostname)-$(basename "${device}")-$filesystem
+    storage="${DATA_DIR}"
+
+    if [ "${filesystem}" = "raw" ]; then
+        storage="${device}"
+    fi
 
     echo "run raft-benchmark disk on $testbed"
     export BENCHER_API_TOKEN="${BENCHER_RAFT_TOKEN}"
+
     bencher run --project raft --testbed "${testbed}" \
-      "raft-benchmark disk -d ${DATA_DIR} -m $RAFT_DISK_MODES -e $RAFT_DISK_ENGINES -b $RAFT_DISK_BUFSIZES"
+      "raft-benchmark disk -d ${storage} -m $RAFT_DISK_MODES -e $RAFT_DISK_ENGINES -b $RAFT_DISK_BUFSIZES"
+
+    if [ "${filesystem}" != "raw" ]; then
+        bencher run --project raft --testbed "${testbed}" \
+          "raft-benchmark submit -d $storage"
+    fi
 }
 
 FAIL=1
