@@ -127,8 +127,14 @@ run_benchmarks() {
 
     echo "run raft-benchmark disk on $testbed"
     export BENCHER_API_TOKEN="${BENCHER_RAFT_TOKEN}"
+
     bencher run --project raft --testbed "${testbed}" \
       "raft-benchmark disk -d ${storage} -m $RAFT_DISK_MODES -e $RAFT_DISK_ENGINES -b $RAFT_DISK_BUFSIZES"
+
+    if [ "${filesystem}" != "raw" ]; then
+        bencher run --project raft --testbed "${testbed}" \
+          "raft-benchmark submit -d $storage"
+    fi
 }
 
 FAIL=1
