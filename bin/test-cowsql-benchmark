@@ -31,7 +31,7 @@ FILESYSTEMS="ext4 btrfs xfs zfs raw"
 # Run raft disk benchmarks with these modes, engines and buffer sizes.
 RAFT_DISK_MODES="direct,buffer"
 RAFT_DISK_ENGINES="pwrite,kaio,uring"
-RAFT_DISK_BUFSIZES="4096,65536,262144,1048576"
+RAFT_DISK_BUFSIZES="4096,8192,65536,262144"
 
 cleanup() {
     set +e
