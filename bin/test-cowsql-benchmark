@@ -7,12 +7,10 @@ DATA_DIR=$DIR/cowsql-benchmark
 
 # List of Debian packages to install.
 PACKAGES="\
-        btrfs-progs \
         e2fsprogs \
         libraft-tools \
         parted \
         xfsprogs \
-        zfsutils-linux \
 "
 
 # Bencher API token, used to send benchmark results to https://bencher.dev
@@ -26,10 +24,9 @@ DEVICES="/dev/nvme0n1 /dev/sdd"
 
 # Run the benchmarks against these file systems. The "raw" file system means
 # using directly the block device.
-FILESYSTEMS="ext4 btrfs xfs zfs raw"
+FILESYSTEMS="ext4 xfs raw"
 
 # Run raft disk benchmarks with these modes, engines and buffer sizes.
-RAFT_DISK_MODES="direct,buffer"
 RAFT_DISK_ENGINES="pwrite,kaio,uring"
 RAFT_DISK_BUFSIZES="4096,8192,65536,262144"
 
@@ -129,7 +126,7 @@ run_benchmarks() {
     export BENCHER_API_TOKEN="${BENCHER_RAFT_TOKEN}"
 
     bencher run --project raft --testbed "${testbed}" \
-      "raft-benchmark disk -d ${storage} -m $RAFT_DISK_MODES -e $RAFT_DISK_ENGINES -b $RAFT_DISK_BUFSIZES"
+      "raft-benchmark disk -d ${storage} -e $RAFT_DISK_ENGINES -b $RAFT_DISK_BUFSIZES"
 
     if [ "${filesystem}" != "raw" ]; then
         bencher run --project raft --testbed "${testbed}" \
