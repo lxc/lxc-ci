@@ -39,6 +39,14 @@ case "$i" in
         update-grub
       ;;
 
+      isolcpus)
+        echo "===> Isolate CPUs from the kernel scheduler"
+
+        # shellcheck disable=SC2016
+        echo 'GRUB_CMDLINE_LINUX="${GRUB_CMDLINE_LINUX} isolcpus=1,2,3"' > /etc/default/grub.d/99-isolcpus.cfg
+        update-grub
+      ;;
+
       nvidia)
         echo "===> Installing the NVIDIA driver"
 
