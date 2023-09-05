@@ -402,7 +402,7 @@ files:
   variants:
   - cloud
 
-- generator: lxd-agent
+- generator: incus-agent
   types:
   - vm
 

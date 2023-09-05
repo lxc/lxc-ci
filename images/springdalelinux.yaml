@@ -117,7 +117,7 @@ files:
   types:
   - container
 
-- name: ifcfg-eth0.lxd
+- name: ifcfg-eth0.incus
   path: /etc/sysconfig/network-scripts/ifcfg-eth0
   generator: template
   content: |-
@@ -132,7 +132,7 @@ files:
   releases:
   - 7
 
-- name: ifcfg-eth0.lxd
+- name: ifcfg-eth0.incus
   path: /etc/sysconfig/network-scripts/ifcfg-eth0
   generator: template
   content: |-
@@ -150,7 +150,7 @@ files:
   types:
   - container
 
-- name: ifcfg-enp5s0.lxd
+- name: ifcfg-enp5s0.incus
   path: /etc/sysconfig/network-scripts/ifcfg-enp5s0
   generator: template
   content: |-
@@ -183,7 +183,7 @@ files:
   types:
   - vm
 
-- path: /etc/dracut.conf.d/lxd.conf
+- path: /etc/dracut.conf.d/incus.conf
   generator: dump
   content: |-
     add_drivers+="virtio_scsi virtio_pci virtio_console"
@@ -192,7 +192,7 @@ files:
   releases:
   - 7
 
-- path: /etc/dracut.conf.d/lxd.conf
+- path: /etc/dracut.conf.d/incus.conf
   generator: dump
   content: |-
     add_drivers+="virtio_scsi virtio_console sd_mod"
@@ -211,17 +211,17 @@ files:
   types:
   - container
 
-- name: lxd-agent-workaround.service
-  path: /etc/systemd/system/lxd-agent-workaround.service
+- name: incus-agent-workaround.service
+  path: /etc/systemd/system/incus-agent-workaround.service
   generator: dump
   content: |-
     [Unit]
     Description=LXD - agent (centos workaround)
-    Before=lxd-agent.service
+    Before=incus-agent.service
 
     [Service]
     Type=oneshot
-    ExecStart=-/bin/mkdir /run/lxd_agent
+    ExecStart=-/bin/mkdir /run/incus_agent
 
     [Install]
     WantedBy=multi-user.target
@@ -230,12 +230,12 @@ files:
   releases:
   - 7
 
-- name: lxd-agent.override
-  path: /etc/systemd/system/lxd-agent.service.d/lxd.conf
+- name: incus-agent.override
+  path: /etc/systemd/system/incus-agent.service.d/incus.conf
   generator: dump
   content: |-
     [Service]
-    WorkingDirectory=/run/lxd_agent
+    WorkingDirectory=/run/incus_agent
   types:
   - vm
   releases:
@@ -249,7 +249,7 @@ files:
     NETWORKING=yes
     HOSTNAME=LXC_NAME
 
-- name: network.lxd
+- name: network.incus
   path: /etc/sysconfig/network
   generator: template
   content: |-
@@ -296,7 +296,7 @@ files:
   variants:
   - cloud
 
-- generator: lxd-agent
+- generator: incus-agent
   types:
   - vm
 
@@ -434,7 +434,7 @@ actions:
     sed -i "s#root=[^ ]*#root=/dev/sda2#g" "${target}"
 
     # Workaround for broken systemd in centos7
-    systemctl enable lxd-agent-workaround.service
+    systemctl enable incus-agent-workaround.service
   types:
   - vm
   releases:

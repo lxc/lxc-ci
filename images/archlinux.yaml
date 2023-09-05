@@ -497,8 +497,8 @@ files:
   types:
   - vm
 
-- name: lxd-agent
-  generator: lxd-agent
+- name: incus-agent
+  generator: incus-agent
   types:
   - vm
 
@@ -534,7 +534,7 @@ files:
   architectures:
   - x86_64
 
-- path: /etc/sudoers.d/90-lxd
+- path: /etc/sudoers.d/90-incus
   generator: dump
   mode: 0440
   content: |-
@@ -693,9 +693,9 @@ actions:
     set -eux
 
     # Automatic disk resize
-    cat << EOF > /etc/systemd/system/lxd-growpart.service
+    cat << EOF > /etc/systemd/system/incus-growpart.service
     [Unit]
-    Description=LXD - grow root partition
+    Description=Incus - grow root partition
 
     [Service]
     Type=oneshot
@@ -705,7 +705,7 @@ actions:
     [Install]
     WantedBy=default.target
     EOF
-    systemctl enable lxd-growpart
+    systemctl enable incus-growpart
   variants:
   - default
   - desktop-gnome

@@ -144,11 +144,11 @@ files:
   types:
   - vm
 
-- generator: lxd-agent
+- generator: incus-agent
   types:
   - vm
 
-- path: /etc/dracut.conf.d/lxd.conf
+- path: /etc/dracut.conf.d/incus.conf
   generator: dump
   content: |-
     add_drivers+=" virtio_scsi virtio_pci sd_mod "
@@ -205,7 +205,7 @@ files:
   variants:
   - desktop-kde
 
-- path: /etc/sudoers.d/90-lxd
+- path: /etc/sudoers.d/90-incus
   generator: dump
   mode: 0440
   content: |-
@@ -432,9 +432,9 @@ actions:
     set -eux
 
     # Automatic disk resize
-    cat << EOF > /etc/systemd/system/lxd-growpart.service
+    cat << EOF > /etc/systemd/system/incus-growpart.service
     [Unit]
-    Description=LXD - grow root partition
+    Description=Incus - grow root partition
 
     [Service]
     Type=oneshot
@@ -444,7 +444,7 @@ actions:
     [Install]
     WantedBy=default.target
     EOF
-    systemctl enable lxd-growpart
+    systemctl enable incus-growpart
   types:
   - vm
   variants:

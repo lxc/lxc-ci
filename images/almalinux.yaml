@@ -180,7 +180,7 @@ files:
   types:
   - container
 
-- name: ifcfg-eth0.lxd
+- name: ifcfg-eth0.incus
   path: /etc/sysconfig/network-scripts/ifcfg-eth0
   generator: template
   content: |-
@@ -211,7 +211,7 @@ files:
   types:
   - vm
 
-- path: /etc/dracut.conf.d/lxd.conf
+- path: /etc/dracut.conf.d/incus.conf
   generator: dump
   content: |-
     add_drivers+=" virtio_scsi virtio_console sd_mod "
@@ -236,7 +236,7 @@ files:
     NETWORKING=yes
     HOSTNAME=LXC_NAME
 
-- name: network.lxd
+- name: network.incus
   path: /etc/sysconfig/network
   generator: template
   content: |-
@@ -273,7 +273,7 @@ files:
   variants:
   - cloud
 
-- generator: lxd-agent
+- generator: incus-agent
   types:
   - vm
 

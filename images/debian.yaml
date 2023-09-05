@@ -1090,7 +1090,7 @@ files:
   - bookworm
   - sid
 
-- path: /etc/default/grub.d/50-lxd.cfg
+- path: /etc/default/grub.d/50-incus.cfg
   generator: dump
   content: |-
     # Set the recordfail timeout
@@ -1127,8 +1127,8 @@ files:
   variants:
   - cloud
 
-- name: lxd-agent
-  generator: lxd-agent
+- name: incus-agent
+  generator: incus-agent
   types:
   - vm
 

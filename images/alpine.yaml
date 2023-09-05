@@ -187,7 +187,7 @@ targets:
     - type: all
       content: |-
         lxc.arch = {{ image.architecture_personality }}
-  lxd:
+  incus:
     vm:
       filesystem: ext4
 
@@ -202,7 +202,7 @@ files:
   types:
   - vm
 
-- generator: lxd-agent
+- generator: incus-agent
   types:
   - vm
 
@@ -217,7 +217,7 @@ files:
     GRUB_TIMEOUT=0
 
     # Set the default commandline
-    GRUB_CMDLINE_LINUX_DEFAULT="console=tty1 console=ttyS0 modules=sd-mod,usb-storage,{{ targets.lxd.vm.filesystem }} rootfstype={{ targets.lxd.vm.filesystem }}"
+    GRUB_CMDLINE_LINUX_DEFAULT="console=tty1 console=ttyS0 modules=sd-mod,usb-storage,{{ targets.incus.vm.filesystem }} rootfstype={{ targets.incus.vm.filesystem }}"
 
     # Set the grub console type
     GRUB_TERMINAL=console

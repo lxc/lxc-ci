@@ -59,7 +59,7 @@ files:
   releases:
   - 7
 
-- name: ifcfg-eth0.lxd
+- name: ifcfg-eth0.incus
   path: /etc/sysconfig/network-scripts/ifcfg-eth0
   generator: template
   content: |-
@@ -90,7 +90,7 @@ files:
   - 8
   - 9
 
-- name: ifcfg-eth0.lxd
+- name: ifcfg-eth0.incus
   path: /etc/sysconfig/network-scripts/ifcfg-eth0
   generator: template
   content: |-
@@ -114,7 +114,7 @@ files:
     NETWORKING=yes
     HOSTNAME=LXC_NAME
 
-- name: network.lxd
+- name: network.incus
   path: /etc/sysconfig/network
   generator: template
   content: |-
@@ -159,7 +159,7 @@ files:
   generator: dump
 
 - name: cloud-init-system_info-distro
-  path: /etc/cloud/cloud.cfg.d/99_lxd.cfg
+  path: /etc/cloud/cloud.cfg.d/99_incus.cfg
   generator: dump
   content: |-
     # Set distro to Fedora as cloud-init doesn't support Oracle Linux.
