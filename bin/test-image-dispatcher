@@ -34,7 +34,7 @@ for run in build['runs']:
                             params['release'],
                             params['variant'],
                             "container",
-                            artifacts['lxd.tar.xz'],
+                            artifacts['incus.tar.xz'],
                             artifacts['rootfs.squashfs']], check=True)
             print("==> Test passed: %s/%s/%s/%s (container)" %
                   (image, params['release'],
@@ -56,7 +56,7 @@ for run in build['runs']:
                             params['release'],
                             params['variant'],
                             "vm",
-                            artifacts['lxd.tar.xz'],
+                            artifacts['incus.tar.xz'],
                             artifacts['disk.qcow2']], check=True)
             print("==> Test passed: %s/%s/%s/%s (VM)" %
                   (image, params['release'],
