@@ -2,7 +2,7 @@ image:
   distribution: Apertis
   description: |-
     Apertis {{ image.architecture }} {{ image.variant }} {{ image.release }} {{ image.serial }}
-  variant: devroot
+  variant: sysroot
 
 source:
   downloader: apertis-http
@@ -68,7 +68,6 @@ packages:
   sets:
   - packages:
     - sudo
-    - systemd
     action: install
 
   - packages:
