@@ -76,6 +76,12 @@ else
         lxc config set "${TEST_IMAGE}-priv" raw.lxc lxc.signal.halt=SIGCONT
     fi
 
+    if [ "${DIST}" = "slackware" ]; then
+        # Workaround weird init system
+        lxc config set "${TEST_IMAGE}-unpriv" raw.lxc lxc.signal.halt=SIGKILL
+        lxc config set "${TEST_IMAGE}-priv" raw.lxc lxc.signal.halt=SIGKILL
+    fi
+
     # Cloud-init testing
     if [ "${VARIANT}" = "cloud" ]; then
         lxc config set "${TEST_IMAGE}-unpriv" user.user-data "$(cat << EOF
