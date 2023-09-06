@@ -496,7 +496,7 @@ files:
   - 8-Stream
 
 packages:
-  manager: yum
+  manager: dnf
   update: true
   cleanup: true
   sets:
