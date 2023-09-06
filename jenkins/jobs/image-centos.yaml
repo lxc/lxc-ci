@@ -50,6 +50,10 @@
             EXTRA_ARGS="${EXTRA_ARGS} -o source.url=https://mirror1.hs-esslingen.de/pub/Mirrors/centos-stream"
         fi
 
+        if [ "${release}" = "7" ]; then
+            EXTRA_ARGS="${EXTRA_ARGS} -o packages.manager=yum"
+        fi
+
         TYPE="container"
         if [ "${architecture}" = "amd64" ]; then
             TYPE="container,vm"
