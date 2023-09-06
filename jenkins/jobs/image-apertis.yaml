@@ -17,8 +17,8 @@
         name: release
         type: user-defined
         values:
-        - 'v2020'
-        - 'v2021'
+        - 'v2022'
+        - 'v2023'
 
     - axis:
         name: variant
