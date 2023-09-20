@@ -216,11 +216,16 @@ packages:
     - vm
 
   - packages:
+    - lvm2
+    - lvm2-libs
+    action: remove
+    types:
+    - vm
+
+  - packages:
     - libsss_idmap
     - libsss_nss_idmap
     - sssd-client
-    - lvm2
-    - lvm2-libs
     action: remove
 
 actions:
