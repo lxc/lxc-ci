@@ -192,14 +192,6 @@ packages:
     - cloud
 
   - packages:
-    - libsss_idmap
-    - libsss_nss_idmap
-    - sssd-client
-    - lvm2
-    - lvm2-libs
-    action: remove
-
-  - packages:
     - grub2-efi-x64
     action: install
     architectures:
@@ -222,6 +214,14 @@ packages:
     action: install
     types:
     - vm
+
+  - packages:
+    - libsss_idmap
+    - libsss_nss_idmap
+    - sssd-client
+    - lvm2
+    - lvm2-libs
+    action: remove
 
 actions:
 - trigger: post-unpack
