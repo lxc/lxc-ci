@@ -414,37 +414,21 @@ files:
   generator: cloud-init
   variants:
   - cloud
-  releases:
-  - xenial
-  - bionic
-  - focal
 
 - name: network-config
   generator: cloud-init
   variants:
   - cloud
-  releases:
-  - xenial
-  - bionic
-  - focal
 
 - name: user-data
   generator: cloud-init
   variants:
   - cloud
-  releases:
-  - xenial
-  - bionic
-  - focal
 
 - name: vendor-data
   generator: cloud-init
   variants:
   - cloud
-  releases:
-  - xenial
-  - bionic
-  - focal
 
 - name: ext4
   generator: fstab
