@@ -10,10 +10,10 @@ DATA_URL="$6"
 
 cleanup() {
     rm -Rf "/tmp/${TEST_IMAGE}"
-    lxc delete -f "${TEST_IMAGE}" 2>/dev/null || true
-    lxc delete -f "${TEST_IMAGE}-priv" 2>/dev/null || true
-    lxc delete -f "${TEST_IMAGE}-unpriv" 2>/dev/null || true
-    lxc image delete "${TEST_IMAGE}" 2>/dev/null || true
+    incus delete -f "${TEST_IMAGE}" 2>/dev/null || true
+    incus delete -f "${TEST_IMAGE}-priv" 2>/dev/null || true
+    incus delete -f "${TEST_IMAGE}-unpriv" 2>/dev/null || true
+    incus image delete "${TEST_IMAGE}" 2>/dev/null || true
 
     if [ "${FAIL}" = "1" ]; then
         exit 1
@@ -39,18 +39,18 @@ echo "==> Fetching the image"
 curl "${META_URL}" -s -o "/tmp/${TEST_IMAGE}/meta"
 curl "${DATA_URL}" -s -o "/tmp/${TEST_IMAGE}/root"
 FINGERPRINT=$(cat "/tmp/${TEST_IMAGE}/meta" "/tmp/${TEST_IMAGE}/root" | sha256sum | cut -d' ' -f1)
-lxc image delete "${FINGERPRINT}" 2>/dev/null || true
-lxc image import "/tmp/${TEST_IMAGE}/meta" "/tmp/${TEST_IMAGE}/root" --alias "${TEST_IMAGE}"
+incus image delete "${FINGERPRINT}" 2>/dev/null || true
+incus image import "/tmp/${TEST_IMAGE}/meta" "/tmp/${TEST_IMAGE}/root" --alias "${TEST_IMAGE}"
 
 echo "==> Creating the instances"
 INSTANCES=""
 if [ "${TYPE}" = "vm" ]; then
-    lxc init "${TEST_IMAGE}" "${TEST_IMAGE}" --vm -c security.secureboot=false -c limits.cpu=4 -c limits.memory=4GB
+    incus init "${TEST_IMAGE}" "${TEST_IMAGE}" --vm -c security.secureboot=false -c limits.cpu=4 -c limits.memory=4GB
     INSTANCES="${TEST_IMAGE}"
 
     # Cloud-init testing
     if [ "${VARIANT}" = "cloud" ]; then
-        lxc config set "${TEST_IMAGE}" user.user-data "$(cat << EOF
+        incus config set "${TEST_IMAGE}" user.user-data "$(cat << EOF
 #cloud-config
 write_files:
   - content: "foo\n"
@@ -58,7 +58,7 @@ write_files:
 EOF
 )"
 
-        lxc config set "${TEST_IMAGE}" user.vendor-data "$(cat << EOF
+        incus config set "${TEST_IMAGE}" user.vendor-data "$(cat << EOF
 #cloud-config
 bootcmd:
   - "echo bar > /vendor-data"
@@ -66,25 +66,25 @@ EOF
 )"
     fi
 else
-    lxc init "${TEST_IMAGE}" "${TEST_IMAGE}-unpriv"
-    lxc init "${TEST_IMAGE}" "${TEST_IMAGE}-priv" -c security.privileged=true
+    incus init "${TEST_IMAGE}" "${TEST_IMAGE}-unpriv"
+    incus init "${TEST_IMAGE}" "${TEST_IMAGE}-priv" -c security.privileged=true
     INSTANCES="${TEST_IMAGE}-priv ${TEST_IMAGE}-unpriv"
 
     if [ "${DIST}" = "voidlinux" ]; then
         # Workaround weird init system
-        lxc config set "${TEST_IMAGE}-unpriv" raw.lxc lxc.signal.halt=SIGCONT
-        lxc config set "${TEST_IMAGE}-priv" raw.lxc lxc.signal.halt=SIGCONT
+        incus config set "${TEST_IMAGE}-unpriv" raw.incus lxc.signal.halt=SIGCONT
+        incus config set "${TEST_IMAGE}-priv" raw.incus lxc.signal.halt=SIGCONT
     fi
 
     if [ "${DIST}" = "slackware" ]; then
         # Workaround weird init system
-        lxc config set "${TEST_IMAGE}-unpriv" raw.lxc lxc.signal.halt=SIGKILL
-        lxc config set "${TEST_IMAGE}-priv" raw.lxc lxc.signal.halt=SIGKILL
+        incus config set "${TEST_IMAGE}-unpriv" raw.incus lxc.signal.halt=SIGKILL
+        incus config set "${TEST_IMAGE}-priv" raw.incus lxc.signal.halt=SIGKILL
     fi
 
     # Cloud-init testing
     if [ "${VARIANT}" = "cloud" ]; then
-        lxc config set "${TEST_IMAGE}-unpriv" user.user-data "$(cat << EOF
+        incus config set "${TEST_IMAGE}-unpriv" user.user-data "$(cat << EOF
 #cloud-config
 write_files:
   - content: "foo\n"
@@ -92,14 +92,14 @@ write_files:
 EOF
 )"
 
-        lxc config set "${TEST_IMAGE}-unpriv" user.vendor-data "$(cat << EOF
+        incus config set "${TEST_IMAGE}-unpriv" user.vendor-data "$(cat << EOF
 #cloud-config
 bootcmd:
   - "echo bar > /vendor-data"
 EOF
 )"
 
-        lxc config set "${TEST_IMAGE}-priv" user.user-data "$(cat << EOF
+        incus config set "${TEST_IMAGE}-priv" user.user-data "$(cat << EOF
 #cloud-config
 write_files:
   - content: "foo\n"
@@ -107,7 +107,7 @@ write_files:
 EOF
 )"
 
-        lxc config set "${TEST_IMAGE}-priv" user.vendor-data "$(cat << EOF
+        incus config set "${TEST_IMAGE}-priv" user.vendor-data "$(cat << EOF
 #cloud-config
 bootcmd:
   - "echo bar > /vendor-data"
@@ -119,19 +119,19 @@ fi
 # Start them all
 echo "==> Starting the instances"
 for i in ${INSTANCES}; do
-    lxc start "${i}"
+    incus start "${i}"
 done
 
 # Wait for things to settle
 echo "==> Waiting for instances to start"
 [ "${TYPE}" = "container" ] && sleep 1m
 [ "${TYPE}" = "vm" ] && sleep 3m
-lxc list "${TEST_IMAGE}"
+incus list "${TEST_IMAGE}"
 
 # Check that all instances have an IPv4 and IPv6 address
 echo "==> Performing network tests"
 FAIL=0
-for url in $(lxc query "/1.0/instances" | jq -r .[] | grep "${TEST_IMAGE}"); do
+for url in $(incus query "/1.0/instances" | jq -r .[] | grep "${TEST_IMAGE}"); do
     name=$(echo "${url}" | cut -d/ -f4)
 
     # Skip busybox as it wouldn't pass any test
@@ -147,13 +147,13 @@ for url in $(lxc query "/1.0/instances" | jq -r .[] | grep "${TEST_IMAGE}"); do
     fi
 
     # Systemd cleanliness
-    if lxc exec "${name}" -- sh -c "type systemctl" >/dev/null 2>&1; then
-        if lxc exec "${name}" -- systemctl --failed 2>&1 | grep -q '\sfailed\s'; then
+    if incus exec "${name}" -- sh -c "type systemctl" >/dev/null 2>&1; then
+        if incus exec "${name}" -- systemctl --failed 2>&1 | grep -q '\sfailed\s'; then
             echo "===> FAIL: systemd clean: ${name}"
 
             # Show the systemd failures
             echo "===> DEBUG: systemd failed: ${name}"
-            lxc exec "${name}" -- systemctl --failed
+            incus exec "${name}" -- systemctl --failed
             FAIL=1
         else
             echo "===> PASS: systemd clean: ${name}"
@@ -163,9 +163,9 @@ for url in $(lxc query "/1.0/instances" | jq -r .[] | grep "${TEST_IMAGE}"); do
     fi
 
     # Get the addresses
-    address=$(lxc query "${url}/state" | jq -r ".network.eth0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
+    address=$(incus query "${url}/state" | jq -r ".network.eth0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
     if [ -z "${address}" ]; then
-        address=$(lxc query "${url}/state" | jq -r ".network.enp5s0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
+        address=$(incus query "${url}/state" | jq -r ".network.enp5s0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
     fi
 
     if [ -z "${address}" ]; then
@@ -173,7 +173,7 @@ for url in $(lxc query "/1.0/instances" | jq -r .[] | grep "${TEST_IMAGE}"); do
 
         # Show the network state
         echo "===> DEBUG: network state: ${name}"
-        lxc info "${name}"
+        incus info "${name}"
         FAIL=1
         continue
     fi
@@ -197,12 +197,12 @@ for url in $(lxc query "/1.0/instances" | jq -r .[] | grep "${TEST_IMAGE}"); do
     # DNS resolution
     DNS=0
     for i in $(seq 3); do
-        if lxc exec "${name}" -- getent hosts linuxcontainers.org >/dev/null 2>&1; then
+        if incus exec "${name}" -- getent hosts linuxcontainers.org >/dev/null 2>&1; then
             DNS=1
             break
         fi
 
-        if lxc exec "${name}" -- ping -c1 -W1 linuxcontainers.org >/dev/null 2>&1; then
+        if incus exec "${name}" -- ping -c1 -W1 linuxcontainers.org >/dev/null 2>&1; then
             DNS=1
             break
         fi
@@ -218,14 +218,14 @@ for url in $(lxc query "/1.0/instances" | jq -r .[] | grep "${TEST_IMAGE}"); do
 
     # Cloud-init testing
     if [ "${VARIANT}" = "cloud" ]; then
-        if [ "$(lxc file pull "${name}/user-data" - 2>/dev/null)" = "foo" ]; then
+        if [ "$(incus file pull "${name}/user-data" - 2>/dev/null)" = "foo" ]; then
             echo "===> PASS: cloud-init user-data provisioning: ${name}"
         else
             echo "===> FAIL: cloud-init user-data provisioning: ${name}"
             FAIL=1
         fi
 
-        if [ "$(lxc file pull "${name}/vendor-data" - 2>/dev/null)" = "bar" ]; then
+        if [ "$(incus file pull "${name}/vendor-data" - 2>/dev/null)" = "bar" ]; then
             echo "===> PASS: cloud-init vendor-data provisioning: ${name}"
         else
             echo "===> FAIL: cloud-init vendor-data provisioning: ${name}"
@@ -239,11 +239,11 @@ echo "==> Performing shutdown test"
 STOPPED=0
 for i in $(seq 10); do
     # shellcheck disable=SC2086
-    if lxc stop ${INSTANCES} --timeout=30 >/dev/null 2>&1; then
+    if incus stop ${INSTANCES} --timeout=30 >/dev/null 2>&1; then
         STOPPED=1
         break
     else
-        COUNT="$(lxc list "${TEST_IMAGE}" | grep -c RUNNING)"
+        COUNT="$(incus list "${TEST_IMAGE}" | grep -c RUNNING)"
         if [ "${COUNT}" = "0" ]; then
             STOPPED=1
             break
@@ -253,6 +253,6 @@ for i in $(seq 10); do
     fi
 done
 
-lxc list "${TEST_IMAGE}"
+incus list "${TEST_IMAGE}"
 
 [ "${STOPPED}" = "0" ] && FAIL=1
