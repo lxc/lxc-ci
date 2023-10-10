@@ -72,14 +72,14 @@ else
 
     if [ "${DIST}" = "voidlinux" ]; then
         # Workaround weird init system
-        incus config set "${TEST_IMAGE}-unpriv" raw.incus lxc.signal.halt=SIGCONT
-        incus config set "${TEST_IMAGE}-priv" raw.incus lxc.signal.halt=SIGCONT
+        incus config set "${TEST_IMAGE}-unpriv" raw.lxc lxc.signal.halt=SIGCONT
+        incus config set "${TEST_IMAGE}-priv" raw.lxc lxc.signal.halt=SIGCONT
     fi
 
     if [ "${DIST}" = "slackware" ]; then
         # Workaround weird init system
-        incus config set "${TEST_IMAGE}-unpriv" raw.incus lxc.signal.halt=SIGKILL
-        incus config set "${TEST_IMAGE}-priv" raw.incus lxc.signal.halt=SIGKILL
+        incus config set "${TEST_IMAGE}-unpriv" raw.lxc lxc.signal.halt=SIGKILL
+        incus config set "${TEST_IMAGE}-priv" raw.lxc lxc.signal.halt=SIGKILL
     fi
 
     # Cloud-init testing
