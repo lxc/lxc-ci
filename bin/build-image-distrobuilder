@@ -82,6 +82,7 @@ apt-get install --yes --no-install-recommends \
     btrfs-progs \
     build-essential \
     ca-certificates \
+    curl \
     debootstrap \
     dirmngr \
     dosfstools \
@@ -93,30 +94,26 @@ apt-get install --yes --no-install-recommends \
     kpartx \
     libc6-dev \
     libncurses-dev \
+    make \
     mawk \
     patch \
     python3 \
     qemu-utils \
     rsync \
-    snapd \
     squashfs-tools \
     unzip \
     xz-utils \
     zstd
 apt-get clean
-export PATH=/snap/bin:\${PATH}
 
 # Install distrobuilder
-snap install snapd || true
-snap install snapd || true
-snap install distrobuilder --classic --edge
-snap refresh
-
-# Detect broken snapd
-if [ ! -d /var/lib/snapd/apparmor/profiles ]; then
-    echo "Broken snapd (no apparmor profiles)"
-    exit 1
-fi
+curl -sL "https://go.dev/dl/go1.21.3.linux-\$(dpkg --print-architecture).tar.gz" | tar -zxv -C /usr/local/
+export PATH=/usr/local/go/bin:\${PATH}
+git clone https://github.com/lxc/distrobuilder --depth 1
+cd distrobuilder
+make
+cp /root/go/bin/distrobuilder /usr/local/bin/
+rm -Rf /root/distrobuilder /root/go /root/.cache
 
 # All done
 exit 0

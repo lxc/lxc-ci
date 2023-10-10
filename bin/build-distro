@@ -45,14 +45,8 @@ done
 
 set -eux
 
-export PATH=/snap/bin:\${PATH}
-
 # Workaround for plamo not liking dbus much
 rm -f /run/dbus/system_bus_socket
-
-# Attempt to refresh distrobuilder
-sleep 30s
-snap refresh distrobuilder || true
 
 # Build the image
 mkdir /root/build /root/build/cache
