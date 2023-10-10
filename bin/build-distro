@@ -19,20 +19,20 @@ TARGET=${1}
 shift
 
 cleanup() {
-    lxc delete --force "${CNAME}"
+    incus delete --force "${CNAME}"
 }
 
 trap cleanup EXIT HUP INT TERM
 
 # Create the container
-lxc copy "cache-distrobuilder-${ARCH}" "${CNAME}"
+incus copy "cache-distrobuilder-${ARCH}" "${CNAME}"
 
 # Start the container
-lxc start "${CNAME}"
+incus start "${CNAME}"
 
 set -x
 
-lxc file push "${YAML}" "${CNAME}/root/image.yaml"
+incus file push "${YAML}" "${CNAME}/root/image.yaml"
 
 (
 cat << EOF
@@ -61,11 +61,11 @@ SERIAL=\$(date -u +%Y%m%d_%H:%M)
 
 distrobuilder --cache-dir /root/build/cache/ --timeout "${TIMEOUT}" build-dir image.yaml rootfs -o image.serial="\${SERIAL}" "\$@"
 if echo ${TYPE} | grep -q vm; then
-    distrobuilder --cache-dir /root/build/cache/ pack-lxd image.yaml rootfs --vm -o image.serial="\${SERIAL}" "\$@"
+    distrobuilder --cache-dir /root/build/cache/ pack-incus image.yaml rootfs --vm -o image.serial="\${SERIAL}" "\$@"
 fi
 if echo ${TYPE} | grep -q container; then
     distrobuilder --cache-dir /root/build/cache/ pack-lxc image.yaml rootfs -o image.serial="\${SERIAL}" "\$@"
-    distrobuilder --cache-dir /root/build/cache/ pack-lxd image.yaml rootfs -o image.serial="\${SERIAL}" "\$@"
+    distrobuilder --cache-dir /root/build/cache/ pack-incus image.yaml rootfs -o image.serial="\${SERIAL}" "\$@"
 fi
 btrfs subvolume delete rootfs/var/lib/machines >/dev/null 2>&1 || true
 rm -Rf rootfs
@@ -73,9 +73,9 @@ echo "\${SERIAL}" > serial
 
 exit 0
 EOF
-) | lxc file push - "${CNAME}/root/build.sh" --mode=755
-lxc exec "${CNAME}" -- /root/build.sh "$@"
-lxc exec "${CNAME}" -- tar -cf - -C /root/build/ . | tar -xvf - -C "${TARGET}"
+) | incus file push - "${CNAME}/root/build.sh" --mode=755
+incus exec "${CNAME}" -- /root/build.sh "$@"
+incus exec "${CNAME}" -- tar -cf - -C /root/build/ . | tar -xvf - -C "${TARGET}"
 
 [ -n "${SUDO_UID:-}" ] && chown "${SUDO_UID}" -R "${TARGET}"
 [ -n "${SUDO_GID:-}" ] && chgrp "${SUDO_GID}" -R "${TARGET}"

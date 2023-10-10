@@ -6,8 +6,8 @@ export PATH="/snap/bin/:${PATH}"
 
 cleanup() {
     set +e
-    lxc delete build-distrobuilder-cache -f >/dev/null 2>&1
-    lxc delete build-lxc-cache -f >/dev/null 2>&1
+    incus delete build-distrobuilder-cache -f >/dev/null 2>&1
+    incus delete build-lxc-cache -f >/dev/null 2>&1
 
     exit 0
 }
@@ -20,9 +20,9 @@ while :; do
 done
 
 # Make sure LXD is functional
-lxc delete update-images -f >/dev/null 2>&1 || true
-lxc init update-images --empty --quiet
-lxc delete -f update-images
+incus delete update-images -f >/dev/null 2>&1 || true
+incus init update-images --empty --quiet
+incus delete -f update-images
 
 # Avoid conflicting with an in progress build.
 while :; do
@@ -38,13 +38,13 @@ build_distrobuilder() {
     fi
 
     for arch in ${DISTROBUILDER_ARCHES}; do
-        lxc delete -f build-distrobuilder-cache >/dev/null 2>&1 || true
+        incus delete -f build-distrobuilder-cache >/dev/null 2>&1 || true
         rm -f /tmp/build-distrobuilder-cache
         curl -s "${HOST}/job/lxc-ci-artifacts/architecture=${arch},artifact=distrobuilder-image,restrict=vm,variant=default/lastSuccessfulBuild/artifact/build-distrobuilder-cache.tar.xz" -o /tmp/build-distrobuilder-cache
-        lxc import --quiet /tmp/build-distrobuilder-cache
+        incus import --quiet /tmp/build-distrobuilder-cache
         rm -f /tmp/build-distrobuilder-cache
-        lxc delete -f "cache-distrobuilder-${arch}" >/dev/null 2>&1 || true
-        lxc move build-distrobuilder-cache "cache-distrobuilder-${arch}"
+        incus delete -f "cache-distrobuilder-${arch}" >/dev/null 2>&1 || true
+        incus move build-distrobuilder-cache "cache-distrobuilder-${arch}"
     done
 }
 
@@ -54,13 +54,13 @@ build_lxc() {
     fi
 
     for arch in ${LXC_ARCHES}; do
-        lxc delete -f build-lxc-cache >/dev/null 2>&1 || true
+        incus delete -f build-lxc-cache >/dev/null 2>&1 || true
         rm -f /tmp/build-lxc-cache
         curl -s "${HOST}/job/lxc-ci-artifacts/architecture=${arch},artifact=lxc-image,restrict=vm,variant=default/lastSuccessfulBuild/artifact/build-lxc-cache.tar.xz" -o /tmp/build-lxc-cache
-        lxc import --quiet /tmp/build-lxc-cache
+        incus import --quiet /tmp/build-lxc-cache
         rm -f /tmp/build-lxc-cache
-        lxc delete -f "cache-lxc-${arch}" >/dev/null 2>&1 || true
-        lxc move build-lxc-cache "cache-lxc-${arch}"
+        incus delete -f "cache-lxc-${arch}" >/dev/null 2>&1 || true
+        incus move build-lxc-cache "cache-lxc-${arch}"
     done
 }
 

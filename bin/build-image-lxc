@@ -3,7 +3,7 @@ export PATH="/snap/bin/:${PATH}"
 
 cleanup() {
     set +e
-    lxc delete build-lxc-cache -f >/dev/null 2>&1
+    incus delete build-lxc-cache -f >/dev/null 2>&1
 
     exit 0
 }
@@ -13,11 +13,11 @@ ARCH="$1"
 TARGET="$2"
 
 # Create the container
-lxc init "images:ubuntu/jammy/${ARCH}" build-lxc-cache \
+incus init "images:ubuntu/jammy/${ARCH}" build-lxc-cache \
     -c security.nesting=true
 
 # Start the container
-lxc start build-lxc-cache
+incus start build-lxc-cache
 
 # Install build dependencies
 (
@@ -63,11 +63,11 @@ apt-get clean
 # Create build directory
 mkdir -p /build
 EOF
-) | lxc exec build-lxc-cache -- sh
+) | incus exec build-lxc-cache -- sh
 
 # Install Android dependencies
 if [ "${ARCH}" = "amd64" ]; then
-    lxc file push deps/android-ndk-linux-x86_64.zip build-lxc-cache/root/ndk.zip
+    incus file push deps/android-ndk-linux-x86_64.zip build-lxc-cache/root/ndk.zip
     (
     cat << EOF
 #!/bin/sh
@@ -103,11 +103,11 @@ cp -P /build/libcap/libcap/libcap.a /build/ndk/sysroot/usr/lib/
 cp -P /build/libcap/libcap/include/sys/capability.h /build/ndk/sysroot/usr/include/sys/
 cp -P /build/libcap/libcap/include/uapi/linux/capability.h /build/ndk/sysroot/usr/include/linux/
 EOF
-    ) | lxc exec build-lxc-cache -- sh
+    ) | incus exec build-lxc-cache -- sh
 fi
 
-lxc stop build-lxc-cache
-lxc export build-lxc-cache "${TARGET}/build-lxc-cache.tar.xz" --optimized-storage
-lxc delete -f build-lxc-cache
+incus stop build-lxc-cache
+incus export build-lxc-cache "${TARGET}/build-lxc-cache.tar.xz" --optimized-storage
+incus delete -f build-lxc-cache
 
 exit 0
