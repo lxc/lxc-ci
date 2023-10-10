@@ -19,7 +19,6 @@
         values:
         - distrobuilder-image
         - lxc-image
-        - lxd-cache
 
     - axis:
         name: variant
@@ -43,8 +42,6 @@
             exec sudo /lxc-ci/bin/build-image-distrobuilder ${architecture} ${WORKSPACE}
         elif [ "${artifact}" = "lxc-image" ]; then
             exec sudo /lxc-ci/bin/build-image-lxc ${architecture} ${WORKSPACE}
-        elif [ "${artifact}" = "lxd-cache" ]; then
-            exec sudo /lxc-ci/bin/build-cache ${architecture} ${WORKSPACE}
         else
             echo "Bad artifact"
             exit 1
