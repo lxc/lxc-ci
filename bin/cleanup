@@ -1,62 +1,23 @@
 #!/bin/sh
 
 if [ "${1:-}" = "force" ]; then
-    if lxc info >/dev/null 2>&1; then
-        lxc list -cn -f csv | grep -v ^cache- | xargs -r lxc delete -f
-        lxc image list -cF -fcsv | xargs -r  lxc image delete
-        lxd sql global "DELETE FROM storage_volumes WHERE name NOT LIKE 'cache-%'"
-        rm -Rf /var/snap/lxd/common/lxd/logs/*
+    if incus info >/dev/null 2>&1; then
+        incus list -cn -f csv | grep -v ^cache- | xargs -r incus delete -f
+        incus image list -cF -fcsv | xargs -r  incus image delete
+        incus admin sql global "DELETE FROM storage_volumes WHERE name NOT LIKE 'cache-%'"
+        rm -Rf /var/log/incus/*
 
         for i in $(zfs list -o name -r default/containers | grep containers/ | grep -v containers/cache-); do zfs destroy -R "$i"; done
         for i in $(zfs list -o name -r default/images | grep images/); do zfs destroy -R "$i"; done
         for i in $(zfs list -o name -r default/deleted/containers | grep deleted/containers/); do zfs destroy -R "$i"; done
         for i in $(zfs list -o name -r default/deleted/images | grep deleted/images/); do zfs destroy -R "$i"; done
-        for i in $(ls /var/snap/lxd/common/lxd/storage-pools/default/containers | grep -v cache-); do rm -Rf "/var/snap/lxd/common/lxd/storage-pools/default/containers/$i"; done
-        for i in $(ls /var/snap/lxd/common/lxd/containers/ | grep -v cache-); do rm -Rf "/var/snap/lxd/common/lxd/containers/$i"; done
+        for i in $(ls /var/lib/incus/storage-pools/default/containers | grep -v cache-); do rm -Rf "/var/lib/incus/storage-pools/default/containers/$i"; done
+        for i in $(ls /var/lib/incus/containers/ | grep -v cache-); do rm -Rf "/var/lib/incus/containers/$i"; done
 
-        lxc storage volume list default -cnt -fcsv | grep container$ | cut -d, -f1 | while read line; do lxc info $line >/dev/null 2>&1 || echo $line; done | while read line; do lxd sql global "DELETE FROM storage_volumes WHERE type=0 AND name='$line'"; rm -Rf /var/snap/lxd/common/lxd/containers/$line; rm -Rf /var/snap/lxd/common/lxd/storage-pools/default/containers/$line; zfs destroy default/containers/$line; done
+        incus storage volume list default -cnt -fcsv | grep container$ | cut -d, -f1 | while read line; do incus info $line >/dev/null 2>&1 || echo $line; done | while read line; do incus admin sql global "DELETE FROM storage_volumes WHERE type=0 AND name='$line'"; rm -Rf /var/lib/incus/containers/$line; rm -Rf /var/lib/incus/storage-pools/default/containers/$line; zfs destroy default/containers/$line; done
 
-        systemctl reload snap.lxd.daemon
+        systemctl restart incus
     fi
-
-    if [ -d "/home/jenkins/.cache/go-build" ]; then
-        rm -Rf /home/jenkins/.cache/go-build
-    fi
-fi
-
-# shellcheck disable=SC2010
-if ls /lxc-ci/build/ | grep -v cache | grep -v lxc-monitord; then
-    exit 0
-fi
-
-grep /lxc-ci/build/ /proc/mounts | awk '{print $2}' | while read -r line; do umount "${line}"; done
-
-for i in $(seq 0 254); do
-    [ -e "/dev/rbd${i}" ] && rbd unmap "/dev/rbd${i}"
-done
-
-if which zpool >/dev/null 2>&1; then
-    zpool list | grep ONLINE | awk '{print $1}' | grep -v default | while read -r line; do zpool destroy "${line}"; done
-fi
-
-if which dmsetup >/dev/null 2>&1; then
-    dmsetup remove_all
-fi
-
-if which losetup >/dev/null 2>&1; then
-    losetup -a | grep -v /var/lib/snapd | cut -d: -f1 | while read -r line; do losetup -d "${line}"; done
-fi
-
-if which pvscan >/dev/null 2>&1; then
-    pvscan --cache
-fi
-
-if [ -d /etc/lvm/backup/ ]; then
-    find /etc/lvm/backup -type f -delete
-fi
-
-if [ -d /etc/lvm/archive/ ]; then
-    find /etc/lvm/archive -type f -delete
 fi
 
 chown -R jenkins:jenkins /home/jenkins

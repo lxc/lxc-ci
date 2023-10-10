@@ -11,14 +11,8 @@ JENKINS_NAME="some-name"
 # Distrobuilder
 DISTROBUILDER_ARCHES=""
 
-# LXD testing
-LXD_GOCACHE=true
-
 # Host cleanup
 DAILY_REBOOT=true
-
-# LXD
-LXD_DAEMON=true
 
 # MAAS
 MAAS_URL="http://maas.local/MAAS"

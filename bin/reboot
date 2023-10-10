@@ -12,7 +12,7 @@ sleep "$(shuf -i1-90 -n1)"m
 while :; do
     # Check that nothing is running
     # shellcheck disable=SC2010
-    if [ "$(ls /lxc-ci/build/ | grep -Evc 'cache|lxc-monitord')" -gt 0 ]; then
+    if [ -n "$(incus list -cn -fcsv status=running)" ]; then
         sleep 1m
         continue
     fi
@@ -21,7 +21,7 @@ while :; do
     sleep 1m
 
     # shellcheck disable=SC2010
-    if [ "$(ls /lxc-ci/build/ | grep -Evc 'cache|lxc-monitord')" -gt 0 ]; then
+    if [ -n "$(incus list -cn -fcsv status=running)" ]; then
         sleep 1m
         continue
     fi
