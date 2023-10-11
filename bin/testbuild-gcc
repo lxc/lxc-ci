@@ -19,25 +19,25 @@ COMMIT=${1}
 shift
 
 cleanup() {
-    lxc delete --force "${CNAME}"
+    incus delete --force "${CNAME}"
 }
 
 trap cleanup EXIT HUP INT TERM
 
 # Create the container
-lxc copy "cache-lxc-${ARCH}" "${CNAME}"
+incus copy "cache-lxc-${ARCH}" "${CNAME}"
 
 # Add loop-control for this test
-lxc config device add "${CNAME}" loop-control unix-char source=/dev/loop-control
+incus config device add "${CNAME}" loop-control unix-char source=/dev/loop-control
 
 # Mark as privileged
-lxc config set "${CNAME}" security.privileged true
+incus config set "${CNAME}" security.privileged true
 
 # Allow all mounts
-lxc config set "${CNAME}" raw.apparmor mount,
+incus config set "${CNAME}" raw.apparmor mount,
 
 # Start the container
-lxc start "${CNAME}"
+incus start "${CNAME}"
 
 set -x
 
@@ -120,6 +120,6 @@ mount -t tmpfs tmpfs /var/lib/lxc
 
 exit 0
 EOF
-) | lxc file push - "${CNAME}/root/build.sh" --mode=755
-lxc file push -p deps/lxc-exercise "${CNAME}/build/lxc-exercise"
-lxc exec "${CNAME}" -- /root/build.sh "$@"
+) | incus file push - "${CNAME}/root/build.sh" --mode=755
+incus file push -p deps/lxc-exercise "${CNAME}/build/lxc-exercise"
+incus exec "${CNAME}" -- /root/build.sh "$@"
