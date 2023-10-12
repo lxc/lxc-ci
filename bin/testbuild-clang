@@ -101,6 +101,7 @@ EOG
 netplan generate
 netplan apply
 
+sed -i "s/lxd-/incus-/g" /lib/apparmor/rc.apparmor.functions
 systemctl restart apparmor
 
 # Setup pyhton test
