@@ -20,6 +20,7 @@
         - snapshot
         - "21.02"
         - "22.03"
+        - "23.05"
 
     - axis:
         name: variant
