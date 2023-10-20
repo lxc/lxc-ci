@@ -101,7 +101,9 @@ EOG
 netplan generate
 netplan apply
 
+# Workaround for AppArmor bug (https://gitlab.com/apparmor/apparmor/-/merge_requests/1112)
 sed -i "s/lxd-/incus-/g" /lib/apparmor/rc.apparmor.functions
+
 systemctl restart apparmor
 
 # Setup pyhton test
