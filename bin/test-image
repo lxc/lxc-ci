@@ -66,32 +66,32 @@ EOF
 )"
     fi
 else
-    incus init "${TEST_IMAGE}" "${TEST_IMAGE}-unpriv"
-    INSTANCES="${TEST_IMAGE}-unpriv"
+    for PRIV in "priv" "unpriv"; do
+        if [ "${PRIV}" = "priv" ] && [ "${DIST}" = "nixos" ]; then
+            # NixOS can't do privileged containers at this point
+            continue
+        fi
 
-    if [ "${DIST}" = "nixos" ]; then
-        # NixOS can't do privileged containers at this point
-        continue
-    fi
+        incus init "${TEST_IMAGE}" "${TEST_IMAGE}-${PRIV}"
+        INSTANCES="${INSTANCES} ${TEST_IMAGE}-${PRIV}"
 
-    incus init "${TEST_IMAGE}" "${TEST_IMAGE}-priv" -c security.privileged=true
-    INSTANCES="${INSTANCES} ${TEST_IMAGE}-priv"
+        if [ "${PRIV}" = "priv" ]; then
+            incus config set "${TEST_IMAGE}-${PRIV}" security.privileged=true
+        fi
 
-    if [ "${DIST}" = "voidlinux" ]; then
-        # Workaround weird init system
-        incus config set "${TEST_IMAGE}-unpriv" raw.lxc lxc.signal.halt=SIGCONT
-        incus config set "${TEST_IMAGE}-priv" raw.lxc lxc.signal.halt=SIGCONT
-    fi
+        if [ "${DIST}" = "voidlinux" ]; then
+            # Workaround weird init system
+            incus config set "${TEST_IMAGE}-${PRIV}" raw.lxc lxc.signal.halt=SIGCONT
+        fi
 
-    if [ "${DIST}" = "slackware" ]; then
-        # Workaround weird init system
-        incus config set "${TEST_IMAGE}-unpriv" raw.lxc lxc.signal.halt=SIGKILL
-        incus config set "${TEST_IMAGE}-priv" raw.lxc lxc.signal.halt=SIGKILL
-    fi
+        if [ "${DIST}" = "slackware" ]; then
+            # Workaround weird init system
+            incus config set "${TEST_IMAGE}-${PRIV}" raw.lxc lxc.signal.halt=SIGKILL
+        fi
 
-    # Cloud-init testing
-    if [ "${VARIANT}" = "cloud" ]; then
-        incus config set "${TEST_IMAGE}-unpriv" user.user-data "$(cat << EOF
+        # Cloud-init testing
+        if [ "${VARIANT}" = "cloud" ]; then
+            incus config set "${TEST_IMAGE}-${PRIV}" user.user-data "$(cat << EOF
 #cloud-config
 write_files:
   - content: "foo\n"
@@ -99,28 +99,14 @@ write_files:
 EOF
 )"
 
-        incus config set "${TEST_IMAGE}-unpriv" user.vendor-data "$(cat << EOF
+            incus config set "${TEST_IMAGE}-${PRIV}" user.vendor-data "$(cat << EOF
 #cloud-config
 bootcmd:
   - "echo bar > /vendor-data"
 EOF
 )"
-
-        incus config set "${TEST_IMAGE}-priv" user.user-data "$(cat << EOF
-#cloud-config
-write_files:
-  - content: "foo\n"
-    path: /user-data
-EOF
-)"
-
-        incus config set "${TEST_IMAGE}-priv" user.vendor-data "$(cat << EOF
-#cloud-config
-bootcmd:
-  - "echo bar > /vendor-data"
-EOF
-)"
-    fi
+        fi
+    done
 fi
 
 # Start them all
