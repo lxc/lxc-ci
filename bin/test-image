@@ -67,8 +67,15 @@ EOF
     fi
 else
     incus init "${TEST_IMAGE}" "${TEST_IMAGE}-unpriv"
+    INSTANCES="${TEST_IMAGE}-unpriv"
+
+    if [ "${DIST}" = "nixos" ]; then
+        # NixOS can't do privileged containers at this point
+        continue
+    fi
+
     incus init "${TEST_IMAGE}" "${TEST_IMAGE}-priv" -c security.privileged=true
-    INSTANCES="${TEST_IMAGE}-priv ${TEST_IMAGE}-unpriv"
+    INSTANCES="${INSTANCES} ${TEST_IMAGE}-priv"
 
     if [ "${DIST}" = "voidlinux" ]; then
         # Workaround weird init system
