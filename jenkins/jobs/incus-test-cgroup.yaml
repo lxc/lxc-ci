@@ -33,7 +33,7 @@
             kernel="zabbly,${kernel}"
         fi
 
-        sudo -E /lxc-ci/bin/maas-run tags=virtual jammy ga-22.04 ${kernel} bin/test-lxd-cgroup
+        sudo -E /lxc-ci/bin/maas-run tags=virtual jammy ga-22.04 ${kernel} bin/test-incus-cgroup
 
     properties:
     - build-discarder:
