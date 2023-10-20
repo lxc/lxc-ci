@@ -2,13 +2,13 @@
 CNAME="docker-$(uuidgen)"
 
 cleanup() {
-    lxc delete --force "${CNAME}"
+    incus delete --force "${CNAME}"
 }
 
 trap cleanup EXIT HUP INT TERM
 
 # Create the container
-lxc launch images:ubuntu/bionic "${CNAME}" -c security.nesting=true "$@"
+incus launch images:ubuntu/jammy "${CNAME}" -c security.nesting=true "$@"
 
 (
 cat << EOF
@@ -24,6 +24,9 @@ set -eux
 # Install distro docker
 apt-get update --yes --force-yes
 apt-get install --no-install-recommends --yes --force-yes apparmor docker.io wget
+
+# Workaround for AppArmor bug (https://gitlab.com/apparmor/apparmor/-/merge_requests/1112)
+sed -i "s/lxd-/incus-/g" /lib/apparmor/rc.apparmor.functions
 systemctl start apparmor
 
 # Stop the distro docker
@@ -52,4 +55,4 @@ docker info
 # Run a basic hello-world
 docker run hello-world
 EOF
-) | lxc exec "${CNAME}" -- sh -eux
+) | incus exec "${CNAME}" -- sh -eux
