@@ -12,7 +12,7 @@
         values:
         - default
         - cgroup1
-        - cgroup1,swapaccount
+        - swapaccount
 
     - axis:
         name: restrict
@@ -27,6 +27,8 @@
 
         if [ "${kernel}" = "default" ]; then
             kernel="zabbly"
+        elif [ "${kernel}" = "swapaccount" ]; then
+            kernel="zabbly,cgroup1,${kernel}"
         else
             kernel="zabbly,${kernel}"
         fi
