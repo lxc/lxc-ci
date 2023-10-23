@@ -178,6 +178,24 @@ EOF
         apt-get install --no-install-recommends --yes linux-zabbly
       ;;
 
+      zabbly-zfs)
+        echo "===> Installing the current zabbly kernel"
+
+        cat<<EOF > /etc/apt/sources.list.d/zabbly-zfs-stable.sources
+Enabled: yes
+Types: deb
+URIs: https://pkgs.zabbly.com/kernel/stable
+Suites: $(lsb_release -cs)
+Components: zfs
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/zabbly.asc
+EOF
+        curl https://pkgs.zabbly.com/key.asc -o /etc/apt/keyrings/zabbly.asc
+
+        apt-get update
+        apt-get install --no-install-recommends --yes openzfs-zfs-dkms openzfs-zfsutils
+      ;;
+
       *)
         echo "Unsupported kernel requested: ${1}"
         exit 1
