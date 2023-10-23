@@ -1,0 +1,102 @@
+#!/bin/sh
+set -eu
+
+cleanup() {
+    echo ""
+    if [ "${FAIL}" = "1" ]; then
+        echo "Test failed"
+        exit 1
+    fi
+
+    echo "Test passed"
+    exit 0
+}
+
+FAIL=1
+trap cleanup EXIT HUP INT TERM
+
+# Install test dependencies
+apt-get remove --purge cloud-init --yes
+apt-get install --yes curl
+
+# Install Incus
+curl -fsSL https://pkgs.zabbly.com/key.asc -o /etc/apt/keyrings/zabbly.asc
+sh -c 'cat <<EOF > /etc/apt/sources.list.d/zabbly-incus-daily.sources
+Enabled: yes
+Types: deb
+URIs: https://pkgs.zabbly.com/incus/daily
+Suites: $(. /etc/os-release && echo ${VERSION_CODENAME})
+Components: main
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/zabbly.asc
+
+EOF'
+
+apt-get update
+apt-get install --yes --no-install-recommends incus
+
+# Configure Incus
+incus storage create default zfs
+incus profile device add default root disk path=/ pool=default
+incus network create incusbr0
+incus profile device add default eth0 nic network=incusbr0 name=eth0
+
+# Confirm GPU is online
+nvidia-smi
+
+# Incus resource API
+incus info --resources
+
+# Setup MIG
+nvidia-smi -mig 1
+nvidia-smi mig -lgip
+nvidia-smi mig -cgi 2g.10gb,1g.5gb,1g.5gb
+nvidia-smi mig -lgi
+nvidia-smi mig -lcip
+nvidia-smi mig -cci 1g.5gb -gi 7
+nvidia-smi mig -cci 1g.5gb -gi 13
+nvidia-smi mig -cci 1c.2g.10gb,1c.2g.10gb -gi 5
+nvidia-smi
+
+UUIDS="$(nvidia-smi -L | sed -n "/(UUID: MIG-/ s/.* \(MIG-[^)]\+\))$/\1/p")"
+UUID1="$(echo "$UUIDS" | sed -n '1p')"
+UUID2="$(echo "$UUIDS" | sed -n '2p')"
+UUID3="$(echo "$UUIDS" | sed -n '3p')"
+UUID4="$(echo "$UUIDS" | sed -n '4p')"
+
+# Launch test containers
+incus init images:ubuntu/20.04 nvidia-mig1 -c nvidia.runtime=true
+incus config device add nvidia-mig1 gpu0 gpu gputype=mig mig.uuid="$UUID1" pci=07:00.0
+incus init images:ubuntu/20.04 nvidia-mig2 -c nvidia.runtime=true
+incus config device add nvidia-mig2 gpu0 gpu gputype=mig mig.uuid="$UUID2" pci=07:00.0
+incus init images:ubuntu/20.04 nvidia-mig3 -c nvidia.runtime=true
+incus config device add nvidia-mig3 gpu0 gpu gputype=mig mig.uuid="$UUID3" pci=07:00.0
+incus init images:ubuntu/20.04 nvidia-mig4 -c nvidia.runtime=true
+incus config device add nvidia-mig4 gpu0 gpu gputype=mig mig.uuid="$UUID4" pci=07:00.0
+incus start nvidia-mig1
+incus exec nvidia-mig1 -- nvidia-smi
+incus start nvidia-mig2
+incus exec nvidia-mig2 -- nvidia-smi
+incus start nvidia-mig3
+incus exec nvidia-mig3 -- nvidia-smi
+incus start nvidia-mig4
+incus exec nvidia-mig4 -- nvidia-smi
+
+incus stop nvidia-mig4
+incus config device add nvidia-mig4 gpu1 gpu gputype=mig mig.uuid="$UUID1" vendorid=10de productid=20f1
+incus config device add nvidia-mig4 gpu2 gpu gputype=mig mig.uuid="$UUID2" vendorid=10de productid=20f1
+incus start nvidia-mig4
+incus exec nvidia-mig4 -- nvidia-smi
+
+# Wait for them to start and list
+incus list
+
+# Stop all instances
+incus stop --all
+
+# Cleanup MIG
+nvidia-smi mig -dci
+nvidia-smi mig -dgi
+nvidia-smi -mig 0
+
+FAIL=0

@@ -1,0 +1,107 @@
+#!/bin/sh
+set -eu
+
+cleanup() {
+    echo ""
+    if [ "${FAIL}" = "1" ]; then
+        echo "Test failed"
+        exit 1
+    fi
+
+    echo "Test passed"
+    exit 0
+}
+
+FAIL=1
+trap cleanup EXIT HUP INT TERM
+
+# Install test dependencies
+apt-get remove --purge cloud-init --yes
+apt-get install --yes curl
+
+# Install Incus
+curl -fsSL https://pkgs.zabbly.com/key.asc -o /etc/apt/keyrings/zabbly.asc
+sh -c 'cat <<EOF > /etc/apt/sources.list.d/zabbly-incus-daily.sources
+Enabled: yes
+Types: deb
+URIs: https://pkgs.zabbly.com/incus/daily
+Suites: $(. /etc/os-release && echo ${VERSION_CODENAME})
+Components: main
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/zabbly.asc
+
+EOF'
+
+apt-get update
+apt-get install --yes --no-install-recommends incus
+
+# Check that NVIDIA is installed
+nvidia-smi
+
+# Configure Incus
+incus storage create default zfs
+incus profile device add default root disk path=/ pool=default
+incus network create incusbr0
+incus profile device add default eth0 nic network=incusbr0 name=eth0
+
+# Launch a test container
+echo "==> Launching a test container"
+incus launch images:ubuntu/20.04/cloud c1
+sleep 10
+
+# Confirm no GPU
+echo "==> Testing with no GPU"
+! incus exec c1 -- ls -lh /dev/dri/ || false
+
+# Validate with one GPU
+echo "==> Testing with one GPU"
+incus config device add c1 gpu0 gpu id=0
+[ "$(incus exec c1 -- ls /dev/dri/ | grep -c card)" = "1" ] || false
+
+# Validate with two GPus
+echo "==> Testing with two GPUs"
+incus config device add c1 gpu1 gpu id=1
+[ "$(incus exec c1 -- ls /dev/dri/ | grep -c card)" = "2" ] || false
+
+# Validate with all remove
+echo "==> Testing with no GPU"
+incus config device remove c1 gpu0
+incus config device remove c1 gpu1
+[ "$(incus exec c1 -- ls /dev/dri/ | grep -c card)" = "0" ] || false
+
+# Validate with all GPUs
+echo "==> Testing with all GPUs"
+incus config device add c1 gpus gpu
+[ "$(incus exec c1 -- ls /dev/dri/ | grep -c card)" = "3" ] || false
+
+# Test nvidia runtime
+echo "==> Testing nvidia runtime"
+! incus exec c1 -- nvidia-smi || false
+incus stop c1
+incus config set c1 nvidia.runtime true
+incus start c1
+incus exec c1 -- nvidia-smi
+
+# Test with PCI addresses
+echo "==> Testing PCI address selection"
+incus config device remove c1 gpus
+incus config device add c1 gpu1 gpu pci=0000:06:00.0
+incus config device add c1 gpu2 gpu pci=0000:07:00.0
+[ "$(incus exec c1 -- ls /dev/dri/ | grep -c card)" = "2" ] || false
+incus exec c1 -- nvidia-smi
+
+# Test with vendor
+echo "==> Testing PCI vendor selection"
+incus config device remove c1 gpu1
+incus config device remove c1 gpu2
+incus config device add c1 gpus gpu vendorid=10de
+[ "$(incus exec c1 -- ls /dev/dri/ | grep -c card)" = "2" ] || false
+incus exec c1 -- nvidia-smi
+
+# Test with vendor and product
+echo "==> Testing PCI vendor and product selection"
+incus config device remove c1 gpus
+incus config device add c1 gpus gpu vendorid=1af4 productid=0010
+[ "$(incus exec c1 -- ls /dev/dri/ | grep -c card)" = "1" ] || false
+
+FAIL=0

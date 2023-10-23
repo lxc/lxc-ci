@@ -1,0 +1,80 @@
+#!/bin/sh
+set -eu
+
+cleanup() {
+    echo ""
+    if [ "${FAIL}" = "1" ]; then
+        echo "Test failed"
+        exit 1
+    fi
+
+    echo "Test passed"
+    exit 0
+}
+
+FAIL=1
+trap cleanup EXIT HUP INT TERM
+
+# Install test dependencies
+apt-get remove --purge cloud-init --yes
+apt-get install --yes curl
+
+# Install Incus
+curl -fsSL https://pkgs.zabbly.com/key.asc -o /etc/apt/keyrings/zabbly.asc
+sh -c 'cat <<EOF > /etc/apt/sources.list.d/zabbly-incus-daily.sources
+Enabled: yes
+Types: deb
+URIs: https://pkgs.zabbly.com/incus/daily
+Suites: $(. /etc/os-release && echo ${VERSION_CODENAME})
+Components: main
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/zabbly.asc
+
+EOF'
+
+apt-get update
+apt-get install --yes --no-install-recommends incus
+
+# Configure Incus
+incus storage create default zfs
+incus profile device add default root disk path=/ pool=default
+incus network create incusbr0
+incus profile device add default eth0 nic network=incusbr0 name=eth0
+
+if [ "${1}" = "nvidia" ]; then
+    # Enable SR-IOV
+    /usr/lib/nvidia/sriov-manage -e ALL
+
+    # Confirm GPU is online
+    nvidia-smi
+
+    # Disable MIG if enabled
+    nvidia-smi -mig 0
+fi
+
+# Incus resource API
+incus info --resources
+
+# Launch test instances
+for i in $(seq 1 4); do
+    incus init images:ubuntu/20.04/cloud "v${i}" --vm -c security.secureboot=false
+    if [ "${1}" = "nvidia" ]; then
+        incus config device add "v${i}" vgpu gpu gputype=mdev pci=0000:07:00.0 mdev=nvidia-468
+    fi
+    incus start "v${i}"
+done
+
+# Wait for them to start and list
+sleep 30
+incus list
+
+if [ "${1}" = "nvidia" ]; then
+    # Validate NVIDIA vGPU
+    incus exec v4 -- apt-get update
+    incus exec v4 -- apt-get install --no-install-recommends --yes build-essential wget pciutils linux-headers-virtual
+    incus exec v4 -- wget -6 http://lab.linuxcontainers.org/nvidia/v14.0/nvidia-guest.deb
+    incus exec v4 -- apt-get install --yes /root/nvidia-guest.deb
+    incus exec v4 -- nvidia-smi
+fi
+
+FAIL=0
