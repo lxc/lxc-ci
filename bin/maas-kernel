@@ -165,7 +165,7 @@ case "$i" in
 
         cat<<EOF > /etc/apt/sources.list.d/zabbly-kernel-stable.sources
 Enabled: yes
-Types: deb deb-src
+Types: deb
 URIs: https://pkgs.zabbly.com/kernel/stable
 Suites: $(lsb_release -cs)
 Components: main
