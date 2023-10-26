@@ -1,0 +1,36 @@
+- job:
+    name: "incus-test-devincus-vm"
+    concurrent: false
+    description: Run VM devincus tests on physical hardware.
+    node: master
+    project-type: freestyle
+
+    builders:
+    - shell: |-
+        cd /lxc-ci
+        exec /lxc-ci/bin/maas-run tags=physical jammy ga-22.04 default bin/test-incus-devincus-vm
+
+    properties:
+    - build-discarder:
+        num-to-keep: 3
+
+    - raw:
+        !include: ../includes/webhook.yaml.inc
+
+    publishers:
+    - workspace-cleanup:
+        fail-build: false
+
+    - naginator:
+        rerun-unstable-builds: true
+        rerun-matrix-part: true
+        max-failed-builds: 3
+        progressive-delay-increment: 300
+        progressive-delay-maximum: 900
+
+    triggers:
+    - timed: '@daily'
+
+    wrappers:
+    - ansicolor:
+        colormap: css
