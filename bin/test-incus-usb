@@ -23,7 +23,7 @@ trap cleanup EXIT HUP INT TERM
 
 # Install test dependencies
 apt-get remove --purge cloud-init --yes
-apt-get install --yes curl iperf3 jq
+apt-get install --yes curl iperf3 jq zfsutils-linux
 
 # Install Incus
 curl -sL https://pkgs.zabbly.com/get/incus-daily | sh
