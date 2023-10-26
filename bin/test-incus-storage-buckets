@@ -1,0 +1,60 @@
+#!/bin/sh
+set -eux
+
+cleanup() {
+    echo ""
+    if [ "${FAIL}" = "1" ]; then
+        echo "Test failed"
+        exit 1
+    fi
+
+    echo "Test passed"
+    exit 0
+}
+
+poolDriverList="${1:-dir btrfs lvm lvm-thin zfs}"
+FAIL=1
+trap cleanup EXIT HUP INT TERM
+
+# Install test dependencies
+apt-get remove --purge cloud-init --yes
+apt-get install --yes curl iperf3 jq
+
+# Install Incus
+curl -sL https://pkgs.zabbly.com/get/incus-daily | sh
+
+# Configure Incus
+incus project switch default
+incus project create test -c features.images=false
+incus project switch test
+
+poolName="bucketpool$$"
+
+for poolDriver in $poolDriverList
+do
+  echo "==> Create storage pool using driver ${poolDriver}"
+  if [ "${poolDriver}" = "dir" ]; then
+    incus storage create "${poolName}" "${poolDriver}" volume.size=5GB
+  elif [ "${poolDriver}" = "lvm" ]; then
+    incus storage create "${poolName}" "${poolDriver}" size=40GiB lvm.use_thinpool=false volume.size=5GB
+  elif [ "${poolDriver}" = "lvm-thin" ]; then
+    incus storage create "${poolName}" lvm size=20GiB volume.size=5GB
+  else
+    incus storage create "${poolName}" "${poolDriver}" size=20GB volume.size=5GB
+  fi
+
+  incus config set core.storage_buckets_address "127.0.0.1:9000"
+  incus storage show "${poolName}"
+
+  echo "==> Creating buckets"
+  incus storage bucket create "${poolName}" bucket1
+
+  echo "==> Deleting buckets and storage pool"
+  incus storage bucket delete "${poolName}" bucket1
+  incus storage rm "${poolName}"
+done
+
+incus project switch default
+incus project delete test
+
+FAIL=0
