@@ -20,21 +20,7 @@ apt-get remove --purge cloud-init --yes
 apt-get install --yes curl iperf3 jq
 
 # Install Incus
-mkdir -p /etc/apt/keyrings/
-curl -fsSL https://pkgs.zabbly.com/key.asc -o /etc/apt/keyrings/zabbly.asc
-sh -c 'cat <<EOF > /etc/apt/sources.list.d/zabbly-incus-daily.sources
-Enabled: yes
-Types: deb
-URIs: https://pkgs.zabbly.com/incus/daily
-Suites: $(. /etc/os-release && echo ${VERSION_CODENAME})
-Components: main
-Architectures: $(dpkg --print-architecture)
-Signed-By: /etc/apt/keyrings/zabbly.asc
-
-EOF'
-
-apt-get update
-apt-get install --yes --no-install-recommends incus
+curl -sL https://pkgs.zabbly.com/get/incus-daily | sh
 
 # Configure Incus
 incus admin init --auto
