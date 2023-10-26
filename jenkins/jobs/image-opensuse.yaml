@@ -1,7 +1,7 @@
 - job:
     name: "image-opensuse"
     concurrent: false
-    description: OpenSUSE images for LXC and LXD.
+    description: OpenSUSE images for LXC and Incus.
     node: master
     project-type: matrix
 
@@ -32,7 +32,7 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        LXD_ARCHITECTURE="${architecture}"
+        INCUS_ARCHITECTURE="${architecture}"
 
         ARCH=${architecture}
         [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
@@ -48,7 +48,7 @@
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/opensuse.yaml \
-            ${LXD_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
+            ${INCUS_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
             -o image.architecture=${ARCH} -o image.release=${release} \
             -o image.variant=${variant}
 

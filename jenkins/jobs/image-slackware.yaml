@@ -1,7 +1,7 @@
 - job:
     name: "image-slackware"
     concurrent: false
-    description: Slackware images for LXC and LXD.
+    description: Slackware images for LXC and Incus.
     node: master
     project-type: matrix
 
@@ -28,13 +28,13 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        LXD_ARCHITECTURE="${architecture}"
+        INCUS_ARCHITECTURE="${architecture}"
 
         ARCH=${architecture}
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/slackware.yaml \
-            ${LXD_ARCHITECTURE} container 3600 ${WORKSPACE} \
+            ${INCUS_ARCHITECTURE} container 3600 ${WORKSPACE} \
             -o image.architecture=${ARCH} -o image.release=${release}
 
     properties:

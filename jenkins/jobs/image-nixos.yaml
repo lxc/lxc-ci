@@ -1,7 +1,7 @@
 - job:
     name: "image-nixos"
     concurrent: false
-    description: NixOS images for LXD.
+    description: NixOS images for Incus.
     node: master
     project-type: matrix
 
@@ -28,14 +28,14 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        LXD_ARCHITECTURE="${architecture}"
+        INCUS_ARCHITECTURE="${architecture}"
 
         ARCH=${architecture}
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
         [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/nixos.yaml \
-            ${LXD_ARCHITECTURE} container 14400 ${WORKSPACE} \
+            ${INCUS_ARCHITECTURE} container 14400 ${WORKSPACE} \
             -o image.architecture=${ARCH}
 
     properties:

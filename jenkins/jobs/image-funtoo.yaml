@@ -1,7 +1,7 @@
 - job:
     name: "image-funtoo"
     concurrent: false
-    description: Funtoo images for LXC and LXD.
+    description: Funtoo images for LXC and Incus.
     node: master
     project-type: matrix
 
@@ -29,14 +29,14 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        LXD_ARCHITECTURE="${architecture}"
+        INCUS_ARCHITECTURE="${architecture}"
 
         ARCH=${architecture}
         [ "${ARCH}" = "aarch64" ] && ARCH="arm64_generic"
         [ "${ARCH}" = "amd64" ] && ARCH="generic_64"
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/funtoo.yaml \
-            ${LXD_ARCHITECTURE} container 7200 ${WORKSPACE} \
+            ${INCUS_ARCHITECTURE} container 7200 ${WORKSPACE} \
             -o image.release=${release} -o image.architecture=${ARCH}
 
     properties:

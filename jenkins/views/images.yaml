@@ -1,7 +1,7 @@
 - view:
     name: Images
     view-type: list
-    description: Container images for LXC and LXD
+    description: Container images for LXC and Incus.
     columns:
         - status
         - weather

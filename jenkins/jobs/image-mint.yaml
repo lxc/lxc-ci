@@ -1,7 +1,7 @@
 - job:
     name: "image-mint"
     concurrent: false
-    description: Linux Mint images for LXC and LXD.
+    description: Linux Mint images for LXC and Incus.
     node: master
     project-type: matrix
 

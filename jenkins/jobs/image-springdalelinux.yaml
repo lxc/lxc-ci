@@ -1,7 +1,7 @@
 - job:
     name: "image-springdalelinux"
     concurrent: false
-    description: Springdale Linux images for LXC and LXD.
+    description: Springdale Linux images for LXC and Incus.
     node: master
     project-type: matrix
 
@@ -30,7 +30,7 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        LXD_ARCHITECTURE="${architecture}"
+        INCUS_ARCHITECTURE="${architecture}"
 
         ARCH=${architecture}
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
@@ -38,7 +38,7 @@
         TYPE="container"
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/springdalelinux.yaml \
-            ${LXD_ARCHITECTURE} ${TYPE} 7200 ${WORKSPACE} \
+            ${INCUS_ARCHITECTURE} ${TYPE} 7200 ${WORKSPACE} \
             -o image.architecture=${ARCH} -o image.release=${release} \
             -o image.variant=${variant}
 

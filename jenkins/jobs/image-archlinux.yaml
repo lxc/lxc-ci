@@ -1,7 +1,7 @@
 - job:
     name: "image-archlinux"
     concurrent: false
-    description: ArchLinux images for LXC and LXD.
+    description: ArchLinux images for LXC and Incus.
     node: master
     project-type: matrix
 
@@ -30,7 +30,7 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        LXD_ARCHITECTURE="${architecture}"
+        INCUS_ARCHITECTURE="${architecture}"
 
         ARCH=${architecture}
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
@@ -47,12 +47,12 @@
 
         if [ "${architecture}" = "amd64" ]; then
             exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/archlinux.yaml \
-                ${LXD_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
+                ${INCUS_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
                 -o image.architecture=${ARCH} -o image.variant=${variant}
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/archlinux.yaml \
-            ${LXD_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
+            ${INCUS_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
             -o image.architecture=${ARCH} \
             -o source.url=http://os.archlinuxarm.org
 

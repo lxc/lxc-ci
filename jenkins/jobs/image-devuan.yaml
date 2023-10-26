@@ -1,7 +1,7 @@
 - job:
     name: "image-devuan"
     concurrent: false
-    description: Devuan images for LXC and LXD.
+    description: Devuan images for LXC and Incus.
     node: master
     project-type: matrix
 
@@ -31,10 +31,10 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        LXD_ARCHITECTURE="${architecture}"
+        INCUS_ARCHITECTURE="${architecture}"
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/devuan.yaml \
-            ${LXD_ARCHITECTURE} container 1800 ${WORKSPACE} \
+            ${INCUS_ARCHITECTURE} container 1800 ${WORKSPACE} \
             -o image.architecture=${architecture} \
             -o image.release=${release} -o image.variant=${variant}
 

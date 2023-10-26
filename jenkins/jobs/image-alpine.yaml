@@ -1,7 +1,7 @@
 - job:
     name: "image-alpine"
     concurrent: false
-    description: Alpine images for LXC and LXD.
+    description: Alpine images for LXC and Incus.
     node: master
     project-type: matrix
 
@@ -33,7 +33,7 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        LXD_ARCHITECTURE="${architecture}"
+        INCUS_ARCHITECTURE="${architecture}"
 
         ARCH=${architecture}
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
@@ -50,7 +50,7 @@
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/alpine.yaml \
-            ${LXD_ARCHITECTURE} ${TYPE} 600 ${WORKSPACE} \
+            ${INCUS_ARCHITECTURE} ${TYPE} 600 ${WORKSPACE} \
             -o image.architecture=${ARCH} -o image.release=${release} \
             -o image.variant=${variant} ${EXTRA_ARGS}
 

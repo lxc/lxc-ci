@@ -1,7 +1,7 @@
 - job:
     name: "image-gentoo"
     concurrent: false
-    description: Gentoo images for LXC and LXD.
+    description: Gentoo images for LXC and Incus.
     node: master
     project-type: matrix
 
@@ -29,7 +29,7 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        LXD_ARCHITECTURE="${architecture}"
+        INCUS_ARCHITECTURE="${architecture}"
 
         ARCH=${architecture}
 
@@ -46,7 +46,7 @@
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/gentoo.yaml \
-            ${LXD_ARCHITECTURE} ${TYPE} 14400 ${WORKSPACE} \
+            ${INCUS_ARCHITECTURE} ${TYPE} 14400 ${WORKSPACE} \
             -o image.architecture=${ARCH} -o image.variant=${variant} ${EXTRA_ARGS}
 
     properties:

@@ -1,7 +1,7 @@
 - job:
     name: "image-debian"
     concurrent: false
-    description: Debian images for LXC and LXD.
+    description: Debian images for LXC and Incus.
     node: master
     project-type: matrix
 
@@ -32,7 +32,7 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        LXD_ARCHITECTURE="${architecture}"
+        INCUS_ARCHITECTURE="${architecture}"
 
         TYPE="container"
         if [ "${architecture}" = "amd64" ] || [ "${architecture}" = "arm64" ]; then
@@ -40,7 +40,7 @@
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/debian.yaml \
-            ${LXD_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
+            ${INCUS_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
             -o image.architecture=${architecture} \
             -o image.release=${release} -o image.variant=${variant} \
             -o source.url="http://ftp.us.debian.org/debian"

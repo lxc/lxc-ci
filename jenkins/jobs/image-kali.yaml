@@ -1,7 +1,7 @@
 - job:
     name: "image-kali"
     concurrent: false
-    description: Kali images for LXC and LXD.
+    description: Kali images for LXC and Incus.
     node: master
     project-type: matrix
 
@@ -29,10 +29,10 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        LXD_ARCHITECTURE="${architecture}"
+        INCUS_ARCHITECTURE="${architecture}"
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/kali.yaml \
-            ${LXD_ARCHITECTURE} container 1800 ${WORKSPACE} \
+            ${INCUS_ARCHITECTURE} container 1800 ${WORKSPACE} \
             -o image.architecture=${architecture} \
             -o image.release=kali-rolling -o image.variant=${variant}
 
