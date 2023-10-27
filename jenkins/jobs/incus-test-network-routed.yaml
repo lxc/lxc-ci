@@ -1,0 +1,36 @@
+- job:
+    name: "incus-test-network-routed"
+    concurrent: false
+    description: Tests routed NIC integration with Incus
+    node: master
+    project-type: freestyle
+
+    builders:
+    - shell: |-
+        cd /lxc-ci
+        exec /lxc-ci/bin/maas-run tags=physical jammy ga-22.04 default bin/test-incus-network-routed
+
+    properties:
+    - build-discarder:
+        num-to-keep: 3
+
+    - raw:
+        !include: ../includes/webhook.yaml.inc
+
+    publishers:
+    - workspace-cleanup:
+        fail-build: false
+
+    - naginator:
+        rerun-unstable-builds: true
+        rerun-matrix-part: true
+        max-failed-builds: 3
+        progressive-delay-increment: 300
+        progressive-delay-maximum: 900
+
+    triggers:
+    - timed: '@daily'
+
+    wrappers:
+    - ansicolor:
+        colormap: css
