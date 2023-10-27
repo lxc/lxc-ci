@@ -3,12 +3,32 @@
     concurrent: false
     description: Tests OVN integration with Incus
     node: master
-    project-type: freestyle
+    project-type: matrix
+
+    axes:
+    - axis:
+        name: test
+        type: user-defined
+        values:
+        - basic
+        - forward
+        - load_balancer
+        - peering
+        - dhcp_reservation
+        - nested_vlan
+        - acl
+        - l3only
+
+    - axis:
+        name: restrict
+        type: slave
+        values:
+        - master
 
     builders:
     - shell: |-
         cd /lxc-ci
-        exec /lxc-ci/bin/maas-run tags=virtual jammy ga-22.04 zabbly bin/test-incus-network-ovn
+        exec /lxc-ci/bin/maas-run tags=virtual jammy ga-22.04 zabbly bin/test-incus-network-ovn "${test}"
 
     properties:
     - build-discarder:
