@@ -1,0 +1,185 @@
+#!/bin/sh
+set -eux
+
+cleanup() {
+    echo ""
+    if [ "${FAIL}" = "1" ]; then
+        echo "Test failed"
+        exit 1
+    fi
+
+    echo "Test passed"
+    exit 0
+}
+
+poolDriverList="${1:-dir btrfs lvm lvm-thin zfs}"
+FAIL=1
+trap cleanup EXIT HUP INT TERM
+
+# Install test dependencies
+apt-get remove --purge cloud-init --yes
+apt-get install --yes curl zfsutils-linux
+
+# Install Incus
+curl -sL https://pkgs.zabbly.com/get/incus-daily | sh
+
+waitVMAgent() (
+  set +x
+  # shellcheck disable=SC3043
+  local vmName="$1"
+  for i in $(seq 90) # Wait up to 90s.
+  do
+    if incus info "${vmName}" | grep -qF 127.0.0.1; then
+      return 0 # Success.
+    fi
+
+    sleep 1
+  done
+
+  echo "VM ${vmName} agent not running after ${i}s"
+  return 1 # Failed.
+)
+
+# Configure Incus
+incus project switch default
+incus network create incusbr0
+incus project create test -c features.images=false
+incus project switch test
+incus profile device add default eth0 nic network=incusbr0
+
+poolName="vmpool$$"
+
+for poolDriver in $poolDriverList
+do
+	echo "==> Create storage pool using driver ${poolDriver}"
+	if [ "${poolDriver}" = "dir" ]; then
+		incus storage create "${poolName}" "${poolDriver}" volume.size=5GB
+	elif [ "${poolDriver}" = "ceph" ]; then
+		incus storage create "${poolName}" "${poolDriver}" source="${poolName}" volume.size=5GB
+	elif [ "${poolDriver}" = "lvm" ]; then
+		incus storage create "${poolName}" "${poolDriver}" size=40GiB lvm.use_thinpool=false volume.size=5GB
+	elif [ "${poolDriver}" = "lvm-thin" ]; then
+		incus storage create "${poolName}" lvm size=20GiB volume.size=5GB
+	else
+		incus storage create "${poolName}" "${poolDriver}" size=20GB volume.size=5GB
+	fi
+
+	echo "==> Create VM"
+	incus init images:ubuntu/20.04 v1 --vm -s "${poolName}"
+	incus init images:ubuntu/20.04 v2 --vm -s "${poolName}"
+
+	echo "==> Create custom block volume and attach it to VM"
+	incus storage volume create "${poolName}" vol1 --type=block size=10MB
+	incus storage volume attach "${poolName}" vol1 v1
+
+	echo "==> Create custom volume and attach it to VM"
+	incus storage volume create "${poolName}" vol4 size=10MB
+	incus storage volume attach "${poolName}" vol4 v1 /foo
+
+	echo "==> Start VM and add content to custom block volume"
+	incus start v1
+	waitVMAgent v1
+
+	incus exec v1 -- /bin/sh -c "mkfs.ext4 /dev/sdb && mount /dev/sdb /mnt && echo foo > /mnt/bar && umount /mnt"
+
+	echo "==> Stop VM and detach custom volumes"
+	incus stop -f v1
+	incus storage volume detach "${poolName}" vol1 v1
+	incus storage volume detach "${poolName}" vol4 v1
+
+	echo "==> Backup custom block volume"
+	incus storage volume export "${poolName}" vol1 vol1.tar.gz
+	incus storage volume export "${poolName}" vol1 vol1-optimized.tar.gz --optimized-storage
+
+	echo "==> Import custom block volume"
+	incus storage volume import "${poolName}" vol1.tar.gz vol2
+	incus storage volume import "${poolName}" vol1-optimized.tar.gz vol3
+	rm vol1.tar.gz
+	rm vol1-optimized.tar.gz
+
+	echo "==> Import custom ISO volume"
+	tmp_iso_dir="$(mktemp -d)"
+	echo foo > "${tmp_iso_dir}/foo"
+	genisoimage -o vol5.iso "${tmp_iso_dir}"
+	rm -f "${tmp_iso_dir}/foo"
+	echo bar > "${tmp_iso_dir}/bar"
+	genisoimage -o vol6.iso "${tmp_iso_dir}"
+	rm -rf "${tmp_iso_dir}"
+	incus storage volume import "${poolName}" vol5.iso vol5
+	incus storage volume import "${poolName}" vol6.iso vol6
+	rm -f vol5.iso vol6.iso
+
+	echo "==> Attach custom block volumes to VM"
+	# Both volumes can be attached at the same time. The VM will have /dev/sdb and /dev/sdc.
+	# It doesn't matter which volume is which device as they contain the same content.
+	incus storage volume attach "${poolName}" vol2 v1
+	incus storage volume attach "${poolName}" vol3 v1
+
+	echo "==> Attach custom ISO volumes to VM"
+	incus storage volume attach "${poolName}" vol5 v1
+	incus storage volume attach "${poolName}" vol6 v1
+	incus storage volume attach "${poolName}" vol5 v2
+	incus storage volume attach "${poolName}" vol6 v2
+
+	echo "==> Start VM and check content"
+	incus start v1
+	incus start v2
+	waitVMAgent v1
+	waitVMAgent v2
+
+	# shellcheck disable=2016
+	incus exec v1 -- /bin/sh -c 'mount /dev/sdb /mnt && [ $(cat /mnt/bar) = foo ] && umount /mnt'
+	# shellcheck disable=2016
+	incus exec v1 -- /bin/sh -c 'mount /dev/sdc /mnt && [ $(cat /mnt/bar) = foo ] && umount /mnt'
+
+	# mount ISOs and check content
+	# shellcheck disable=2016
+	incus exec v1 -- /bin/sh -c 'mount /dev/sr0 /mnt && [ $(cat /mnt/foo) = foo ] && ! touch /mnt/foo && umount /mnt'
+	# shellcheck disable=2016
+	incus exec v1 -- /bin/sh -c 'mount /dev/sr1 /mnt && [ $(cat /mnt/bar) = bar ] && ! touch /mnt/bar && umount /mnt'
+
+	# concurrent readonly ISO mounts
+	# shellcheck disable=2016
+	incus exec v1 -- /bin/sh -c 'mount /dev/sr0 /mnt && [ $(cat /mnt/foo) = foo ] && ! touch /mnt/foo'
+	# shellcheck disable=2016
+	incus exec v2 -- /bin/sh -c 'mount /dev/sr0 /mnt && [ $(cat /mnt/foo) = foo ] && ! touch /mnt/foo'
+	incus exec v1 -- umount /mnt
+	incus exec v2 -- umount /mnt
+
+	echo "==> Detaching volumes"
+	incus stop -f v1
+	incus delete -f v2
+	incus storage volume detach "${poolName}" vol2 v1
+	incus storage volume detach "${poolName}" vol3 v1
+	incus storage volume detach "${poolName}" vol6 v1
+
+	echo "==> Publishing VM to image"
+	incus storage volume create "${poolName}" images --project=default
+	incus config set storage.images_volume "${poolName}"/images
+	incus publish v1 --alias v1image
+	incus launch v1image v2 -s "${poolName}"
+	waitVMAgent v2
+	incus delete v2 -f
+	incus image delete v1image
+	incus config unset storage.images_volume
+	incus storage volume delete "${poolName}" images --project=default
+
+	echo "==> Deleting VM"
+	incus rm v1
+
+	echo "==> Deleting storage pool and volumes"
+	incus storage volume rm "${poolName}" vol1
+	incus storage volume rm "${poolName}" vol2
+	incus storage volume rm "${poolName}" vol3
+	incus storage volume rm "${poolName}" vol4
+	incus storage volume rm "${poolName}" vol5
+	incus storage volume rm "${poolName}" vol6
+	incus storage rm "${poolName}"
+done
+
+incus profile device remove default eth0
+incus project switch default
+incus project delete test
+incus network delete incusbr0
+
+FAIL=0

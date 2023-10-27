@@ -1,0 +1,425 @@
+#!/bin/sh
+set -eux
+
+cleanup() {
+    echo ""
+    if [ "${FAIL}" = "1" ]; then
+        echo "Test failed"
+        exit 1
+    fi
+
+    echo "Test passed"
+    exit 0
+}
+
+poolDriverList="${1:-dir btrfs lvm lvm-thin zfs}"
+FAIL=1
+trap cleanup EXIT HUP INT TERM
+
+# Install test dependencies
+apt-get remove --purge cloud-init --yes
+apt-get install --yes curl zfsutils-linux
+
+# Install Incus
+curl -sL https://pkgs.zabbly.com/get/incus-daily | sh
+
+waitVMAgent() (
+  set +x
+  # shellcheck disable=SC3043
+  local vmName="$1"
+  for i in $(seq 90) # Wait up to 90s.
+  do
+    if incus info "${vmName}" | grep -qF 127.0.0.1; then
+      return 0 # Success.
+    fi
+
+    sleep 1
+  done
+
+  echo "VM ${vmName} agent not running after ${i}s"
+  return 1 # Failed.
+)
+
+# Configure Incus
+incus network create incusbr0
+incus profile device add default eth0 nic network=incusbr0
+
+poolName="vmpool$$"
+
+GiB=1073741823
+
+for poolDriver in $poolDriverList
+do
+        # FIXME: LVM on Ubuntu is broken due to the Ubuntu kernel having an io_uring regression
+        [ "${poolDriver}" = "lvm" ] && continue
+
+        echo "==> Create storage pool using driver ${poolDriver}"
+        if [ "${poolDriver}" = "dir" ] || [ "${poolDriver}" = "ceph" ]; then
+                incus storage create "${poolName}" "${poolDriver}"
+        elif [ "${poolDriver}" = "lvm" ]; then
+                incus storage create "${poolName}" "${poolDriver}" size=60GiB lvm.use_thinpool=false
+        elif [ "${poolDriver}" = "lvm-thin" ]; then
+                incus storage create "${poolName}" lvm size=20GiB
+        else
+                incus storage create "${poolName}" "${poolDriver}" size=20GiB
+        fi
+
+        echo "==> Create VM and boot"
+        incus init images:ubuntu/22.04/cloud v1 --vm -s "${poolName}"
+        incus start v1
+        waitVMAgent v1
+        incus info v1
+
+        echo "==> Check /dev/disk/by-id"
+        incus exec v1 -- test -e /dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_incus_root
+        incus exec v1 -- test -e /dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_incus_root-part1
+        incus exec v1 -- test -e /dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_incus_root-part2
+
+        echo "==> Check config drive is readonly"
+        # Check 9p config drive share is exported readonly.
+        incus exec v1 -- mount -t 9p config /srv
+        ! incus exec v1 -- touch /srv/incus-test || false
+        incus exec v1 -- umount /srv
+
+        # Check virtiofs config drive share is exported readonly.
+        incus exec v1 -- mount -t virtiofs config /srv
+        ! incus exec v1 -- touch /srv/incus-test || false
+        incus exec v1 -- umount /srv
+
+        echo "==> Checking VM root disk size is 10GiB"
+        [ $(($(incus exec v1 -- blockdev --getsize64 /dev/sda) / GiB)) -eq "10" ]
+
+        echo "foo" | incus exec v1 -- tee /root/foo.txt
+        incus exec v1 -- sync
+        incus snapshot create v1
+
+        echo "==> Checking restore VM snapshot"
+        incus snapshot restore v1 snap0
+        waitVMAgent v1
+        incus exec v1 -- cat /root/foo.txt | grep -Fx "foo"
+
+        echo "==> Checking running copied VM snapshot"
+        incus copy v1/snap0 v2
+        incus start v2
+        waitVMAgent v2
+        incus exec v2 -- cat /root/foo.txt | grep -Fx "foo"
+
+        echo "==> Checking VM snapshot copy root disk size is 10GiB"
+        [ $(($(incus exec v2 -- blockdev --getsize64 /dev/sda) / GiB)) -eq "10" ]
+        incus delete -f v2
+        incus delete v1/snap0
+
+        echo "==> Check QEMU crash behavior and recovery"
+        incus exec v1 -- fsfreeze --freeze /
+        uuid=$(incus config get v1 volatile.uuid)
+        pgrep -af "${uuid}"
+        rm /var/log/incus/v1/qemu.monitor
+        systemctl restart incus
+        sleep 5
+        incus ls v1 | grep ERROR
+        ! incus stop v1 || false
+        ! incus start v1 || false
+        pgrep -af "${uuid}"
+        incus stop v1 -f
+        ! pgrep -af "${uuid}" || false
+        incus start v1
+        waitVMAgent v1
+
+        echo "==> Testing VM non-optimized export/import (while running to check config.mount is excluded)"
+        incus exec v1 -- fsfreeze --freeze /
+        incus export v1 "/tmp/incus-test-${poolName}.tar.gz"
+        incus delete -f v1
+        incus import "/tmp/incus-test-${poolName}.tar.gz"
+        rm "/tmp/incus-test-${poolName}.tar.gz"
+        incus start v1
+        waitVMAgent v1
+
+        echo "==> Testing VM optimized export/import (while running to check config.mount is excluded)"
+        incus exec v1 -- fsfreeze --freeze /
+        incus export v1 "/tmp/incus-test-${poolName}-optimized.tar.gz" --optimized-storage
+        incus delete -f v1
+        incus import "/tmp/incus-test-${poolName}-optimized.tar.gz"
+        rm "/tmp/incus-test-${poolName}-optimized.tar.gz"
+        incus start v1
+        waitVMAgent v1
+
+        echo "==> Increasing VM root disk size for next boot"
+        incus config device set v1 root size=11GiB
+        incus config get v1 volatile.root.apply_quota | grep true
+        incus stop -f v1
+        incus start v1
+        waitVMAgent v1
+
+        echo "==> Checking VM root disk size is 11GiB"
+        [ $(($(incus exec v1 -- blockdev --getsize64 /dev/sda) / GiB)) -eq "11" ]
+
+        echo "==> Check VM shrink is blocked"
+        ! incus config device set v1 root size=10GiB || false
+
+        echo "==> Checking additional disk device support"
+        incus stop -f v1
+
+        # Create directory with a file for directory disk tests.
+        mkdir "/tmp/incus-test-${poolName}"
+        touch "/tmp/incus-test-${poolName}/incus-test"
+
+        # Create empty block file for block disk tests.
+        truncate -s 5m "/tmp/incus-test-${poolName}/incus-test-block"
+
+        # Add disks
+        incus config device add v1 dir1rw disk source="/tmp/incus-test-${poolName}" path="/srv/rw"
+        incus config device add v1 dir1ro disk source="/tmp/incus-test-${poolName}" path="/srv/ro" readonly=true
+        incus config device add v1 block1ro disk source="/tmp/incus-test-${poolName}/incus-test-block" readonly=true
+        incus config device add v1 block1rw disk source="/tmp/incus-test-${poolName}/incus-test-block"
+        incus start v1
+        waitVMAgent v1
+
+        echo "==> Testing VM incus-agent drive mounts"
+        # Check there is only 1 mount for each directory disk and that it is mounted with the appropriate options.
+        incus exec v1 -- mount | grep '/srv/rw type' -c | grep 1
+        incus exec v1 -- mount | grep '/srv/ro type' -c | grep 1
+
+        # RW disks should use virtio-fs when used with the snap.
+        incus exec v1 -- mount | grep 'incus_dir1rw on /srv/rw type virtiofs (rw,relatime)'
+
+        # RO disks should use virtio-fs when used with the snap but be mounted readonly.
+        incus exec v1 -- mount | grep 'incus_dir1ro on /srv/ro type virtiofs (ro,relatime)'
+
+        # Check UID/GID are correct.
+        incus exec v1 -- stat -c '%u:%g' /srv/rw | grep '0:0'
+        incus exec v1 -- stat -c '%u:%g' /srv/ro | grep '0:0'
+
+        # Remount the readonly disk as rw inside VM and check that the disk is still readonly at the Incus layer.
+        incus exec v1 -- mount -oremount,rw /srv/ro
+        incus exec v1 -- mount | grep 'incus_dir1ro on /srv/ro type virtiofs (rw,relatime)'
+        ! incus exec v1 -- touch /srv/ro/incus-test-ro || false
+        ! incus exec v1 -- mkdir /srv/ro/incus-test-ro || false
+        ! incus exec v1 -- rm /srv/ro/incus-test.txt || false
+        ! incus exec v1 -- chmod 777 /srv/ro || false
+
+        ## Mount the readonly disk as rw inside VM using 9p and check the disk is still readonly at the Incus layer.
+        incus exec v1 -- mkdir /srv/ro9p
+        incus exec v1 -- mount -t 9p incus_dir1ro /srv/ro9p
+        incus exec v1 -- mount | grep 'incus_dir1ro on /srv/ro9p type 9p (rw,relatime,sync,dirsync,access=client,trans=virtio)'
+        ! incus exec v1 -- touch /srv/ro9p/incus-test-ro || false
+        ! incus exec v1 -- mkdir /srv/ro9p/incus-test-ro || false
+        ! incus exec v1 -- rm /srv/ro9p/incus-test.txt || false
+        ! incus exec v1 -- chmod 777 /srv/ro9p || false
+
+        # Check writable disk is writable.
+        incus exec v1 -- touch /srv/rw/incus-test-rw
+        stat -c '%u:%g' "/tmp/incus-test-${poolName}/incus-test-rw" | grep "0:0"
+        incus exec v1 -- rm /srv/rw/incus-test-rw
+        incus exec v1 -- rm /srv/rw/incus-test
+
+        # Check block disks are available.
+        incus exec v1 -- stat -c "%F" /dev/sdb | grep "block special file"
+        incus exec v1 -- stat -c "%F" /dev/sdc | grep "block special file"
+
+        # Check the rw driver accepts writes and the ro does not.
+        ! incus exec v1 -- dd if=/dev/urandom of=/dev/sdb bs=512 count=2 || false
+        incus exec v1 -- dd if=/dev/urandom of=/dev/sdc bs=512 count=2
+
+        # Remove temporary directory (should now be empty aside from block file).
+        echo "==> Stopping VM"
+        incus stop -f v1
+        rm "/tmp/incus-test-${poolName}/incus-test-block"
+        rmdir "/tmp/incus-test-${poolName}"
+
+        echo "==> Deleting VM"
+        incus delete -f v1
+
+        # Create directory with a file for directory disk tests.
+        mkdir "/tmp/incus-test-${poolName}"
+
+        # Create empty block file for block disk tests.
+        truncate -s 5m "/tmp/incus-test-${poolName}/incus-test-block"
+
+        echo "==> Checking disk device hotplug support"
+        incus launch images:ubuntu/22.04/cloud v1 --vm -s "${poolName}"
+        waitVMAgent v1
+
+        # Hotplug disks
+        incus storage volume create "${poolName}" vol1 --type=block size=10MB
+        incus storage volume attach "${poolName}" vol1 v1
+        sleep 3
+        incus exec v1 -- stat -c "%F" /dev/sdb | grep "block special file"
+        incus storage volume detach "${poolName}" vol1 v1
+        sleep 3
+        ! incus exec v1 -- stat -c "%F" /dev/sdb || false
+        incus storage volume delete "${poolName}" vol1
+
+        incus config device add v1 block1 disk source="/tmp/incus-test-${poolName}/incus-test-block" readonly=true
+        sleep 5
+        [ "$(incus exec v1 -- cat /sys/block/sdb/ro)" -eq 1 ]
+        incus config device set v1 block1 readonly=false
+        sleep 5
+        [ "$(incus exec v1 -- cat /sys/block/sdb/ro)" -eq 0 ]
+
+        # Hotplugging directories is not allowed and will fail
+        ! incus config device add v1 dir1 disk source="/tmp/incus-test-${poolName}" || false
+
+        # Hot plug cloud-init:config ISO.
+        incus config device add v1 cloudinit disk source=cloud-init:config
+        sleep 3
+        incus exec v1 -- mount -t iso9660 -o ro /dev/sr0 /mnt
+        incus exec v1 -- umount /dev/sr0
+        incus config device remove v1 cloudinit
+        ! incus exec v1 -- stat /dev/sr0 || false
+
+        # Remove temporary directory.
+        echo "==> Stopping VM"
+        incus stop -f v1
+        rm "/tmp/incus-test-${poolName}/incus-test-block"
+        rmdir "/tmp/incus-test-${poolName}"
+
+        echo "==> Deleting VM"
+        incus delete -f v1
+
+        echo "==> Change volume.size on pool and create VM"
+        incus storage set "${poolName}" volume.size 6GiB
+        incus init images:ubuntu/22.04/cloud v1 --vm -s "${poolName}"
+        incus start v1
+        waitVMAgent v1
+        incus info v1
+
+        echo "==> Checking VM root disk size is 6GiB"
+        [ $(($(incus exec v1 -- blockdev --getsize64 /dev/sda) / GiB)) -eq "6" ]
+
+        echo "==> Deleting VM and reset pool volume.size"
+        incus delete -f v1
+        incus storage unset "${poolName}" volume.size
+
+        if [ "${poolDriver}" = "lvm" ]; then
+                echo "==> Change volume.block.filesystem on pool and create VM"
+                incus storage set "${poolName}" volume.block.filesystem xfs
+                incus init images:ubuntu/22.04/cloud v1 --vm -s "${poolName}"
+                incus start v1
+                waitVMAgent v1
+                incus info v1
+
+                echo "==> Checking VM config disk filesyste is XFS"
+                stat -f -c %T /var/lib/incus/virtual-machines/v1 | grep xfs
+
+                echo "==> Deleting VM"
+                incus delete -f v1
+                incus storage unset "${poolName}" volume.block.filesystem
+        fi
+
+        echo "==> Create VM from profile with small disk size"
+        incus profile copy default vmsmall
+        incus profile device add vmsmall root disk pool="${poolName}" path=/ size=7GiB
+        incus init images:ubuntu/22.04/cloud v1 --vm -p vmsmall
+        incus start v1
+        waitVMAgent v1
+        incus info v1
+
+        echo "==> Checking VM root disk size is 7GiB"
+        [ $(($(incus exec v1 -- blockdev --getsize64 /dev/sda) / GiB)) -eq "7" ]
+        incus stop -f v1
+
+        echo "==> Copy to different storage pool with same driver and check size"
+        if [ "${poolDriver}" = "dir" ] || [ "${poolDriver}" = "ceph" ]; then
+                incus storage create "${poolName}2" "${poolDriver}"
+        elif [ "${poolDriver}" = "lvm" ]; then
+                incus storage create "${poolName}2" "${poolDriver}" size=40GiB lvm.use_thinpool=false
+        elif [ "${poolDriver}" = "lvm-thin" ]; then
+                incus storage create "${poolName}2" lvm size=20GiB
+        else
+                incus storage create "${poolName}2" "${poolDriver}" size=20GiB
+        fi
+
+        incus copy v1 v2 -s "${poolName}2"
+        incus start v2
+        waitVMAgent v2
+        incus info v2
+
+        echo "==> Checking copied VM root disk size is 7GiB"
+        [ $(($(incus exec v2 -- blockdev --getsize64 /dev/sda) / GiB)) -eq "7" ]
+        incus delete -f v2
+        incus storage delete "${poolName}2"
+
+        echo "==> Copy to different storage pool with different driver and check size"
+        dstPoolDriver=zfs # Use ZFS storage pool as that has fixed volumes not files.
+        if [ "${poolDriver}" = "zfs" ]; then
+                dstPoolDriver=lvm # Use something different when testing ZFS.
+        fi
+
+        incus storage create "${poolName}2" "${dstPoolDriver}" size=20GiB
+        incus copy v1 v2 -s "${poolName}2"
+        incus start v2
+        waitVMAgent v2
+        incus info v2
+
+        echo "==> Checking copied VM root disk size is 7GiB"
+        [ $(($(incus exec v2 -- blockdev --getsize64 /dev/sda) / GiB)) -eq "7" ]
+        incus delete -f v2
+
+        echo "==> Grow above default volume size and copy to different storage pool"
+        incus config device override v1 root size=11GiB
+        incus copy v1 v2 -s "${poolName}2"
+        incus start v2
+        waitVMAgent v2
+        incus info v2
+
+        echo "==> Checking copied VM root disk size is 11GiB"
+        [ $(($(incus exec v2 -- blockdev --getsize64 /dev/sda) / GiB)) -eq "11" ]
+        incus delete -f v2
+        incus storage delete "${poolName}2"
+
+        echo "==> Publishing larger VM"
+        incus start v1 # Start to ensure cloud-init grows filesystem before publish.
+        waitVMAgent v1
+        incus info v1
+        incus stop -f v1
+        incus publish v1 --alias vmbig
+        incus delete -f v1
+        incus storage set "${poolName}" volume.size 9GiB
+
+        echo "==> Check VM create fails when image larger than volume.size"
+        ! incus init vmbig v1 --vm -s "${poolName}" || false
+
+        echo "==> Check VM create succeeds when no volume.size set"
+        incus storage unset "${poolName}" volume.size
+        incus init vmbig v1 --vm -s "${poolName}"
+        incus start v1
+        waitVMAgent v1
+        incus info v1
+
+        echo "==> Checking new VM root disk size is 11GiB"
+        [ $(($(incus exec v1 -- blockdev --getsize64 /dev/sda) / GiB)) -eq "11" ]
+
+        echo "===> Renaming VM"
+        incus stop -f v1
+        incus rename v1 v1renamed
+
+        echo "==> Deleting VM, vmbig image and vmsmall profile"
+        incus delete -f v1renamed
+        incus image delete vmbig
+        incus profile delete vmsmall
+
+        echo "==> Checking VM Generation UUID with QEMU"
+        incus init images:ubuntu/22.04/cloud v1 --vm -s "${poolName}"
+        incus start v1
+        waitVMAgent v1
+        incus info v1
+
+        # Check that the volatile.uuid.generation setting is applied to the QEMU process.
+        vmGenID=$(incus config get v1 volatile.uuid.generation)
+        qemuGenID=$(awk '/driver = "vmgenid"/,/guid = / {print $3}' /var/log/incus/v1/qemu.conf | sed -n 's/"\([0-9a-fA-F]\{8\}-[0-9a-fA-F]\{4\}-[0-9a-fA-F]\{4\}-[0-9a-fA-F]\{4\}-[0-9a-fA-F]\{12\}\)"/\1/p')
+        if [ "${vmGenID}" != "${qemuGenID}" ]; then
+                echo "==> VM Generation ID in Incus config does not match VM Generation ID in QEMU process"
+                false
+        fi
+
+        incus delete -f v1
+
+        echo "==> Deleting storage pool"
+        incus storage delete "${poolName}"
+done
+
+echo "==> Delete network"
+incus profile device remove default eth0
+incus network delete incusbr0
+
+FAIL=0

@@ -9,27 +9,13 @@ fi
 
 parentNIC="enp5s0"
 
-waitSnapdSeed() (
-  set +x
-  for i in $(seq 60); do # Wait up to 60s.
-    if systemctl show snapd.seeded.service --value --property SubState | grep -qx exited; then
-      return 0 # Success.
-    fi
-
-    sleep 1
-  done
-
-  echo "snapd not seeded after ${i}s"
-  return 1 # Failed.
-)
-
 waitVMAgent() (
   set +x
   # shellcheck disable=SC3043
   local vmName="$1"
   for i in $(seq 90) # Wait up to 90s.
   do
-    if lxc info "${vmName}" | grep -qF 127.0.0.1; then
+    if incus info "${vmName}" | grep -qF 127.0.0.1; then
       return 0 # Success.
     fi
 
@@ -58,7 +44,7 @@ networkTests() {
     local FAIL=0
 
     echo "=> Performing network tests"
-    for url in $(lxc query "/1.0/instances" | jq -r .[]); do
+    for url in $(incus query "/1.0/instances" | jq -r .[]); do
         name=$(echo "${url}" | cut -d/ -f4)
 
         case "${name}" in
@@ -69,9 +55,9 @@ networkTests() {
         echo ""
 
         # Get the addresses
-        address=$(lxc query "${url}/state" | jq -r ".network.eth0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
+        address=$(incus query "${url}/state" | jq -r ".network.eth0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
         if [ -z "${address}" ]; then
-            address=$(lxc query "${url}/state" | jq -r ".network.enp5s0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
+            address=$(incus query "${url}/state" | jq -r ".network.enp5s0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
         fi
 
         if [ -z "${address}" ]; then
@@ -97,7 +83,7 @@ networkTests() {
         fi
 
         # DNS resolution
-        if lxc exec "${name}" -- getent hosts linuxcontainers.org >/dev/null 2>&1 || lxc exec "${name}" -- ping -c1 -W1 linuxcontainers.org >/dev/null 2>&1; then
+        if incus exec "${name}" -- getent hosts linuxcontainers.org >/dev/null 2>&1 || incus exec "${name}" -- ping -c1 -W1 linuxcontainers.org >/dev/null 2>&1; then
             echo "PASS: DNS resolution: ${name}"
         else
             echo "FAIL: DNS resolution: ${name}"
@@ -115,21 +101,12 @@ networkTests() {
 FAIL=1
 trap cleanup EXIT HUP INT TERM
 
-# Wait for snapd seeding
-waitSnapdSeed
-
-# Configure to use the proxy
-curl -s http://canonical-lxd.stgraber.org/config/snapd.sh | sh
-
-# Install LXD
-while [ -e /usr/bin/lxd ]; do
-    apt-get remove --purge --yes lxd lxd-client lxcfs liblxc1
-done
+# Install test dependencies
 apt-get remove --purge cloud-init --yes
-snap remove lxd || true
-snap install lxd --channel=latest/edge
-apt-get install --no-install-recommends --yes jq
-lxd waitready --timeout=300
+apt-get install --yes curl jq zfsutils-linux
+
+# Install Incus
+curl -sL https://pkgs.zabbly.com/get/incus-daily | sh
 
 # Enable SR-IOV on nic and bring up
 echo 7 > "/sys/class/net/${parentNIC}/device/sriov_numvfs"
@@ -137,31 +114,31 @@ ip link set "${parentNIC}" up
 sleep 10
 ethtool "${parentNIC}"
 
-# Configure LXD
-lxc storage create default zfs source="${storageDevice}"
-lxc profile device add default root disk path=/ pool=default
-lxc profile device add default eth0 nic nictype=sriov parent="${parentNIC}" name=eth0
+# Configure Incus
+incus storage create default zfs source="${storageDevice}"
+incus profile device add default root disk path=/ pool=default
+incus profile device add default eth0 nic nictype=sriov parent="${parentNIC}" name=eth0
 
 # Launch a few VMs.
 # Do this first before containers to ensure VF free search handles VFs unbound from host.
 echo "==> VM on default VLAN"
-lxc init images:ubuntu/20.04/cloud v1 --vm
-lxc start v1
+incus init images:ubuntu/20.04/cloud v1 --vm
+incus start v1
 
 echo "==> VM on default VLAN with filtering"
-lxc init images:ubuntu/20.04/cloud v2 --vm
-lxc config device override v2 eth0 security.mac_filtering=true
-lxc start v2
+incus init images:ubuntu/20.04/cloud v2 --vm
+incus config device override v2 eth0 security.mac_filtering=true
+incus start v2
 
 echo "==> VM on alternate VLAN"
-lxc init images:ubuntu/20.04/cloud v3 --vm
-lxc config device override v3 eth0 vlan=4000
-lxc start v3
+incus init images:ubuntu/20.04/cloud v3 --vm
+incus config device override v3 eth0 vlan=4000
+incus start v3
 
 echo "==> VM on alternate VLAN with filtering"
-lxc init images:ubuntu/20.04/cloud v4 --vm
-lxc config device override v4 eth0 vlan=4000 security.mac_filtering=true
-lxc start v4
+incus init images:ubuntu/20.04/cloud v4 --vm
+incus config device override v4 eth0 vlan=4000 security.mac_filtering=true
+incus start v4
 
 # Wait for VMs to start.
 waitVMAgent v1
@@ -169,44 +146,44 @@ waitVMAgent v2
 waitVMAgent v3
 waitVMAgent v4
 
-lxc list
+incus list
 networkTests
 
 # Delete all VMs except v1 to free up VFs for container tests.
 # Leave v1 so that the first VF is unbound to check that containers don't mistake it as free.
-lxc delete -f v2 v3 v4
+incus delete -f v2 v3 v4
 
 # Launch a few containers.
 echo "==> Container on default VLAN"
-lxc init images:ubuntu/20.04/cloud c1
-lxc start c1
+incus init images:ubuntu/20.04/cloud c1
+incus start c1
 
 echo "==> Container on default VLAN with filtering"
-lxc init images:ubuntu/20.04/cloud c2
-lxc config device override c2 eth0 security.mac_filtering=true
-lxc start c2
+incus init images:ubuntu/20.04/cloud c2
+incus config device override c2 eth0 security.mac_filtering=true
+incus start c2
 
 echo "==> Container on alternate VLAN"
-lxc init images:ubuntu/20.04/cloud c3
-lxc config device override c3 eth0 vlan=4000
-lxc start c3
+incus init images:ubuntu/20.04/cloud c3
+incus config device override c3 eth0 vlan=4000
+incus start c3
 
 echo "==> Container on alternate VLAN with filtering"
-lxc init images:ubuntu/20.04/cloud c4
-lxc config device override c4 eth0 vlan=4000 security.mac_filtering=true
-lxc start c4
+incus init images:ubuntu/20.04/cloud c4
+incus config device override c4 eth0 vlan=4000 security.mac_filtering=true
+incus start c4
 
 # Wait for containers to start.
 sleep 30s
 
-lxc list
+incus list
 networkTests
 
 # Delete remaining instances.
-lxc delete -f v1 c1 c2 c3 c4
+incus delete -f v1 c1 c2 c3 c4
 
-lxc profile device remove default eth0
-lxc profile device remove default root
-lxc storage delete default
+incus profile device remove default eth0
+incus profile device remove default root
+incus storage delete default
 
 FAIL=0
