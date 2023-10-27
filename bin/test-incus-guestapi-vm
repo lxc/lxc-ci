@@ -118,9 +118,10 @@ sleep 5
 # Test nested VM functionality.
 incus start v1
 waitVMAgent v1
+sleep 30
 
 # Configure to use the proxy
-curl https://pkgs.zabbly.com/get/incus-daily | incus exec v1 -- sh
+curl -sL https://pkgs.zabbly.com/get/incus-daily | incus exec v1 -- sh
 incus exec v1 -- incus admin init --auto
 incus exec v1 -- incus launch images:ubuntu/22.04/cloud v1v1 --vm
 sleep 30
