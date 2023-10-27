@@ -1,0 +1,13 @@
+- view:
+    name: Incus
+    view-type: list
+    description: Incus
+    columns:
+        - status
+        - weather
+        - job
+        - last-success
+        - last-failure
+        - last-duration
+        - build-button
+    regex: incus-.*
