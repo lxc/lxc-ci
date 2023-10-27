@@ -107,7 +107,7 @@ do
         echo "==> Checking VM snapshot copy root disk size is 10GiB"
         [ $(($(incus exec v2 -- blockdev --getsize64 /dev/sda) / GiB)) -eq "10" ]
         incus delete -f v2
-        incus delete v1/snap0
+        incus snapshot delete v1 snap0
 
         echo "==> Check QEMU crash behavior and recovery"
         incus exec v1 -- fsfreeze --freeze /
