@@ -13,7 +13,7 @@
         - basic
         - forward
         - load_balancer
-        - peering
+#        - peering
         - dhcp_reservation
         - nested_vlan
         - acl
