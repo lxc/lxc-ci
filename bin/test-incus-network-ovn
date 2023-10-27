@@ -23,6 +23,7 @@ apt-get install --yes curl jq zfsutils-linux
 curl -sL https://pkgs.zabbly.com/get/incus-daily | sh
 
 # Install OVN and dnsutils.
+apt-add-repository ppa:stgraber/stgraber.net --yes
 apt-get install --no-install-recommends --yes ovn-host ovn-central dnsutils
 
 # Configure OVN.
