@@ -43,7 +43,7 @@ ebtables --version 2>&1 | grep legacy
 
 # Setup bridge filter and unmanaged bridge.s
 modprobe br_netfilter
-ip link add incusbr0unmanaged type bridge
+ip link add incbr0unmanaged type bridge
 
 firewallTests() {
     incus launch images:ubuntu/focal c1
@@ -139,16 +139,16 @@ firewallTests
 echo "=> Performing nftables unmanaged bridge tests"
 ip a flush dev incusbr0 # Clear duplicate address from incusbr0.
 ip link set incusbr0 down
-ip a add 192.0.2.1/24 dev incusbr0unmanaged
-ip a add 2001:db8::1/64 dev incusbr0unmanaged
-ip link set incusbr0unmanaged up
+ip a add 192.0.2.1/24 dev incbr0unmanaged
+ip a add 2001:db8::1/64 dev incbr0unmanaged
+ip link set incbr0unmanaged up
 incus profile device remove default eth0
 incus profile device add default eth0 nic \
     nictype=bridged \
-    parent=incusbr0unmanaged
+    parent=incbr0unmanaged
 firewallTests
 incus profile device remove default eth0
-ip a flush dev incusbr0unmanaged
+ip a flush dev incbr0unmanaged
 
 echo "=> Performing xtables managed bridge tests"
 incus profile device add default eth0 nic network=incusbr0
@@ -164,16 +164,16 @@ firewallTests
 echo "=> Performing xtables unmanaged bridge tests"
 ip a flush dev incusbr0 # Clear duplicate address from incusbr0.
 ip link set incusbr0 down
-ip a add 192.0.2.1/24 dev incusbr0unmanaged
-ip a add 2001:db8::1/64 dev incusbr0unmanaged
-ip link set incusbr0unmanaged up
+ip a add 192.0.2.1/24 dev incbr0unmanaged
+ip a add 2001:db8::1/64 dev incbr0unmanaged
+ip link set incbr0unmanaged up
 incus profile device remove default eth0
 incus profile device add default eth0 nic \
     nictype=bridged \
-    parent=incusbr0unmanaged
+    parent=incbr0unmanaged
 firewallTests
 incus profile device remove default eth0
-ip link delete incusbr0unmanaged
+ip link delete incbr0unmanaged
 
 # Cleanup.
 incus profile device remove default root
