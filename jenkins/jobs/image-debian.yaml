@@ -21,6 +21,7 @@
         - bullseye
         - sid
         - bookworm
+        - trixie
 
     - axis:
         name: variant
