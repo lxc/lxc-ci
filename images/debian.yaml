@@ -1071,6 +1071,7 @@ files:
   - bullseye
   - bookworm
   - sid
+  - trixie
 
 - path: /etc/systemd/network/enp5s0.network
   generator: dump
@@ -1089,6 +1090,7 @@ files:
   - bullseye
   - bookworm
   - sid
+  - trixie
 
 - path: /etc/default/grub.d/50-incus.cfg
   generator: dump
@@ -1176,6 +1178,7 @@ packages:
     - bullseye
     - bookworm
     - sid
+    - trixie
 
   - packages:
     - dbus
@@ -1185,6 +1188,7 @@ packages:
     releases:
     - bookworm
     - sid
+    - trixie
 
   - packages:
     - cloud-init
@@ -1231,6 +1235,7 @@ packages:
     - bullseye
     - sid
     - bookworm
+    - trixie
 
   - packages:
     - grub-efi-arm64
@@ -1251,6 +1256,7 @@ packages:
     - bullseye
     - sid
     - bookworm
+    - trixie
 
   repositories:
   - name: sources.list
@@ -1341,6 +1347,7 @@ actions:
   releases:
   - bookworm
   - sid
+  - trixie
 
 - trigger: post-packages
   action: |-
@@ -1357,6 +1364,7 @@ actions:
   - bullseye
   - bookworm
   - sid
+  - trixie
 
 - trigger: post-packages
   action: |-
@@ -1372,6 +1380,7 @@ actions:
   releases:
   - bookworm
   - sid
+  - trixie
 
 - trigger: post-packages
   action: |-
@@ -1397,6 +1406,7 @@ actions:
   releases:
   - bookworm
   - sid
+  - trixie
 
 - trigger: post-packages
   action: |-
@@ -1462,6 +1472,7 @@ actions:
   - bullseye
   - sid
   - bookworm
+  - trixie
 
 - trigger: post-files
   action: |-
@@ -1473,6 +1484,7 @@ actions:
   releases:
   - bookworm
   - sid
+  - trixie
 
 - trigger: post-files
   action: |-
