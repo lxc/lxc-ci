@@ -139,6 +139,12 @@ for url in $(incus query "/1.0/instances" | jq -r .[] | grep "${TEST_IMAGE}"); d
         continue
     fi
 
+    # Skip Ubuntu noble containers due to cgroup2 being required
+    if [ "${TYPE}" = "container" ] && [ "${DIST}" = "ubuntu" ] && [ "${RELEASE}" = "noble" ]; then
+        echo "===> SKIP: Ubuntu noble container due to cgroup2 requirement: ${name}"
+        continue
+    fi
+
     # Systemd cleanliness
     if incus exec "${name}" -- sh -c "type systemctl" >/dev/null 2>&1; then
         if incus exec "${name}" -- systemctl --failed 2>&1 | grep -q '\sfailed\s'; then
