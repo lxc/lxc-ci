@@ -17,7 +17,8 @@
         name: release
         type: user-defined
         values:
-        - current
+        - "2"
+        - "2023"
 
     - axis:
         name: variant
@@ -34,14 +35,33 @@
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
         [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
 
-        REL=$(curl -sI https://cdn.amazonlinux.com/os-images/latest/ | sed -En 's/location:.*os-images\/([^\/]+)\/.*/\1/p')
+        if [ "${RELEASE}" = "2" ]; then
+            REL=$(curl -sI https://cdn.amazonlinux.com/os-images/latest/ | sed -En 's/location:.*os-images\/([^\/]+)\/.*/\1/p')
+            URL="https://cdn.amazonlinux.com/os-images"
+
+            URL="https://cdn.amazonlinux.com/os-images"
+            if [ "${ARCH}" = "x86_64" ]; then
+                URL="${URL}/${REL}/container/amzn2-container-raw-${REL}-x86_64.tar.xz"
+            elif [ "${ARCH}" = "aarch64" ]; then
+                URL="${URL}/${REL}/container-arm64/amzn2-container-raw-${REL}-arm64.tar.xz"
+            fi
+        elif [ "${RELEASE}" = "2023" ]; then
+            REL="2023.2.20231113.0"
+
+            URL="https://cdn.amazonlinux.com/al2023/os-images"
+            if [ "${ARCH}" = "x86_64" ]; then
+                URL="${URL}/${REL}/container/al2023-container-${REL}-x86_64.tar.xz"
+            elif [ "${ARCH}" = "aarch64" ]; then
+                URL="${URL}/${REL}/container-arm64/al2023-container-${REL}-arm64.tar.xz"
+            fi
+        fi
 
         TYPE="container"
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/amazonlinux.yaml \
             ${INCUS_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
-            -o image.architecture=${ARCH} -o image.release=${REL} \
-            -o image.variant=${variant}
+            -o image.architecture=${ARCH} -o image.release=${RELEASE} \
+            -o image.variant=${variant} -o source.url=${URL}
 
     properties:
     - build-discarder:
