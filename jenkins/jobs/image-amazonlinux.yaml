@@ -26,6 +26,9 @@
         values:
         - default
 
+    execution-strategy:
+      combination-filter: '!(architecture == "arm64" && release == "2023")'
+
     builders:
     - shell: |-
         cd /lxc-ci
