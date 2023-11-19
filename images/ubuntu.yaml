@@ -345,6 +345,7 @@ files:
   - jammy
   - lunar
   - mantic
+  - noble
   types:
   - container
   variants:
