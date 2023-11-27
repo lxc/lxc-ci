@@ -23,7 +23,6 @@
         - jammy
         - lunar
         - mantic
-        - noble
 
     - axis:
         name: variant
