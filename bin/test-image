@@ -75,6 +75,9 @@ else
         incus init "${TEST_IMAGE}" "${TEST_IMAGE}-${PRIV}"
         INSTANCES="${INSTANCES} ${TEST_IMAGE}-${PRIV}"
 
+        # FIXME: workaround for Linux 6.6.3 apparmor regression.
+        printf "2\ndenylist\nreject_force_umount\n[all]\nfsconfig errno 38\nfsopen errno 38\n" | incus config set "${TEST_IMAGE}" raw.seccomp -
+
         if [ "${PRIV}" = "priv" ]; then
             incus config set "${TEST_IMAGE}-${PRIV}" security.privileged=true
         fi
