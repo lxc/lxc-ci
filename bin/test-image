@@ -67,11 +67,6 @@ EOF
     fi
 else
     for PRIV in "priv" "unpriv"; do
-        if [ "${PRIV}" = "priv" ] && [ "${DIST}" = "nixos" ]; then
-            # NixOS can't do privileged containers at this point
-            continue
-        fi
-
         incus init "${TEST_IMAGE}" "${TEST_IMAGE}-${PRIV}"
         INSTANCES="${INSTANCES} ${TEST_IMAGE}-${PRIV}"
 
