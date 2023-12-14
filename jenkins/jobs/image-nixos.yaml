@@ -17,7 +17,8 @@
         name: release
         type: user-defined
         values:
-        - current
+        - unstable
+        - 23.11
 
     - axis:
         name: variant
@@ -36,7 +37,8 @@
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/nixos.yaml \
             ${INCUS_ARCHITECTURE} container 14400 ${WORKSPACE} \
-            -o image.architecture=${ARCH}
+            -o image.architecture=${ARCH} \
+            -o image.release=${release}
 
     properties:
     - build-discarder:
