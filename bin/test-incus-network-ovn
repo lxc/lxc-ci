@@ -23,6 +23,37 @@ apt-get install --yes curl jq
 curl -sL https://pkgs.zabbly.com/get/incus-daily | sh
 
 # Install OVN and dnsutils.
+(
+cat << EOF
+Types: deb
+URIs: https://ppa.launchpadcontent.net/stgraber/stgraber.net/ubuntu
+Suites: jammy
+Components: main
+Architectures: amd64
+Signed-By: /etc/apt/keyrings/ansible-stgraber.asc
+EOF
+) > /etc/apt/sources.list.d/stgraber.net.sources
+
+(
+cat << EOF
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: Hockeypuck 2.1.0-223-gdc2762b
+Comment: Hostname:
+
+xo0ESX21eQEEAMV9W5L7DZFZV2uq5letfLk92nocSjGe82ND3SmZf2NcnfZLPmvC
+alS0lRrgHys5xdXpNWKOfWgzFPLtqcyEoUs4STyZ8q2AOH7KosADBc7xVI3pKNBF
+VzsW06iqnq/vxfpYThAPfMlS5TDAIfT7iGYrsqdXOvx1Ikh9zKtm1N0HABEBAAHN
+IkxhdW5jaHBhZCBQUEEgZm9yIFN0w6lwaGFuZSBHcmFiZXLCtgQTAQIAIAUCSX21
+eQIbAwYLCQgHAwIEFQIIAwQWAgMBAh4BAheAAAoJENzLInDncWsTB0kEALlQ6KO7
+uJFab/snJf3VX0DCDU25Jmtc4wCzCusLADFPzpKUY6atEFlXob44mw8u58Rxw3pC
+s3dm+a+T1OvzslmMyO35Qg8IBDXSw3hGwb1uV41oTTHYeQfC0ckK7tgsg/QFzxMw
+n64odZpWgxHEWzBKFy1fHREyh4FY2yt5oLp2
+=JB9g
+-----END PGP PUBLIC KEY BLOCK-----
+EOF
+) > /etc/apt/keyrings/ansible-stgraber.asc
+
+apt-get update
 apt-get install --no-install-recommends --yes ovn-host ovn-central dnsutils
 
 # Configure OVN.
