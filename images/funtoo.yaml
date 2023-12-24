@@ -257,7 +257,7 @@ files:
 
 packages:
   manager: egoportage
-  update: false
+  update: true
   cleanup: true
   sets:
   - packages:
@@ -279,6 +279,13 @@ actions:
     ln -s netif.tmpl netif.eth0
     rc-update add netif.eth0 default
     echo template=dhcpcd > /etc/conf.d/netif.eth0
+
+- trigger: post-packages
+  action: |-
+    #!/bin/bash
+    # Configure LXD/LXC tty
+    sed -e 's|^#x1|x1|g' -e '/^c[0-9].*/d' -i /etc/inittab
+
 
 mappings:
   architecture_map: funtoo
