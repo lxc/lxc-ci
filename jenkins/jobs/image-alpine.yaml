@@ -20,6 +20,7 @@
         - "3.16"
         - "3.17"
         - "3.18"
+        - "3.19"
         - "edge"
 
     - axis:
@@ -45,7 +46,7 @@
 
         EXTRA_ARGS=""
         if [ "${release}" = "edge" ]; then
-            EXTRA_ARGS="-o source.same_as=3.18"
+            EXTRA_ARGS="-o source.same_as=3.19"
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/alpine.yaml \
