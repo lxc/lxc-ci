@@ -476,8 +476,10 @@ actions:
     fi
 
     # Resolve locale issues
-    echo en_US.UTF-8 UTF-8 > /etc/locale.gen
-    locale-gen
+    if command -v locale-gen >/dev/null; then
+        echo en_US.UTF-8 UTF-8 > /etc/locale.gen
+        locale-gen
+    fi
 
 - trigger: post-unpack
   action: |-
