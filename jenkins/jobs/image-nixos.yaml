@@ -35,10 +35,11 @@
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
         [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
 
+        RELEASE=${release}
+        [ "${RELEASE}" = "unstable" ] && JOBSET="trunk-combined" || JOBSET="release-${RELEASE}"
+
         # download a pre-built VM image
-        if [ "${release}" = "unstable" ]; then
-          curl --location --output ${WORKSPACE}/disk.qcow2 https://hydra.nixos.org/job/nixos/trunk-combined/nixos.lxdVirtualMachineImage.${ARCH}-linux/latest/download-by-type/file/qcow2-image
-        fi
+        curl --location --output ${WORKSPACE}/disk.qcow2 https://hydra.nixos.org/job/nixos/${JOBSET}/nixos.lxdVirtualMachineImage.${ARCH}-linux/latest/download-by-type/file/qcow2-image
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/nixos.yaml \
             ${INCUS_ARCHITECTURE} container 14400 ${WORKSPACE} \
