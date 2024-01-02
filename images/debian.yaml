@@ -1275,8 +1275,7 @@ packages:
     - s390x
   - name: sources.list
     url: |-
-      deb http://ftp.ports.debian.org/debian-ports unstable main
-      deb http://ftp.ports.debian.org/debian-ports unreleased main
+      deb http://deb.debian.org/debian sid main
     architectures:
     - riscv64
 
