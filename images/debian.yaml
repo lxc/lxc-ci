@@ -1183,6 +1183,7 @@ packages:
   - packages:
     - dbus
     - systemd-resolved
+    - ifupdown2
     action: install
     early: true
     releases:
@@ -1478,6 +1479,7 @@ actions:
     #!/bin/sh
     set -eux
 
+    mkdir -p /etc/network
     umount -l /etc/resolv.conf || true
     ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
   releases:
