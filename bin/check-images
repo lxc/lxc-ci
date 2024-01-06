@@ -10,7 +10,7 @@ check_distrobuilder() {
     fi
 
     for arch in ${DISTROBUILDER_ARCHES}; do
-        lxc info "cache-distrobuilder-${arch}" >/dev/null 2>&1 || echo "cache-distrobuilder-${arch} missing on $(hostname)"
+        incus info "cache-distrobuilder-${arch}" >/dev/null 2>&1 || echo "cache-distrobuilder-${arch} missing on $(hostname)"
     done
 }
 
@@ -20,7 +20,7 @@ check_lxc() {
     fi
 
     for arch in ${LXC_ARCHES}; do
-        lxc info "cache-lxc-${arch}" >/dev/null 2>&1 || echo "cache-lxc-${arch} missing on $(hostname)"
+        incus info "cache-lxc-${arch}" >/dev/null 2>&1 || echo "cache-lxc-${arch} missing on $(hostname)"
     done
 }
 

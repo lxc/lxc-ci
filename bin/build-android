@@ -19,19 +19,19 @@ TARGET=${1}
 shift
 
 cleanup() {
-    lxc delete --force "${CNAME}"
+    incus delete --force "${CNAME}"
 }
 
 trap cleanup EXIT HUP INT TERM
 
 # Create the container
-lxc copy "cache-lxc-${ARCH}" "${CNAME}"
+incus copy "cache-lxc-${ARCH}" "${CNAME}"
 
 # Start the container
-lxc start "${CNAME}"
+incus start "${CNAME}"
 
 # Copy the cross-file script
-lxc file push /lxc-ci/deps/cross-file.txt "${CNAME}/build/"
+incus file push /lxc-ci/deps/cross-file.txt "${CNAME}/build/"
 
 set -x
 
@@ -90,10 +90,10 @@ fi
 tar -zcf /build/lxc-android.tar.gz -C /build/android data
 exit 0
 EOF
-) | lxc file push - "${CNAME}/root/build.sh" --mode=755
-lxc exec "${CNAME}" -- /root/build.sh "$@"
+) | incus file push - "${CNAME}/root/build.sh" --mode=755
+incus exec "${CNAME}" -- /root/build.sh "$@"
 
-lxc file pull "${CNAME}/build/lxc-android.tar.gz" "${TARGET}"
+incus file pull "${CNAME}/build/lxc-android.tar.gz" "${TARGET}"
 
 [ -n "${SUDO_UID:-}" ] && chown "${SUDO_UID}" -R "${TARGET}"
 [ -n "${SUDO_GID:-}" ] && chgrp "${SUDO_GID}" -R "${TARGET}"
