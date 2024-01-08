@@ -4,7 +4,7 @@ image:
     openEuler {{ image.release }}
 source:
   downloader: openeuler-http
-  url: https://mirrors.ocf.berkeley.edu/openeuler
+  url: https://repo.openeuler.org
 targets:
   lxc:
     create_message: |
