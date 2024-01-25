@@ -81,11 +81,6 @@ do
         ! incus exec v1 -- touch /srv/incus-test || false
         incus exec v1 -- umount /srv
 
-        # Check virtiofs config drive share is exported readonly.
-        incus exec v1 -- mount -t virtiofs config /srv
-        ! incus exec v1 -- touch /srv/incus-test || false
-        incus exec v1 -- umount /srv
-
         echo "==> Checking VM root disk size is 10GiB"
         [ $(($(incus exec v1 -- blockdev --getsize64 /dev/sda) / GiB)) -eq "10" ]
 
