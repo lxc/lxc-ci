@@ -108,7 +108,7 @@ do
         incus exec v1 -- fsfreeze --freeze /
         uuid=$(incus config get v1 volatile.uuid)
         pgrep -af "${uuid}"
-        rm /var/log/incus/v1/qemu.monitor
+        rm /run/incus/v1/qemu.monitor
         systemctl restart incus
         sleep 5
         incus ls v1 | grep ERROR
@@ -401,7 +401,7 @@ do
 
         # Check that the volatile.uuid.generation setting is applied to the QEMU process.
         vmGenID=$(incus config get v1 volatile.uuid.generation)
-        qemuGenID=$(awk '/driver = "vmgenid"/,/guid = / {print $3}' /var/log/incus/v1/qemu.conf | sed -n 's/"\([0-9a-fA-F]\{8\}-[0-9a-fA-F]\{4\}-[0-9a-fA-F]\{4\}-[0-9a-fA-F]\{4\}-[0-9a-fA-F]\{12\}\)"/\1/p')
+        qemuGenID=$(awk '/driver = "vmgenid"/,/guid = / {print $3}' /run/incus/v1/qemu.conf | sed -n 's/"\([0-9a-fA-F]\{8\}-[0-9a-fA-F]\{4\}-[0-9a-fA-F]\{4\}-[0-9a-fA-F]\{4\}-[0-9a-fA-F]\{12\}\)"/\1/p')
         if [ "${vmGenID}" != "${qemuGenID}" ]; then
                 echo "==> VM Generation ID in Incus config does not match VM Generation ID in QEMU process"
                 false
