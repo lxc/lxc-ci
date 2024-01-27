@@ -730,6 +730,9 @@ actions:
     # Enable GDM
     systemctl enable gdm
 
+    # Disable colord
+    systemctl mask colord
+
     cat << EOF > /home/archlinux/firstboot.sh
     #!/bin/sh
 
