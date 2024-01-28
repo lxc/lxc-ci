@@ -49,7 +49,7 @@ if [ "${TYPE}" = "vm" ]; then
     INSTANCES="${TEST_IMAGE}"
 
     # Handle distros needing the agent drive
-    if [ "${DIST}" = "almalinux" ] || [ "${DIST}" = "centos" ] || [ "${DIST}" = "openeuler" ] || [ "${DIST}" = "rockylinux" ];
+    if [ "${DIST}" = "almalinux" ] || [ "${DIST}" = "centos" ] || [ "${DIST}" = "openeuler" ] || [ "${DIST}" = "rockylinux" ]; then
         incus config device add "${TEST_IMAGE}" agent disk source=agent:config
     fi
 
