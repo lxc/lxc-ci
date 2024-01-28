@@ -48,6 +48,11 @@ if [ "${TYPE}" = "vm" ]; then
     incus init "${TEST_IMAGE}" "${TEST_IMAGE}" --vm -c security.secureboot=false -c limits.cpu=4 -c limits.memory=4GB
     INSTANCES="${TEST_IMAGE}"
 
+    # Handle distros needing the agent drive
+    if [ "${DIST}" = "almalinux" ] || [ "${DIST}" = "centos" ] || [ "${DIST}" = "openeuler" ] || [ "${DIST}" = "rockylinux" ];
+        incus config device add "${TEST_IMAGE}" agent disk source=agent:config
+    fi
+
     # Cloud-init testing
     if [ "${VARIANT}" = "cloud" ]; then
         incus config set "${TEST_IMAGE}" user.user-data "$(cat << EOF
