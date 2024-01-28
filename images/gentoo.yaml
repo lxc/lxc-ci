@@ -374,6 +374,9 @@ files:
   variants:
   - systemd
 
+- path: /var/lib/dbus/machine-id
+  generator: remove
+
 - path: /etc/local.d/repo_check.start
   generator: dump
   mode: 700
@@ -453,6 +456,16 @@ packages:
     - vm
 
 actions:
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
+    # Generate machine-id in order for the kernel stuff to be configured properly
+    systemd-machine-id-setup
+  types:
+  - vm
+  variants:
+  - systemd
+
 - trigger: post-unpack
   action: |-
     #!/bin/sh
