@@ -448,12 +448,27 @@ packages:
 
   - packages:
     - gentoo-kernel-bin
-    - grub
     - syslog-ng
     - sys-power/acpid
     action: install
     types:
     - vm
+
+  - packages:
+    - grub
+    action: install
+    types:
+    - vm
+    variant:
+    - openrc
+
+  - packages:
+    - systemd-boot
+    action: install
+    types:
+    - vm
+    variant:
+    - systemd
 
 actions:
 - trigger: post-unpack
@@ -610,6 +625,8 @@ actions:
     sed -i "s#root=[^ ]*#root=/dev/sda2#g" /boot/grub/grub.cfg
   types:
   - vm
+  variants:
+  - openrc
 
 - trigger: post-packages
   action: |-
