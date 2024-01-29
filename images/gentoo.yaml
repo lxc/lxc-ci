@@ -462,14 +462,6 @@ packages:
     variants:
     - openrc
 
-  - packages:
-    - systemd-boot
-    action: install
-    types:
-    - vm
-    variants:
-    - systemd
-
 actions:
 - trigger: post-unpack
   action: |-
@@ -555,6 +547,19 @@ actions:
     echo '*/* PYTHON_TARGETS: python3_7 python3_8' > /etc/portage/package.use
   variants:
   - cloud
+
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
+    set -eux
+    mkdir -p /etc/portage/package.use
+    echo "sys-apps/systemd boot" >> /etc/portage/package.use/systemd
+    emerge sys-apps/systemd
+    bootctl install --no-variables --esp-path=/boot/efi/
+  types:
+  - vm
+  variants:
+  - gentoo
 
 - trigger: post-packages
   action: |-
