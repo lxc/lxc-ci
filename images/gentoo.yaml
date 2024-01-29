@@ -559,7 +559,7 @@ actions:
   types:
   - vm
   variants:
-  - gentoo
+  - systemd
 
 - trigger: post-packages
   action: |-
