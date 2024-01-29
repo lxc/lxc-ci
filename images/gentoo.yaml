@@ -566,6 +566,8 @@ actions:
     rm -Rf /boot/* /boot/efi/* || true
     systemd-machine-id-setup
     bootctl install --no-variables --esp-path=/boot/efi/
+
+    echo "sys-kernel/installkernel dracut" >> /etc/portage/package.use/installkernel
     emerge gentoo-kernel-bin
 
     rm -f /etc/machine-id /var/lib/dbus/machine-id
