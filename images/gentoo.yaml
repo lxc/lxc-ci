@@ -459,7 +459,7 @@ packages:
     action: install
     types:
     - vm
-    variant:
+    variants:
     - openrc
 
   - packages:
@@ -467,7 +467,7 @@ packages:
     action: install
     types:
     - vm
-    variant:
+    variants:
     - systemd
 
 actions:
