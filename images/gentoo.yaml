@@ -565,8 +565,12 @@ actions:
     #!/bin/sh
     set -eux
     rm -Rf /boot/* /boot/efi/* || true
+    systemd-machine-id-setup
     bootctl install --no-variables --esp-path=/boot/efi/
     emerge gentoo-kernel-bin
+
+    rm -f /etc/machine-id /var/lib/dbus/machine-id
+    touch /etc/machine-id
   types:
   - vm
   variants:
