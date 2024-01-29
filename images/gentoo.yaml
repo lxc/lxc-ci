@@ -555,7 +555,18 @@ actions:
     mkdir -p /etc/portage/package.use
     echo "sys-apps/systemd boot" >> /etc/portage/package.use/systemd
     emerge sys-apps/systemd
+  types:
+  - vm
+  variants:
+  - systemd
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+    rm -Rf /boot/* /boot/efi/* || true
     bootctl install --no-variables --esp-path=/boot/efi/
+    emerge gentoo-kernel-bin
   types:
   - vm
   variants:
