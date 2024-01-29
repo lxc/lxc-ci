@@ -293,6 +293,11 @@ source:
     -----END PGP PUBLIC KEY BLOCK-----
 
 targets:
+  incus:
+    vm:
+      size: 4718592000
+      filesystem: ext4
+
   lxc:
     create_message: |
       You just created an {{ image.description }} container.
