@@ -295,7 +295,7 @@ source:
 targets:
   incus:
     vm:
-      size: 4718592000
+      size: 6442450944
       filesystem: ext4
 
   lxc:
@@ -572,7 +572,7 @@ actions:
     systemd-machine-id-setup
     bootctl install --no-variables --esp-path=/boot/efi/
 
-    echo "sys-kernel/installkernel dracut" >> /etc/portage/package.use/installkernel
+    echo "sys-kernel/installkernel dracut systemd systemd-kernel-install" >> /etc/portage/package.use/installkernel
     emerge gentoo-kernel-bin
 
     rm -f /etc/machine-id /var/lib/dbus/machine-id
@@ -581,6 +581,17 @@ actions:
   - vm
   variants:
   - systemd
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    echo "sys-kernel/installkernel dracut" >> /etc/portage/package.use/installkernel
+    emerge gentoo-kernel-bin
+
+  types:
+  - vm
+  variants:
+  - openrc
 
 - trigger: post-packages
   action: |-
