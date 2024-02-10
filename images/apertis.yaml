@@ -61,6 +61,8 @@ files:
     [Network]
     DHCP=ipv4
 
+    [DHCP]
+    ClientIdentifier=mac
 packages:
   manager: apt
   update: true

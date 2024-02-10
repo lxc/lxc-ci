@@ -55,6 +55,8 @@ files:
     [Network]
     DHCP=ipv4
 
+    [DHCP]
+    ClientIdentifier=mac
 - path: /etc/fstab
   generator: dump
 

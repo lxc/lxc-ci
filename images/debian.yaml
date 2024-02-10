@@ -1061,10 +1061,15 @@ files:
   content: |-
     [Match]
     Name=eth0
+
     [Network]
     DHCP=true
+
     [DHCPv4]
     UseDomains=true
+
+    [DHCP]
+    ClientIdentifier=mac
   types:
   - container
   releases:
@@ -1078,10 +1083,15 @@ files:
   content: |-
     [Match]
     Name=enp5s0
+
     [Network]
     DHCP=true
+
     [DHCPv4]
     UseDomains=true
+
+    [DHCP]
+    ClientIdentifier=mac
   types:
   - vm
   variants:

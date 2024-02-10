@@ -482,6 +482,9 @@ files:
 
     [Network]
     DHCP=ipv4
+
+    [DHCP]
+    ClientIdentifier=mac
   types:
   - container
 
@@ -494,6 +497,9 @@ files:
 
     [Network]
     DHCP=ipv4
+
+    [DHCP]
+    ClientIdentifier=mac
   types:
   - vm
 
