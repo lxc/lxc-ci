@@ -1468,10 +1468,13 @@ actions:
     [ "$(uname -m)" = "aarch64" ] && TARGET="arm64"
 
     update-grub
+
     # This will create EFI/BOOT
     grub-install --uefi-secure-boot --target="${TARGET}-efi" --no-nvram --removable
+
     # This will create EFI/debian
     grub-install --uefi-secure-boot --target="${TARGET}-efi" --no-nvram
+
     update-grub
     sed -i "s#root=[^ ]*#root=/dev/sda2#g" /boot/grub/grub.cfg
   types:
