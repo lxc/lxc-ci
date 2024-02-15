@@ -747,6 +747,7 @@ ovn_forward_tests() {
 
     # Check DNS TCP forwarding using default target rule.
     incus exec u1 -- systemctl mask dnsmasq
+    incus exec u1 -- apt-get update
     incus exec u1 -- apt-get install --no-install-recommends --yes dnsmasq
 cat <<EOF | incus exec u1 -- tee /etc/dnsmasq.d/incus_test.conf
 interface=eth0
@@ -772,6 +773,7 @@ EOF
     U2_IPV6="$(incus list u2 -c6 --format=csv | cut -d' ' -f1)"
 
     incus exec u2 -- systemctl mask dnsmasq
+    incus exec u2 -- apt-get update
     incus exec u2 -- apt-get install --no-install-recommends --yes dnsmasq
 cat <<EOF | incus exec u2 -- tee /etc/dnsmasq.d/incus_test.conf
 interface=eth0
@@ -958,6 +960,7 @@ ovn_load_balancer_tests() {
     # Check DNS TCP forwarding towards u1.
     # Relies on static route (above) rather than neighbour adverts see https://github.com/ovn-org/ovn/issues/124
     incus exec u1 -- systemctl mask dnsmasq
+    incus exec u1 -- apt-get update
     incus exec u1 -- apt-get install --no-install-recommends --yes dnsmasq
 cat <<EOF | incus exec u1 -- tee /etc/dnsmasq.d/incus_test.conf
 interface=eth0
@@ -996,6 +999,7 @@ EOF
 
     # Check DNS TCP forwarding towards u2.
     incus exec u2 -- systemctl mask dnsmasq
+    incus exec u2 -- apt-get update
     incus exec u2 -- apt-get install --no-install-recommends --yes dnsmasq
 cat <<EOF | incus exec u2 -- tee /etc/dnsmasq.d/incus_test.conf
 interface=eth0
@@ -1190,6 +1194,7 @@ ovn_peering_tests() {
 
     # Install tcpdump and check we can detect ICMP packets coming to the ovn2 instance from ovn1 instance when
     # pinging the allowed addresses.
+    incus exec ovn2 --project=ovn2 -- apt-get update
     incus exec ovn2 --project=ovn2 -- apt-get install --no-install-recommends --yes tcpdump
     incus exec ovn1 -T -n --project=ovn1 -- ping -4 -w5 "${ovn2NICIPv4}" || true &
     incus exec ovn2 -T -n --project=ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp and src "${ovn1NICIPv4}" -q -c 1 > /dev/null
@@ -1600,6 +1605,7 @@ ovn_acl_tests() {
 
     # Check default rule action is reject (disable acl, install dig in c1, then re-enable acl).
     incus network unset ovn0 security.acls
+    incus exec c1 -- apt-get update
     incus exec c1 -- apt-get install --no-install-recommends --yes dnsutils
     incus network set ovn0 security.acls=incusbr0-ping
     sleep 2
@@ -1673,6 +1679,7 @@ ovn_acl_tests() {
     ovn-nbctl list acl | grep -c 'name.*eth0-egress' | grep 0
 
     # Test c1's default ingress rule defaults to reject by querying from c2 (which now has no ACLs applied).
+    incus exec c2 -- apt-get update
     incus exec c2 -- apt-get install --no-install-recommends --yes dnsutils
     incus exec c2 -- dig @c1.incus -4 +tcp +timeout=1 -p 5053 incusbr0.test | grep "refused"
     incus exec c2 -- dig @c1.incus -6 +tcp +timeout=1 -p 5053 incusbr0.test | grep "refused"
