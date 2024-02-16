@@ -59,7 +59,8 @@
       combination-filter: '
       !(architecture!="amd64" && variant == "desktop") &&
       !(release=="xenial" && variant == "desktop") &&
-      !(release=="bionic" && variant == "desktop")'
+      !(release=="bionic" && variant == "desktop") &&
+      !(release=="noble" && variant == "desktop")'
 
     properties:
     - build-discarder:
