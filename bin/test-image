@@ -155,6 +155,7 @@ for url in $(incus query "/1.0/instances" | jq -r .[] | grep "${TEST_IMAGE}"); d
 
     # Systemd cleanliness
     if incus exec "${name}" -- sh -c "type systemctl" >/dev/null 2>&1; then
+        incus exec "${name}" -- systemctl reset-failed systemd-networkd-wait-online.service >/dev/null 2>&1 || true
         if incus exec "${name}" -- systemctl --failed 2>&1 | grep -q '\sfailed\s'; then
             echo "===> FAIL: systemd clean: ${name}"
 
