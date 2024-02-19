@@ -662,13 +662,9 @@ actions:
 
     # Enable systemd-networkd
     systemctl enable systemd-networkd
-  releases:
-  - bionic
-  - focal
-  - jammy
-  - lunar
-  - mantic
-  - noble
+
+    # Disable UA attach
+    systemctl mask ua-auto-attach
 
 - trigger: post-packages
   action: |-
