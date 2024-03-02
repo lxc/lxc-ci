@@ -19,7 +19,7 @@
         values:
         - buster
         - bullseye
-        - sid
+#        - sid
         - bookworm
         - trixie
 
