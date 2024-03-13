@@ -1072,6 +1072,8 @@ files:
     ClientIdentifier=mac
   types:
   - container
+  variants:
+  - default
   releases:
   - bullseye
   - bookworm
