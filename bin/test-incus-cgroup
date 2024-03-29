@@ -33,7 +33,7 @@ incus launch images:ubuntu/22.04 c1
 echo "==> Validate default values"
 [ "$(incus exec c1 -- nproc)" = "$(nproc)" ]
 [ "$(incus exec c1 -- grep ^MemTotal /proc/meminfo)" = "$(grep ^MemTotal /proc/meminfo)" ]
-if [ -e "/sys/fs/cgroup/memory/memory.memsw.limit_in_bytes" ] || [ -e "/sys/fs/cgroup/memory.swap.max" ]; then
+if [ -e "/sys/fs/cgroup/memory/memory.memsw.limit_in_bytes" ] || [ -e "/sys/fs/cgroup/system.slice/memory.swap.max" ]; then
     [ "$(incus exec c1 -- grep ^SwapTotal /proc/meminfo)" = "$(grep ^SwapTotal /proc/meminfo)" ]
 else
     [ "$(incus exec c1 -- grep ^SwapTotal /proc/meminfo)" = "SwapTotal:             0 kB" ]
