@@ -350,7 +350,7 @@ files:
 - path: /etc/dracut.conf.d/incus.conf
   generator: dump
   content: |-
-    add_drivers+="virtio_scsi virtio_pci virtio_console"
+    add_drivers+=" virtio_scsi virtio_pci virtio_console "
   types:
   - vm
   releases:
@@ -359,7 +359,7 @@ files:
 - path: /etc/dracut.conf.d/incus.conf
   generator: dump
   content: |-
-    add_drivers+="virtio_scsi virtio_console sd_mod"
+    add_drivers+=" virtio_scsi virtio_console sd_mod "
   types:
   - vm
   releases:
