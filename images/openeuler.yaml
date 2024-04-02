@@ -357,7 +357,7 @@ actions:
 
     umount /sys/firmware
 
-    sed -i "s#root=[^ ]*#root=/dev/sda2#g" "${target}"
+    sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_UUID}#g" "${target}"
 
     # Workaround for broken systemd in centos7
     systemctl enable incus-agent-workaround.service

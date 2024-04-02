@@ -831,7 +831,7 @@ actions:
 
     umount /sys/firmware
 
-    sed -i "s#root=[^ ]*#root=/dev/sda2#g" "${target}"
+    sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_UUID}#g" "${target}"
 
     # Workaround for broken systemd in centos7
     systemctl enable incus-agent-workaround.service
@@ -852,7 +852,7 @@ actions:
     target="$(readlink -f /etc/grub2-efi.cfg)"
     grub2-mkconfig -o "${target}"
 
-    sed -i "s#root=[^ ]*#root=/dev/sda2#g" "${target}"
+    sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_UUID}#g" "${target}"
   types:
   - vm
   releases:
@@ -867,11 +867,11 @@ actions:
 
     # Create grub.cfg file
     grub2-mkconfig -o "${target}"
-    sed -i "s#root=[^ ]*#root=/dev/sda2#g" "${target}"
+    sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_UUID}#g" "${target}"
 
     # Update files in /boot/loader/entries/. `grubby` needs to be run after
     # `grub2-mkconfig` as the latter overwrites files in /boot/loader/entries/.
-    grubby --update-kernel=/boot/vmlinuz-${kver} --args="root=/dev/sda2 ro"
+    grubby --update-kernel=/boot/vmlinuz-${kver} --args="root=${DISTROBUILDER_ROOT_UUID} ro"
 
     # Regenerate initramfs
     dracut --kver "${kver}" -f
