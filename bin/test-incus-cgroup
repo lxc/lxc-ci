@@ -107,7 +107,7 @@ echo "==> Testing memory limits"
 incus config set c1 limits.memory=2GiB
 [ "$(incus exec c1 -- grep ^MemTotal /proc/meminfo)" = "MemTotal:        2097152 kB" ]
 if [ -e "/sys/fs/cgroup/memory/memory.memsw.limit_in_bytes" ] || [ -e "/sys/fs/cgroup/memory.swap.max" ]; then
-    [ "$(incus exec c1 -- grep ^SwapTotal /proc/meminfo)" = "$(grep ^SwapTotal /proc/meminfo)" ]
+    [ "$(incus exec c1 -- grep ^SwapTotal /proc/meminfo)" = "SwapTotal:       2097152 kB" ]
 else
     [ "$(incus exec c1 -- grep ^SwapTotal /proc/meminfo)" = "SwapTotal:             0 kB" ]
 fi
