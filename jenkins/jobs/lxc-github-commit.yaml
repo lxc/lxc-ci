@@ -4,7 +4,7 @@
     jobs:
         - "lxc-github-commit{suffix}":
             branch: main
-            pkg_version: 1:5.0.3+main
+            pkg_version: 1:6.0.0+main
 
         - "lxc-github-commit{suffix}":
             branch: stable-4.0
