@@ -409,7 +409,7 @@ actions:
 
     grub2-mkconfig -o /boot/grub2/grub.cfg
     umount /sys/firmware
-    sed -i "s#root=[^ ]*#root=/dev/sda2#g" /boot/grub2/grub.cfg
+    sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_UUID}#g" /boot/grub2/grub.cfg
   types:
   - vm
 

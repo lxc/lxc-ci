@@ -578,7 +578,7 @@ actions:
     systemd-machine-id-setup
     bootctl install --no-variables --esp-path=/boot/efi/
 
-    echo "root=/dev/sda2" >> /etc/kernel/cmdline
+    echo "root=${DISTROBUILDER_ROOT_UUID}" >> /etc/kernel/cmdline
 
     echo "sys-apps/systemd kernel-install" >> /etc/portage/package.use/systemd
     echo "sys-kernel/installkernel dracut systemd systemd-boot" >> /etc/portage/package.use/installkernel
@@ -668,7 +668,7 @@ actions:
     grub-install --target=${TARGET}-efi --no-nvram --removable
     grub-install --target=${TARGET}-efi --no-nvram
     grub-mkconfig -o /boot/grub/grub.cfg
-    sed -i "s#root=[^ ]*#root=/dev/sda2#g" /boot/grub/grub.cfg
+    sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_UUID}#g" /boot/grub/grub.cfg
   types:
   - vm
   variants:

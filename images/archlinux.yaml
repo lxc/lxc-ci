@@ -796,7 +796,7 @@ actions:
     grub-install --target="${TARGET}-efi" --efi-directory=/boot/efi --no-nvram --removable
     grub-install --target="${TARGET}-efi" --efi-directory=/boot/efi --no-nvram
     grub-mkconfig -o /boot/grub/grub.cfg
-    sed -i "s#root=[^ ]*#root=/dev/sda2#g" /boot/grub/grub.cfg
+    sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_UUID}#g" /boot/grub/grub.cfg
 
     # Rebuild initrd
     sed -i 's#^MODULES=.*#MODULES=(virtio_pci virtio_scsi virtio_console)#' /etc/mkinitcpio.conf

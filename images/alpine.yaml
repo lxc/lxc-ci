@@ -386,7 +386,7 @@ actions:
 
     target=/boot/grub/grub.cfg
     grub-mkconfig -o "${target}"
-    sed -i "s#root=[^ ]*#root=/dev/sda2#g" "${target}"
+    sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_UUID}#g" "${target}"
 
     TARGET="x86_64"
     [ "$(uname -m)" = "aarch64" ] && TARGET="arm64"
