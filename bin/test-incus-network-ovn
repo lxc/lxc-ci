@@ -26,19 +26,19 @@ curl -sL https://pkgs.zabbly.com/get/incus-daily | sh
 (
 cat << EOF
 Types: deb
-URIs: https://ppa.launchpadcontent.net/stgraber/stgraber.net/ubuntu
+URIs: https://ppa.launchpadcontent.net/stgraber/ovn-stable/ubuntu
 Suites: jammy
 Components: main
 Architectures: amd64
-Signed-By: /etc/apt/keyrings/ansible-stgraber.asc
+Signed-By: /etc/apt/keyrings/ansible-ovn-stable.asc
 EOF
-) > /etc/apt/sources.list.d/stgraber.net.sources
+) > /etc/apt/sources.list.d/ovn-stable.sources
 
 (
 cat << EOF
 -----BEGIN PGP PUBLIC KEY BLOCK-----
-Version: Hockeypuck 2.1.0-223-gdc2762b
 Comment: Hostname:
+Version: Hockeypuck 2.1.1-10-gec3b0e7
 
 xo0ESX21eQEEAMV9W5L7DZFZV2uq5letfLk92nocSjGe82ND3SmZf2NcnfZLPmvC
 alS0lRrgHys5xdXpNWKOfWgzFPLtqcyEoUs4STyZ8q2AOH7KosADBc7xVI3pKNBF
@@ -51,7 +51,7 @@ n64odZpWgxHEWzBKFy1fHREyh4FY2yt5oLp2
 =JB9g
 -----END PGP PUBLIC KEY BLOCK-----
 EOF
-) > /etc/apt/keyrings/ansible-stgraber.asc
+) > /etc/apt/keyrings/ansible-ovn-stable.asc
 
 apt-get update
 apt-get install --no-install-recommends --yes ovn-host ovn-central dnsutils
