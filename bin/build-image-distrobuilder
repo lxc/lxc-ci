@@ -107,7 +107,9 @@ apt-get install --yes --no-install-recommends \
 apt-get clean
 
 # Install distrobuilder
-curl -sL "https://go.dev/dl/go1.21.3.linux-\$(dpkg --print-architecture).tar.gz" | tar -zxv -C /usr/local/
+GOARCH=\$(dpkg --print-architecture)
+[ "\${GOARCH}" = "armhf" ] && GOARCH=armv6l
+curl -sL "https://go.dev/dl/go1.21.3.linux-\${GOARCH}.tar.gz" | tar -zxv -C /usr/local/
 export PATH=/usr/local/go/bin:\${PATH}
 git clone https://github.com/lxc/distrobuilder --depth 1
 cd distrobuilder
