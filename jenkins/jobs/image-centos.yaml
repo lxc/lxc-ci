@@ -12,6 +12,7 @@
         values:
         - amd64
         - arm64
+        - armhf
 
     - axis:
         name: release
@@ -36,13 +37,14 @@
         ARCH=${architecture}
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
         [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
+        [ "${ARCH}" = "armhf" ] && ARCH="armhfp"
 
         EXTRA_ARGS=""
-        if [ "${release}" = "7" ] && [ "${architecture}" != "amd64" ]; then
+        if { [ "${release}" = "7" ] && [ "${architecture}" != "amd64" ]; } || { [ "${architecture}" = "armhf" ]; }; then
             EXTRA_ARGS="-o source.url=http://mirror.math.princeton.edu/pub/centos-altarch/ -o source.skip_verification=true"
         fi
 
-        if [ "${release}" = "8-Stream" ] || [ "${release}" = "9-Stream" ]; then
+        if [ "${architecture}" != "armhf" ] && ([ "${release}" = "8-Stream" ] || [ "${release}" = "9-Stream" ]); then
             EXTRA_ARGS="${EXTRA_ARGS} -o source.variant=boot"
         fi
 
@@ -63,6 +65,11 @@
             ${INCUS_ARCHITECTURE} ${TYPE} 7200 ${WORKSPACE} \
             -o image.architecture=${ARCH} -o image.release=${release} \
             -o image.variant=${variant} ${EXTRA_ARGS}
+
+    execution-strategy:
+      combination-filter: '
+      !(architecture=="armhf" && release == "9-Stream")
+      && !(architecture=="armhf" && release == "8-Stream")'
 
     properties:
     - build-discarder:
