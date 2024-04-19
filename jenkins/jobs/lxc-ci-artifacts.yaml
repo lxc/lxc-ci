@@ -12,6 +12,7 @@
         values:
         - amd64
         - arm64
+        - armhf
 
     - axis:
         name: artifact
@@ -33,7 +34,7 @@
         - vm
 
     execution-strategy:
-      combination-filter: '!(artifact!="distrobuilder-image" && (architecture!="amd64" && architecture!="arm64"))'
+      combination-filter: '!(artifact!="distrobuilder-image" && (architecture!="amd64" && architecture!="arm64" && architecture!="armhf"))'
 
     builders:
     - shell: |-
