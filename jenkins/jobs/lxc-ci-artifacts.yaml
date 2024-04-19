@@ -34,7 +34,7 @@
         - vm
 
     execution-strategy:
-      combination-filter: '!(artifact="lxc-image" && architecture="armhf")'
+      combination-filter: '!(artifact == "lxc-image" && architecture == "armhf")'
 
     builders:
     - shell: |-
