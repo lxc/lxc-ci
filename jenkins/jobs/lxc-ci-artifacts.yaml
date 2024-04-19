@@ -34,7 +34,7 @@
         - vm
 
     execution-strategy:
-      combination-filter: '!(artifact!="distrobuilder-image" && (architecture!="amd64" && architecture!="arm64" && architecture!="armhf"))'
+      combination-filter: '!(artifact="lxc-image" && architecture="armhf")'
 
     builders:
     - shell: |-
