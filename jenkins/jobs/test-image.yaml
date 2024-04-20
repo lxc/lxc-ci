@@ -12,6 +12,7 @@
         values:
         - amd64
         - arm64
+        - armhf
 
     builders:
     - shell: |-
