@@ -258,23 +258,6 @@ actions:
 
     set -eux
 
-    # Use baseurl instead of metalink to avoid networking issues
-    for repo in $(ls /etc/yum.repos.d/*.repo); do
-      grep -q '^#baseurl' "${repo}" || continue
-
-      sed -ri 's/^metalink=.*/#\0/g;s@^#(baseurl=)http://download.example/pub(.*)@\1https://mirror.csclub.uwaterloo.ca/\2@g' "${repo}"
-    done
-  architectures:
-  - aarch64
-  - armhfp
-  - x86_64
-
-- trigger: post-unpack
-  action: |-
-    #!/bin/sh
-
-    set -eux
-
     # Use Fedora 38 GPG key to avoid package installation errors
     for repo in $(ls /etc/yum.repos.d/*.repo); do
       grep -q 'RPM-GPG-KEY-fedora-38' "${repo}" && continue
