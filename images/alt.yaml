@@ -128,12 +128,6 @@ packages:
 
   sets:
   - packages:
-    - usrmerge-hier-convert
-    action: install
-    releases:
-     - Sisyphus
-
-  - packages:
     - sudo
     - vim-console
     action: install
@@ -152,6 +146,17 @@ actions:
     set -eux
 
     mkdir -p /run/lock
+
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    apt-get update
+    apt-get install usrmerge-hier-convert --yes
+
+  releases:
+   - Sisyphus
 
 - trigger: post-packages
   action: |-
