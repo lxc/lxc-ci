@@ -128,6 +128,12 @@ packages:
 
   sets:
   - packages:
+    - usrmerge-hier-convert
+    action: install
+    releases:
+     - Sisyphus
+
+  - packages:
     - sudo
     - vim-console
     action: install
