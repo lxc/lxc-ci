@@ -257,8 +257,8 @@ files:
 
 packages:
   manager: egoportage
-  update: true
-  cleanup: true
+  update: false
+  cleanup: false
   sets:
   - packages:
     - sudo
