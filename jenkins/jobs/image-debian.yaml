@@ -47,6 +47,9 @@
             -o image.release=${release} -o image.variant=${variant} \
             -o source.url="http://ftp.us.debian.org/debian"
 
+    execution-strategy:
+      combination-filter: '!(architecture == "armhf" && release == "trixie")'
+
     properties:
     - build-discarder:
         num-to-keep: 3
