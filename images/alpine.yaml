@@ -330,6 +330,7 @@ packages:
     - 3.17
     - 3.18
     - 3.19
+    - 3.20
     - edge
 
   - packages:
