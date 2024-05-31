@@ -125,7 +125,7 @@ done
 
 # Wait for things to settle
 echo "==> Waiting for instances to start"
-[ "${TYPE}" = "container" ] && sleep 1m
+[ "${TYPE}" = "container" ] && sleep 2m
 [ "${TYPE}" = "vm" ] && sleep 3m
 incus list "${TEST_IMAGE}"
 
