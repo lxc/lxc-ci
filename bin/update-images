@@ -19,7 +19,7 @@ while :; do
     sleep 1
 done
 
-# Make sure LXD is functional
+# Make sure Incus is functional
 incus delete update-images -f >/dev/null 2>&1 || true
 incus init update-images --empty --quiet
 incus delete -f update-images

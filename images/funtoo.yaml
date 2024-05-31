@@ -283,7 +283,7 @@ actions:
 - trigger: post-packages
   action: |-
     #!/bin/bash
-    # Configure LXD/LXC tty
+    # Configure tty
     sed -e 's|^#x1|x1|g' -e '/^c[0-9].*/d' -i /etc/inittab
 
 

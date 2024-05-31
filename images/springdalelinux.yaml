@@ -216,7 +216,7 @@ files:
   generator: dump
   content: |-
     [Unit]
-    Description=LXD - agent (centos workaround)
+    Description=Incus - agent (springdale workaround)
     Before=incus-agent.service
 
     [Service]

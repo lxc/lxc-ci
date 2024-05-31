@@ -725,7 +725,7 @@ actions:
     # Automatic disk resize
     cat << EOF > /etc/systemd/system/incus-growpart.service
     [Unit]
-    Description=LXD - grow root partition
+    Description=Incus - grow root partition
 
     [Service]
     Type=oneshot
