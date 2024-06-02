@@ -39,7 +39,7 @@ packages:
 
 files:
   - name: conf-hostname
-    path: /etc/nixos/incus.nix
+    path: /etc/nixos/lxd.nix
     generator: template
     content: |-
       { lib, config, pkgs, ... }:
