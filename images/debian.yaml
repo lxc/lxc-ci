@@ -1309,12 +1309,9 @@ actions:
     #!/bin/sh
     set -eux
 
-    # Disable networkd (unused)
-    systemctl mask systemd-networkd.service
-    systemctl mask systemd-networkd.socket
-    systemctl mask systemd-networkd-wait-online.service
-  releases:
-  - buster
+    # Enable networkd
+    systemctl enable systemd-networkd.service
+    systemctl enable systemd-networkd.socket
 
 - trigger: post-packages
   action: |-
@@ -1325,8 +1322,6 @@ actions:
     # startup. This only happens on debian/bullseye/cloud images.
     systemctl disable systemd-networkd.socket
     systemctl disable systemd-networkd.service
-  types:
-  - container
   variants:
   - cloud
   releases:
@@ -1335,92 +1330,14 @@ actions:
 - trigger: post-packages
   action: |-
     #!/bin/sh
-    set -eu
-
-    systemctl enable systemd-networkd.socket
-    systemctl enable systemd-networkd.service
-  types:
-  - container
-  variants:
-  - default
-  releases:
-  - bullseye
-
-- trigger: post-packages
-  action: |-
-    #!/bin/sh
-    set -eu
-
-    systemctl enable systemd-networkd.socket
-    systemctl enable systemd-networkd.service
-  types:
-  - container
-  variants:
-  - cloud
-  releases:
-  - trixie
-  - sid
-
-- trigger: post-packages
-  action: |-
-    #!/bin/sh
     set -eux
 
-    # Enable networkd socket
-    systemctl enable systemd-networkd.socket
-  types:
-  - container
+    # Disable networkd (unused)
+    systemctl mask systemd-networkd.service
+    systemctl mask systemd-networkd.socket
+    systemctl mask systemd-networkd-wait-online.service
   releases:
-  - bookworm
-  - sid
-  - trixie
-
-- trigger: post-packages
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    # Enable networkd
-    systemctl enable systemd-networkd.service
-  types:
-  - vm
-  variants:
-  - default
-  releases:
-  - bullseye
-  - bookworm
-  - sid
-  - trixie
-
-- trigger: post-packages
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    # Enable networkd
-    systemctl enable systemd-networkd.service
-  types:
-  - vm
-  variants:
-  - cloud
-  releases:
-  - bookworm
-  - sid
-  - trixie
-
-- trigger: post-packages
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    # Disable networkd
-    systemctl disable systemd-networkd.service
-  types:
-  - vm
-  variants:
-  - cloud
-  releases:
-  - bullseye
+  - buster
 
 - trigger: post-packages
   action: |-
@@ -1496,12 +1413,6 @@ actions:
     sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_UUID}#g" /boot/grub/grub.cfg
   types:
   - vm
-  releases:
-  - buster
-  - bullseye
-  - sid
-  - bookworm
-  - trixie
 
 - trigger: post-files
   action: |-
