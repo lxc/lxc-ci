@@ -18,7 +18,6 @@
         type: user-defined
         values:
         - 7
-        - 8-Stream
         - 9-Stream
 
     - axis:
