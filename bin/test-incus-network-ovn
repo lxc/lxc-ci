@@ -313,13 +313,13 @@ ovn_basic_tests() {
     # when the network is modified while the instance NIC is running.
     ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep -F "198.51.100.0/26,"
     ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep -F "2001:db8:1:2::/122,"
-    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep -F "203.0.113.1,"
-    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep -F "2001:db8:2:2::1,"
+    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep -F "203.0.113.1/32,"
+    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep -F "2001:db8:2:2::1/128,"
     incus network set ovn-virtual-network --project testovn ipv4.dhcp=false
     ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep -F "198.51.100.0/26,"
     ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep -F "2001:db8:1:2::/122,"
-    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep -F "203.0.113.1,"
-    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep -F "2001:db8:2:2::1,"
+    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep -F "203.0.113.1/32,"
+    ovn-nbctl --bare --format=csv --column=ip_prefix,nexthop find logical_router_static_route | grep -F "2001:db8:2:2::1/128,"
 
     # Check instance can be started with DHCP disabled when using device routes.
     # We expect OVN to still allow dynamic IPs to the switch port so that device routes can work correctly.
