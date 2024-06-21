@@ -661,7 +661,7 @@ ovn_forward_tests() {
     # Check basic forward default target address can be set (to non-existent target address).
     incus network forward set ovn-virtual-network 192.0.2.1 target_address="${ip4AddressPrefix}.2"
     incus network forward set ovn-virtual-network 2001:db8:1:2::1  target_address="${ip6AddressPrefix}::2"
-    ovn-nbctl list load_balancer | grep -cF name | grep -xF 2
+    ovn-nbctl list load_balancer | grep -cF name | grep -xF 4
     incus network forward delete ovn-virtual-network 192.0.2.1
     incus network forward delete ovn-virtual-network 2001:db8:1:2::1
     ovn-nbctl list load_balancer | grep -cF name | grep -xF 0
@@ -669,7 +669,7 @@ ovn_forward_tests() {
     # Check basic forward can be created with target address (to non-existent target address).
     incus network forward create ovn-virtual-network 192.0.2.1 target_address="${ip4AddressPrefix}.2"
     incus network forward create ovn-virtual-network 2001:db8:1:2::1 target_address="${ip6AddressPrefix}::2"
-    ovn-nbctl list load_balancer | grep -cF name | grep -xF 2
+    ovn-nbctl list load_balancer | grep -cF name | grep -xF 4
 
     # Check duplicate forwards cannot be created.
     ! incus network forward create ovn-virtual-network 192.0.2.1 target_address="${ip4AddressPrefix}.2" || false
@@ -715,9 +715,9 @@ ovn_forward_tests() {
     ! incus network set ovn-virtual-network2 ipv6.address=2001:db8:1:3::1/64 || false
 
     # Check network forwards are removed when network is removed.
-    ovn-nbctl list load_balancer | grep -cF name | grep -xF 4
+    ovn-nbctl list load_balancer | grep -cF name | grep -xF 8
     incus network delete ovn-virtual-network2
-    ovn-nbctl list load_balancer | grep -cF name | grep -xF 2
+    ovn-nbctl list load_balancer | grep -cF name | grep -xF 4
 
     # Create instance connected to ovn-virtual-network.
     incus launch "${instanceImage}" u1 -n ovn-virtual-network -s default
