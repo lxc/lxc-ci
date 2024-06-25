@@ -11,10 +11,10 @@ trap cleanup EXIT HUP INT TERM
 
 ARCH="$1"
 TARGET="$2"
-DISTRO="jammy"
+DISTRO="bookworm"
 
 # Create the container
-incus init "images:ubuntu/${DISTRO}/${ARCH}" build-distrobuilder-cache \
+incus init "images:debian/${DISTRO}/${ARCH}" build-distrobuilder-cache \
     -c security.privileged=true -c security.nesting=true
 printf "lxc.cgroup2.devices.allow = b 259:* rw\nlxc.cgroup.devices.allow = b 259:* rw" | incus config set build-distrobuilder-cache raw.lxc -
 
@@ -56,10 +56,7 @@ while :; do
     sleep 1
 done
 
-ARCHIVE="http://us.ports.ubuntu.com/ubuntu-ports"
-if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "i386" ]; then
-    ARCHIVE="http://us.archive.ubuntu.com/ubuntu"
-fi
+ARCHIVE="http://deb.debian.org/debian/"
 
 # Workaround apparmor issues on older distributions.
 umount -l /sys/devices/system/cpu || true
@@ -71,9 +68,10 @@ APT::Get::Show-Versions "true";
 Acquire::Languages "none";
 EOL
 cat > /etc/apt/sources.list << EOL
-deb \${ARCHIVE} ${DISTRO} main universe
-deb \${ARCHIVE} ${DISTRO}-updates main universe
-deb \${ARCHIVE} ${DISTRO}-security main universe
+deb http://deb.debian.org/debian ${DISTRO} main
+deb http://deb.debian.org/debian ${DISTRO}-backports main
+deb http://deb.debian.org/debian ${DISTRO}-updates main
+deb http://security.debian.org/debian-security ${DISTRO}-security main
 EOL
 apt-get update --yes
 
@@ -83,7 +81,6 @@ apt-get install --yes --no-install-recommends \
     build-essential \
     ca-certificates \
     curl \
-    debootstrap \
     dirmngr \
     dosfstools \
     gcc \
@@ -104,12 +101,14 @@ apt-get install --yes --no-install-recommends \
     unzip \
     xz-utils \
     zstd
+apt-get install --yes --no-install-recommends -t ${DISTRO}-backports \
+    debootstrap
 apt-get clean
 
 # Install distrobuilder
 GOARCH=\$(dpkg --print-architecture)
 [ "\${GOARCH}" = "armhf" ] && GOARCH=armv6l
-curl -sL "https://go.dev/dl/go1.21.3.linux-\${GOARCH}.tar.gz" | tar -zxv -C /usr/local/
+curl -sL "https://go.dev/dl/go1.21.3.linux-\${GOARCH}.tar.gz" | tar -zx -C /usr/local/
 export PATH=/usr/local/go/bin:\${PATH}
 git clone https://github.com/lxc/distrobuilder --depth 1
 cd distrobuilder
