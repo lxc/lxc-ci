@@ -22,7 +22,7 @@
         - bullseye
 #        - sid
         - bookworm
-#        - trixie
+        - trixie
 
     - axis:
         name: variant
