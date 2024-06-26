@@ -679,7 +679,7 @@ actions:
 - trigger: post-packages
   action: |-
     #!/bin/sh
-    systemctl disable systemd-nsresourced
+    systemctl mask systemd-nsresourced.service systemd-nsresourced.socket
   types:
   - container
 
