@@ -679,6 +679,13 @@ actions:
 - trigger: post-packages
   action: |-
     #!/bin/sh
+    systemctl disable systemd-nsresourced
+  types:
+  - container
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
     set -eux
 
     # Timezone
