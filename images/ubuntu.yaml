@@ -637,6 +637,23 @@ packages:
     - riscv64
 
 actions:
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Make sure systemd doesn't think it's running.
+    rm -Rf /run/systemd/system
+    chattr +i /run/systemd
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Remove the immutable flag.
+    chattr -i /run/systemd
+
 - trigger: post-update
   action: |-
     #!/bin/sh

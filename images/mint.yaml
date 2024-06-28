@@ -388,6 +388,23 @@ actions:
     #!/bin/sh
     set -eux
 
+    # Make sure systemd doesn't think it's running.
+    rm -Rf /run/systemd/system
+    chattr +i /run/systemd
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Remove the immutable flag.
+    chattr -i /run/systemd
+
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
+    set -eux
+
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0x302F0738F465C1535761F965A6616109451BBBF2
 
 - trigger: post-update
