@@ -643,7 +643,7 @@ actions:
     set -eux
 
     # Make sure systemd doesn't think it's running.
-    mkdir -p /run/systemd
+    [ ! -d /run/systemd ] && exit 0
     rm -Rf /run/systemd/system
     chattr +i /run/systemd
 
@@ -653,6 +653,7 @@ actions:
     set -eux
 
     # Remove the immutable flag.
+    [ ! -d /run/systemd ] && exit 0
     chattr -i /run/systemd
 
 - trigger: post-update
