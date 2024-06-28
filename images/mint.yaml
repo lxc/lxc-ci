@@ -389,6 +389,7 @@ actions:
     set -eux
 
     # Make sure systemd doesn't think it's running.
+    mkdir -p /run/systemd
     rm -Rf /run/systemd/system
     chattr +i /run/systemd
 
