@@ -405,7 +405,7 @@ actions:
     set -eux
 
     # Enable systemd-networkd
-    systemctl enable systemd-networkd
+    systemctl enable systemd-networkd --root=/
 
 - trigger: post-packages
   action: |-
@@ -425,7 +425,7 @@ actions:
     rm /etc/*-
 
     # Disable systemd timers and service files which fail
-    systemctl disable ua-timer.timer
+    systemctl disable ua-timer.timer --root=/
 
 mappings:
   architecture_map: debian
