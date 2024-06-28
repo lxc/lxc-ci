@@ -106,7 +106,6 @@ files:
   types:
   - vm
   releases:
-  - 15.4
   - 15.5
 
 - name: ifcfg-enp5s0
