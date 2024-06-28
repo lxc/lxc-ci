@@ -46,7 +46,7 @@
             ${INCUS_ARCHITECTURE} container 1800 ${WORKSPACE} \
             -o image.architecture=${architecture} \
             -o image.release=${release} -o image.variant=${variant} \
-            -o image.same_as=${BASE}
+            -o source.same_as=${BASE}
 
     properties:
     - build-discarder:
