@@ -654,10 +654,10 @@ actions:
     set -eux
 
     # Enable systemd-networkd
-    systemctl enable systemd-networkd
+    systemctl enable systemd-networkd --root=/
 
     # Disable UA attach
-    systemctl mask ua-auto-attach
+    systemctl mask ua-auto-attach --root=/
 
 - trigger: post-packages
   action: |-
@@ -727,7 +727,8 @@ actions:
     [Install]
     WantedBy=default.target
     EOF
-    systemctl enable incus-growpart
+
+    systemctl enable incus-growpart --root=/
   types:
   - vm
   variants:
@@ -740,7 +741,7 @@ actions:
     set -eux
 
     # Disable location service
-    systemctl mask geoclue.service || true
+    systemctl mask geoclue.service --root=/
 
     # Timezone
     rm -f /etc/localtime
