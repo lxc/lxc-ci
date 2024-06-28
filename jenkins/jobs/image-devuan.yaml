@@ -33,10 +33,20 @@
         cd /lxc-ci
         INCUS_ARCHITECTURE="${architecture}"
 
+        BASE="sid"
+        if [ "${release}" = "beowulf" ]; then
+            BASE="buster"
+        elif [ "${release}" = "chimaera" ]; then
+            BASE="bullseye"
+        elif [ "${release}" = "daedalus" ]; then
+            BASE="bookworm"
+        fi
+
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/devuan.yaml \
             ${INCUS_ARCHITECTURE} container 1800 ${WORKSPACE} \
             -o image.architecture=${architecture} \
-            -o image.release=${release} -o image.variant=${variant}
+            -o image.release=${release} -o image.variant=${variant} \
+            -o image.same_as=${BASE}
 
     properties:
     - build-discarder:
