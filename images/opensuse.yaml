@@ -107,6 +107,7 @@ files:
   - vm
   releases:
   - 15.5
+  - 15.6
 
 - name: ifcfg-enp5s0
   path: /etc/sysconfig/network/ifcfg-enp5s0
