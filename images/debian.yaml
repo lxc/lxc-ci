@@ -1219,7 +1219,7 @@ packages:
     - bullseye
 
   - packages:
-    - policykit-1
+    - pkexec
     action: install
     architectures:
     - amd64
