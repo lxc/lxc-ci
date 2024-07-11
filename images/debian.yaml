@@ -1219,6 +1219,18 @@ packages:
     - bullseye
 
   - packages:
+    - policykit-1
+    action: install
+    architectures:
+    - amd64
+    - arm64
+    types:
+    - vm
+    releases:
+    - buster
+    - bullseye
+
+  - packages:
     - pkexec
     action: install
     architectures:
@@ -1226,6 +1238,10 @@ packages:
     - arm64
     types:
     - vm
+    releases:
+    - bookworm
+    - trixie
+    - sid
 
   - packages:
     - grub-efi
