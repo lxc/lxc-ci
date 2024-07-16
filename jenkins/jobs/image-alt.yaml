@@ -18,8 +18,8 @@
         type: user-defined
         values:
         - Sisyphus
+        - p11
         - p10
-        - p9
 
     - axis:
         name: variant
