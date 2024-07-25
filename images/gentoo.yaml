@@ -488,14 +488,7 @@ actions:
     #!/bin/sh
     set -eux
 
-    # Workaround GPG issues
-    mv /usr/bin/gpg2 /usr/bin/gpg2.real
-    echo "#!/bin/sh" > /usr/bin/gpg2
-    echo "exec /usr/bin/gpg2.real --keyserver keyserver.ubuntu.com \"\$@\"" >> /usr/bin/gpg2
-    chmod +x /usr/bin/gpg2
-
     cp /usr/share/portage/config/repos.conf /usr/share/portage/config/repos.conf.orig
-    sed -i "s#hkps://keys.gentoo.org#keyserver.ubuntu.com#g" /usr/share/portage/config/repos.conf
     sed -ri "s#(sync-uri =) .+#\1 ${RSYNC_MIRROR}#" /usr/share/portage/config/repos.conf
 
     # Patch up /etc/inittab
@@ -516,14 +509,7 @@ actions:
     #!/bin/sh
     set -eux
 
-    # Workaround GPG issues
-    mv /usr/bin/gpg2 /usr/bin/gpg2.real
-    echo "#!/bin/sh" > /usr/bin/gpg2
-    echo "exec /usr/bin/gpg2.real --keyserver keyserver.ubuntu.com \"\$@\"" >> /usr/bin/gpg2
-    chmod +x /usr/bin/gpg2
-
     cp /usr/share/portage/config/repos.conf /usr/share/portage/config/repos.conf.orig
-    sed -i "s#hkps://keys.gentoo.org#keyserver.ubuntu.com#g" /usr/share/portage/config/repos.conf
     sed -ri "s#(sync-uri =) .+#\1 ${RSYNC_MIRROR}#" /usr/share/portage/config/repos.conf
 
     TARGET="$(uname -m)"
@@ -610,8 +596,6 @@ actions:
     mkdir -p /etc/runlevels/default
     rc-update add net.eth0 default || true
 
-    rm /usr/bin/gpg2
-    mv /usr/bin/gpg2.real /usr/bin/gpg2
     rm /usr/share/portage/config/repos.conf
     mv /usr/share/portage/config/repos.conf.orig /usr/share/portage/config/repos.conf
 
@@ -619,11 +603,6 @@ actions:
   action: |-
     #!/bin/sh
     set -eux
-
-    if [ -f /usr/bin/gpg2.real ]; then
-      rm /usr/bin/gpg2
-      mv /usr/bin/gpg2.real /usr/bin/gpg2
-    fi
 
     if [ -f /usr/share/portage/config/repos.conf.orig ]; then
       rm /usr/share/portage/config/repos.conf
