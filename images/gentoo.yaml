@@ -388,14 +388,6 @@ files:
 - path: /var/lib/dbus/machine-id
   generator: remove
 
-- path: /etc/local.d/repo_check.start
-  generator: dump
-  mode: 700
-  content: |-
-    #!/bin/bash
-    filename="header.txt"
-    test -f $(portageq get_repo_path / gentoo)/$filename || emerge --sync; chmod -x /etc/local.d/repo_check.start
-
 - name: meta-data
   generator: cloud-init
   variants:
@@ -448,7 +440,7 @@ packages:
   sets:
   - packages:
     - net-misc/dhcpcd
-    - sudo
+    - app-admin/sudo
     action: install
 
   - packages:
@@ -458,14 +450,14 @@ packages:
     - cloud
 
   - packages:
-    - syslog-ng
     - sys-power/acpid
     action: install
     types:
     - vm
 
   - packages:
-    - grub
+    - app-admin/syslog-ng
+    - sys-boot/grub
     action: install
     types:
     - vm
@@ -488,16 +480,6 @@ actions:
     #!/bin/sh
     set -eux
 
-    # Workaround GPG issues
-    mv /usr/bin/gpg2 /usr/bin/gpg2.real
-    echo "#!/bin/sh" > /usr/bin/gpg2
-    echo "exec /usr/bin/gpg2.real --keyserver keyserver.ubuntu.com \"\$@\"" >> /usr/bin/gpg2
-    chmod +x /usr/bin/gpg2
-
-    cp /usr/share/portage/config/repos.conf /usr/share/portage/config/repos.conf.orig
-    sed -i "s#hkps://keys.gentoo.org#keyserver.ubuntu.com#g" /usr/share/portage/config/repos.conf
-    sed -ri "s#(sync-uri =) .+#\1 ${RSYNC_MIRROR}#" /usr/share/portage/config/repos.conf
-
     # Patch up /etc/inittab
     if [ -e /etc/inittab ]; then
         sed -i 's/^c[0-9]:/#\0/' /etc/inittab
@@ -515,16 +497,6 @@ actions:
   action: |-
     #!/bin/sh
     set -eux
-
-    # Workaround GPG issues
-    mv /usr/bin/gpg2 /usr/bin/gpg2.real
-    echo "#!/bin/sh" > /usr/bin/gpg2
-    echo "exec /usr/bin/gpg2.real --keyserver keyserver.ubuntu.com \"\$@\"" >> /usr/bin/gpg2
-    chmod +x /usr/bin/gpg2
-
-    cp /usr/share/portage/config/repos.conf /usr/share/portage/config/repos.conf.orig
-    sed -i "s#hkps://keys.gentoo.org#keyserver.ubuntu.com#g" /usr/share/portage/config/repos.conf
-    sed -ri "s#(sync-uri =) .+#\1 ${RSYNC_MIRROR}#" /usr/share/portage/config/repos.conf
 
     TARGET="$(uname -m)"
 
@@ -549,14 +521,9 @@ actions:
   action: |-
     #!/bin/sh
     set -eux
-
-    # Remove this directory, as it should actually be a file
-    rm -rf /etc/portage/package.use
-
-    # Fix cloud-init requirement
-    echo '*/* PYTHON_TARGETS: python3_7 python3_8' > /etc/portage/package.use
-  variants:
-  - cloud
+    # Use binary packages if available
+    echo 'FEATURES="getbinpkg"' >> /etc/portage/make.conf
+    getuto
 
 - trigger: post-unpack
   action: |-
@@ -607,31 +574,7 @@ actions:
     #!/bin/sh
     set -eux
     ln -s net.lo /etc/init.d/net.eth0
-    mkdir -p /etc/runlevels/default
     rc-update add net.eth0 default || true
-
-    rm /usr/bin/gpg2
-    mv /usr/bin/gpg2.real /usr/bin/gpg2
-    rm /usr/share/portage/config/repos.conf
-    mv /usr/share/portage/config/repos.conf.orig /usr/share/portage/config/repos.conf
-
-- trigger: post-packages
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    if [ -f /usr/bin/gpg2.real ]; then
-      rm /usr/bin/gpg2
-      mv /usr/bin/gpg2.real /usr/bin/gpg2
-    fi
-
-    if [ -f /usr/share/portage/config/repos.conf.orig ]; then
-      rm /usr/share/portage/config/repos.conf
-      mv /usr/share/portage/config/repos.conf.orig /usr/share/portage/config/repos.conf
-    fi
-  types:
-  - container
-  - vm
 
 - trigger: post-packages
   action: |-
@@ -674,6 +617,15 @@ actions:
   variants:
   - openrc
 
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+    # Uninstall build dependency packages
+    emerge --depclean
+    # Remove portage files
+    rm -fr /var/db/repos/gentoo/* /var/cache/distfiles/* /var/cache/binpkgs/*
+
 - trigger: post-packages
   action: |-
     #!/bin/sh
@@ -686,11 +638,6 @@ actions:
     systemctl enable systemd-networkd
   variants:
   - systemd
-
-environment:
-  variables:
-  - key: RSYNC_MIRROR
-    value: rsync://rsync.ca.gentoo.org/gentoo-portage/
 
 mappings:
   architecture_map: gentoo
