@@ -39,8 +39,11 @@
         RELEASE=${release}
         [ "${RELEASE}" = "unstable" ] && JOBSET="trunk-combined" || JOBSET="release-${RELEASE}"
 
+        # remove lxd image when 24.11 is released
+        [ "${RELEASE}" = "unstable" ] && HYDRA_IMAGE="incusVirtualMachineImage" || HYDRA_IMAGE="lxdVirtualMachineImage"
+
         # download a pre-built VM image
-        curl --location --output ${WORKSPACE}/disk.qcow2 https://hydra.nixos.org/job/nixos/${JOBSET}/nixos.lxdVirtualMachineImage.${ARCH}-linux/latest/download-by-type/file/qcow2-image
+        curl --location --output ${WORKSPACE}/disk.qcow2 https://hydra.nixos.org/job/nixos/${JOBSET}/nixos.${HYDRA_IMAGE}.${ARCH}-linux/latest/download-by-type/file/qcow2-image
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/nixos.yaml \
             ${INCUS_ARCHITECTURE} container 14400 ${WORKSPACE} \
