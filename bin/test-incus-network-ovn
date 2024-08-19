@@ -1377,7 +1377,7 @@ ovn_dhcp_reservation_tests() {
 
     # Check there are no dns records entries and only the gateway IP is reserved.
     [ "$(ovn-nbctl list dns | grep -Fc 'records')" = "0" ] || false
-    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1"')" = "1" ] || false
+    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1 10.10.11.254"')" = "1" ] || false
 
     # Create instance and check empty DNS record entry is created (showing successfully adding a NIC).
     incus init "${instanceImage}" u1 -s default -n ovn1
@@ -1385,11 +1385,11 @@ ovn_dhcp_reservation_tests() {
 
     # Check specifying a static IP is added to DHCP reservations.
     incus config device set u1 eth0 ipv4.address=10.10.11.200
-    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1 10.10.11.200"')" = "1" ] || false
+    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1 10.10.11.200 10.10.11.254"')" = "1" ] || false
 
     # Check changing static IP is reflected in DHCP reservations.
     incus config device set u1 eth0 ipv4.address=10.10.11.2
-    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1 10.10.11.2"')" = "1" ] || false
+    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1 10.10.11.2 10.10.11.254"')" = "1" ] || false
 
     # Launch new dynamic IP instance and check its not allocated the reserved IP.
     incus launch "${instanceImage}" u2 -s default -n ovn1
@@ -1408,30 +1408,30 @@ ovn_dhcp_reservation_tests() {
 
     # Check there is only 1 DNS record entry and only 1 reserved instance IP.
     [ "$(ovn-nbctl list dns | grep -Fc 'records')" = "1" ] || false
-    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1 10.10.11.2"')" = "1" ] || false
+    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1 10.10.11.2 10.10.11.254"')" = "1" ] || false
 
     # Delete the new copy which caused the conflict and check the DNS record entry and reserved IP for the original
     # instance is left alone.
     incus delete -f u2
     [ "$(ovn-nbctl list dns | grep -Fc 'records')" = "1" ] || false
-    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1 10.10.11.2"')" = "1" ] || false
+    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1 10.10.11.2 10.10.11.254"')" = "1" ] || false
 
     # Create conflict again, but this time delete the original instance, checking that the DNS record entry is
     # removed along with the original instance's IP reservation.
     incus copy u1 u2
     incus delete -f u1
     [ "$(ovn-nbctl list dns | grep -Fc 'records')" = "0" ] || false
-    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1"')" = "1" ] || false
+    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1 10.10.11.254"')" = "1" ] || false
 
     # Check that starting the instance copy creates the missing DNS record entry and IP reservation.
     incus start u2
     [ "$(ovn-nbctl list dns | grep -Fc 'records')" = "1" ] || false
-    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1 10.10.11.2"')" = "1" ] || false
+    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1 10.10.11.2 10.10.11.254"')" = "1" ] || false
 
     # Check that deleting the instance copy after successful start removes the DNS record entry and IP allocation.
     incus delete -f u2
     [ "$(ovn-nbctl list dns | grep -Fc 'records')" = "0" ] || false
-    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1"')" = "1" ] || false
+    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1 10.10.11.254"')" = "1" ] || false
 
     incus network delete ovn1
     incus network delete incusbr0
