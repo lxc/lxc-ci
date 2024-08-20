@@ -229,6 +229,13 @@ packages:
     - cloud
 
 actions:
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
+    # Make sure we have our template targets
+    touch /etc/hosts
+    touch /etc/hostname
+
 - trigger: post-packages
   action: |-
     #!/bin/sh
