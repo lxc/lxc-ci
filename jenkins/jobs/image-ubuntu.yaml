@@ -18,11 +18,8 @@
         name: release
         type: user-defined
         values:
-        - xenial
-        - bionic
         - focal
         - jammy
-        - mantic
         - noble
 
     - axis:
