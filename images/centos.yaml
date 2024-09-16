@@ -962,3 +962,6 @@ actions:
     if [ -f /etc/yum/pluginconf.d/fastestmirror.conf ]; then
       sed -ri 's/enabled=0/enabled=1/g' /etc/yum/pluginconf.d/fastestmirror.conf
     fi
+
+    # Cleanup SELinux state
+    rm -Rf /var/lib/selinux/*
