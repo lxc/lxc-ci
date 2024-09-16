@@ -3,7 +3,7 @@ image:
 
 source:
   downloader: springdalelinux-http
-  url: https://mirror.math.princeton.edu/pub/springdale/puias/
+  url: http://mirror.math.princeton.edu/pub/springdale/puias/
   keys:
   - |-
     -----BEGIN PGP PUBLIC KEY BLOCK-----
