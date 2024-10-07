@@ -1275,6 +1275,12 @@ packages:
     - arm64
 
   - packages:
+    - cloud-guest-utils
+    action: install
+    types:
+    - vm
+
+  - packages:
     - shim-signed
     action: install
     types:
@@ -1427,6 +1433,29 @@ actions:
 
     update-grub
     sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_UUID}#g" /boot/grub/grub.cfg
+  types:
+  - vm
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Automatic disk resize
+    cat << EOF > /etc/systemd/system/incus-growpart.service
+    [Unit]
+    Description=Incus - grow root partition
+
+    [Service]
+    Type=oneshot
+    ExecStartPre=-/usr/bin/growpart /dev/sda 2
+    ExecStart=/sbin/resize2fs /dev/sda2
+
+    [Install]
+    WantedBy=default.target
+    EOF
+
+    systemctl enable incus-growpart
   types:
   - vm
 
