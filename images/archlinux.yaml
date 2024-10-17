@@ -818,7 +818,7 @@ actions:
     #!/bin/sh
     set -eux
 
-    systemctl enable cloud-init-local.service cloud-init.service cloud-config.service cloud-final.service
+    systemctl enable cloud-config.service cloud-final.service cloud-init-local.service cloud-init-network.service cloud-config.target cloud-init.target
   variants:
   - cloud
   architectures:
