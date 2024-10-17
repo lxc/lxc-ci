@@ -590,6 +590,7 @@ packages:
 
   - packages:
     - cloud-init
+    - openbsd-netcat
     - openssh
     action: install
     variants:
@@ -818,7 +819,11 @@ actions:
     #!/bin/sh
     set -eux
 
-    systemctl enable cloud-config.service cloud-final.service cloud-init-local.service cloud-init-network.service cloud-config.target cloud-init.target
+    systemctl enable cloud-init-main.service
+
+    # Workaround, see https://gitlab.archlinux.org/archlinux/packaging/packages/cloud-init/-/issues/3
+    ln -s /bin/nc /bin/nc.openbsd
+    sed -i '/Before=sysinit.target/d' /usr/lib/systemd/system/cloud-init-main.service
   variants:
   - cloud
   architectures:
