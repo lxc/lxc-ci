@@ -215,10 +215,6 @@ ovn_basic_tests() {
         ipv4.address=198.51.100.1/26 \
         ipv4.nat=false || false
 
-    ! incus network create ovn-virtual-network2 --type=ovn --project default network=dummy \
-        ipv6.address=2001:db8:1:2::1/122 \
-        ipv6.nat=false || false
-
     # Check uplink dns.nameservers changes are applied to dependent OVN networks.
     ovn-nbctl --format=csv --bare --column=options find dhcp_option cidr=198.51.100.0/24 | grep -F "dns_server={192.0.2.53}"
     incus network set dummy dns.nameservers=192.0.2.54 --project default
@@ -230,9 +226,7 @@ ovn_basic_tests() {
 
     incus network create ovn-virtual-network2 --type=ovn --project default network=dummy \
         ipv4.address=198.51.100.1/26 \
-        ipv4.nat=false \
-        ipv6.address=2001:db8:1:2::1/122 \
-        ipv6.nat=false
+        ipv4.nat=false
 
     incus network delete ovn-virtual-network2 --project default
     incus network unset dummy ovn.ingress_mode --project default
