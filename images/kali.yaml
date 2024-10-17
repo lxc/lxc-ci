@@ -1774,7 +1774,7 @@ actions:
     set -eux
 
     # Enable cloud-init units
-    systemctl enable cloud-init
+    systemctl enable cloud-config.service cloud-final.service cloud-init-local.service cloud-init-network.service cloud-config.target cloud-init.target
   variants:
   - cloud
 
