@@ -819,7 +819,7 @@ actions:
     #!/bin/sh
     set -eux
 
-    systemctl enable cloud-init-main.service
+    systemctl enable cloud-init-main.service cloud-init-local.service
 
     # Workaround, see https://gitlab.archlinux.org/archlinux/packaging/packages/cloud-init/-/issues/3
     ln -s /bin/nc /bin/nc.openbsd
