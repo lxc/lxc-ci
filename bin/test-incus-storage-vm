@@ -138,12 +138,16 @@ do
         incus start v1
         waitVMAgent v1
 
-        echo "==> Increasing VM root disk size for next boot"
         incus config device set v1 root size=11GiB
-        incus config get v1 volatile.root.apply_quota | grep true
-        incus stop -f v1
-        incus start v1
-        waitVMAgent v1
+        if [ "${poolDriver}" = "dir" ] || [ "${poolDriver}" = "btrfs" ]; then
+            echo "==> Increasing VM root disk size for next boot"
+            incus config get v1 volatile.root.apply_quota | grep true
+            incus stop -f v1
+            incus start v1
+            waitVMAgent v1
+        else
+            echo "==> Increasing VM root disk size"
+        fi
 
         echo "==> Checking VM root disk size is 11GiB"
         [ $(($(incus exec v1 -- blockdev --getsize64 /dev/sda) / GiB)) -eq "11" ]
