@@ -21,6 +21,7 @@
         - focal
         - jammy
         - noble
+        - oracular
 
     - axis:
         name: variant
