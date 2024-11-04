@@ -1,6 +1,4 @@
 #!/bin/sh -eu
-export PATH="/snap/bin/:${PATH}"
-
 cleanup() {
     set +e
     incus delete build-distrobuilder-cache -f >/dev/null 2>&1
@@ -110,11 +108,22 @@ GOARCH=\$(dpkg --print-architecture)
 [ "\${GOARCH}" = "armhf" ] && GOARCH=armv6l
 curl -sL "https://go.dev/dl/go1.21.3.linux-\${GOARCH}.tar.gz" | tar -zx -C /usr/local/
 export PATH=/usr/local/go/bin:\${PATH}
+
 git clone https://github.com/lxc/distrobuilder --depth 1
 cd distrobuilder
 make
 cp /root/go/bin/distrobuilder /usr/local/bin/
-rm -Rf /root/distrobuilder /root/go /root/.cache
+cd -
+
+# Install umoci
+git clone https://github.com/opencontainers/umoci --depth 1
+cd umoci
+make
+cp umoci /usr/local/bin/
+cd -
+
+# Cleanup
+rm -Rf /root/distrobuilder /root/umoci /root/go /root/.cache
 
 # All done
 exit 0
