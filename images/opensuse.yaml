@@ -193,6 +193,23 @@ files:
   - vm
   variants:
   - desktop-kde
+  releases:
+  - 15.5
+  - 15.6
+
+- path: /etc/sddm.conf.d/autologin.conf
+  generator: dump
+  content: |-
+    [Autologin]
+    User=opensuse
+    Session=plasmawayland
+    Relogin=true
+  types:
+  - vm
+  variants:
+  - desktop-kde
+  releases:
+  - tumbleweed
 
 - path: /home/opensuse/.config/kscreenlockerrc
   generator: dump
