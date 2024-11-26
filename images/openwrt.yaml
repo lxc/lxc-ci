@@ -339,6 +339,11 @@ actions:
 - trigger: post-unpack
   action: |
     #!/bin/sh
+    mkdir -p /var/log
+
+- trigger: post-unpack
+  action: |
+    #!/bin/sh
     mkdir -p /var/lock
     echo "console::askfirst:/usr/libexec/login.sh" >> /etc/inittab
   architectures:
