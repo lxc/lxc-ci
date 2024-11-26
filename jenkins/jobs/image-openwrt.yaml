@@ -37,9 +37,13 @@
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
         [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
 
+        PKGMANAGER="opkg"
+        [ "${release}" = "snapshot" ] && PKGMANAGER="apk"
+
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/openwrt.yaml \
             ${INCUS_ARCHITECTURE} container 7200 ${WORKSPACE} \
-            -o image.architecture=${ARCH} -o image.release=${release}
+            -o image.architecture=${ARCH} -o image.release=${release} \
+            -o packages.manager=${PKGMANAGER}
 
     properties:
     - build-discarder:
