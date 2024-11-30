@@ -19,6 +19,7 @@
         values:
         - unstable
         - 24.05
+        - 24.11
 
     - axis:
         name: variant
@@ -38,8 +39,8 @@
         RELEASE=${release}
         [ "${RELEASE}" = "unstable" ] && JOBSET="trunk-combined" || JOBSET="release-${RELEASE}"
 
-        # remove lxd image when 24.11 is released
-        [ "${RELEASE}" = "unstable" ] && HYDRA_IMAGE="incusVirtualMachineImage" || HYDRA_IMAGE="lxdVirtualMachineImage"
+        # remove lxd image when 24.05 is removed
+        [ "${RELEASE}" = "24.05" ] && HYDRA_IMAGE="lxdVirtualMachineImage" || HYDRA_IMAGE="incusVirtualMachineImage"
 
         # download a pre-built VM image
         curl --location --output ${WORKSPACE}/disk.qcow2 https://hydra.nixos.org/job/nixos/${JOBSET}/nixos.${HYDRA_IMAGE}.${ARCH}-linux/latest/download-by-type/file/qcow2-image
