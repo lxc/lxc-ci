@@ -70,3 +70,4 @@ files:
       }
     releases:
       - unstable
+      - 24.11
