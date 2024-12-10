@@ -17,16 +17,13 @@ trap cleanup EXIT HUP INT TERM
 
 # Install test dependencies
 apt-get remove --purge cloud-init --yes
-apt-get install --yes curl zfsutils-linux
+apt-get install --yes curl
 
 # Install Incus
 curl -sL https://pkgs.zabbly.com/get/incus-daily | sh
 
 # Configure Incus
-incus storage create default zfs
-incus profile device add default root disk path=/ pool=default
-incus network create incusbr0
-incus profile device add default eth0 nic network=incusbr0 name=eth0
+incus admin init --auto
 
 if [ "${1}" = "nvidia" ]; then
     # Enable SR-IOV
@@ -50,7 +47,7 @@ incus info --resources
 
 # Launch test instances
 for i in $(seq 1 4); do
-    incus init images:ubuntu/20.04/cloud "v${i}" --vm -c security.secureboot=false
+    incus init images:ubuntu/20.04/cloud "v${i}" --vm -c security.secureboot=false < /dev/null
     if [ "${1}" = "nvidia" ]; then
         incus config device add "v${i}" vgpu gpu gputype=mdev pci=0000:07:00.0 mdev=nvidia-468
     elif [ "${1}" = "intel" ]; then
