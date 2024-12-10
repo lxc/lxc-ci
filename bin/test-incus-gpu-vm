@@ -39,6 +39,12 @@ if [ "${1}" = "nvidia" ]; then
     nvidia-smi -mig 0
 fi
 
+if [ "${1}" = "intel" ]; then
+    # Configure SR-IOV on Intel Xe
+    echo 0 > /sys/devices/pci0000:00/0000:00:02.0/sriov_drivers_autoprobe
+    echo 7 > /sys/devices/pci0000:00/0000:00:02.0/sriov_numvfs
+fi
+
 # Incus resource API
 incus info --resources
 
@@ -47,6 +53,8 @@ for i in $(seq 1 4); do
     incus init images:ubuntu/20.04/cloud "v${i}" --vm -c security.secureboot=false
     if [ "${1}" = "nvidia" ]; then
         incus config device add "v${i}" vgpu gpu gputype=mdev pci=0000:07:00.0 mdev=nvidia-468
+    elif [ "${1}" = "intel" ]; then
+        incus config device add "v${i}" vgpu gpu gputype=sriov pci=0000:00:02.0
     fi
     incus start "v${i}"
 done
@@ -62,6 +70,13 @@ if [ "${1}" = "nvidia" ]; then
     incus exec v4 -- wget -6 http://lab.linuxcontainers.org/nvidia/v14.0/nvidia-guest.deb
     incus exec v4 -- apt-get install --yes /root/nvidia-guest.deb
     incus exec v4 -- nvidia-smi
+fi
+
+if [ "${1}" = "intel" ]; then
+    # Validate Intel vGPU
+    incus exec v3 -- apt-get update
+    incus exec v3 -- apt install --yes pciutils
+    incus exec v3 -- lspci | grep VGA.*Intel
 fi
 
 FAIL=0
