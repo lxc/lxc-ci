@@ -10,6 +10,7 @@
         name: platform
         type: user-defined
         values:
+        - intel
         - nvidia
 
     - axis:
@@ -45,9 +46,13 @@
             exec /lxc-ci/bin/maas-run name=lantea jammy ga-22.04 iommu,amd-vgpu bin/test-incus-gpu-vm amd
         fi
 
+        if [ "${platform}" = "intel" ] && [ "${target}" = "vm" ]; then
+            exec /lxc-ci/bin/maas-run name=nuc03 jammy ga-24.04 intel-vgpu bin/test-incus-gpu-vm intel
+        fi
+
     execution-strategy:
       combination-filter: '
-      !(platform=="amd")'
+      !(platform == "intel" && platform != "vm")'
 
     properties:
     - build-discarder:
