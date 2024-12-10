@@ -107,6 +107,22 @@ case "$i" in
         update-initramfs -u
       ;;
 
+      intel-vgpu)
+        echo "===> Installing the Intel vGPU driver"
+
+        apt-get update
+        apt-get dist-upgrade --yes
+        apt-get install --no-install-recommends --yes dkms
+        git clone https://github.com/strongtz/i915-sriov-dkms
+
+        cd i915-sriov-dkms
+        dkms add .
+        dkms install -m i915-sriov-dkms -v $(cat VERSION) --force
+        echo 'GRUB_CMDLINE_LINUX_DEFAULT="intel_iommu=on i915.enable_guc=3 i915.max_vfs=7"' > /etc/default/grub.d/99-test.cfg
+        update-initramfs -u
+        update-grub
+      ;;
+
       ubuntu)
         echo "===> Ensuring default kernel is up to date"
 
