@@ -118,6 +118,7 @@ case "$i" in
         cd i915-sriov-dkms
         dkms add .
         dkms install -m i915-sriov-dkms -v $(cat VERSION) --force
+        dkms install -m i915-sriov-dkms -k $(ls -1 /lib/modules/ | grep zabbly) -v $(cat VERSION) --force
         echo 'GRUB_CMDLINE_LINUX_DEFAULT="intel_iommu=on i915.enable_guc=3 i915.max_vfs=7"' > /etc/default/grub.d/99-test.cfg
         update-initramfs -u
         update-grub
