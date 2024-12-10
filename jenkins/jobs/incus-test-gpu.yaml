@@ -52,7 +52,7 @@
 
     execution-strategy:
       combination-filter: '
-      !(platform == "intel" && platform != "vm")'
+      !(platform == "intel" && target != "vm")'
 
     properties:
     - build-discarder:
