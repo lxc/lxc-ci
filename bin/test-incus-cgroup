@@ -15,6 +15,14 @@ cleanup() {
 FAIL=1
 trap cleanup EXIT HUP INT TERM
 
+# Setup a swap file if needed
+if [ "$(wc -l < /proc/swaps)" = "1" ]; then
+    fallocate -l 1G /SWAP.img
+    chmod 600 /SWAP.img
+    mkswap /SWAP.img
+    swapon /SWAP.img
+fi
+
 # Install test dependencies
 apt-get remove --purge cloud-init --yes
 apt-get install --yes curl iperf3 jq
