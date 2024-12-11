@@ -21,12 +21,12 @@ apt-get remove --purge cloud-init --yes
 apt-get install --yes btrfs-progs curl lvm2
 
 # Install ZFS
-curl -sL https://pkgs.zabbly.com/get/kernel-zfs | sh
+if echo "${poolDriverList}" | grep -q zfs; then
+    curl -sL https://pkgs.zabbly.com/get/zfs-stable | sh
+fi
 
 # Install Incus
-if echo "${poolDriverList}" | grep -q zfs; then
-    curl -sL https://pkgs.zabbly.com/get/incus-daily | sh
-fi
+curl -sL https://pkgs.zabbly.com/get/incus-daily | sh
 
 # Configure Incus
 incus project switch default
