@@ -33,7 +33,7 @@ incus profile device add default eth0 nic network=incusbr0 name=eth0
 
 # Launch a test container
 echo "==> Launching a test container"
-incus launch images:ubuntu/20.04/cloud c1
+incus launch images:ubuntu/24.04 c1
 sleep 10
 
 # Confirm no GPU
