@@ -1,0 +1,89 @@
+#!/bin/sh -eu
+# shellcheck disable=SC1091
+[ -e /lxc-ci/etc/config ] && . /lxc-ci/etc/config
+
+if [ "${1:-}" = "" ] || [ "${2:-}" = "" ] || [ "${3:-}" = "" ]; then
+    echo "Usage: $0 <image> <pre-boot> <script> [args...]" >&2
+    exit 1
+fi
+
+waitVMAgent() (
+  set +x
+  # shellcheck disable=SC3043
+  local vmName="$1"
+  for i in $(seq 90) # Wait up to 90s.
+  do
+    if incus info "${vmName}" | grep -qF 127.0.0.1; then
+      return 0 # Success.
+    fi
+
+    sleep 1
+  done
+
+  echo "VM ${vmName} agent not running after ${i}s"
+  return 1 # Failed.
+)
+
+# Cleanup on exit
+RET=1
+instance_name=
+cleanup() {
+    set +e
+
+    if [ -n "${instance_name}" ]; then
+        incus delete -f "${instance_name}"
+    fi
+
+    if [ "${RET}" = "0" ]; then
+        echo "" >&2
+        echo "==> Test passed" >&2
+        exit 0
+    fi
+
+    echo "" >&2
+    echo "==> Test failed" >&2
+    exit ${RET}
+}
+trap cleanup EXIT HUP INT TERM
+
+# Create instance name
+JOB_NAME="${JOB_NAME:-"unknown"}"
+instance_name="$(mktemp -u "${JOB_NAME}-XXXX")"
+
+# Create instance
+echo "==> Launching instance" >&2
+incus launch "${1}" "${instance_name}" --vm \
+    -c limits.cpu=4 \
+    -c limits.memory=16GiB \
+    -d root,size=50GiB
+
+# Wait for agent to respond
+echo "==> Waiting for agent to respond" >&2
+waitVMAgent "${instance_name}"
+
+# Setup custom kernel
+kernel=${2}
+if [ "${kernel}" != "default" ]; then
+    echo "==> Installing custom kernel: ${2}" >&2
+    incus exec "${instance_name}" -- sh /dev/stdin "${kernel}" < "bin/maas-kernel" || true
+
+    sleep 10
+
+    waitVMAgent "${instance_name}"
+fi
+
+# Connect and run something
+script=${3}
+shift
+shift
+shift
+echo "==> Running the job" >&2
+incus file push "${script}" "${instance_name}/root/test-script" --mode=0755 --uid=0 --gid=0
+incus exec "${instance_name}" -- /root/test-script "$@"
+
+if [ -n "${WORKSPACE:-}" ]; then
+    incus file pull "${instance_name}/root/artifacts.tar.gz" - 2>/dev/null | tar zxvf - -C "${WORKSPACE}" >/dev/null 2>&1 || true
+fi
+
+# Success
+RET=0
