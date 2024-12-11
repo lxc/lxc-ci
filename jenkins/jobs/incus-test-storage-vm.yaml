@@ -1,7 +1,7 @@
 - job:
     name: "incus-test-storage-vm"
     concurrent: false
-    description: Run VM storage tests on physical hardware.
+    description: Run VM storage tests
     node: master
     project-type: matrix
 
@@ -26,7 +26,7 @@
     - shell: |-
         set -e
         cd /lxc-ci
-        sudo -E /lxc-ci/bin/maas-run tags=physical jammy ga-22.04 default bin/test-incus-storage-vm "${backend}"
+        sudo -E /lxc-ci/bin/incus-run images:debian/12/amd64 default bin/test-incus-storage-vm "${backend}"
 
     properties:
     - build-discarder:
