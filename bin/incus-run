@@ -52,7 +52,7 @@ instance_name="$(mktemp -u "${JOB_NAME}-XXXX")"
 
 # Create instance
 echo "==> Launching instance" >&2
-incus launch "${1}" "${instance_name}" --vm \
+incus launch "${1}" "${instance_name}" --ephemeral --vm \
     -c limits.cpu=4 \
     -c limits.memory=16GiB \
     -d root,size=50GiB
