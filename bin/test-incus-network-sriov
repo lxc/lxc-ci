@@ -2,11 +2,6 @@
 set -eu
 
 # Default to loop storage pool if /dev/nvme0n1p3 doesn't exist.
-storageDevice=""
-if [ -f "/dev/nvme0n1p3" ]; then
-  storageDevice="/dev/nvme0n1p3"
-fi
-
 parentNIC="enp5s0"
 
 waitVMAgent() (
@@ -103,7 +98,7 @@ trap cleanup EXIT HUP INT TERM
 
 # Install test dependencies
 apt-get remove --purge cloud-init --yes
-apt-get install --yes curl jq zfsutils-linux
+apt-get install --yes curl jq
 
 # Install Incus
 curl -sL https://pkgs.zabbly.com/get/incus-daily | sh
@@ -115,7 +110,7 @@ sleep 10
 ethtool "${parentNIC}"
 
 # Configure Incus
-incus storage create default zfs source="${storageDevice}"
+incus storage create default dir
 incus profile device add default root disk path=/ pool=default
 incus profile device add default eth0 nic nictype=sriov parent="${parentNIC}" name=eth0
 
