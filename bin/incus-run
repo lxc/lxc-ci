@@ -65,7 +65,7 @@ waitVMAgent "${instance_name}"
 kernel=${2}
 if [ "${kernel}" != "default" ]; then
     echo "==> Installing custom kernel: ${2}" >&2
-    incus exec "${instance_name}" -- sh /dev/stdin "${kernel}" < "bin/maas-kernel" || true
+    incus exec "${instance_name}" -- sh /dev/stdin "${kernel}" < "bin/kernel-setup" || true
 
     sleep 10
 
