@@ -42,24 +42,18 @@ echo "==> Testing with no GPU"
 
 # Validate with one GPU
 echo "==> Testing with one GPU"
-incus config device add c1 gpu0 gpu id=0
+incus config device add c1 gpu0 gpu pci=07:00.0
 [ "$(incus exec c1 -- ls /dev/dri/ | grep -c card)" = "1" ] || false
-
-# Validate with two GPus
-echo "==> Testing with two GPUs"
-incus config device add c1 gpu1 gpu id=1
-[ "$(incus exec c1 -- ls /dev/dri/ | grep -c card)" = "2" ] || false
 
 # Validate with all remove
 echo "==> Testing with no GPU"
 incus config device remove c1 gpu0
-incus config device remove c1 gpu1
 [ "$(incus exec c1 -- ls /dev/dri/ | grep -c card)" = "0" ] || false
 
 # Validate with all GPUs
 echo "==> Testing with all GPUs"
 incus config device add c1 gpus gpu
-[ "$(incus exec c1 -- ls /dev/dri/ | grep -c card)" = "3" ] || false
+[ "$(incus exec c1 -- ls /dev/dri/ | grep -c card)" = "2" ] || false
 
 # Test nvidia runtime
 echo "==> Testing nvidia runtime"
@@ -72,23 +66,21 @@ incus exec c1 -- nvidia-smi
 # Test with PCI addresses
 echo "==> Testing PCI address selection"
 incus config device remove c1 gpus
-incus config device add c1 gpu1 gpu pci=0000:06:00.0
-incus config device add c1 gpu2 gpu pci=0000:07:00.0
-[ "$(incus exec c1 -- ls /dev/dri/ | grep -c card)" = "2" ] || false
+incus config device add c1 gpu1 gpu pci=0000:07:00.0
+[ "$(incus exec c1 -- ls /dev/dri/ | grep -c card)" = "1" ] || false
 incus exec c1 -- nvidia-smi
 
 # Test with vendor
 echo "==> Testing PCI vendor selection"
 incus config device remove c1 gpu1
-incus config device remove c1 gpu2
 incus config device add c1 gpus gpu vendorid=10de
-[ "$(incus exec c1 -- ls /dev/dri/ | grep -c card)" = "2" ] || false
+[ "$(incus exec c1 -- ls /dev/dri/ | grep -c card)" = "1" ] || false
 incus exec c1 -- nvidia-smi
 
 # Test with vendor and product
 echo "==> Testing PCI vendor and product selection"
 incus config device remove c1 gpus
-incus config device add c1 gpus gpu vendorid=1af4 productid=0010
+incus config device add c1 gpus gpu vendorid=1002 productid=68f2
 [ "$(incus exec c1 -- ls /dev/dri/ | grep -c card)" = "1" ] || false
 
 FAIL=0
