@@ -99,7 +99,7 @@ case "$i" in
         echo "MODULES=dep" > /etc/initramfs-tools/conf.d/modules.conf
         apt-get update
         apt-get dist-upgrade --yes
-        apt-get install --no-install-recommends --yes build-essential
+        apt-get install --no-install-recommends --yes build-essential curl
         curl http://lab.linuxcontainers.org/nvidia/v14.0/nvidia-host.deb -o /root/nvidia-host.deb
         apt-get install --yes /root/nvidia-host.deb
 
@@ -181,12 +181,16 @@ case "$i" in
       zabbly)
         echo "===> Installing the current zabbly kernel"
 
+        apt-get update
+        apt-get install --no-install-recommends --yes curl
         curl -sL https://pkgs.zabbly.com/get/kernel-stable | sh
       ;;
 
       zabbly-zfs)
         echo "===> Installing the current zabbly kernel"
 
+        apt-get update
+        apt-get install --no-install-recommends --yes curl
         curl -sL https://pkgs.zabbly.com/get/zfs-stable | sh
       ;;
 
