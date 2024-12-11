@@ -33,45 +33,42 @@ echo "==> Launching a test container"
 incus launch images:debian/12 c1
 sleep 10
 
-echo "==> Installing yubikey tools"
-incus exec c1 -- apt-get install --no-install-recommends --yes yubikey-manager
-
 echo "==> Validating as non-working"
-! incus exec c1 -- ykman info || false
+! incus exec c1 -- stat /dev/bus/usb/
 
 echo "==> Passing all USB devices and validating"
 incus config device add c1 usb usb
-incus exec c1 ykman info
+[ "$(incus exec c1 -- find /dev/bus/usb/ -type f | wc -l)" = "$(find /dev/bus/usb/ -type c | wc -l)" ]
 
 echo "==> Removing all devices"
 incus config device remove c1 usb
-! incus exec c1 ykman info || false
+[ "$(incus exec c1 -- find /dev/bus/usb/ -type f | wc -l)" = "0" ]
 
 echo "==> Passing the specific vendor"
 incus config device add c1 usb usb vendorid=1050
-incus exec c1 ykman info
+[ "$(incus exec c1 -- find /dev/bus/usb/ -type f | wc -l)" = "1" ]
 incus config device remove c1 usb
 
 echo "==> Passing the specific vendor and product"
 incus config device add c1 usb usb vendorid=1050 productid=0010
-incus exec c1 ykman info
+[ "$(incus exec c1 -- find /dev/bus/usb/ -type f | wc -l)" = "1" ]
 incus config device remove c1 usb
 
 echo "==> Passing the wrong vendor"
 incus config device add c1 usb usb vendorid=1051
-! incus exec c1 ykman info || false
+[ "$(incus exec c1 -- find /dev/bus/usb/ -type f | wc -l)" = "0" ]
 incus config device remove c1 usb
 
 echo "==> Passing the wrong product"
 incus config device add c1 usb usb vendorid=1050 productid=0011
-! incus exec c1 ykman info || false
+[ "$(incus exec c1 -- find /dev/bus/usb/ -type f | wc -l)" = "0" ]
 incus config device remove c1 usb
 
 echo "==> Validating working scenario with specific device after reboot"
 incus config device add c1 usb usb vendorid=1050 productid=0010
-incus exec c1 ykman info
+[ "$(incus exec c1 -- find /dev/bus/usb/ -type f | wc -l)" = "1" ]
 incus restart c1
-incus exec c1 ykman info
+[ "$(incus exec c1 -- find /dev/bus/usb/ -type f | wc -l)" = "1" ]
 incus config device remove c1 usb
 
 FAIL=0
