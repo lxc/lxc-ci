@@ -17,7 +17,7 @@ trap cleanup EXIT HUP INT TERM
 
 # Setup a swap file if needed
 if [ "$(wc -l < /proc/swaps)" = "1" ]; then
-    fallocate -l 1G /SWAP.img
+    fallocate -l 4G /SWAP.img
     chmod 600 /SWAP.img
     mkswap /SWAP.img
     swapon /SWAP.img
