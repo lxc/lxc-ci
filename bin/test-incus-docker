@@ -8,7 +8,7 @@ cleanup() {
 trap cleanup EXIT HUP INT TERM
 
 # Create the container
-incus launch images:ubuntu/jammy "${CNAME}" -c security.nesting=true "$@"
+incus launch images:debian/12 "${CNAME}" -c security.nesting=true "$@"
 
 (
 cat << EOF

@@ -117,21 +117,21 @@ incus profile device add default eth0 nic nictype=sriov parent="${parentNIC}" na
 # Launch a few VMs.
 # Do this first before containers to ensure VF free search handles VFs unbound from host.
 echo "==> VM on default VLAN"
-incus init images:ubuntu/20.04/cloud v1 --vm
+incus init images:debian/12 v1 --vm
 incus start v1
 
 echo "==> VM on default VLAN with filtering"
-incus init images:ubuntu/20.04/cloud v2 --vm
+incus init images:debian/12 v2 --vm
 incus config device override v2 eth0 security.mac_filtering=true
 incus start v2
 
 echo "==> VM on alternate VLAN"
-incus init images:ubuntu/20.04/cloud v3 --vm
+incus init images:debian/12 v3 --vm
 incus config device override v3 eth0 vlan=4000
 incus start v3
 
 echo "==> VM on alternate VLAN with filtering"
-incus init images:ubuntu/20.04/cloud v4 --vm
+incus init images:debian/12 v4 --vm
 incus config device override v4 eth0 vlan=4000 security.mac_filtering=true
 incus start v4
 
@@ -150,21 +150,21 @@ incus delete -f v2 v3 v4
 
 # Launch a few containers.
 echo "==> Container on default VLAN"
-incus init images:ubuntu/20.04/cloud c1
+incus init images:debian/12 c1
 incus start c1
 
 echo "==> Container on default VLAN with filtering"
-incus init images:ubuntu/20.04/cloud c2
+incus init images:debian/12 c2
 incus config device override c2 eth0 security.mac_filtering=true
 incus start c2
 
 echo "==> Container on alternate VLAN"
-incus init images:ubuntu/20.04/cloud c3
+incus init images:debian/12 c3
 incus config device override c3 eth0 vlan=4000
 incus start c3
 
 echo "==> Container on alternate VLAN with filtering"
-incus init images:ubuntu/20.04/cloud c4
+incus init images:debian/12 c4
 incus config device override c4 eth0 vlan=4000 security.mac_filtering=true
 incus start c4
 

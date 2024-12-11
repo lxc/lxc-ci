@@ -46,7 +46,7 @@ modprobe br_netfilter
 ip link add incbr0unmanaged type bridge
 
 firewallTests() {
-    incus launch images:ubuntu/focal c1
+    incus launch images:debian/12 c1
     sleep 10
 
     managed=0

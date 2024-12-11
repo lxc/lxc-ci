@@ -36,7 +36,7 @@ set -x
 
 # Start a container with no limits
 echo "=> Start a container with no limits"
-incus launch images:ubuntu/22.04 c1
+incus launch images:debian/12 c1
 
 echo "==> Validate default values"
 [ "$(incus exec c1 -- nproc)" = "$(nproc)" ]

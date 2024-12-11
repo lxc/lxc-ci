@@ -65,8 +65,8 @@ do
 	fi
 
 	echo "==> Create VM"
-	incus init images:ubuntu/20.04 v1 --vm -s "${poolName}"
-	incus init images:ubuntu/20.04 v2 --vm -s "${poolName}"
+	incus init images:debian/12 v1 --vm -s "${poolName}"
+	incus init images:debian/12 v2 --vm -s "${poolName}"
 
 	echo "==> Create custom block volume and attach it to VM"
 	incus storage volume create "${poolName}" vol1 --type=block size=10MB

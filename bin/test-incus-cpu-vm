@@ -50,13 +50,12 @@ incus network create incusbr0
 incus profile device add default eth0 nic network=incusbr0
 
 poolName="vmpool$$"
-poolDriver=dir
 
-echo "==> Create storage pool using driver ${poolDriver}"
-incus storage create "${poolName}" "${poolDriver}"
+echo "==> Create storage pool"
+incus storage create "${poolName}" dir
 
 echo "==> Create ephemeral VM and boot"
-incus launch images:ubuntu/22.04 v1 --vm -s "${poolName}" --ephemeral
+incus launch images:debian/12 v1 --vm -s "${poolName}" --ephemeral
 waitVMAgent v1
 incus info v1
 

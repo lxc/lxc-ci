@@ -76,7 +76,7 @@ incus profile device add default eth0 nic network=incusbr0
 incus profile show default
 
 # Create instance and add check relative source paths are not allowed.
-incus init images:ubuntu/20.04 v1 --vm
+incus init images:debian/12 v1 --vm
 ! incus config device add v1 d1 disk source=foo path=/mnt || false
 
 # Check adding a disk with a source path above the restricted parent source path isn't allowed.

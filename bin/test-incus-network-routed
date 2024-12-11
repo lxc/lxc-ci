@@ -41,7 +41,7 @@ ip addr add 192.0.2.1/32 dev dummy0
 ip addr add 2001:db8::1/128 dev dummy0
 
 # Create VM and add routed NIC.
-incus init images:ubuntu/focal v1 --vm -s default
+incus init images:debian/12 v1 --vm -s default
 incus config device add v1 eth0 nic \
     nictype=routed \
     parent=dummy0 \

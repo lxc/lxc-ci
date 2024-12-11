@@ -71,34 +71,34 @@ EOF
 
 # Launch instances with physical NICs
 echo "==> VM on default VLAN with physical"
-incus init images:ubuntu/22.04/cloud v1-physical --vm -c limits.cpu=3
+incus init images:debian/12 v1-physical --vm -c limits.cpu=3
 incus config device add v1-physical eth0 nic nictype=physical parent="${parentNIC}v1" name=eth0
 incus start v1-physical
 
 echo "==> Container on default VLAN with physical"
-incus init images:ubuntu/22.04/cloud c1-physical
+incus init images:debian/12 c1-physical
 incus config device add c1-physical eth0 nic nictype=physical parent="${parentNIC}v2" name=eth0
 incus start c1-physical
 
 # Launch instances with macvlan NICs
 echo "==> VM on default VLAN with macvlan"
-incus init images:ubuntu/22.04/cloud v1-macvlan --vm -c limits.cpu=3
+incus init images:debian/12 v1-macvlan --vm -c limits.cpu=3
 incus config device add v1-macvlan eth0 nic nictype=macvlan parent="${parentNIC}" name=eth0
 incus start v1-macvlan
 
 echo "==> Container on default VLAN with macvlan"
-incus init images:ubuntu/22.04/cloud c1-macvlan
+incus init images:debian/12 c1-macvlan
 incus config device add c1-macvlan eth0 nic nictype=macvlan parent="${parentNIC}" name=eth0
 incus start c1-macvlan
 
 # Launch instances with sriov NICs
 echo "==> VM on default VLAN with sriov"
-incus init images:ubuntu/22.04/cloud v1-sriov --vm -c limits.cpu=3
+incus init images:debian/12 v1-sriov --vm -c limits.cpu=3
 incus config device add v1-sriov eth0 nic nictype=sriov parent="${parentNIC}" name=eth0
 incus start v1-sriov
 
 echo "==> Container on default VLAN with sriov"
-incus init images:ubuntu/22.04/cloud c1-sriov
+incus init images:debian/12 c1-sriov
 incus config device add c1-sriov eth0 nic nictype=sriov parent="${parentNIC}" name=eth0
 incus start c1-sriov
 

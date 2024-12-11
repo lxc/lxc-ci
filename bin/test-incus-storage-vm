@@ -65,7 +65,7 @@ do
         fi
 
         echo "==> Create VM and boot"
-        incus init images:ubuntu/24.04/cloud v1 --vm -s "${poolName}"
+        incus init images:debian/12 v1 --vm -s "${poolName}"
         incus start v1
         waitVMAgent v1
         incus info v1
@@ -235,7 +235,7 @@ do
         truncate -s 5m "/tmp/incus-test-${poolName}/incus-test-block"
 
         echo "==> Checking disk device hotplug support"
-        incus launch images:ubuntu/24.04/cloud v1 --vm -s "${poolName}"
+        incus launch images:debian/12 v1 --vm -s "${poolName}"
         waitVMAgent v1
 
         # Hotplug disks
@@ -277,7 +277,7 @@ do
 
         echo "==> Change volume.size on pool and create VM"
         incus storage set "${poolName}" volume.size 6GiB
-        incus init images:ubuntu/24.04/cloud v1 --vm -s "${poolName}"
+        incus init images:debian/12 v1 --vm -s "${poolName}"
         incus start v1
         waitVMAgent v1
         incus info v1
@@ -292,7 +292,7 @@ do
         if [ "${poolDriver}" = "lvm" ]; then
                 echo "==> Change volume.block.filesystem on pool and create VM"
                 incus storage set "${poolName}" volume.block.filesystem xfs
-                incus init images:ubuntu/24.04/cloud v1 --vm -s "${poolName}"
+                incus init images:debian/12 v1 --vm -s "${poolName}"
                 incus start v1
                 waitVMAgent v1
                 incus info v1
@@ -308,7 +308,7 @@ do
         echo "==> Create VM from profile with small disk size"
         incus profile copy default vmsmall
         incus profile device add vmsmall root disk pool="${poolName}" path=/ size=7GiB
-        incus init images:ubuntu/24.04/cloud v1 --vm -p vmsmall
+        incus init images:debian/12 v1 --vm -p vmsmall
         incus start v1
         waitVMAgent v1
         incus info v1
@@ -398,7 +398,7 @@ do
         incus profile delete vmsmall
 
         echo "==> Checking VM Generation UUID with QEMU"
-        incus init images:ubuntu/24.04/cloud v1 --vm -s "${poolName}"
+        incus init images:debian/12 v1 --vm -s "${poolName}"
         incus start v1
         waitVMAgent v1
         incus info v1
