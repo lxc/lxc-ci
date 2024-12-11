@@ -26,7 +26,7 @@
     - shell: |-
         set -e
         cd /lxc-ci
-        sudo -E /lxc-ci/bin/incus-run images:ubuntu/24.04/amd64 default bin/test-incus-storage-buckets "${backend}"
+        sudo -E /lxc-ci/bin/incus-run images:debian/12 default bin/test-incus-storage-buckets "${backend}"
 
     properties:
     - build-discarder:
