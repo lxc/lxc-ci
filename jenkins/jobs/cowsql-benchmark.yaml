@@ -8,7 +8,7 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        exec /lxc-ci/bin/maas-run name=lantea jammy ga-22.04 isolcpus,zabbly bin/test-cowsql-benchmark
+        exec /lxc-ci/bin/maas-run name=lantea noble ga-24.04 isolcpus,zabbly bin/test-cowsql-benchmark
 
     properties:
     - build-discarder:
