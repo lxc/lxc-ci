@@ -18,7 +18,7 @@ trap cleanup EXIT HUP INT TERM
 
 # Install test dependencies
 apt-get remove --purge cloud-init --yes
-apt-get install --yes curl genisoimage
+apt-get install --yes curl genisoimage btrfs-progs lvm2
 
 # Install ZFS
 if echo "${poolDriverList}" | grep -q zfs; then
