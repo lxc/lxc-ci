@@ -51,7 +51,7 @@ incus start v1
 sleep 1m
 
 # Configure NIC in VM manually.
-incus exec v1 -- rm /etc/systemd/network/eth0.network
+incus exec v1 -- rm /etc/systemd/network/enp5s0.network
 incus exec v1 -- systemctl restart systemd-networkd
 incus exec v1 -- systemctl mask systemd-networkd
 incus exec v1 -- systemctl stop systemd-networkd
