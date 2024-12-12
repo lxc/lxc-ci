@@ -1202,9 +1202,8 @@ ovn_peering_tests() {
     # Check that the security policies prevent those ICMP packets from reaching ovn2 instance.
     # Disable DHCP client and SLAAC acceptance so we don't get automatic IPs added.
     incus exec ovn1 --project=ovn1 -- rm /etc/systemd/network/eth0.network
-    incus exec ovn1 --project=ovn1 -- systemctl restart systemd-networkd
-    incus exec ovn1 --project=ovn1 -- systemctl mask systemd-networkd
     incus exec ovn1 --project=ovn1 -- systemctl stop systemd-networkd
+    incus exec ovn1 --project=ovn1 -- systemctl mask systemd-networkd
     incus exec ovn1 --project=ovn1 -- sysctl net.ipv6.conf.eth0.accept_ra=0
     incus exec ovn1 --project=ovn1 -- sysctl net.ipv6.conf.eth0.autoconf=0
     incus exec ovn1 --project=ovn1 -- ip a flush dev eth0
@@ -1213,8 +1212,10 @@ ovn_peering_tests() {
     incus exec ovn1 --project=ovn1 -- ip a
     sleep 2
     incus exec ovn1 --project=ovn1 -- ip -4 r add "${ovn1NetIPv4}" dev eth0
+    incus exec ovn1 --project=ovn1 -- ip -4 r del default || true
     incus exec ovn1 --project=ovn1 -- ip -4 r add default via "${ovn1NetIPv4}" dev eth0 src 198.51.100.3
     incus exec ovn1 --project=ovn1 -- ip -6 r add "${ovn1NetIPv6}" dev eth0
+    incus exec ovn1 --project=ovn1 -- ip -6 r del default || true
     incus exec ovn1 --project=ovn1 -- ip -6 r add default via "${ovn1NetIPv6}" dev eth0 src 2001:db8:1:2::3
     incus exec ovn1 --project=ovn1 -- ip -4 r
     incus exec ovn1 --project=ovn1 -- ip -6 r
