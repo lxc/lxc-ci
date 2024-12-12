@@ -30,7 +30,7 @@ set -x
 
 incus launch images:debian/12 c1
 sleep 10
-incus exec c1 -- apt-get install --no-install-recommends --yes attr fuse2fs
+incus exec c1 -- apt-get install --no-install-recommends --yes attr fuse2fs fuse
 
 ## setxattr
 incus exec c1 -- touch xattr-test
