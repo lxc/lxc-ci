@@ -1201,8 +1201,8 @@ ovn_peering_tests() {
     # Now reconfigure ovn1's IP address inside the instance to an unknown IP and try pinging ovn2.
     # Check that the security policies prevent those ICMP packets from reaching ovn2 instance.
     # Disable DHCP client and SLAAC acceptance so we don't get automatic IPs added.
-    incus exec ovn1 --project=ovn1 -- rm -fr /etc/netplan
-    incus exec ovn1 --project=ovn1 -- netplan apply
+    incus exec ovn1 --project=ovn1 -- rm /etc/systemd/network/eth0.network
+    incus exec ovn1 --project=ovn1 -- systemctl restart systemd-networkd
     incus exec ovn1 --project=ovn1 -- systemctl mask systemd-networkd
     incus exec ovn1 --project=ovn1 -- systemctl stop systemd-networkd
     incus exec ovn1 --project=ovn1 -- sysctl net.ipv6.conf.eth0.accept_ra=0

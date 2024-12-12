@@ -59,8 +59,8 @@ firewallTests() {
     fi
 
     # Disable DHCP client and SLAAC acceptance so we don't get automatic IPs added.
-    incus exec c1 -- rm -fr /etc/netplan
-    incus exec c1 -- netplan apply
+    incus exec c1 -- rm /etc/systemd/network/eth0.network
+    incus exec c1 -- systemctl restart systemd-networkd
     incus exec c1 -- sysctl net.ipv6.conf.eth0.accept_ra=0
 
     echo "=> Performing faked source IP ping tests without filtering"
