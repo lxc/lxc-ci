@@ -204,7 +204,7 @@ do
         ## Mount the readonly disk as rw inside VM using 9p and check the disk is still readonly at the Incus layer.
         incus exec v1 -- mkdir /srv/ro9p
         incus exec v1 -- mount -t 9p incus_dir1ro /srv/ro9p
-        incus exec v1 -- mount | grep 'incus_dir1ro on /srv/ro9p type 9p (rw,relatime,access=client,trans=virtio)'
+        incus exec v1 -- mount | grep 'incus_dir1ro on /srv/ro9p type 9p (rw,sync,dirsync,relatime,access=client,trans=virtio)'
         ! incus exec v1 -- touch /srv/ro9p/incus-test-ro || false
         ! incus exec v1 -- mkdir /srv/ro9p/incus-test-ro || false
         ! incus exec v1 -- rm /srv/ro9p/incus-test.txt || false
