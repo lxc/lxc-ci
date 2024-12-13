@@ -26,6 +26,9 @@ curl -sL https://pkgs.zabbly.com/get/incus-daily | sh
 incus admin init --auto
 
 if [ "${1}" = "nvidia" ]; then
+    # Reduce power draw
+    nvidia-smi -q -d POWER
+
     # Enable SR-IOV
     /usr/lib/nvidia/sriov-manage -e ALL
 
@@ -63,7 +66,10 @@ incus list
 if [ "${1}" = "nvidia" ]; then
     # Validate NVIDIA vGPU
     incus exec v4 -- apt-get update
+    incus exec v4 -- apt-get dist-upgrade --yes
     incus exec v4 -- apt-get install --no-install-recommends --yes build-essential wget pciutils linux-headers-virtual
+    incus restart v4
+    sleep 30
     incus exec v4 -- wget -6 http://lab.linuxcontainers.org/nvidia/v14.0/nvidia-guest.deb
     incus exec v4 -- apt-get install --yes /root/nvidia-guest.deb
     incus exec v4 -- nvidia-smi
