@@ -21,9 +21,7 @@ apt-get remove --purge cloud-init --yes
 apt-get install --yes curl genisoimage btrfs-progs lvm2
 
 # Install ZFS
-if echo "${poolDriverList}" | grep -q zfs; then
-    curl -sL https://pkgs.zabbly.com/get/zfs-stable | sh
-fi
+curl -sL https://pkgs.zabbly.com/get/zfs-stable | sh
 
 # Install Incus
 curl -sL https://pkgs.zabbly.com/get/incus-daily | sh
