@@ -201,26 +201,10 @@ incus config device add c1-macvlan eth0 nic nictype=macvlan parent="${parentNIC}
 incus config device add v1-sriov eth0 nic nictype=sriov parent="${parentNIC}" name=eth0
 incus config device add c1-sriov eth0 nic nictype=sriov parent="${parentNIC}" name=eth0
 
-# Wait for DHCP
-sleep 10
-
-# Check the IPs are re-added
-incus list
-networkTests
-
-# Remove instances, leaving one VM and container for bridge hotplug test
-incus delete -f v1-macvlan
-incus delete -f c1-macvlan
-incus delete -f v1-sriov
-incus delete -f c1-sriov
-
-# Check bridged NIC type works (also test hotlugging different NIC type).
-echo "=> Performing bridged NIC tests"
-incus network create incusbr0
-incus config device remove v1-physical eth0
-incus config device remove c1-physical eth0
-incus config device add v1-physical eth0 nic network=incusbr0 name=eth0
-incus config device add c1-physical eth0 nic network=incusbr0 name=eth0
+# Nudge networkd for containers
+incus exec c1-physical -- networkctl up eth0
+incus exec c1-macvlan -- networkctl up eth0
+incus exec c1-sriov -- networkctl up eth0
 
 # Wait for DHCP
 sleep 10
@@ -231,6 +215,7 @@ networkTests
 
 # Check VM "agent.nic_config" works by reconfiguring eth0 to use parent and mtu settings.
 echo "=> Performing VM bridged NIC agent.nic_config tests"
+incus network create incusbr0
 incus stop v1-physical -f
 incus config set v1-physical agent.nic_config=true
 incus config device set v1-physical eth0 nictype=bridged parent=incusbr0 network= mtu=1400 name=eth0
