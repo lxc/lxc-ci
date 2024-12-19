@@ -47,7 +47,7 @@
         fi
 
         if [ "${platform}" = "intel" ] && [ "${target}" = "vm" ]; then
-            exec /lxc-ci/bin/maas-run name=nuc03 noble ga-24.04 zabbly,intel-vgpu bin/test-incus-gpu-vm intel
+            exec /lxc-ci/bin/maas-run name=nuc03 noble ga-24.04 intel-vgpu bin/test-incus-gpu-vm intel
         fi
 
     execution-strategy:
