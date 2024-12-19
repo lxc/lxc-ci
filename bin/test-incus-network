@@ -201,11 +201,6 @@ incus config device add c1-macvlan eth0 nic nictype=macvlan parent="${parentNIC}
 incus config device add v1-sriov eth0 nic nictype=sriov parent="${parentNIC}" name=eth0
 incus config device add c1-sriov eth0 nic nictype=sriov parent="${parentNIC}" name=eth0
 
-# For the containers, restart systemd-networkd
-incus exec c1-physical -- systemctl restart systemd-networkd
-incus exec c1-macvlan -- systemctl restart systemd-networkd
-incus exec c1-sriov -- systemctl restart systemd-networkd
-
 # Wait for DHCP
 sleep 10
 
