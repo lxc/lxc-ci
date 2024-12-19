@@ -19,7 +19,6 @@
         type: user-defined
         values:
         - distrobuilder-image
-        - lxc-image
 
     - axis:
         name: variant
@@ -33,16 +32,11 @@
         values:
         - vm
 
-    execution-strategy:
-      combination-filter: '!(artifact == "lxc-image" && architecture == "armhf")'
-
     builders:
     - shell: |-
         cd /lxc-ci
         if [ "${artifact}" = "distrobuilder-image" ]; then
             exec sudo /lxc-ci/bin/build-image-distrobuilder ${architecture} ${WORKSPACE}
-        elif [ "${artifact}" = "lxc-image" ]; then
-            exec sudo /lxc-ci/bin/build-image-lxc ${architecture} ${WORKSPACE}
         else
             echo "Bad artifact"
             exit 1
