@@ -594,6 +594,7 @@ ovn_basic_tests() {
     # Remove external SNAT address and check normal SNAT operation returns connectivity.
     incus network unset ovn-virtual-network ipv4.nat.address
     incus network unset ovn-virtual-network ipv6.nat.address
+    incus exec u1 -- networkctl up eth0
     sleep 2
     incus exec u1 -- ping -c1 -w5 192.0.2.1
     incus exec u1 -- ping -c1 -w5 2001:db8:1:1::1
