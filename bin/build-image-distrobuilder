@@ -10,6 +10,7 @@ trap cleanup EXIT HUP INT TERM
 ARCH="$1"
 TARGET="$2"
 DISTRO="bookworm"
+[ "$(uname -m)" = "riscv64" ] && DISTRO="trixie"
 
 # Create the container
 incus init "images:debian/${DISTRO}/${ARCH}" build-distrobuilder-cache \
