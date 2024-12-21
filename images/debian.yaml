@@ -1156,13 +1156,6 @@ packages:
   cleanup: true
   sets:
   - packages:
-    - debian-ports-archive-keyring
-    action: install
-    early: true
-    architectures:
-    - riscv64
-
-  - packages:
     - dialog
     - init
     - iproute2
@@ -1299,19 +1292,6 @@ packages:
       {% if image.release != "sid" %}deb http://deb.debian.org/debian {{ image.release }}-updates main{% endif %}
       {% if image.release != "sid" and image.release != "buster" %}deb http://deb.debian.org/debian-security/ {{ image.release }}-security main{% endif %}
       {% if image.release == "buster" %}deb http://deb.debian.org/debian-security/ {{ image.release }}/updates main{% endif %}
-    architectures:
-    - amd64
-    - arm64
-    - armel
-    - armhf
-    - i386
-    - ppc64el
-    - s390x
-  - name: sources.list
-    url: |-
-      deb http://deb.debian.org/debian sid main
-    architectures:
-    - riscv64
 
 actions:
 - trigger: post-unpack
