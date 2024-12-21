@@ -4,7 +4,7 @@ if [ "${1:-}" = "force" ]; then
     if incus info >/dev/null 2>&1; then
         incus list -cn -f csv | grep -v ^cache- | xargs -r incus delete -f
         incus image list -cF -fcsv | xargs -r  incus image delete
-        incus admin sql global "DELETE FROM storage_volumes WHERE name NOT LIKE 'cache-%'"
+        incus admin sql global "DELETE FROM storage_volumes WHERE name NOT LIKE 'cache-%' AND name NOT IN ('images', 'backups')"
         rm -Rf /var/log/incus/*
 
         for i in $(zfs list -o name -r default/containers | grep containers/ | grep -v containers/cache-); do zfs destroy -R "$i"; done
