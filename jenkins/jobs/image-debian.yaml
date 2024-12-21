@@ -13,6 +13,7 @@
         - amd64
         - arm64
         - armhf
+        - riscv64
 
     - axis:
         name: release
@@ -20,7 +21,6 @@
         values:
         - buster
         - bullseye
-#        - sid
         - bookworm
         - trixie
 
@@ -48,7 +48,7 @@
             -o source.url="http://ftp.us.debian.org/debian"
 
     execution-strategy:
-      combination-filter: '!(architecture == "armhf" && release == "trixie")'
+      combination-filter: '!(architecture == "armhf" && release == "trixie") && !(architecture == "riscv64" && release != "trixie")'
 
     properties:
     - build-discarder:
