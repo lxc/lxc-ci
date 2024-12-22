@@ -100,8 +100,12 @@ apt-get install --yes --no-install-recommends \
     unzip \
     xz-utils \
     zstd
-apt-get install --yes --no-install-recommends -t ${DISTRO}-backports \
-    debootstrap
+if [ "${DISTRO}" = "bookworm" ]; then
+    apt-get install --yes --no-install-recommends -t ${DISTRO}-backports \
+        debootstrap
+else
+    apt-get install --yes --no-install-recommends debootstrap
+fi
 apt-get clean
 
 # Install distrobuilder
