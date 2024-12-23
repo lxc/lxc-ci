@@ -13,6 +13,7 @@
         - amd64
         - arm64
         - armhf
+        - riscv64
 
     - axis:
         name: release
@@ -54,10 +55,7 @@
             -o image.variant=${variant} -o source.url=${ARCHIVE}
 
     execution-strategy:
-      combination-filter: '
-      !(architecture!="amd64" && variant == "desktop") &&
-      !(release=="xenial" && variant == "desktop") &&
-      !(release=="bionic" && variant == "desktop")'
+      combination-filter: '!(architecture!="amd64" && variant == "desktop")'
 
     properties:
     - build-discarder:
