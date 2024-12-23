@@ -13,6 +13,7 @@
         - amd64
         - arm64
         - armhf
+        - riscv64
 
     - axis:
         name: release
@@ -55,6 +56,9 @@
             ${INCUS_ARCHITECTURE} ${TYPE} 600 ${WORKSPACE} \
             -o image.architecture=${ARCH} -o image.release=${release} \
             -o image.variant=${variant} ${EXTRA_ARGS}
+
+    execution-strategy:
+      combination-filter: '!(architecture == "riscv64" && release == "3.18") && !(architecture == "riscv64" && release == "3.19")'
 
     properties:
     - build-discarder:
