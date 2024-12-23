@@ -13,6 +13,7 @@
         - amd64
         - arm64
         - armhf
+        - riscv64
 
     builders:
     - shell: |-
