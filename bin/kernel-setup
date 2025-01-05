@@ -114,7 +114,7 @@ case "$i" in
         apt-get update
         apt-get dist-upgrade --yes
         apt-get install --no-install-recommends --yes dkms
-        git clone https://github.com/bbaa-bbaa/i915-sriov-dkms
+        git clone https://github.com/strongtz/i915-sriov-dkms
 
         cd i915-sriov-dkms
         dkms add .
