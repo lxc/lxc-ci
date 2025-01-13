@@ -326,6 +326,9 @@ files:
         option ifname 'eth0'
         option proto 'dhcpv6'
 
+    config globals 'globals'
+        option ula_prefix 'auto'
+
 packages:
   manager: opkg
   update: false
