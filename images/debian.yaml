@@ -1288,10 +1288,10 @@ packages:
   repositories:
   - name: sources.list
     url: |-
-      deb http://deb.debian.org/debian {{ image.release }} main
-      {% if image.release != "sid" %}deb http://deb.debian.org/debian {{ image.release }}-updates main{% endif %}
-      {% if image.release != "sid" and image.release != "buster" %}deb http://deb.debian.org/debian-security/ {{ image.release }}-security main{% endif %}
-      {% if image.release == "buster" %}deb http://deb.debian.org/debian-security/ {{ image.release }}/updates main{% endif %}
+      deb http://deb.debian.org/debian {{ image.release }} main contrib
+      {% if image.release != "sid" %}deb http://deb.debian.org/debian {{ image.release }}-updates main contrib{% endif %}
+      {% if image.release != "sid" and image.release != "buster" %}deb http://deb.debian.org/debian-security/ {{ image.release }}-security main contrib{% endif %}
+      {% if image.release == "buster" %}deb http://deb.debian.org/debian-security/ {{ image.release }}/updates main contrib{% endif %}
 
 actions:
 - trigger: post-unpack
