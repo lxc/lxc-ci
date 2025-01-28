@@ -225,10 +225,6 @@ actions:
     set -eux
 
     apt-get update
-    apt-get install usrmerge-hier-convert --yes
-
-  releases:
-   - Sisyphus
 
 - trigger: post-packages
   action: |-
