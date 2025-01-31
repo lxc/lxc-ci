@@ -95,8 +95,24 @@ files:
 
     [DHCP]
     ClientIdentifier=mac
+  types:
+  - container
   variants:
   - default
+
+- path: /etc/systemd/network/enp5s0.network
+  generator: dump
+  content: |-
+    [Match]
+    Name=enp5s0
+
+    [Network]
+    DHCP=ipv4
+
+    [DHCP]
+    ClientIdentifier=mac
+  types:
+  - vm
 
 - path: /etc/fstab
   generator: dump
@@ -121,6 +137,34 @@ files:
   variants:
   - cloud
 
+- name: fstab
+  generator: fstab
+  types:
+  - vm
+
+- name: incus-agent
+  generator: incus-agent
+  types:
+  - vm
+
+- path: /etc/sysconfig/grub2
+  generator: dump
+  content: |-
+    GRUB_RECORDFAIL_TIMEOUT=0
+    GRUB_TIMEOUT=0
+    GRUB_CMDLINE_LINUX_DEFAULT="${GRUB_CMDLINE_LINUX_DEFAULT} console=tty1 console=ttyS0"
+    GRUB_TERMINAL_OUTPUT='console'
+    GRUB_TERMINAL=console
+  types:
+  - vm
+
+- path: /etc/dracut.conf.d/incus.conf
+  generator: dump
+  content: |-
+    add_drivers+=" virtio_scsi virtio_pci sd_mod virtio_blk "
+  types:
+  - vm
+
 packages:
   manager: apt
   update: true
@@ -139,6 +183,34 @@ packages:
     variants:
     - cloud
 
+  - packages:
+    - grub-efi
+    action: install
+    architectures:
+    - aarch64
+    - i586
+    types:
+    - vm
+
+  - packages:
+    - grub-efi
+    - shim-signed
+    action: install
+    architectures:
+    - x86_64
+    types:
+    - vm
+
+  - packages:
+    - kernel-image-6.12
+    - dracut
+    - os-prober
+    - cloud-utils
+    - systemd
+    action: install
+    types:
+    - vm
+
 actions:
 - trigger: post-unpack
   action: |-
@@ -153,10 +225,6 @@ actions:
     set -eux
 
     apt-get update
-    apt-get install usrmerge-hier-convert --yes
-
-  releases:
-   - Sisyphus
 
 - trigger: post-packages
   action: |-
@@ -178,6 +246,57 @@ actions:
     rm -f /etc/cloud/cloud.cfg.d/01_network-manager.cfg
   variants:
   - cloud
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    #Change the "ALT Container" string as it is going to be a VM
+    sed -i "s/ALT Container/ALT VM/g" /etc/os-release
+
+    # Get kernel version
+    package=$(rpm -qa --queryformat '%{NAME}-%{VERSION}-%{RELEASE}' 'kernel-image*')
+    kernel_version=$(echo "$package" | sed 's/^[^-]*-[^-]*-\(.*\)-\(.*\)-\(.*\)/\2-\1-\3/')
+
+    # Create initramfs
+    dracut --kver "$kernel_version" -f
+
+    TARGET="x86_64"
+    [ "$(uname -m)" = "aarch64" ] && TARGET="arm64"
+
+    # Install GRUB
+    grub-install --uefi-secure-boot --efi-directory=/boot/efi --target="${TARGET}-efi" --bootloader-id=BOOT --removable
+    grub-mkconfig -o /boot/grub/grub.cfg
+
+    # Change UUID of root to GRUB config
+    sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_UUID}#g" /boot/grub/grub.cfg
+    update-grub
+  types:
+  - vm
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Automatic disk resize
+    cat << EOF > /etc/systemd/system/incus-growpart.service
+    [Unit]
+    Description=Incus - grow root partition
+
+    [Service]
+    Type=oneshot
+    ExecStartPre=-/usr/bin/growpart /dev/sda 2
+    ExecStart=/sbin/resize2fs /dev/sda2
+
+    [Install]
+    WantedBy=default.target
+    EOF
+
+    systemctl enable incus-growpart
+  types:
+  - vm
 
 mappings:
   architecture_map: altlinux
