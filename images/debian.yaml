@@ -1222,7 +1222,7 @@ packages:
     - bullseye
 
   - packages:
-    - polkit
+    - polkitd
     action: install
     architectures:
     - amd64
