@@ -547,8 +547,11 @@ actions:
 
     echo "root=${DISTROBUILDER_ROOT_UUID}" >> /etc/kernel/cmdline
 
+    mkdir -p /etc/dracut.conf.d/
+
     echo "sys-apps/systemd kernel-install" >> /etc/portage/package.use/systemd
     echo "sys-kernel/installkernel dracut systemd systemd-boot" >> /etc/portage/package.use/installkernel
+    echo "hostonly=no" >> /etc/dracut.conf.d/95-no-hostonly.conf
     emerge gentoo-kernel-bin
 
     rm -f /etc/machine-id /var/lib/dbus/machine-id
@@ -561,7 +564,9 @@ actions:
 - trigger: post-files
   action: |-
     #!/bin/sh
+    mkdir -p /etc/dracut.conf.d/
     echo "sys-kernel/installkernel dracut grub" >> /etc/portage/package.use/installkernel
+    echo "hostonly=no" >> /etc/dracut.conf.d/95-no-hostonly.conf
     emerge gentoo-kernel-bin
 
   types:
