@@ -18,9 +18,9 @@
         type: user-defined
         values:
         - snapshot
-        - "21.02"
         - "22.03"
         - "23.05"
+        - "24.10"
 
     - axis:
         name: variant
