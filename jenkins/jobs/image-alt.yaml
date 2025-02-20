@@ -19,7 +19,6 @@
         values:
         - Sisyphus
         - p11
-        - p10
 
     - axis:
         name: variant
