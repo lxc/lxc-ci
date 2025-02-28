@@ -114,7 +114,7 @@ incus config device set v1 d1 source="${testRoot}/allowed1/not-allowed2"
 incus config device set v1 d1 source="${testRoot}/allowed1/foolink" path=/mnt/foolink
 incus start v1
 waitVMAgent v1
-[ "$(incus exec v1 --project restricted  -- stat /mnt/foolink -c '%u:%g')" = "65534:65534" ] || false
+[ "$(incus exec v1 --project restricted  -- stat /mnt/foolink -c '%u:%g')" = "1000:1000" ] || false
 incus stop -f v1
 
 # Check usage of raw.idmap is restricted.
@@ -139,7 +139,9 @@ incus config device set v1 d1 source="${testRoot}/allowed1" path=/mnt
 incus start v1 || (incus info --show-log c1 ; false)
 waitVMAgent v1
 [ "$(incus exec v1 --project restricted  -- stat /mnt/foo1 -c '%u:%g')" = "1000:1000" ] || false
-[ "$(incus exec v1 --project restricted  -- stat /mnt/foo2 -c '%u:%g')" = "65534:65534" ] || false
+[ "$(incus exec v1 --project restricted  -- stat /mnt/foo2 -c '%u:%g')" = "1001:1001" ] || false
+incus exec v1 --project restricted -- chown 1000:1000 /mnt/foo2
+! incus exec v1 --project restricted -- chown 1001:1001 /mnt/foo2 || false
 
 # Check security.secureboot setting is applied to running VM at next start up.
 incus exec v1 -- mokutil --sb-state | grep -Fx "SecureBoot enabled"
