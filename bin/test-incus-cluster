@@ -1,0 +1,63 @@
+#!/bin/sh
+set -eu
+TESTDIR="$(pwd)/cluster-test/"
+
+# Load configuration
+. /lxc-ci/etc/config
+export TF_VAR_maas_key="${MAAS_API}"
+
+# Create temporary storage
+TEMPDIR=$(mktemp -d)
+
+cleanup() {
+    rm -Rf "${TEMPDIR}"
+    cd "${TESTDIR}/terraform"
+    tofu destroy -auto-approve
+}
+
+trap cleanup EXIT HUP INT TERM
+
+# Start tracing commands
+set -x
+
+# Deploy the base OS
+cd "${TESTDIR}/terraform"
+tofu init
+tofu apply -auto-approve
+
+# Get the addresses
+ASURAS_IPV4="$(tofu output -json addresses | jq -r .asuras[0])"
+ASURAS_IPV6="$(tofu output -json addresses | jq -r .asuras[1])"
+ENTAK_IPV4="$(tofu output -json addresses | jq -r .entak[0])"
+ENTAK_IPV6="$(tofu output -json addresses | jq -r .entak[1])"
+VELONA_IPV4="$(tofu output -json addresses | jq -r .velona[0])"
+VELONA_IPV6="$(tofu output -json addresses | jq -r .velona[1])"
+
+# Setup incus-deploy
+git clone https://github.com/lxc/incus-deploy "${TEMPDIR}/deploy"
+mkdir -p "${TEMPDIR}/deploy/ansible/data/netplan/"
+sed \
+    -e "s/ASURAS_IPV6/${ASURAS_IPV6}/g" \
+    -e "s/ENTAK_IPV6/${ENTAK_IPV6}/g" \
+    -e "s/VELONA_IPV6/${VELONA_IPV6}/g" \
+    "${TESTDIR}/templates/hosts.yaml.tpl" > "${TEMPDIR}/deploy/ansible/hosts.yaml"
+
+sed \
+    -e "s/ASURAS_IPV4/${ASURAS_IPV4}/g" \
+    -e "s/ASURAS_IPV6/${ASURAS_IPV6}/g" \
+    "${TESTDIR}/templates/netplan.asuras.yaml.tpl" > "${TEMPDIR}/deploy/ansible/data/netplan/asuras.yaml"
+
+sed \
+    -e "s/ENTAK_IPV4/${ENTAK_IPV4}/g" \
+    -e "s/ENTAK_IPV6/${ENTAK_IPV6}/g" \
+    "${TESTDIR}/templates/netplan.entak.yaml.tpl" > "${TEMPDIR}/deploy/ansible/data/netplan/entak.yaml"
+
+sed \
+    -e "s/VELONA_IPV4/${VELONA_IPV4}/g" \
+    -e "s/VELONA_IPV6/${VELONA_IPV6}/g" \
+    "${TESTDIR}/templates/netplan.velona.yaml.tpl" > "${TEMPDIR}/deploy/ansible/data/netplan/velona.yaml"
+
+# Run deploy
+cd "${TEMPDIR}/deploy/ansible"
+ansible-playbook tasks/update-packages.yaml
+ansible-playbook deploy.yaml
