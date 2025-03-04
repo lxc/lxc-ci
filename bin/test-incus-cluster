@@ -1,18 +1,24 @@
+
 #!/bin/sh
 set -eu
 TESTDIR="$(pwd)/cluster-test/"
 
 # Load configuration
 . /lxc-ci/etc/config
+export http_proxy
+export https_proxy
+export no_proxy
+
 export TF_VAR_maas_key="${MAAS_API}"
 
 # Create temporary storage
 TEMPDIR=$(mktemp -d)
 
 cleanup() {
-    rm -Rf "${TEMPDIR}"
-    cd "${TESTDIR}/terraform"
+    cd "${TEMPDIR}/terraform"
     tofu destroy -auto-approve
+
+    rm -Rf "${TEMPDIR}"
 }
 
 trap cleanup EXIT HUP INT TERM
@@ -21,7 +27,8 @@ trap cleanup EXIT HUP INT TERM
 set -x
 
 # Deploy the base OS
-cd "${TESTDIR}/terraform"
+cp -R "${TESTDIR}/terraform" "${TEMPDIR}/terraform"
+cd "${TEMPDIR}/terraform"
 tofu init
 tofu apply -auto-approve
 
