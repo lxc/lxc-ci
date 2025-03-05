@@ -69,6 +69,9 @@ network:
       accept-ra: false
       addresses:
         - 2602:fc62:b:3002::103/64
+      routes:
+        - to: 2602:fc62:b:100::/64
+          via: 2602:fc62:b:3002::1
 
     # LAB-CLUSTER-UPLINK
     bond0.3003:

@@ -67,4 +67,11 @@ sed \
 # Run deploy
 cd "${TEMPDIR}/deploy/ansible"
 ansible-playbook tasks/update-packages.yaml
+
+# Bring up network and NVME, then reset NVME storage device
+ansible-playbook books/netplan.yaml -l asuras
+ansible-playbook books/nvme.yaml -l asuras
+ssh ubuntu@${ASURAS_IPV6} sudo dd if=/dev/zero of=/dev/disk/by-id/nvme-LXC_CI_cluster_b026084ed2e313e655d9 bs=4M count=10
+
+# Complete the deployment
 ansible-playbook deploy.yaml

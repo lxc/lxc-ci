@@ -9,9 +9,11 @@ all:
     incus_name: "baremetal"
     incus_release: "stable"
 
+    lvmcluster_name: "baremetal"
+
     ovn_name: "baremetal"
     ovn_az_name: "zone1"
-    ovn_release: "distro"
+    ovn_release: "ppa"
   children:
     baremetal:
       vars:
@@ -51,19 +53,32 @@ all:
               description: Initial OVN network
           storage:
             local:
-              default: true
               driver: zfs
               local_config:
                 source: "/dev/disk/by-id/{{ incus_local_disk }}"
               description: Local storage pool
-            remote:
+            remote-ceph:
               driver: ceph
               local_config:
                 source: "incus_{{ incus_name }}"
               description: Distributed storage pool (cluster-wide)
+            remote-nvme:
+              default: true
+              driver: lvmcluster
+              local_config:
+                source: "lxc-ci-cluster"
+              description: Shared block storage pool (cluster-wide)
         incus_roles:
           - cluster
           - ui
+
+        lvmcluster_vgs:
+          lxc-ci-cluster: "/dev/disk/by-id/nvme-LXC_CI_cluster_b026084ed2e313e655d9"
+
+        nvme_targets:
+          - "2602:fc62:b:100::100"
+          - "2602:fc62:b:100::101"
+          - "2602:fc62:b:100::102"
 
         ovn_ip_address: "{{ cluster_address }}"
         ovn_roles:
