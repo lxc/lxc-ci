@@ -161,7 +161,7 @@ files:
 - path: /etc/dracut.conf.d/incus.conf
   generator: dump
   content: |-
-    add_drivers+=" virtio_scsi virtio_pci sd_mod virtio_blk "
+    add_drivers+=" virtio_scsi virtio_pci sd_mod sg virtio_blk "
   types:
   - vm
 
