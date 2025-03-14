@@ -161,7 +161,8 @@ files:
 - path: /etc/dracut.conf.d/incus.conf
   generator: dump
   content: |-
-    add_drivers+=" virtio_scsi virtio_pci sd_mod sg virtio_blk "
+    force_drivers+=" virtio_scsi virtio_pci sd_mod sg virtio_blk "
+    hostonly=no
   types:
   - vm
 
@@ -261,6 +262,9 @@ actions:
 
     # Create initramfs
     dracut --kver "$kernel_version" -f
+    ln -sf /boot/vmlinuz-${kernel_version} /boot/vmlinuz
+    ln -sf /boot/initramfs-${kernel_version}.img /boot/initrd-${kernel_version}.img
+    ln -sf /boot/initramfs-${kernel_version}.img /boot/initrd.img
 
     TARGET="x86_64"
     [ "$(uname -m)" = "aarch64" ] && TARGET="arm64"
