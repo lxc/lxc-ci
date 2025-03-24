@@ -16,7 +16,6 @@
         name: release
         type: user-defined
         values:
-        - 7.x
         - 8.x
 
     - axis:
