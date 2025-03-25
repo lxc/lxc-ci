@@ -66,6 +66,7 @@ files:
 
 - path: /etc/machine-id
   generator: dump
+  content: uninitialized
 
 - path: /var/lib/dbus/machine-id
   generator: remove

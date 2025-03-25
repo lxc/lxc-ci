@@ -68,6 +68,7 @@ files:
 
 - path: /etc/machine-id
   generator: dump
+  content: uninitialized
 
 - path: /etc/fstab
   generator: dump

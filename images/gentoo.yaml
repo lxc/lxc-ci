@@ -382,6 +382,7 @@ files:
 
 - path: /etc/machine-id
   generator: dump
+  content: uninitialized
   variants:
   - systemd
 
@@ -555,7 +556,7 @@ actions:
     emerge gentoo-kernel-bin
 
     rm -f /etc/machine-id /var/lib/dbus/machine-id
-    touch /etc/machine-id
+    echo uninitialized > /etc/machine-id
   types:
   - vm
   variants:
