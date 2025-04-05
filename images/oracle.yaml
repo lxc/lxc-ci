@@ -212,6 +212,14 @@ packages:
     variants:
     - cloud
 
+  - packages:
+    - openssh-server
+    action: install
+    variants:
+    - cloud
+    releases:
+    - 7
+
   repositories:
   - name: AppStream
     url: |-
