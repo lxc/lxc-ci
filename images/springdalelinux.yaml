@@ -334,6 +334,14 @@ packages:
     - 9
 
   - packages:
+    - openssh-server
+    action: install
+    variants:
+    - cloud
+    releases:
+    - 7
+
+  - packages:
     - NetworkManager
     action: install
     types:
