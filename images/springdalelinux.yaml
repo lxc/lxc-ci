@@ -340,6 +340,7 @@ packages:
     - cloud
     releases:
     - 7
+    - 8
 
   - packages:
     - NetworkManager
