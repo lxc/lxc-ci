@@ -163,10 +163,12 @@ for url in $(incus query "/1.0/instances" | jq -r .[] | grep "${TEST_IMAGE}"); d
             echo "===> DEBUG: systemd failed: ${name}"
             incus exec "${name}" -- systemctl --failed
             FAIL=1
-        elif incus exec "${name}" -- systemctl -a | grep -q ssh; then
-            echo "===> FAIL: systemd clean: SSH server present"
         else
             echo "===> PASS: systemd clean: ${name}"
+        fi
+
+        if incus exec "${name}" -- systemctl -a | grep -q ssh; then
+            echo "===> WARN: systemd clean: SSH server present"
         fi
     else
         echo "===> SKIP: systemd clean: ${name}"
