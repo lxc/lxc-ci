@@ -341,6 +341,7 @@ packages:
     releases:
     - 7
     - 8
+    - 9
 
   - packages:
     - NetworkManager
