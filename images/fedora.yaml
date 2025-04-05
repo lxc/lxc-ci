@@ -292,22 +292,10 @@ actions:
     umount -l /etc/resolv.conf || true
     rm /etc/resolv.conf
     ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
-    systemctl enable systemd-resolved
     cp -R /etc/skel/.bash* /root/
 
-- trigger: post-packages
-  action: |-
-    #!/bin/sh
+    systemctl enable systemd-resolved
     systemctl enable systemd-networkd
-  variants:
-  - default
-
-- trigger: post-packages
-  action: |-
-    #!/bin/sh
-    systemctl enable systemd-networkd
-  variants:
-  - cloud
 
 - trigger: post-packages
   action: |-
