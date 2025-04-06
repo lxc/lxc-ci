@@ -365,7 +365,7 @@ actions:
 
     sed -ri "s#(DISPLAYMANAGER_AUTOLOGIN)=.*#\1=${USERNAME}#" /etc/sysconfig/displaymanager
 
-    systemctl enable sddm
+    systemctl enable sddm || true
 
     # When calling `lxc stop` KDE will show a dialog for 30 seconds which defaults to logging out.
     # This decreases the timeout to 10 seconds, and performs a shutdown per default.
