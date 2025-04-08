@@ -89,7 +89,7 @@ else
 
         if [ "${DIST}" = "voidlinux" ]; then
             # Workaround weird init system
-            incus config set "${TEST_IMAGE}-${PRIV}" raw.lxc lxc.signal.halt=SIGCONT
+            incus config set "${TEST_IMAGE}-${PRIV}" raw.lxc lxc.signal.halt=SIGKILL
         fi
 
         if [ "${DIST}" = "slackware" ]; then
