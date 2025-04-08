@@ -405,6 +405,9 @@ actions:
     rm /etc/resolv.conf
     ln -sf /var/run/netconfig/resolv.conf /etc/resolv.conf
 
+    # Disable first boot wizard
+    systemctl mask systemd-firstboot.service
+
 - trigger: post-files
   action: |-
     #!/bin/sh
