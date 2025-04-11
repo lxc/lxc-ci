@@ -311,6 +311,7 @@ actions:
     systemctl enable cloud-init
     systemctl enable cloud-config
     systemctl enable cloud-final
+    systemctl mask dhcpcd
   variants:
   - cloud
 
