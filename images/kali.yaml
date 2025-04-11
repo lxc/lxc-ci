@@ -1693,6 +1693,8 @@ files:
     iface eth0 inet dhcp
 
     source /etc/network/interfaces.d/*.cfg
+  variants:
+  - default
 
 - name: meta-data
   generator: cloud-init
@@ -1726,10 +1728,8 @@ packages:
 
   - packages:
     - dialog
-    - ifupdown
     - init
     - iproute2
-    - isc-dhcp-client
     - locales
     - netbase
     - net-tools
@@ -1744,6 +1744,13 @@ packages:
     action: install
     variants:
     - cloud
+
+  - packages:
+    - ifupdown
+    - isc-dhcp-client
+    action: install
+    variants:
+    - default
 
   repositories:
   - name: sources.list
