@@ -70,13 +70,13 @@ files:
   generator: dump
   content: uninitialized
 
+- path: /var/lib/dbus/machine-id
+  generator: remove
+
 - path: /etc/fstab
   generator: dump
   types:
   - container
-
-- path: /var/lib/dbus/machine-id
-  generator: remove
 
 - path: /etc/hostname
   generator: hostname
@@ -296,6 +296,14 @@ actions:
 
     systemctl enable systemd-resolved
     systemctl enable systemd-networkd
+
+    # Avoid being reset on reboot
+    rm -Rf /etc/systemd/system-preset
+    mkdir -p /etc/systemd/system-preset
+    for file in /usr/lib/systemd/system-preset/*; do
+        NAME=$(basename ${file})
+        ln -s /dev/null /etc/systemd/system-preset/${NAME}
+    done
 
 - trigger: post-packages
   action: |-
