@@ -516,29 +516,21 @@ files:
   generator: cloud-init
   variants:
   - cloud
-  architectures:
-  - x86_64
 
 - name: network-config
   generator: cloud-init
   variants:
   - cloud
-  architectures:
-  - x86_64
 
 - name: user-data
   generator: cloud-init
   variants:
   - cloud
-  architectures:
-  - x86_64
 
 - name: vendor-data
   generator: cloud-init
   variants:
   - cloud
-  architectures:
-  - x86_64
 
 - path: /etc/sudoers.d/90-incus
   generator: dump
@@ -594,8 +586,6 @@ packages:
     action: install
     variants:
     - cloud
-    architectures:
-    - x86_64
 
   - packages:
     - cloud-guest-utils
@@ -608,6 +598,7 @@ packages:
     - linux
     action: install
     architectures:
+    - riscv64
     - x86_64
     types:
     - vm
@@ -636,6 +627,7 @@ packages:
     architectures:
     - aarch64
     - armv7
+    - riscv64
 
   - packages:
     - linux-firmware
@@ -799,6 +791,7 @@ actions:
 
     TARGET="x86_64"
     [ "$(uname -m)" = "aarch64" ] && TARGET="arm64"
+    [ "$(uname -m)" = "riscv64" ] && TARGET="riscv64"
 
     grub-install --target="${TARGET}-efi" --efi-directory=/boot/efi --no-nvram --removable
     grub-install --target="${TARGET}-efi" --efi-directory=/boot/efi --no-nvram
@@ -821,8 +814,6 @@ actions:
     systemctl enable cloud-init-main.service cloud-init-local.service cloud-config.service cloud-final.service
   variants:
   - cloud
-  architectures:
-  - x86_64
 
 - trigger: post-files
   action: |-
