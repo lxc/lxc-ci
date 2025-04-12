@@ -246,7 +246,7 @@ for url in $(incus query "/1.0/instances" | jq -r .[] | grep "${TEST_IMAGE}"); d
 done
 
 # Check that all instances can be stopped
-if [ "${VARIANT}" != "desktop" ]; then
+if [ "${VARIANT}" != "desktop-kde" ]; then
     echo "==> Performing shutdown test"
     STOPPED=0
     for i in $(seq 10); do
