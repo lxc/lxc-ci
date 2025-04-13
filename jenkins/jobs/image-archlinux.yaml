@@ -49,12 +49,17 @@
             exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/archlinux.yaml \
                 ${INCUS_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
                 -o image.architecture=${ARCH} -o image.variant=${variant}
+        elif [ "${architecture}" = "arm64" ]; then
+            exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/archlinux.yaml \
+                ${INCUS_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
+                -o image.architecture=${ARCH} \
+                -o source.url=http://os.archlinuxarm.org
+        elif [ "${architecture}" = "riscv64" ]; then
+            exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/archlinux.yaml \
+                ${INCUS_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
+                -o image.architecture=${ARCH} \
+                -o source.url=https://archriscv.felixc.at
         fi
-
-        exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/archlinux.yaml \
-            ${INCUS_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
-            -o image.architecture=${ARCH} \
-            -o source.url=http://os.archlinuxarm.org
 
     execution-strategy:
       combination-filter: '
