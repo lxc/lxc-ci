@@ -50,7 +50,7 @@ rm -f /run/dbus/system_bus_socket
 
 # Build the image
 mkdir /root/build /root/build/cache
-if echo "${YAML}" | grep -q -E "almalinux|centos|rockylinux"; then
+if echo "${YAML}" | grep -q -E "almalinux|centos|openeuler|rockylinux"; then
     mount -t tmpfs tmpfs /root/build -o size=6G,nr_inodes=10000000
 fi
 mv /root/image.yaml /root/build/
