@@ -627,7 +627,6 @@ packages:
     architectures:
     - aarch64
     - armv7
-    - riscv64
 
   - packages:
     - linux-firmware
