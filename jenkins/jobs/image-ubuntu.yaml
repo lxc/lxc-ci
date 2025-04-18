@@ -23,6 +23,7 @@
         - jammy
         - noble
         - oracular
+        - plucky
 
     - axis:
         name: variant

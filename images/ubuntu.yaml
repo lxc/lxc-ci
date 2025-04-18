@@ -438,6 +438,7 @@ packages:
     - jammy
     - noble
     - oracular
+    - plucky
     action: install
 
   - packages:
@@ -474,6 +475,7 @@ packages:
     releases:
     - noble
     - oracular
+    - plucky
 
   - packages:
     - grub-efi-amd64-signed
@@ -601,6 +603,7 @@ actions:
   releases:
   - noble
   - oracular
+  - plucky
 
 - trigger: post-packages
   action: |-
