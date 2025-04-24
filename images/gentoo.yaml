@@ -335,7 +335,7 @@ files:
   path: /etc/conf.d/hostname
   generator: template
   content: |-
-    hostname="{{ container.name }}"
+    hostname="{{ instance.name }}"
 
 - name: hosts
   path: /etc/hosts
@@ -494,29 +494,8 @@ actions:
         locale-gen
     fi
 
-- trigger: post-unpack
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    TARGET="$(uname -m)"
-
-    case "${TARGET}" in
-    aarch64)
-      TARGET=arm64 ;;
-    i686)
-      TARGET=x86 ;;
-    ppc*)
-      TARGET=ppc ;;
-    x86_64)
-      TARGET=amd64 ;;
-    arm*)
-      TARGET=arm ;;
-    esac
-
-  types:
-  - container
-  - vm
+    # Create empty hostname file
+    touch /etc/hostname
 
 - trigger: post-unpack
   action: |-
