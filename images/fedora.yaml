@@ -305,6 +305,8 @@ actions:
         ln -s /dev/null /etc/systemd/system-preset/${NAME}
     done
 
+    systemctl mask systemd-homed-firstboot.service || true
+
 - trigger: post-packages
   action: |-
     #!/bin/sh
