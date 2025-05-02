@@ -43,7 +43,7 @@
             TYPE="container,vm"
         fi
 
-        if [ "${variant}" = "desktop" ]; then
+        if [ "${variant}" = "desktop-kde" ]; then
             TYPE="vm"
         fi
 
