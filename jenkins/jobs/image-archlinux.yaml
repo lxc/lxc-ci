@@ -64,6 +64,7 @@
 
     execution-strategy:
       combination-filter: '
+      !(architecture == "riscv64" && variant == "cloud") &&
       !(architecture != "amd64" && variant == "desktop-gnome")'
 
     properties:
