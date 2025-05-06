@@ -311,6 +311,7 @@ packages:
     - x86_64
 
   - packages:
+    - dracut
     - e2fsprogs
     - growpart
     - kernel-default
