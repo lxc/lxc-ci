@@ -112,28 +112,9 @@ for testbin in lxc-test-*; do
             ignore "$STRING" && continue
     fi
 
-    # Skip some tests because of broken busybox
-    [ "$testbin" = "lxc-test-state-server" ] && \
+    # Skip lxc-test-no-new-privs as it is broken
+    [ "$testbin" = "lxc-test-no-new-privs" ] && \
         ignore "$STRING" && continue
-
-    # Skip some tests due to cgroup v2 incompatibility
-    if [ -e /sys/fs/cgroup/system.slice/memory.current ]; then
-
-        [ "$testbin" = "lxc-test-apparmor-mount" ] && \
-            ignore "$STRING" && continue
-
-        [ "$testbin" = "lxc-test-autostart" ] && \
-            ignore "$STRING" && continue
-
-        [ "$testbin" = "lxc-test-no-new-privs" ] && \
-            ignore "$STRING" && continue
-
-        [ "$testbin" = "lxc-test-unpriv" ] && \
-            ignore "$STRING" && continue
-
-        [ "$testbin" = "lxc-test-usernic" ] && \
-            ignore "$STRING" && continue
-    fi
 
     OUT="$(mktemp)"
     START_TIME="$(date +%s)"
