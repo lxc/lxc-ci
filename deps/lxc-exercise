@@ -112,10 +112,6 @@ for testbin in lxc-test-*; do
             ignore "$STRING" && continue
     fi
 
-    # Skip lxc-test-no-new-privs as it is broken
-    [ "$testbin" = "lxc-test-no-new-privs" ] && \
-        ignore "$STRING" && continue
-
     OUT="$(mktemp)"
     START_TIME="$(date +%s)"
     if "./$testbin" > "$OUT" 2>&1; then
