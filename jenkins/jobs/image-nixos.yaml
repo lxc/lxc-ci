@@ -19,6 +19,7 @@
         values:
         - unstable
         - 24.11
+        - 25.05
 
     - axis:
         name: variant
