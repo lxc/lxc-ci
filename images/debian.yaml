@@ -1402,6 +1402,15 @@ actions:
     # Cleanup temporary shadow paths
     rm /etc/*-
 
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    touch /etc/apparmor.d/local/sbin.dhclient
+  releases:
+  - trixie
+  variants:
+  - cloud
+
 - trigger: post-files
   action: |-
     #!/bin/sh
