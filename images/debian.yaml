@@ -1405,6 +1405,7 @@ actions:
 - trigger: post-packages
   action: |-
     #!/bin/sh
+    mkdir -p /etc/apparmor.d/local
     touch /etc/apparmor.d/local/sbin.dhclient
   releases:
   - trixie
