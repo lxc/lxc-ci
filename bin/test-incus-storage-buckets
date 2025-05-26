@@ -22,6 +22,7 @@ apt-get install --yes btrfs-progs curl lvm2
 
 # Install ZFS
 if echo "${poolDriverList}" | grep -q zfs; then
+    apt-get install linux-headers-$(uname -r) --yes || true
     curl -sL https://pkgs.zabbly.com/get/zfs-stable | sh
 fi
 

@@ -21,6 +21,7 @@ apt-get remove --purge cloud-init --yes
 apt-get install --yes curl genisoimage btrfs-progs lvm2
 
 # Install ZFS
+apt-get install linux-headers-$(uname -r) --yes || true
 curl -sL https://pkgs.zabbly.com/get/zfs-stable | sh
 
 # Install Incus
