@@ -27,7 +27,7 @@ curl -sL https://pkgs.zabbly.com/get/incus-daily | sh
 cat << EOF
 Types: deb
 URIs: https://ppa.launchpadcontent.net/stgraber/ovn-stable/ubuntu
-Suites: jammy
+Suites: noble
 Components: main
 Architectures: amd64
 Signed-By: /etc/apt/keyrings/ansible-ovn-stable.asc
@@ -595,7 +595,7 @@ ovn_basic_tests() {
     incus network unset ovn-virtual-network ipv4.nat.address
     incus network unset ovn-virtual-network ipv6.nat.address
     incus exec u1 -- networkctl up eth0
-    sleep 2
+    sleep 5
     incus exec u1 -- ping -c1 -w5 192.0.2.1
     incus exec u1 -- ping -c1 -w5 2001:db8:1:1::1
 
@@ -735,10 +735,8 @@ ovn_forward_tests() {
 
     # Check forward is working by pinging it.
     # Relies on static route (above) rather than neighbour adverts see https://github.com/ovn-org/ovn/issues/124
-
-    # FIXME: Test disabled due to OVN bug not forwarding ICMP properly.
-#    ping -c1 -4 -w5 192.0.2.1
-#    ping -c1 -6 -w5 2001:db8:1:2::1
+    ping -c1 -4 -w5 192.0.2.1
+    ping -c1 -6 -w5 2001:db8:1:2::1
 
     # Check DNS TCP forwarding using default target rule.
     incus exec u1 -- systemctl mask dnsmasq
@@ -806,8 +804,9 @@ EOF
 
     # Check UDP port forwarding to u1 is working, and that TCP port forwarding to u2 is not (as dnsmasq is off).
     incus exec u2 -- systemctl stop dnsmasq
-    dig a @192.0.2.1 u1.incus
-    dig aaaa @2001:db8:1:2::1 u1.incus
+## NOTE: current OVN udp load-balancer bug in test environment
+#    dig a @192.0.2.1 u1.incus
+#    dig aaaa @2001:db8:1:2::1 u1.incus
     ! dig a +tcp @192.0.2.1 u2.incus || false
     ! dig aaaa +tcp @2001:db8:1:2::1 u2.incus || false
 
@@ -1624,7 +1623,7 @@ ovn_acl_tests() {
     incus exec c1 -- dig @10.10.11.3 +tcp +timeout=1 -p 5053 incusbr0.test | grep "refused"
     incus exec c1 -- dig @fd42:4242:4242:1010::2 +tcp +timeout=1 -p 5053 incusbr0.test | grep "refused"
     incus exec c1 -- ping -c1 -w5 -4 c2.incus | grep "Host Unreachable"
-    incus exec c1 -- ping -c1 -w5 -6 c2.incus| grep "Administratively prohibited"
+    incus exec c1 -- ping -c1 -w5 -6 c2.incus | grep "Administratively prohibited"
 
     # Test assigning same ACL to NIC directly and unassigning from network.
     incus config device set c1 eth0 security.acls=incusbr0-ping
