@@ -1409,8 +1409,6 @@ actions:
     touch /etc/apparmor.d/local/sbin.dhclient
   releases:
   - trixie
-  variants:
-  - cloud
 
 - trigger: post-files
   action: |-
