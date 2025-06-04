@@ -4,7 +4,7 @@ image:
 source:
   downloader: debootstrap
   same_as: gutsy
-  url: http://archive.ubuntu.com/ubuntu/
+  url: http://us.archive.ubuntu.com/ubuntu/
   keys:
   # 0x790BC7277767219C42C86F933B4FE6ACC0B21F32
   - |-
