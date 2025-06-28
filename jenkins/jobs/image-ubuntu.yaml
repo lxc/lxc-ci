@@ -19,7 +19,6 @@
         name: release
         type: user-defined
         values:
-        - focal
         - jammy
         - noble
         - oracular
