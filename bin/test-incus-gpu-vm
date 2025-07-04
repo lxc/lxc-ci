@@ -50,7 +50,7 @@ incus info --resources
 
 # Launch test instances
 for i in $(seq 1 4); do
-    incus init images:ubuntu/20.04/cloud "v${i}" --vm -c security.secureboot=false < /dev/null
+    incus init images:ubuntu/24.04/cloud "v${i}" --vm -c security.secureboot=false < /dev/null
     if [ "${1}" = "nvidia" ]; then
         incus config device add "v${i}" vgpu gpu gputype=mdev pci=0000:07:00.0 mdev=nvidia-468
     elif [ "${1}" = "intel" ]; then
@@ -70,7 +70,7 @@ if [ "${1}" = "nvidia" ]; then
     incus exec v4 -- apt-get install --no-install-recommends --yes build-essential wget pciutils linux-headers-virtual
     incus restart v4
     sleep 30
-    incus exec v4 -- wget -6 http://lab.linuxcontainers.org/nvidia/v14.0/nvidia-guest.deb
+    incus exec v4 -- wget -6 http://lab.linuxcontainers.org/nvidia/v18.0/nvidia-guest.deb
     incus exec v4 -- apt-get install --yes /root/nvidia-guest.deb
     incus exec v4 -- nvidia-smi
 fi
