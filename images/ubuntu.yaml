@@ -459,6 +459,7 @@ packages:
 
   - packages:
     - cloud-init
+    - python3-debian
     action: install
     variants:
     - cloud
