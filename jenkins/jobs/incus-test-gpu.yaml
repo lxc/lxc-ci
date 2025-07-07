@@ -52,7 +52,8 @@
 
     execution-strategy:
       combination-filter: '
-      !(platform == "intel" && target != "vm")'
+      !(platform == "intel" && target != "vm") &&
+      !(platform == "nvidia" && target == "vm")'
 
     properties:
     - build-discarder:
