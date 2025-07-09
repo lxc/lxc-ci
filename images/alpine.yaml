@@ -334,7 +334,6 @@ packages:
 
   - packages:
     - acpi
-    - gcc
     - grub-efi
     - linux-virt
     - udev
