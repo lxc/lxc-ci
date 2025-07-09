@@ -31,6 +31,7 @@
         values:
         - default
         - cloud
+        - tinycloud
 
     builders:
     - shell: |-
@@ -58,7 +59,7 @@
             -o image.variant=${variant} ${EXTRA_ARGS}
 
     execution-strategy:
-      combination-filter: '!(architecture == "riscv64" && release == "3.19")'
+      combination-filter: '!((architecture == "riscv64" || variant == "tinycloud") && release == "3.19")'
 
     properties:
     - build-discarder:
