@@ -336,7 +336,6 @@ packages:
     - acpi
     - grub-efi
     - linux-virt
-    - udev
     action: install
     types:
     - vm
@@ -380,7 +379,7 @@ actions:
         ln -fs /etc/init.d/${svc_name} /etc/runlevels/boot/${svc_name}
     done
 
-    for svc_name in devfs dmesg hwdrivers mdev udev udev-settle udev-trigger; do
+    for svc_name in devfs dmesg hwdrivers mdev; do
         ln -fs /etc/init.d/${svc_name} /etc/runlevels/sysinit/${svc_name}
     done
 
