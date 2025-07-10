@@ -217,7 +217,7 @@ files:
     GRUB_TIMEOUT=0
 
     # Set the default commandline
-    GRUB_CMDLINE_LINUX_DEFAULT="console=tty1 console=ttyS0 modules=sd-mod,usb-storage,{{ targets.incus.vm.filesystem }} rootfstype={{ targets.incus.vm.filesystem }}"
+    GRUB_CMDLINE_LINUX_DEFAULT="console=tty1 console=ttyS0 modules={{ targets.incus.vm.filesystem }} rootfstype={{ targets.incus.vm.filesystem }}"
 
     # Set the grub console type
     GRUB_TERMINAL=console
