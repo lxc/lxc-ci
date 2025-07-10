@@ -340,6 +340,12 @@ packages:
     types:
     - vm
 
+  - packages:
+    - tiny-cloud-incus
+    action: install
+    variants:
+    - tinycloud
+
 actions:
 - trigger: post-unpack
   action: |-
@@ -402,6 +408,8 @@ actions:
     grub-install --target=${TARGET}-efi --no-nvram --removable
     grub-install --target=${TARGET}-efi --no-nvram
 
+    tiny-cloud --enable
+
     # re-enable grub trigger for future grub updates
     rm /etc/update-grub.conf
   types:
@@ -427,6 +435,15 @@ actions:
     setup-cloud-init
   variants:
   - cloud
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    tiny-cloud --enable
+  variants:
+  - tinycloud
 
 mappings:
   architecture_map: alpinelinux
