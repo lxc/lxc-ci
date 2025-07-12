@@ -228,6 +228,11 @@ waitVMAgent v1-physical
 incus exec v1-physical -- test -d /sys/class/net/eth0
 incus exec v1-physical -- grep -Fx 1400 /sys/class/net/eth0/mtu
 
+# Configure networking
+incus exec v1-physical -- sed -i "s/enp5s0/eth0/g" /etc/systemd/network/enp5s0.network
+incus exec v1-physical -- systemctl restart systemd-networkd
+sleep 3
+
 # Check VM bridged multi-queue support.
 incus exec v1-physical -- apt-get install --no-install-recommends --yes ethtool
 incus exec v1-physical -- ethtool -l eth0 | grep -c '^Combined:\s\+3$'  | grep -Fx 2
