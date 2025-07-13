@@ -4,6 +4,8 @@ image:
 source:
   downloader: openwrt-http
   url: https://downloads.openwrt.org
+  # see https://openwrt.org/docs/guide-user/security/signatures
+  #  or https://git.openwrt.org/?p=keyring.git;a=tree;f=gpg 
   keys:
   # PGP key for 22.03 release builds 
   # Fingerprint: BF85 6781 A012 93C8 409A BE72 CD54 E82D ADB3 684D
