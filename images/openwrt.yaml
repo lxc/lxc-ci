@@ -73,6 +73,7 @@ source:
     JqTmqg==
     =u48+
     -----END PGP PUBLIC KEY BLOCK-----
+  # PGP key for 23.05 release builds (upstream calls it: "unattended snapshot builds (deprecated)")
   # 0x6D9278A33A9AB3146262DCECF93525A88B699029
   - |-
     -----BEGIN PGP PUBLIC KEY BLOCK-----
