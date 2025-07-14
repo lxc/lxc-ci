@@ -44,9 +44,9 @@
         [ "${ARCH}" = "armhf" ] && ARCH="armv7"
 
         TYPE="container"
-        if [ "${architecture}" = "amd64" ] || [ "${architecture}" = "arm64" ]; then
-            TYPE="container,vm"
-        fi
+        # if [ "${architecture}" = "amd64" ] || [ "${architecture}" = "arm64" ]; then
+        #     TYPE="container,vm"
+        # fi
 
         EXTRA_ARGS=""
         if [ "${release}" = "edge" ]; then
