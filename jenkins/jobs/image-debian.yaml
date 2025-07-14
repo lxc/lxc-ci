@@ -19,7 +19,6 @@
         name: release
         type: user-defined
         values:
-        - buster
         - bullseye
         - bookworm
         - trixie
