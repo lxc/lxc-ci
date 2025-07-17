@@ -17,7 +17,6 @@
         name: release
         type: user-defined
         values:
-        - beowulf
         - chimaera
         - daedalus
 
