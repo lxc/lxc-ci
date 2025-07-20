@@ -231,7 +231,7 @@ actions:
 
     # This ensures that the container performs a shutdown when receiving SIGCONT.
     # Runit will only perform a shutdown if /etc/runit/stopit has mode 100, and /etc/runit/reboot has mode 0.
-    echo install -m100 /dev/null /run/runit/stopit >> /etc/runit/1
+    echo install -m100 /dev/null /run/runit/stopit > /etc/runit/core-services/99-lxc-runit-control.sh
 
 - trigger: post-packages
   action: |-
