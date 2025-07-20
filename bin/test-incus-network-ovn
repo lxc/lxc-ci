@@ -1047,13 +1047,13 @@ EOF
 
 ovn_peering_tests() {
     # Create two projects to test cross-project peering.
-    incus project create ovn1 \
+    incus project create prj-ovn1 \
         -c features.images=false \
         -c features.profiles=false \
         -c features.storage.volumes=false \
         -c features.networks=true
 
-    incus project create ovn2 \
+    incus project create prj-ovn2 \
         -c features.images=false \
         -c features.profiles=false \
         -c features.storage.volumes=false \
@@ -1070,96 +1070,96 @@ ovn_peering_tests() {
         ipv6.routes=2001:db8:1:2::/64
 
     # Create OVN networks in each project.
-    incus network create ovn1 --type=ovn network=incusbr0 --project=ovn1
-    incus network create ovn2 --type=ovn network=incusbr0 --project=ovn2
+    incus network create ovn1 --type=ovn network=incusbr0 --project=prj-ovn1
+    incus network create ovn2 --type=ovn network=incusbr0 --project=prj-ovn2
     sleep 2
 
-    incus network show ovn1 --project=ovn1
-    incus network show ovn2 --project=ovn2
+    incus network show ovn1 --project=prj-ovn1
+    incus network show ovn2 --project=prj-ovn2
 
-    ovn1NetIPv4=$(incus network get ovn1 ipv4.address --project=ovn1 | sed 's/\/24$//g')
-    ovn1NetIPv6=$(incus network get ovn1 ipv6.address --project=ovn1 | sed 's/\/64$//g')
-    ovn2NetIPv4=$(incus network get ovn2 ipv4.address --project=ovn2 | sed 's/\/24$//g')
-    ovn2NetIPv6=$(incus network get ovn2 ipv6.address --project=ovn2 | sed 's/\/64$//g')
+    ovn1NetIPv4=$(incus network get ovn1 ipv4.address --project=prj-ovn1 | sed 's/\/24$//g')
+    ovn1NetIPv6=$(incus network get ovn1 ipv6.address --project=prj-ovn1 | sed 's/\/64$//g')
+    ovn2NetIPv4=$(incus network get ovn2 ipv4.address --project=prj-ovn2 | sed 's/\/24$//g')
+    ovn2NetIPv6=$(incus network get ovn2 ipv6.address --project=prj-ovn2 | sed 's/\/64$//g')
 
     # Now setup peering.
-    incus network peer create ovn1 ovn1foo ovn2/ovn2 --project=ovn1
-    incus network peer ls ovn1 --project=ovn1 | grep ovn1foo | grep PENDING
-    incus network peer create ovn2 ovn2foo ovn1/ovn1 --project=ovn2
-    incus network peer ls ovn1 --project=ovn1 | grep ovn1foo | grep CREATED
-    incus network peer ls ovn2 --project=ovn2 | grep ovn2foo | grep CREATED
+    incus network peer create ovn1 ovn1foo ovn2/ovn2 --project=prj-ovn1
+    incus network peer ls ovn1 --project=prj-ovn1 | grep ovn1foo | grep PENDING
+    incus network peer create ovn2 ovn2foo ovn1/ovn1 --project=prj-ovn2
+    incus network peer ls ovn1 --project=prj-ovn1 | grep ovn1foo | grep CREATED
+    incus network peer ls ovn2 --project=prj-ovn2 | grep ovn2foo | grep CREATED
 
     # Check networks show as in use by peered network.
-    incus network show ovn1 --project=ovn1 | grep ovn2
-    incus network show ovn2 --project=ovn2 | grep ovn1
+    incus network show ovn1 --project=prj-ovn1 | grep ovn2
+    incus network show ovn2 --project=prj-ovn2 | grep ovn1
 
     # Check network delete is protected by peer usage.
-    ! incus network delete ovn1 --project=ovn1 || false
-    ! incus network delete ovn2 --project=ovn2 || false
+    ! incus network delete ovn1 --project=prj-ovn1 || false
+    ! incus network delete ovn2 --project=prj-ovn2 || false
 
     # Delete peering.
-    incus network peer delete ovn1 ovn1foo --project=ovn1
-    incus network peer ls ovn2 --project=ovn2 | grep ovn2foo | grep ERRORED
-    ! incus network show ovn1 --project=ovn1 | grep ovn2 || false
-    ! incus network show ovn2 --project=ovn2 | grep ovn1 || false
+    incus network peer delete ovn1 ovn1foo --project=prj-ovn1
+    incus network peer ls ovn2 --project=prj-ovn2 | grep ovn2foo | grep ERRORED
+    ! incus network show ovn1 --project=prj-ovn1 | grep ovn2 || false
+    ! incus network show ovn2 --project=prj-ovn2 | grep ovn1 || false
 
     # Launch instance in each network (with one having NIC routes from uplink).
-    incus init "${instanceImage}" ovn1 -n ovn1 -s default --project=ovn1
-    incus config device set ovn1 eth0 --project=ovn1 \
+    incus init "${instanceImage}" ovn1 -n ovn1 -s default --project=prj-ovn1
+    incus config device set ovn1 eth0 --project=prj-ovn1 \
         ipv4.routes=198.51.100.1/32 \
         ipv6.routes=2001:db8:1:2::1/128 \
         ipv4.routes.external=198.51.100.2/32 \
         ipv6.routes.external=2001:db8:1:2::2/128
-    incus start ovn1 --project=ovn1
-    incus launch "${instanceImage}" ovn2 -n ovn2 -s default --project=ovn2
+    incus start ovn1 --project=prj-ovn1
+    incus launch "${instanceImage}" ovn2 -n ovn2 -s default --project=prj-ovn2
 
     # Add IPs from routes to ovn1 instance.
     sleep 2
-    incus exec ovn1 --project=ovn1 -- ip a add 198.51.100.1/32 dev eth0
-    incus exec ovn1 --project=ovn1 -- ip a add 198.51.100.2/32 dev eth0
-    incus exec ovn1 --project=ovn1 -- ip a add 2001:db8:1:2::1/128 dev eth0
-    incus exec ovn1 --project=ovn1 -- ip a add 2001:db8:1:2::2/128 dev eth0
+    incus exec ovn1 --project=prj-ovn1 -- ip a add 198.51.100.1/32 dev eth0
+    incus exec ovn1 --project=prj-ovn1 -- ip a add 198.51.100.2/32 dev eth0
+    incus exec ovn1 --project=prj-ovn1 -- ip a add 2001:db8:1:2::1/128 dev eth0
+    incus exec ovn1 --project=prj-ovn1 -- ip a add 2001:db8:1:2::2/128 dev eth0
 
     # Test that pinging internal addresses between networks doesn't work without peering.
     sleep 5
-    ! incus exec ovn1 --project=ovn1 -- ping -c1 -4 -w5 "${ovn2NetIPv4}" || false
-    ! incus exec ovn1 --project=ovn1 -- ping -c1 -6 -w5 "${ovn2NetIPv6}" || false
-    ! incus exec ovn2 --project=ovn2 -- ping -c1 -4 -w5 198.51.100.1 || false
-    ! incus exec ovn2 --project=ovn2 -- ping -c1 -6 -w5 2001:db8:1:2::1 || false
+    ! incus exec ovn1 --project=prj-ovn1 -- ping -c1 -4 -w5 "${ovn2NetIPv4}" || false
+    ! incus exec ovn1 --project=prj-ovn1 -- ping -c1 -6 -w5 "${ovn2NetIPv6}" || false
+    ! incus exec ovn2 --project=prj-ovn2 -- ping -c1 -4 -w5 198.51.100.1 || false
+    ! incus exec ovn2 --project=prj-ovn2 -- ping -c1 -6 -w5 2001:db8:1:2::1 || false
 
     # Test that pinging external addresses between networks does worth without peering (goes via uplink).
-    incus exec ovn2 --project=ovn2 -- ping -c1 -4 -w5 198.51.100.2
-    incus exec ovn2 --project=ovn2 -- ping -c1 -6 -w5 2001:db8:1:2::2
+    incus exec ovn2 --project=prj-ovn2 -- ping -c1 -4 -w5 198.51.100.2
+    incus exec ovn2 --project=prj-ovn2 -- ping -c1 -6 -w5 2001:db8:1:2::2
 
     # Remove routes on uplink manually to purposefully break uplink routing of external routes.
     ip -4 r del 198.51.100.0/24 dev incusbr0
     ip -6 r del 2001:db8:1:2::/64 dev incusbr0
 
     # Test that pinging external addresses between networks doesn't worth via uplink with removed routes.
-    ! incus exec ovn2 --project=ovn2 -- ping -c1 -4 -w5 198.51.100.2 || false
-    ! incus exec ovn2 --project=ovn2 -- ping -c1 -6 -w5 2001:db8:1:2::2 || false
+    ! incus exec ovn2 --project=prj-ovn2 -- ping -c1 -4 -w5 198.51.100.2 || false
+    ! incus exec ovn2 --project=prj-ovn2 -- ping -c1 -6 -w5 2001:db8:1:2::2 || false
 
     # Now setup peering again.
-    incus network peer create ovn1 ovn1foo ovn2/ovn2 --project=ovn1
-    ! incus network peer create ovn2 ovn2foo ovn1/ovn1 --project=ovn2 || false # Detect old peering entry exists.
-    incus network peer delete ovn2 ovn2foo --project=ovn2 # Delete old peering entry.
-    incus network peer create ovn2 ovn2foo ovn1/ovn1 --project=ovn2
-    incus network peer ls ovn2 --project=ovn2 | grep ovn2foo | grep CREATED
+    incus network peer create ovn1 ovn1foo ovn2/ovn2 --project=prj-ovn1
+    ! incus network peer create ovn2 ovn2foo ovn1/ovn1 --project=prj-ovn2 || false # Detect old peering entry exists.
+    incus network peer delete ovn2 ovn2foo --project=prj-ovn2 # Delete old peering entry.
+    incus network peer create ovn2 ovn2foo ovn1/ovn1 --project=prj-ovn2
+    incus network peer ls ovn2 --project=prj-ovn2 | grep ovn2foo | grep CREATED
 
     # Test that pinging now works between networks.
     sleep 5
 
     # Ping gateways on each peer endpoint.
-    incus exec ovn1 --project=ovn1 -- ping -c1 -4 -w5 "${ovn2NetIPv4}"
-    incus exec ovn1 --project=ovn1 -- ping -c1 -6 -w5 "${ovn2NetIPv6}"
-    incus exec ovn2 --project=ovn2 -- ping -c1 -4 -w5 "${ovn1NetIPv4}"
-    incus exec ovn2 --project=ovn2 -- ping -c1 -6 -w5 "${ovn1NetIPv6}"
+    incus exec ovn1 --project=prj-ovn1 -- ping -c1 -4 -w5 "${ovn2NetIPv4}"
+    incus exec ovn1 --project=prj-ovn1 -- ping -c1 -6 -w5 "${ovn2NetIPv6}"
+    incus exec ovn2 --project=prj-ovn2 -- ping -c1 -4 -w5 "${ovn1NetIPv4}"
+    incus exec ovn2 --project=prj-ovn2 -- ping -c1 -6 -w5 "${ovn1NetIPv6}"
 
     # Ping internal and external NIC route addresses over peer connection.
-    incus exec ovn2 --project=ovn2 -- ping -c1 -4 -w5 198.51.100.1
-    incus exec ovn2 --project=ovn2 -- ping -c1 -6 -w5 2001:db8:1:2::1
-    incus exec ovn2 --project=ovn2 -- ping -c1 -4 -w5 198.51.100.2
-    incus exec ovn2 --project=ovn2 -- ping -c1 -6 -w5 2001:db8:1:2::2
+    incus exec ovn2 --project=prj-ovn2 -- ping -c1 -4 -w5 198.51.100.1
+    incus exec ovn2 --project=prj-ovn2 -- ping -c1 -6 -w5 2001:db8:1:2::1
+    incus exec ovn2 --project=prj-ovn2 -- ping -c1 -4 -w5 198.51.100.2
+    incus exec ovn2 --project=prj-ovn2 -- ping -c1 -6 -w5 2001:db8:1:2::2
 
     # Check address set entries added for running instances.
     ovn-nbctl list address_set | grep -F 198.51.100.1/32
@@ -1168,12 +1168,12 @@ ovn_peering_tests() {
     ovn-nbctl list address_set | grep -F 2001:db8:1:2::2/128
 
     # Check address set entries deleted for instance NIC when stopped and added when started again.
-    incus stop -f ovn1 --project=ovn1
+    incus stop -f ovn1 --project=prj-ovn1
     ! ovn-nbctl list address_set | grep -F 198.51.100.1/32 || false
     ! ovn-nbctl list address_set | grep -F 2001:db8:1:2::1/128 || false
     ! ovn-nbctl list address_set | grep -F 198.51.100.2/32 || false
     ! ovn-nbctl list address_set | grep -F 2001:db8:1:2::2/128 || false
-    incus start ovn1 --project=ovn1
+    incus start ovn1 --project=prj-ovn1
     ovn-nbctl list address_set | grep -F 198.51.100.1/32
     ovn-nbctl list address_set | grep -F 2001:db8:1:2::1/128
     ovn-nbctl list address_set | grep -F 198.51.100.2/32
@@ -1181,51 +1181,51 @@ ovn_peering_tests() {
 
     # Check security policies prevent spoofed packets using peer connection.
     sleep 5
-    ovn1NICIPv4="$(incus list ovn1 -c4 --format=csv --project=ovn1 | cut -d' ' -f1)"
-    ovn1NICIPv6="$(incus list ovn1 -c6 --format=csv --project=ovn1 | cut -d' ' -f1)"
-    ovn2NICIPv4="$(incus list ovn2 -c4 --format=csv --project=ovn2 | cut -d' ' -f1)"
-    ovn2NICIPv6="$(incus list ovn2 -c6 --format=csv --project=ovn2 | cut -d' ' -f1)"
+    ovn1NICIPv4="$(incus list ovn1 -c4 --format=csv --project=prj-ovn1 | cut -d' ' -f1)"
+    ovn1NICIPv6="$(incus list ovn1 -c6 --format=csv --project=prj-ovn1 | cut -d' ' -f1)"
+    ovn2NICIPv4="$(incus list ovn2 -c4 --format=csv --project=prj-ovn2 | cut -d' ' -f1)"
+    ovn2NICIPv6="$(incus list ovn2 -c6 --format=csv --project=prj-ovn2 | cut -d' ' -f1)"
 
     # Install tcpdump and check we can detect ICMP packets coming to the ovn2 instance from ovn1 instance when
     # pinging the allowed addresses.
-    incus exec ovn2 --project=ovn2 -- apt-get update
-    incus exec ovn2 --project=ovn2 -- apt-get install --no-install-recommends --yes tcpdump
-    incus exec ovn1 -T -n --project=ovn1 -- ping -4 -w5 "${ovn2NICIPv4}" || true &
-    incus exec ovn2 -T -n --project=ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp and src "${ovn1NICIPv4}" -q -c 1 > /dev/null
+    incus exec ovn2 --project=prj-ovn2 -- apt-get update
+    incus exec ovn2 --project=prj-ovn2 -- apt-get install --no-install-recommends --yes tcpdump
+    incus exec ovn1 -T -n --project=prj-ovn1 -- ping -4 -w5 "${ovn2NICIPv4}" || true &
+    incus exec ovn2 -T -n --project=prj-ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp and src "${ovn1NICIPv4}" -q -c 1 > /dev/null
     wait
 
-    incus exec ovn1 -T -n --project=ovn1 -- ping -6 -w5 "${ovn2NICIPv6}" || true &
-    incus exec ovn2 -T -n --project=ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp6 and src "${ovn1NICIPv6}" -q -c 1 > /dev/null
+    incus exec ovn1 -T -n --project=prj-ovn1 -- ping -6 -w5 "${ovn2NICIPv6}" || true &
+    incus exec ovn2 -T -n --project=prj-ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp6 and src "${ovn1NICIPv6}" -q -c 1 > /dev/null
     wait
 
     # Now reconfigure ovn1's IP address inside the instance to an unknown IP and try pinging ovn2.
     # Check that the security policies prevent those ICMP packets from reaching ovn2 instance.
     # Disable DHCP client and SLAAC acceptance so we don't get automatic IPs added.
-    incus exec ovn1 --project=ovn1 -- rm /etc/systemd/network/eth0.network
-    incus exec ovn1 --project=ovn1 -- systemctl stop systemd-networkd
-    incus exec ovn1 --project=ovn1 -- systemctl mask systemd-networkd
-    incus exec ovn1 --project=ovn1 -- sysctl net.ipv6.conf.eth0.accept_ra=0
-    incus exec ovn1 --project=ovn1 -- sysctl net.ipv6.conf.eth0.autoconf=0
-    incus exec ovn1 --project=ovn1 -- ip a flush dev eth0
-    incus exec ovn1 --project=ovn1 -- ip a add 198.51.100.3/32 dev eth0
-    incus exec ovn1 --project=ovn1 -- ip a add 2001:db8:1:2::3/128 dev eth0
-    incus exec ovn1 --project=ovn1 -- ip a
+    incus exec ovn1 --project=prj-ovn1 -- rm /etc/systemd/network/eth0.network
+    incus exec ovn1 --project=prj-ovn1 -- systemctl stop systemd-networkd
+    incus exec ovn1 --project=prj-ovn1 -- systemctl mask systemd-networkd
+    incus exec ovn1 --project=prj-ovn1 -- sysctl net.ipv6.conf.eth0.accept_ra=0
+    incus exec ovn1 --project=prj-ovn1 -- sysctl net.ipv6.conf.eth0.autoconf=0
+    incus exec ovn1 --project=prj-ovn1 -- ip a flush dev eth0
+    incus exec ovn1 --project=prj-ovn1 -- ip a add 198.51.100.3/32 dev eth0
+    incus exec ovn1 --project=prj-ovn1 -- ip a add 2001:db8:1:2::3/128 dev eth0
+    incus exec ovn1 --project=prj-ovn1 -- ip a
     sleep 2
-    incus exec ovn1 --project=ovn1 -- ip -4 r add "${ovn1NetIPv4}" dev eth0
-    incus exec ovn1 --project=ovn1 -- ip -4 r del default || true
-    incus exec ovn1 --project=ovn1 -- ip -4 r add default via "${ovn1NetIPv4}" dev eth0 src 198.51.100.3
-    incus exec ovn1 --project=ovn1 -- ip -6 r add "${ovn1NetIPv6}" dev eth0
-    incus exec ovn1 --project=ovn1 -- ip -6 r del default || true
-    incus exec ovn1 --project=ovn1 -- ip -6 r add default via "${ovn1NetIPv6}" dev eth0 src 2001:db8:1:2::3
-    incus exec ovn1 --project=ovn1 -- ip -4 r
-    incus exec ovn1 --project=ovn1 -- ip -6 r
+    incus exec ovn1 --project=prj-ovn1 -- ip -4 r add "${ovn1NetIPv4}" dev eth0
+    incus exec ovn1 --project=prj-ovn1 -- ip -4 r del default || true
+    incus exec ovn1 --project=prj-ovn1 -- ip -4 r add default via "${ovn1NetIPv4}" dev eth0 src 198.51.100.3
+    incus exec ovn1 --project=prj-ovn1 -- ip -6 r add "${ovn1NetIPv6}" dev eth0
+    incus exec ovn1 --project=prj-ovn1 -- ip -6 r del default || true
+    incus exec ovn1 --project=prj-ovn1 -- ip -6 r add default via "${ovn1NetIPv6}" dev eth0 src 2001:db8:1:2::3
+    incus exec ovn1 --project=prj-ovn1 -- ip -4 r
+    incus exec ovn1 --project=prj-ovn1 -- ip -6 r
 
-    incus exec ovn1 -T -n --project=ovn1 -- ping -4 -w5 "${ovn2NICIPv4}" || true &
-    ! incus exec ovn2 -T -n --project=ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp and src 198.51.100.3 -q -c 1 > /dev/null || false
+    incus exec ovn1 -T -n --project=prj-ovn1 -- ping -4 -w5 "${ovn2NICIPv4}" || true &
+    ! incus exec ovn2 -T -n --project=prj-ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp and src 198.51.100.3 -q -c 1 > /dev/null || false
     wait
 
-    incus exec ovn1 -T -n --project=ovn1 -- ping -6 -w5 "${ovn2NICIPv6}" || true &
-    ! incus exec ovn2 -T -n --project=ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp6 and src 2001:db8:1:2::3 -q -c 1 > /dev/null || false
+    incus exec ovn1 -T -n --project=prj-ovn1 -- ping -6 -w5 "${ovn2NICIPv6}" || true &
+    ! incus exec ovn2 -T -n --project=prj-ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp6 and src 2001:db8:1:2::3 -q -c 1 > /dev/null || false
     wait
 
     # Clear all security rules and check spoofed packets are recieved to prove the security rules were working.
@@ -1236,30 +1236,30 @@ ovn_peering_tests() {
     ovn-nbctl lr-policy-del "incus-net${ovn1NetID}-lr"
     ovn-nbctl lr-policy-del "incus-net${ovn2NetID}-lr"
 
-    incus exec ovn1 -T -n --project=ovn1 -- ping -4 -w5 "${ovn2NICIPv4}" || true &
-    incus exec ovn2 -T -n --project=ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp and src 198.51.100.3 -q -c 1 > /dev/null
+    incus exec ovn1 -T -n --project=prj-ovn1 -- ping -4 -w5 "${ovn2NICIPv4}" || true &
+    incus exec ovn2 -T -n --project=prj-ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp and src 198.51.100.3 -q -c 1 > /dev/null
     wait
 
-    incus exec ovn1 -T -n --project=ovn1 -- ping -6 -w5 "${ovn2NICIPv6}" || true &
-    incus exec ovn2 -T -n --project=ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp6 and src 2001:db8:1:2::3 -q -c 1 > /dev/null
+    incus exec ovn1 -T -n --project=prj-ovn1 -- ping -6 -w5 "${ovn2NICIPv6}" || true &
+    incus exec ovn2 -T -n --project=prj-ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp6 and src 2001:db8:1:2::3 -q -c 1 > /dev/null
     wait
 
     # Check changing the network's subnet is reflected in the address sets and peering routes and the old subnets
     # are removed.
-    incus delete -f ovn1 --project=ovn1 # Remove as we cleared its DHCP config.
-    incus network set ovn1 ipv4.address=192.0.2.1/24 ipv6.address=2001:db8:1:1::1/64 --project=ovn1
-    incus launch "${instanceImage}" ovn1 -n ovn1 -s default --project=ovn1
+    incus delete -f ovn1 --project=prj-ovn1 # Remove as we cleared its DHCP config.
+    incus network set ovn1 ipv4.address=192.0.2.1/24 ipv6.address=2001:db8:1:1::1/64 --project=prj-ovn1
+    incus launch "${instanceImage}" ovn1 -n ovn1 -s default --project=prj-ovn1
     sleep 5
-    ovn1NICIPv4="$(incus list ovn1 -c4 --format=csv --project=ovn1 | cut -d' ' -f1)"
-    ovn1NICIPv6="$(incus list ovn1 -c6 --format=csv --project=ovn1 | cut -d' ' -f1)"
-    incus exec ovn2 -T -n --project=ovn2 -- ping -c1 -4 -w5 "${ovn1NICIPv4}"
-    incus exec ovn2 -T -n --project=ovn2 -- ping -c1 -6 -w5 "${ovn1NICIPv6}"
+    ovn1NICIPv4="$(incus list ovn1 -c4 --format=csv --project=prj-ovn1 | cut -d' ' -f1)"
+    ovn1NICIPv6="$(incus list ovn1 -c6 --format=csv --project=prj-ovn1 | cut -d' ' -f1)"
+    incus exec ovn2 -T -n --project=prj-ovn2 -- ping -c1 -4 -w5 "${ovn1NICIPv4}"
+    incus exec ovn2 -T -n --project=prj-ovn2 -- ping -c1 -6 -w5 "${ovn1NICIPv6}"
 
     # Check external ingress spoof protection.
     # Setup ovn1's IP on the external bridge, with a spoofed route source address and confirm no spoofed packets
     # reach ovn2's NIC.
-    ovn2IPv4="$(incus network get ovn2 volatile.network.ipv4.address --project=ovn2)"
-    ovn2IPv6="$(incus network get ovn2 volatile.network.ipv6.address --project=ovn2)"
+    ovn2IPv4="$(incus network get ovn2 volatile.network.ipv4.address --project=prj-ovn2)"
+    ovn2IPv6="$(incus network get ovn2 volatile.network.ipv6.address --project=prj-ovn2)"
 
     ip a add "${ovn1NICIPv4}/32" dev incusbr0
     ip a add "${ovn1NICIPv6}/128" dev incusbr0
@@ -1267,11 +1267,11 @@ ovn_peering_tests() {
     ip -6 r add "${ovn2NICIPv6}/128" via "${ovn2IPv6}" dev incusbr0 src "${ovn1NICIPv6}"
 
     ping -4 -w5 "${ovn2NICIPv4}" || true &
-    ! incus exec ovn2 -T -n --project=ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp and src "${ovn1NICIPv4}" -q -c 1 > /dev/null || false
+    ! incus exec ovn2 -T -n --project=prj-ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp and src "${ovn1NICIPv4}" -q -c 1 > /dev/null || false
     wait
 
     ping -6 -w5 "${ovn2NICIPv6}" || true &
-    ! incus exec ovn2 -T -n --project=ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp6 and src "${ovn1NICIPv6}" -q -c 1 > /dev/null || false
+    ! incus exec ovn2 -T -n --project=prj-ovn2 -- timeout 5s tcpdump -i eth0 -nn icmp6 and src "${ovn1NICIPv6}" -q -c 1 > /dev/null || false
     wait
 
     # Remove spoofed IPs and routes, and check can ping the instance NIC externally using non-spoofed IP.
@@ -1285,27 +1285,27 @@ ovn_peering_tests() {
     ip -6 r del "${ovn2NICIPv6}/128" via "${ovn2IPv6}" dev incusbr0
 
     # ACLs referencing peers.
-    incus network acl create ovn1 --project=ovn1
-    incus config device set ovn1 eth0 security.acls=ovn1 --project=ovn1
-    ! incus exec ovn1 -T -n --project=ovn1 -- ping -c1 -4 -w5 "${ovn2NICIPv4}" || false
-    ! incus exec ovn1 -T -n --project=ovn1 -- ping -c1 -6 -w5 "${ovn2NICIPv6}" || false
-    ! incus exec ovn2 -T -n --project=ovn2 -- ping -c1 -4 -w5 "${ovn1NICIPv4}" || false
-    ! incus exec ovn2 -T -n --project=ovn2 -- ping -c1 -6 -w5 "${ovn1NICIPv6}" || false
+    incus network acl create ovn1 --project=prj-ovn1
+    incus config device set ovn1 eth0 security.acls=ovn1 --project=prj-ovn1
+    ! incus exec ovn1 -T -n --project=prj-ovn1 -- ping -c1 -4 -w5 "${ovn2NICIPv4}" || false
+    ! incus exec ovn1 -T -n --project=prj-ovn1 -- ping -c1 -6 -w5 "${ovn2NICIPv6}" || false
+    ! incus exec ovn2 -T -n --project=prj-ovn2 -- ping -c1 -4 -w5 "${ovn1NICIPv4}" || false
+    ! incus exec ovn2 -T -n --project=prj-ovn2 -- ping -c1 -6 -w5 "${ovn1NICIPv6}" || false
 
-    incus network acl rule add ovn1 egress destination=@ovn1/ovn1foo action=allow --project=ovn1
-    incus exec ovn1 -T -n --project=ovn1 -- ping -c1 -4 -w5 "${ovn2NICIPv4}"
-    incus exec ovn1 -T -n --project=ovn1 -- ping -c1 -6 -w5 "${ovn2NICIPv6}"
-    ! incus exec ovn2 -T -n --project=ovn2 -- ping -c1 -4 -w5 "${ovn1NICIPv4}" || false
-    ! incus exec ovn2 -T -n --project=ovn2 -- ping -c1 -6 -w5 "${ovn1NICIPv6}" || false
+    incus network acl rule add ovn1 egress destination=@ovn1/ovn1foo action=allow --project=prj-ovn1
+    incus exec ovn1 -T -n --project=prj-ovn1 -- ping -c1 -4 -w5 "${ovn2NICIPv4}"
+    incus exec ovn1 -T -n --project=prj-ovn1 -- ping -c1 -6 -w5 "${ovn2NICIPv6}"
+    ! incus exec ovn2 -T -n --project=prj-ovn2 -- ping -c1 -4 -w5 "${ovn1NICIPv4}" || false
+    ! incus exec ovn2 -T -n --project=prj-ovn2 -- ping -c1 -6 -w5 "${ovn1NICIPv6}" || false
 
-    incus network acl rule add ovn1 ingress source=@ovn1/ovn1foo action=allow state=logged --project=ovn1
-    incus exec ovn1 -T -n --project=ovn1 -- ping -c1 -4 -w5 "${ovn2NICIPv4}"
-    incus exec ovn1 -T -n --project=ovn1 -- ping -c1 -6 -w5 "${ovn2NICIPv6}"
-    incus exec ovn2 -T -n --project=ovn2 -- ping -c1 -4 -w5 "${ovn1NICIPv4}"
-    incus exec ovn2 -T -n --project=ovn2 -- ping -c1 -6 -w5 "${ovn1NICIPv6}"
+    incus network acl rule add ovn1 ingress source=@ovn1/ovn1foo action=allow state=logged --project=prj-ovn1
+    incus exec ovn1 -T -n --project=prj-ovn1 -- ping -c1 -4 -w5 "${ovn2NICIPv4}"
+    incus exec ovn1 -T -n --project=prj-ovn1 -- ping -c1 -6 -w5 "${ovn2NICIPv6}"
+    incus exec ovn2 -T -n --project=prj-ovn2 -- ping -c1 -4 -w5 "${ovn1NICIPv4}"
+    incus exec ovn2 -T -n --project=prj-ovn2 -- ping -c1 -6 -w5 "${ovn1NICIPv6}"
 
     # Check that acl rule for ovn ingress has all the expected values
-    incus network acl show-log ovn1 --project=ovn1 | while IFS= read -r logline; do
+    incus network acl show-log ovn1 --project=prj-ovn1 | while IFS= read -r logline; do
       proto=$(echo "$logline" | jq -r '.proto')
       src=$(echo "$logline" | jq -r '.src')
       dst=$(echo "$logline" | jq -r '.dst')
@@ -1331,26 +1331,26 @@ ovn_peering_tests() {
     done
 
     # Check cannot add an ACL to a network NIC that references a peer connection from another network.
-    incus network create ovn1b --type=ovn network=incusbr0 --project=ovn1
-    ! incus network set ovn1b security.acls=ovn1 --project=ovn1 || false
-    incus network delete ovn1b --project=ovn1
+    incus network create ovn1b --type=ovn network=incusbr0 --project=prj-ovn1
+    ! incus network set ovn1b security.acls=ovn1 --project=prj-ovn1 || false
+    incus network delete ovn1b --project=prj-ovn1
 
     # Cleanup instances.
-    incus delete -f ovn1 --project=ovn1
-    incus delete -f ovn2 --project=ovn2
+    incus delete -f ovn1 --project=prj-ovn1
+    incus delete -f ovn2 --project=prj-ovn2
 
     # Check cannot delete peer used by ACL.
-    ! incus network peer delete ovn1 ovn1foo --project=ovn1 || false
+    ! incus network peer delete ovn1 ovn1foo --project=prj-ovn1 || false
 
     # Cleanup.
-    incus network acl delete ovn1 --project=ovn1
-    incus network peer delete ovn1 ovn1foo --project=ovn1
-    incus network delete ovn1 --project=ovn1
-    incus network delete ovn2 --project=ovn2
+    incus network acl delete ovn1 --project=prj-ovn1
+    incus network peer delete ovn1 ovn1foo --project=prj-ovn1
+    incus network delete ovn1 --project=prj-ovn1
+    incus network delete ovn2 --project=prj-ovn2
     incus network delete incusbr0
 
-    incus project delete ovn1
-    incus project delete ovn2
+    incus project delete prj-ovn1
+    incus project delete prj-ovn2
 }
 
 ovn_dhcp_reservation_tests() {
