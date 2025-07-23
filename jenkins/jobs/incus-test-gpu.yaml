@@ -39,7 +39,7 @@
         fi
 
         if [ "${platform}" = "nvidia" ] && [ "${target}" = "vm" ]; then
-            exec /lxc-ci/bin/maas-run name=argos noble ga-24.04 iommu,nvidia-vgpu bin/test-incus-gpu-vm nvidia
+            exec /lxc-ci/bin/maas-run name=argos jammy ga-22.04 iommu,nvidia-vgpu bin/test-incus-gpu-vm nvidia
         fi
 
         if [ "${platform}" = "amd" ] && [ "${target}" = "vm" ]; then
@@ -52,8 +52,7 @@
 
     execution-strategy:
       combination-filter: '
-      !(platform == "intel" && target != "vm") &&
-      !(platform == "nvidia" && target == "vm")'
+      !(platform == "intel" && target != "vm")'
 
     properties:
     - build-discarder:
