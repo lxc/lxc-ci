@@ -100,7 +100,7 @@ case "$i" in
         apt-get update
         apt-get dist-upgrade --yes
         apt-get install --no-install-recommends --yes build-essential curl
-        curl http://lab.linuxcontainers.org/nvidia/v18.0/nvidia-host.deb -o /root/nvidia-host.deb
+        curl http://lab.linuxcontainers.org/nvidia/v570/nvidia-host.deb -o /root/nvidia-host.deb
         apt-get install --yes /root/nvidia-host.deb
 
         echo "blacklist nouveau" > /etc/modprobe.d/blacklist-nouveau.conf
