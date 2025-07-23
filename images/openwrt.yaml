@@ -274,7 +274,7 @@ actions:
     mkdir -p /var/lock
     echo "console::askfirst:/usr/libexec/login.sh" >> /etc/inittab
   architectures:
-  - amd64
+  - x86_64
 
 - trigger: post-files
   action: |
