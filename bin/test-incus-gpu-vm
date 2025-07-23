@@ -70,7 +70,7 @@ if [ "${1}" = "nvidia" ]; then
     incus exec v4 -- apt-get install --no-install-recommends --yes build-essential wget pciutils linux-headers-virtual
     incus restart v4
     sleep 30
-    incus exec v4 -- wget -6 http://lab.linuxcontainers.org/nvidia/v18.0/nvidia-guest.deb
+    incus exec v4 -- wget -6 http://lab.linuxcontainers.org/nvidia/v570/nvidia-guest.deb
     incus exec v4 -- apt-get install --yes /root/nvidia-guest.deb
     incus exec v4 -- nvidia-smi
 fi
