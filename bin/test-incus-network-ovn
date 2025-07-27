@@ -1083,9 +1083,9 @@ ovn_peering_tests() {
     ovn2NetIPv6=$(incus network get ovn2 ipv6.address --project=prj-ovn2 | sed 's/\/64$//g')
 
     # Now setup peering.
-    incus network peer create ovn1 ovn1foo ovn2/ovn2 --project=prj-ovn1
+    incus network peer create ovn1 ovn1foo prj-ovn2/ovn2 --project=prj-ovn1
     incus network peer ls ovn1 --project=prj-ovn1 | grep ovn1foo | grep PENDING
-    incus network peer create ovn2 ovn2foo ovn1/ovn1 --project=prj-ovn2
+    incus network peer create ovn2 ovn2foo prj-ovn1/ovn1 --project=prj-ovn2
     incus network peer ls ovn1 --project=prj-ovn1 | grep ovn1foo | grep CREATED
     incus network peer ls ovn2 --project=prj-ovn2 | grep ovn2foo | grep CREATED
 
@@ -1140,10 +1140,10 @@ ovn_peering_tests() {
     ! incus exec ovn2 --project=prj-ovn2 -- ping -c1 -6 -w5 2001:db8:1:2::2 || false
 
     # Now setup peering again.
-    incus network peer create ovn1 ovn1foo ovn2/ovn2 --project=prj-ovn1
-    ! incus network peer create ovn2 ovn2foo ovn1/ovn1 --project=prj-ovn2 || false # Detect old peering entry exists.
+    incus network peer create ovn1 ovn1foo prj-ovn2/ovn2 --project=prj-ovn1
+    ! incus network peer create ovn2 ovn2foo prj-ovn1/ovn1 --project=prj-ovn2 || false # Detect old peering entry exists.
     incus network peer delete ovn2 ovn2foo --project=prj-ovn2 # Delete old peering entry.
-    incus network peer create ovn2 ovn2foo ovn1/ovn1 --project=prj-ovn2
+    incus network peer create ovn2 ovn2foo prj-ovn1/ovn1 --project=prj-ovn2
     incus network peer ls ovn2 --project=prj-ovn2 | grep ovn2foo | grep CREATED
 
     # Test that pinging now works between networks.
