@@ -182,10 +182,10 @@ do
         incus exec v1 -- mount | grep '/srv/rw type' -c | grep 1
         incus exec v1 -- mount | grep '/srv/ro type' -c | grep 1
 
-        # RW disks should use virtio-fs when used with the snap.
+        # RW disks should use virtio-fs.
         incus exec v1 -- mount | grep 'incus_dir1rw on /srv/rw type virtiofs (rw,relatime)'
 
-        # RO disks should use virtio-fs when used with the snap but be mounted readonly.
+        # RO disks should use virtio-fs but be mounted readonly.
         incus exec v1 -- mount | grep 'incus_dir1ro on /srv/ro type virtiofs (ro,relatime)'
 
         # Check UID/GID are correct.
@@ -201,6 +201,11 @@ do
         ! incus exec v1 -- chmod 777 /srv/ro || false
 
         ## Mount the readonly disk as rw inside VM using 9p and check the disk is still readonly at the Incus layer.
+        incus stop v1
+        incus config device set v1 dir1ro io.bus=9p
+        incus start v1
+        waitVMAgent v1
+
         incus exec v1 -- mkdir /srv/ro9p
         incus exec v1 -- mount -t 9p incus_dir1ro /srv/ro9p
         incus exec v1 -- mount | grep 'incus_dir1ro on /srv/ro9p type 9p (rw,relatime,sync,dirsync,access=client,trans=virtio)'
