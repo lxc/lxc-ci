@@ -206,6 +206,7 @@ do
         incus start v1
         waitVMAgent v1
 
+        incus exec v1 -- umount /srv/ro
         incus exec v1 -- mkdir /srv/ro9p
         incus exec v1 -- mount -t 9p incus_dir1ro /srv/ro9p
         incus exec v1 -- mount | grep 'incus_dir1ro on /srv/ro9p type 9p (rw,relatime,sync,dirsync,access=client,trans=virtio)'
