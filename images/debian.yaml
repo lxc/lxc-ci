@@ -1115,6 +1115,7 @@ packages:
     - bookworm
     - sid
     - trixie
+    - forky
 
   - packages:
     - cloud-init
@@ -1149,6 +1150,7 @@ packages:
     - arm64
     releases:
     - trixie
+    - forky
     - sid
 
   - packages:
@@ -1160,6 +1162,7 @@ packages:
     releases:
     - bookworm
     - trixie
+    - forky
     - sid
 
   - packages:
@@ -1253,6 +1256,7 @@ actions:
   - bookworm
   - sid
   - trixie
+  - forky
 
 - trigger: post-packages
   action: |-
@@ -1303,6 +1307,7 @@ actions:
     touch /etc/apparmor.d/local/sbin.dhclient
   releases:
   - trixie
+  - forky
 
 - trigger: post-files
   action: |-
@@ -1359,6 +1364,7 @@ actions:
   - bookworm
   - sid
   - trixie
+  - forky
 
 - trigger: post-files
   action: |-
