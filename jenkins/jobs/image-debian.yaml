@@ -22,6 +22,7 @@
         - bullseye
         - bookworm
         - trixie
+        - forky
 
     - axis:
         name: variant
@@ -47,7 +48,10 @@
             -o source.url="http://ftp.us.debian.org/debian"
 
     execution-strategy:
-      combination-filter: '!(architecture == "armhf" && release == "trixie") && !(architecture == "riscv64" && release != "trixie")'
+      combination-filter: '!(architecture == "armhf" && release == "trixie") &&
+        !(architecture == "armhf" && release == "forky") &&
+        !(architecture == "riscv64" && release == "bullseye") &&
+        !(architecture == "riscv64" && release == "bookworm")'
 
     properties:
     - build-discarder:
