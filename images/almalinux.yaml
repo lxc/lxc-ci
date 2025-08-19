@@ -119,6 +119,38 @@ source:
     1WKL
     =jk2t
     -----END PGP PUBLIC KEY BLOCK-----
+
+  # RPM-GPG-KEY-AlmaLinux-10
+  - |-
+    -----BEGIN PGP PUBLIC KEY BLOCK-----
+
+    mQINBGaP6O8BEACvg8IlAxGayV8zOi9Ex+Pd8lrj2BrBzloG8ri84ORp9o8ojq7l
+    ykKmIElHe11cQD2Lf/a4lcQQ4Ec3baiD786X6K2eVSlBEAnZMzfjDg8R63SfsBuu
+    8Yk+lUyqlBrDnSDYaPruOAzLIz2r82ikIC1jDbipZsMFPFHPI4/hayyWxJ3oGxRe
+    0mbtYLB9ElEKngt+/hfo7JLklakbznyIRuVEF3VrZb91XC6r/idqfJoNyBXSKidj
+    z0IwqOhgkLUk84rzltDo3AzwGqusd7PEuhOmqinOhp0hMdXsztD4TVyhw82iXu/O
+    onOAObZTZYfM6Z8btmDqkoo0aT+oPPCuZ3yC/caU9dhvCSXET/CGoXc3hL55u9PV
+    qmcVm/mwvuEImEAvxVc0/dBzEUk+FwW8KsaN3HoUKrC4/NqgmaQz8/42np7u2j+B
+    OOJ4hAckNEdWd8rB86CYN00sdxnvLBsp8V3IwEqXLhGOoBsagy61Z8hKCM+siOGn
+    xmbbybgaLOs+DPlxt9LrtgLJHODwmD96oysUPJuA0lv8KMiSpId0tSpp9Wn/wHBG
+    kRgxGYfzQu7WRvRZqQaleft1JTXXOjNzPur0RkJyb3yFwAoxpePyo/WrupM41OHW
+    58cEqdC6riCnJcS4U84RLj+hwvufBVB7areQ75sETnKeyozZW+P16E1t/wARAQAB
+    tChBbG1hTGludXggT1MgMTAgPHBhY2thZ2VyQGFsbWFsaW51eC5vcmc+iQJMBBMB
+    CgA2FiEE7m23uY9b9e3Z2g3l3uXBHMKh5XIFAmaP6O8CGwMECwkIBwQVCgkIBRYC
+    AwEAAh4FAheAAAoJEN7lwRzCoeVy32AP/A2+KI+JhmsxnactSptkAWGyAAf1YBWW
+    Js2sc9OJdKj7uIkzszCx7c7VIVeF/VLijIYpM/zwUgir5S5SimzQmY+FumwbKIml
+    K5RBsoSog22i7Edho0MLa1pa6qvnKS0nkl9DEcu8EbMUhucWbxGnCG/22EEMTrY+
+    Si1IZNkDGtlBHHBKMC+STbqqTxtdy4tAd2NYwWh3sBIh6PF7T4NLRAugu7PZQr5K
+    amS4z2lV3ebshGjieA0Zoznwh0AXgN0gZ/0pC/LXI25gcgtrvkCyL8Fe0AyZUMd8
+    UvZXaRSsm3SkCUIlGjPrvuItn1D7tHmqVSCDKXDM2TqjfiRm1JF+2OFCBNvGz19V
+    LxWd/Gf+0qw0dtKxRMKzGh0mxXY40hjtmYZulrPxhG5itNDjStovgrevM1HBsXs9
+    ikrkOGQ0pFcqizTn4ZKAmMozEMuIuV89Vof2bBCg7pHT1FmXVdAaYJxb6a7A/CgN
+    qHjoh8AxBiGw/Q2NM4YJlUVhHqqd+/lUG3WJqACNEnqSlZkYQ3HqNNaKhHVbD4mN
+    q/g6v+f8aWWDZDsI6IAfbJUB+KPEnIvQJQleWuHrq7kcUMhEq3dwBMIoTVEHhUUr
+    RQKToSEM1rN7PcanaXQM2gy141dS7tFLxhapG8ug75LkIUnEOpPMtUjvrU1ZELGq
+    36vVHBB+dTDg
+    =tJCw
+    -----END PGP PUBLIC KEY BLOCK-----
   variant: minimal
 
 targets:
