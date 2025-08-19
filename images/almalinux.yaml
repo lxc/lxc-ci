@@ -319,7 +319,6 @@ packages:
     - cronie
     - cronie-noanacron
     - curl
-    - dhclient
     - glibc-langpack-en
     - glibc-locale-source
     - hostname
@@ -332,6 +331,13 @@ packages:
     - sudo
     - vim-minimal
     action: install
+
+  - packages:
+    - dhclient
+    action: install
+    releases: # dhclient is not available in 10
+    - 8
+    - 9
 
   - packages:
     - network-scripts
@@ -365,6 +371,7 @@ packages:
     - container
     releases:
     - 9
+    - 10
     variants:
     - default
 
@@ -496,7 +503,23 @@ actions:
     set -eux
 
     mkdir -p /etc/NetworkManager/conf.d/
-    printf "[main]\ndhcp=dhclient" > /etc/NetworkManager/conf.d/dhcp-client.conf
+    printf "[main]\ndhcp=internal\n" > /etc/NetworkManager/conf.d/dhcp-client.conf
+
+    systemctl enable NetworkManager.service
+  types:
+  - container
+  variants:
+  - default
+  releases:
+  - 10
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    mkdir -p /etc/NetworkManager/conf.d/
+    printf "[main]\ndhcp=dhclient\n" > /etc/NetworkManager/conf.d/dhcp-client.conf
 
     systemctl enable NetworkManager.service
   types:
