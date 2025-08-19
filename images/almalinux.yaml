@@ -490,6 +490,72 @@ actions:
   action: |-
     #!/bin/sh
     set -eux
+    kver=$(basename /boot/initramfs-*.img | sed -r 's#initramfs-(.+)\.img#\1#' | head -n1)
+    if [ -z "$kver" ]; then
+      echo "No initramfs found in /boot!" >&2
+      exit 1
+    fi
+    kernel_path=$(find /boot -name "vmlinuz-${kver}" || true)
+    if [ -z "$kernel_path" ]; then
+      echo "Kernel image /boot/vmlinuz-${kver} not found!" >&2
+      ls -l /boot >&2
+      exit 1
+    fi
+    root_dev=$(df / | tail -n1 | awk '{print $1}')
+    if [ -b "$root_dev" ]; then
+      root_uuid=$(blkid -s UUID -o value "$root_dev")
+      if [ -z "$root_uuid" ]; then
+        echo "Failed to get UUID for $root_dev" >&2
+        exit 1
+      fi
+    else
+      echo "Error: Root device $root_dev not found!" >&2
+      exit 1
+    fi
+    . /etc/os-release
+    GRUB_ENTRY_NAME="${NAME} ${VERSION} ${kver}"
+    dracut --kver "${kver}" -f --no-hostonly --add-drivers "virtio_scsi virtio_console sd_mod ext4 virtio_blk virtio_pci scsi_mod" --install "blkid"
+    disk_dev=$(lsblk -no pkname "$root_dev" | head -n1)
+    if [ -z "$disk_dev" ]; then
+      echo "Failed to find disk device for $root_dev" >&2
+      exit 1
+    fi
+    disk_dev="/dev/$disk_dev"
+    efi_part="${disk_dev}p1"
+    if [ ! -b "$efi_part" ]; then
+      echo "EFI partition $efi_part not found!" >&2
+      exit 1
+    fi
+    mkdir -p /mnt/efi
+    mount "$efi_part" /mnt/efi
+    target=/mnt/efi/EFI/almalinux/grub.cfg
+    mkdir -p /mnt/efi/EFI/almalinux
+    cat > "${target}" <<EOF
+    set timeout=5
+    set default=0
+
+    menuentry '${GRUB_ENTRY_NAME}' {
+        set root=(hd0,gpt2)
+        linux /boot/vmlinuz-${kver} root=UUID=${root_uuid} ro console=tty1 console=ttyS0
+        initrd /boot/initramfs-${kver}.img
+    }
+
+    menuentry 'UEFI Firmware Settings' {
+        fwsetup
+    }
+    EOF
+    umount /mnt/efi
+    mkdir -p /boot/grub2
+    touch /boot/grub2/grubenv
+  types:
+  - vm
+  releases:
+  - 10
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
 
     systemctl enable NetworkManager.service
   types:
