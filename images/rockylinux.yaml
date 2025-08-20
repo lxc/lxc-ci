@@ -89,13 +89,16 @@ targets:
       after: 4
       content: |-
         lxc.include = LXC_TEMPLATE_CONFIG/common.conf
+
     - type: user
       after: 4
       content: |-
         lxc.include = LXC_TEMPLATE_CONFIG/userns.conf
+
     - type: all
       content: |-
         lxc.arch = {{ image.architecture_kernel }}
+
 files:
 - name: hostname
   path: /etc/hostname
@@ -196,12 +199,14 @@ files:
   content: |-
     NETWORKING=yes
     HOSTNAME=LXC_NAME
+
 - name: network.incus
   path: /etc/sysconfig/network
   generator: template
   content: |-
     NETWORKING=yes
     HOSTNAME={{ container.name }}
+
 - name: meta-data
   generator: cloud-init
   variants:
@@ -283,14 +288,6 @@ packages:
     - cloud
 
   - packages:
-    - cloud-utils-growpart
-    action: install
-    types:
-    - vm
-    variants:
-    - cloud
-
-  - packages:
     - NetworkManager
     action: install
     types:
@@ -299,6 +296,14 @@ packages:
     - 9
     variants:
     - default
+
+  - packages:
+    - cloud-utils-growpart
+    action: install
+    types:
+    - vm
+    variants:
+    - cloud
 
   - packages:
     - shim
@@ -348,9 +353,11 @@ actions:
   action: |-
     #!/bin/sh
     set -eux
+
     # Disable SELinux
     mkdir -p /selinux
     echo 0 > /selinux/enforce
+
     # Disable loginuid in PAM stack
     sed -i '/^session.*pam_loginuid.so/s/^session/# session/' /etc/pam.d/*
 
@@ -365,11 +372,14 @@ actions:
   action: |-
     #!/bin/sh
     set -eux
+
     # Regenerate initramfs
     kver=$(ls /boot/initramfs-*.img | sed -r 's#.*initramfs-(.+)\.img#\1#')
     dracut --kver "${kver}" -f
+
     target="$(readlink -f /etc/grub2-efi.cfg)"
     grub2-mkconfig -o "${target}"
+
     sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_UUID}#g" "${target}"
   types:
   - vm
@@ -385,9 +395,11 @@ actions:
     # Create grub.cfg file
     grub2-mkconfig -o "${target}"
     sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_UUID}#g" "${target}"
+
     # Update files in /boot/loader/entries/. `grubby` needs to be run after
     # `grub2-mkconfig` as the latter overwrites files in /boot/loader/entries/.
     grubby --update-kernel=/boot/vmlinuz-${kver} --args="root=${DISTROBUILDER_ROOT_UUID} ro"
+
     # Regenerate initramfs
     dracut --kver "${kver}" -f
   types:
@@ -411,7 +423,8 @@ actions:
     #!/bin/sh
     set -eux
     mkdir -p /etc/NetworkManager/conf.d/
-    printf "[main]\ndhcp=dhclient" > /etc/NetworkManager/conf.d/dhcp-client.conf
+    printf "[main]\ndhcp=dhclient\n" > /etc/NetworkManager/conf.d/dhcp-client.conf
+
     systemctl enable NetworkManager.service
   types:
   - container
