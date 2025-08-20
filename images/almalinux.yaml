@@ -490,17 +490,22 @@ actions:
   action: |-
     #!/bin/sh
     set -eux
+
+    # Track down the kernel
     kver=$(basename /boot/initramfs-*.img | sed -r 's#initramfs-(.+)\.img#\1#' | head -n1)
     if [ -z "$kver" ]; then
       echo "No initramfs found in /boot!" >&2
       exit 1
     fi
+
     kernel_path=$(find /boot -name "vmlinuz-${kver}" || true)
     if [ -z "$kernel_path" ]; then
       echo "Kernel image /boot/vmlinuz-${kver} not found!" >&2
       ls -l /boot >&2
       exit 1
     fi
+
+    # Track down the root disk
     root_dev=$(df / | tail -n1 | awk '{print $1}')
     if [ -b "$root_dev" ]; then
       root_uuid=$(blkid -s UUID -o value "$root_dev")
@@ -512,25 +517,33 @@ actions:
       echo "Error: Root device $root_dev not found!" >&2
       exit 1
     fi
+
+    # Re-generate the initrd
     . /etc/os-release
     GRUB_ENTRY_NAME="${NAME} ${VERSION} ${kver}"
     dracut --kver "${kver}" -f --no-hostonly --add-drivers "virtio_scsi virtio_console sd_mod ext4 virtio_blk virtio_pci scsi_mod" --install "blkid"
+
+
+    # Track down the EFI partition
     disk_dev=$(lsblk -no pkname "$root_dev" | head -n1)
     if [ -z "$disk_dev" ]; then
       echo "Failed to find disk device for $root_dev" >&2
       exit 1
     fi
     disk_dev="/dev/$disk_dev"
+
     efi_part="${disk_dev}p1"
     if [ ! -b "$efi_part" ]; then
       echo "EFI partition $efi_part not found!" >&2
       exit 1
     fi
+
+    # Generate the grub configuration
     mkdir -p /mnt/efi
     mount "$efi_part" /mnt/efi
-    target=/mnt/efi/EFI/almalinux/grub.cfg
+
     mkdir -p /mnt/efi/EFI/almalinux
-    cat > "${target}" <<EOF
+    cat > "/mnt/efi/EFI/almalinux/grub.cfg" <<EOF
     set timeout=5
     set default=0
 
@@ -544,6 +557,7 @@ actions:
         fwsetup
     }
     EOF
+
     umount /mnt/efi
     mkdir -p /boot/grub2
     touch /boot/grub2/grubenv
