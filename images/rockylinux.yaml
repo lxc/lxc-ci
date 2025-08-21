@@ -286,6 +286,7 @@ packages:
     - glibc-locale-source
     - hostname
     - initscripts
+    - iproute
     - openssh-clients
     - passwd
     - policycoreutils
