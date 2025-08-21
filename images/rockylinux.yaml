@@ -70,6 +70,38 @@ source:
     =PzIf
     -----END PGP PUBLIC KEY BLOCK-----
 
+  # RPM-GPG-KEY-Rocky-10
+  - |-
+    -----BEGIN PGP PUBLIC KEY BLOCK-----
+
+    mQINBGgq4akBEADFYHb9OX5/hlSJuYezxnzab01PUnec4/WvRdU5QRCySzlSicxd
+    CYRrasQEYnytGBrTMM7fGSDOH9BtVpKfFvOW8yxfBXgkXbBT2p2/PK96qjIistbG
+    GZK5yU5qhHTO4H30MaKvO8u+q3Icdtxc1I2OuGTrWQ0+MAI7dZPmNTqrvBlqks/V
+    D6Uj9SSYpV0n12GdFQZI36+MXuI170vr0qRWaU8cl0Ew3nqU9rOBvnHPzab5UhCy
+    g5+XE7QwRpKKziRxWNc40hU1OpT8yr4hoZdw9LimdA0yc7mniz7cWGPffMrfBQck
+    1TKfLC8WsTSJ32ZPT/GildTIyEOv229ofhfBnY8H+MeD1ccW352yHflvKr9Pfhxt
+    2lQuN7qCFpm5kip13hgKSnBL9M8JRICvjedrY4Q3yOfFZytWIsYsY2KAHe8lLTaR
+    afPtnC8TWkiqR3P+dpaWopnoayuVAVFIK2jzix8PgC+TwYSH+IJcmw1O1WwpDt8q
+    JfAE9Sh9X07mfbGnp0tJGG/+HXuSdwII/GXQeRE0L34DT7XcY3e3tuYCCoSpnvtm
+    VvKpW42TfGfjwRWpW/fia30YHLXSoff26G38E5LfQTjjl95uyQWv3wpDExUrDOez
+    d2hDZ3iJVWRZP3YZ1zgJexwlVoPTbDUe/wPcrFo5Don4YFD54ctUp/O39wARAQAB
+    tDxSZWxlYXNlIEVuZ2luZWVyaW5nIChSb2NreSBMaW51eCAxMCkgPHJlbGVuZ0By
+    b2NreWxpbnV4Lm9yZz6JAlIEEwEIADwWIQT8ImhZwIYL8N25WwhbEGxzb+38hQUC
+    aCrhqQIbDwULCQgHAgMiAgEGFQoJCAsCBBYCAwECHgcCF4AACgkQWxBsc2/t/IWE
+    sA/8CrZAFJwkMo2geIhcWW37XCGfKwUfB42QKkJQYoF2biOQxIcGGYU3AaA4HSfx
+    o3CvutpwTgOQmG4ZfQd920KXMcSLd0actHQ+iJP+NPFv50ks2igv51QdPLQtZKvg
+    A/tlKh4Oc0kgNBxueD5AZv8FJBEPQ7I0J/Ph9Ev1ShJrjnlVpTelNAdTNoNqf0xD
+    LH7J0kyYgqbea+vxQposbc9hnaqRWv7hbAOj8cYbhkvvtG6oyn+AZaJoM00rTAsL
+    cPjZk+HQdyUYB6JSKRZ5J16yn+D0UMwmmTI02dpd5ClFopGD/mT2erOn8hAhvvqF
+    Wr1EZEKH6YwF6PzdZ9KtbGPhRcRzVeO7EOAmZu0jhvkMTjNODYHy4xsueJ+rHf1I
+    M4rDSL579tPLAqYmnW1S3AbrJ0WkJc9KsWwzNRC5r+ftq2eTncfTU7RfGtw9shqR
+    fTkB4NUMfTOtSUrDeWYYEQtCekexoqhaP7gjsUqWNTSPgConOFIwMsT0XOvPPJgS
+    Dc0hnV6ew148jAf2L03hgDctqgsrUW3KB18bpkjUE7zfL1tweSqU3VDEQStxX9h8
+    hG+VGHS7G7F4yYTcZOTlYfDU8ex/HkudPSOfwMnftqVnXqUpnQDKkUUPyxSCVKr8
+    yN2apurNRzlrmWlJ8IuBtYFSSEqJ6sncQ/LrJRQQLTKp7sE=
+    =32Ym
+    -----END PGP PUBLIC KEY BLOCK-----
+
   variant: minimal
 
 targets:
@@ -89,13 +121,16 @@ targets:
       after: 4
       content: |-
         lxc.include = LXC_TEMPLATE_CONFIG/common.conf
+
     - type: user
       after: 4
       content: |-
         lxc.include = LXC_TEMPLATE_CONFIG/userns.conf
+
     - type: all
       content: |-
         lxc.arch = {{ image.architecture_kernel }}
+
 files:
 - name: hostname
   path: /etc/hostname
@@ -196,12 +231,14 @@ files:
   content: |-
     NETWORKING=yes
     HOSTNAME=LXC_NAME
+
 - name: network.incus
   path: /etc/sysconfig/network
   generator: template
   content: |-
     NETWORKING=yes
     HOSTNAME={{ container.name }}
+
 - name: meta-data
   generator: cloud-init
   variants:
@@ -245,7 +282,6 @@ packages:
     - cronie
     - cronie-noanacron
     - curl
-    - dhclient
     - glibc-langpack-en
     - glibc-locale-source
     - hostname
@@ -258,6 +294,13 @@ packages:
     - sudo
     - vim-minimal
     action: install
+
+  - packages:
+    - dhclient
+    action: install
+    releases: # dhclient is not available in 10
+    - 8
+    - 9
 
   - packages:
     - network-scripts
@@ -283,22 +326,23 @@ packages:
     - cloud
 
   - packages:
-    - cloud-utils-growpart
-    action: install
-    types:
-    - vm
-    variants:
-    - cloud
-
-  - packages:
     - NetworkManager
     action: install
     types:
     - container
     releases:
     - 9
+    - 10
     variants:
     - default
+
+  - packages:
+    - cloud-utils-growpart
+    action: install
+    types:
+    - vm
+    variants:
+    - cloud
 
   - packages:
     - shim
@@ -348,9 +392,11 @@ actions:
   action: |-
     #!/bin/sh
     set -eux
+
     # Disable SELinux
     mkdir -p /selinux
     echo 0 > /selinux/enforce
+
     # Disable loginuid in PAM stack
     sed -i '/^session.*pam_loginuid.so/s/^session/# session/' /etc/pam.d/*
 
@@ -365,11 +411,14 @@ actions:
   action: |-
     #!/bin/sh
     set -eux
+
     # Regenerate initramfs
     kver=$(ls /boot/initramfs-*.img | sed -r 's#.*initramfs-(.+)\.img#\1#')
     dracut --kver "${kver}" -f
+
     target="$(readlink -f /etc/grub2-efi.cfg)"
     grub2-mkconfig -o "${target}"
+
     sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_UUID}#g" "${target}"
   types:
   - vm
@@ -385,15 +434,97 @@ actions:
     # Create grub.cfg file
     grub2-mkconfig -o "${target}"
     sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_UUID}#g" "${target}"
+
     # Update files in /boot/loader/entries/. `grubby` needs to be run after
     # `grub2-mkconfig` as the latter overwrites files in /boot/loader/entries/.
     grubby --update-kernel=/boot/vmlinuz-${kver} --args="root=${DISTROBUILDER_ROOT_UUID} ro"
+
     # Regenerate initramfs
     dracut --kver "${kver}" -f
   types:
   - vm
   releases:
   - 9
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Track down the kernel
+    kver=$(basename /boot/initramfs-*.img | sed -r 's#initramfs-(.+)\.img#\1#' | head -n1)
+    if [ -z "$kver" ]; then
+      echo "No initramfs found in /boot!" >&2
+      exit 1
+    fi
+
+    kernel_path=$(find /boot -name "vmlinuz-${kver}" || true)
+    if [ -z "$kernel_path" ]; then
+      echo "Kernel image /boot/vmlinuz-${kver} not found!" >&2
+      ls -l /boot >&2
+      exit 1
+    fi
+
+    # Track down the root disk
+    root_dev=$(df / | tail -n1 | awk '{print $1}')
+    if [ -b "$root_dev" ]; then
+      root_uuid=$(blkid -s UUID -o value "$root_dev")
+      if [ -z "$root_uuid" ]; then
+        echo "Failed to get UUID for $root_dev" >&2
+        exit 1
+      fi
+    else
+      echo "Error: Root device $root_dev not found!" >&2
+      exit 1
+    fi
+
+    # Re-generate the initrd
+    . /etc/os-release
+    GRUB_ENTRY_NAME="${NAME} ${VERSION} ${kver}"
+    dracut --kver "${kver}" -f --no-hostonly --add-drivers "virtio_scsi virtio_console sd_mod ext4 virtio_blk virtio_pci scsi_mod" --install "blkid"
+
+
+    # Track down the EFI partition
+    disk_dev=$(lsblk -no pkname "$root_dev" | head -n1)
+    if [ -z "$disk_dev" ]; then
+      echo "Failed to find disk device for $root_dev" >&2
+      exit 1
+    fi
+    disk_dev="/dev/$disk_dev"
+
+    efi_part="${disk_dev}p1"
+    if [ ! -b "$efi_part" ]; then
+      echo "EFI partition $efi_part not found!" >&2
+      exit 1
+    fi
+
+    # Generate the grub configuration
+    mkdir -p /mnt/efi
+    mount "$efi_part" /mnt/efi
+
+    mkdir -p /mnt/efi/EFI/rocky
+    cat > "/mnt/efi/EFI/rocky/grub.cfg" <<EOF
+    set timeout=5
+    set default=0
+
+    menuentry '${GRUB_ENTRY_NAME}' {
+        set root=(hd0,gpt2)
+        linux /boot/vmlinuz-${kver} root=UUID=${root_uuid} ro console=tty1 console=ttyS0
+        initrd /boot/initramfs-${kver}.img
+    }
+
+    menuentry 'UEFI Firmware Settings' {
+        fwsetup
+    }
+    EOF
+
+    umount /mnt/efi
+    mkdir -p /boot/grub2
+    touch /boot/grub2/grubenv
+  types:
+  - vm
+  releases:
+  - 10
 
 - trigger: post-files
   action: |-
@@ -410,8 +541,26 @@ actions:
   action: |-
     #!/bin/sh
     set -eux
+
     mkdir -p /etc/NetworkManager/conf.d/
-    printf "[main]\ndhcp=dhclient" > /etc/NetworkManager/conf.d/dhcp-client.conf
+    printf "[main]\ndhcp=internal\n" > /etc/NetworkManager/conf.d/dhcp-client.conf
+
+    systemctl enable NetworkManager.service
+  types:
+  - container
+  variants:
+  - default
+  releases:
+  - 10
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    mkdir -p /etc/NetworkManager/conf.d/
+    printf "[main]\ndhcp=dhclient\n" > /etc/NetworkManager/conf.d/dhcp-client.conf
+
     systemctl enable NetworkManager.service
   types:
   - container
