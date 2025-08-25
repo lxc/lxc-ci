@@ -307,6 +307,9 @@ actions:
 
     systemctl mask systemd-homed-firstboot.service || true
 
+    # Re-apply all the capabilities.
+    rpm -qa | sudo xargs -n1 rpm --setcaps
+
 - trigger: post-packages
   action: |-
     #!/bin/sh
