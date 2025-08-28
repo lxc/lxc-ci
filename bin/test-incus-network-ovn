@@ -1542,8 +1542,8 @@ ovn_acl_tests() {
 
     ! incus network acl delete incusbr0-ping || false # Can't delete ACL while in use.
 
-    # Expect 3 Incus related port groups to exist (network port group, ACL port group, and per-ACL-per-network port group).
-    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 3
+    # Expect 6 Incus related port groups to exist (network port group, ACL port group, and per-ACL-per-network port groups).
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 6
 
     # Delete network to clean up OVN ACL port group.
     incus network delete ovn0
@@ -1562,8 +1562,8 @@ ovn_acl_tests() {
     # Assign ACL to OVN network.
     incus network set ovn0 security.acls=incusbr0-ping
 
-    # Expect 3 Incus related port groups to exist now its assigned (network port group, ACL port group, and per-ACL-per-network port group).
-    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 3
+    # Expect 6 Incus related port groups to exist now its assigned (network port group, ACL port group, and per-ACL-per-network port groups).
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 6
 
     # Launch containers and check baseline services (DHCP, SLAAC, DNS) and incusbr0-ping ACL.
     incus launch "${instanceImage}" c1 -n ovn0 -s default
@@ -1630,7 +1630,7 @@ ovn_acl_tests() {
     incus network unset ovn0 security.acls
 
     # Check ACL port groups still exists.
-    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 3
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 6
 
     # Check only c1 has per-NIC ACL rules.
     ovn-nbctl list acl | grep -c 'match.*instance.*eth0' | grep 2
@@ -1703,8 +1703,8 @@ ovn_acl_tests() {
 
     incus start c1
 
-    # Expect 3 Incus related port group to exist now its started (network port group, ACL port group, and per-ACL-per-network port group).
-    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 3
+    # Expect 6 Incus related port group to exist now its started (network port group, ACL port group, and per-ACL-per-network port groups).
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 6
 
     # Test delete instance and check unused OVN port group is cleaned up.
     incus delete -f c1
@@ -1715,8 +1715,8 @@ ovn_acl_tests() {
     # Create container with network assigned ACL and NIC specific ACL too. Check both sets of rules are applied.
     incus network set ovn0 ipv6.dhcp.stateful=true security.acls=incusbr0-ping
 
-    # Expect 3 Incus related port group to exist now its assigned (network port group, ACL port group, and per-ACL-per-network port group).
-    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 3
+    # Expect 6 Incus related port group to exist now its assigned (network port group, ACL port group, and per-ACL-per-network port groups).
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 6
 
     incus init "${instanceImage}" c1 -s default -n ovn0
     incus config device set c1 eth0 ipv4.address=10.10.11.2 ipv6.address=fd42:4242:4242:1011::2
@@ -1736,13 +1736,13 @@ ovn_acl_tests() {
     incus network acl rule add ingress-ping ingress action=allow protocol=icmp4
     incus network acl rule add ingress-ping ingress action=allow protocol=icmp6
 
-    # Expect 3 Incus related port group to exist as new ACL not assigned to anything yet.
-    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 3
+    # Expect 6 Incus related port group to exist as new ACL not assigned to anything yet.
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 6
 
     incus config device set c1 eth0 security.acls=ingress-ping
 
-    # Expect 5 Incus related port group to exist now new ACL is assigned (will add new ACL port group and new per-ACL-per-network port group).
-    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 5
+    # Expect 11 Incus related port group to exist now new ACL is assigned (will add new ACL port group and new per-ACL-per-network port groups).
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 11
 
     incus exec c2 -- ping -c1 -w5 -4 10.10.11.2
     incus exec c2 -- ping -c1 -w5 -6 fd42:4242:4242:1011::2
@@ -1776,14 +1776,14 @@ ovn_acl_tests() {
     incus network acl rule remove ingress-ping ingress action=allow protocol=icmp4 source=ingress-ping
     incus network acl rule remove ingress-ping ingress action=allow protocol=icmp6 source=ingress-ping
 
-    # Expect 5 Incus related port groups to exist as new one not assigned.
-    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 5
+    # Expect 11 Incus related port groups to exist as new one not assigned.
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 11
 
     incus network acl rule add ingress-ping ingress action=allow protocol=icmp4 source=test-empty-group
     incus network acl rule add ingress-ping ingress action=allow protocol=icmp6 source=test-empty-group
 
-    # Expect 6 Incus related port groups to exist as new one now used by ACL that is assigned.
-    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 6
+    # Expect 9 Incus related port groups to exist as new one now used by ACL that is assigned.
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 9
 
     ! incus exec c2 -- ping -c1 -w5 -4 c1.incus || false
     ! incus exec c2 -- ping -c1 -w5 -6 c1.incus || false
@@ -1804,7 +1804,7 @@ ovn_acl_tests() {
     # Test using external and internal reserved classifiers.
     incus network acl create icmp
     incus network set ovn0 security.acls=icmp
-    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 3
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 6
 
     # Test can't ping external uplink router IP or internal IPs.
     ! incus exec c1 -- ping -c1 -w5 -4 10.10.10.1 || false
@@ -1843,17 +1843,17 @@ ovn_acl_tests() {
         ipv4.address=10.10.12.1/24 ipv4.nat=true \
         ipv6.address=fd42:4242:4242:1012::1/64 ipv6.nat=true \
         security.acls=icmp
-    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 5
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 11
 
     # Check per-ACL-per-network is removed when unassigning ACL.
     incus network unset ovn1 security.acls
-    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 4
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 7
 
     # Connect c2 to ovn1 with icmp ACL and check its created.
     incus stop -f c2
     incus config device set c2 eth0 network=ovn1 security.acls=icmp
     incus start c2
-    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 5
+    ovn-nbctl --bare --column=name --format=csv find port_group | grep -c incus | grep 11
 
     # Connect c1 to ovn1 without any explicit ACLs.
     incus stop -f c1
