@@ -56,6 +56,10 @@ files:
     [Network]
     DHCP=ipv4
 
+    [DHCPv4]
+    UseDomains=true
+    UseMTU=true
+
     [DHCP]
     ClientIdentifier=mac
 - path: /etc/fstab
