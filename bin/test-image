@@ -16,6 +16,12 @@ cleanup() {
     incus image delete "${TEST_IMAGE}" 2>/dev/null || true
 
     if [ "${FAIL}" = "1" ]; then
+        # NOTE: Make pre-release builds non-fatal.
+        if [ "${DIST}" = "debian" ] && [ "${RELEASE}" = "forky" ]; then
+            echo "==> WARNING: Failure will be ignored as Debian forky is not stable yet"
+            exit 0
+        fi
+
         exit 1
     fi
 
