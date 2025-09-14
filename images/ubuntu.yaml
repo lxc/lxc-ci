@@ -431,7 +431,6 @@ packages:
     releases:
     - jammy
     - noble
-    - oracular
     - plucky
     action: install
 
@@ -469,7 +468,6 @@ packages:
     action: install
     releases:
     - noble
-    - oracular
     - plucky
 
   - packages:
@@ -597,7 +595,6 @@ actions:
     ln -sf ../run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
   releases:
   - noble
-  - oracular
   - plucky
 
 - trigger: post-packages
