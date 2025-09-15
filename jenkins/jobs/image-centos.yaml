@@ -18,6 +18,7 @@
         type: user-defined
         values:
         - 9-Stream
+        - 10-Stream
 
     - axis:
         name: variant
@@ -35,20 +36,23 @@
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
         [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
 
+        IFS="-" read -ra result_arr <<< "${release}"
+        CENTOS_VERSION = ${result_arr[0]}
+
         EXTRA_ARGS=""
-        if [ "${release}" = "7" ] && [ "${architecture}" != "amd64" ]; then
+        if [ ${CENTOS_VERSION} = 7 ] && [ "${architecture}" != "amd64" ]; then
             EXTRA_ARGS="-o source.url=http://mirror.math.princeton.edu/pub/centos-altarch/ -o source.skip_verification=true"
         fi
 
-        if [ "${release}" = "8-Stream" ] || [ "${release}" = "9-Stream" ]; then
+        if [ ${CENTOS_VERSION} >= 8 ]; then
             EXTRA_ARGS="${EXTRA_ARGS} -o source.variant=boot"
         fi
 
-        if [ "${release}" = "9-Stream" ]; then
+        if [ ${CENTOS_VERSION} >= 9 ]; then
             EXTRA_ARGS="${EXTRA_ARGS} -o source.url=https://mirror1.hs-esslingen.de/pub/Mirrors/centos-stream"
         fi
 
-        if [ "${release}" = "7" ]; then
+        if [ ${CENTOS_VERSION} = 7 ]; then
             EXTRA_ARGS="${EXTRA_ARGS} -o packages.manager=yum"
         fi
 
