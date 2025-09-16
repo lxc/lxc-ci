@@ -37,22 +37,22 @@
         [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
 
         IFS="-" read -ra result_arr <<< "${release}"
-        CENTOS_VERSION = ${result_arr[0]}
+        CENTOS_VERSION=${result_arr[0]}
 
         EXTRA_ARGS=""
-        if [ ${CENTOS_VERSION} = 7 ] && [ "${architecture}" != "amd64" ]; then
+        if [ "${CENTOS_VERSION}" -eq "7" ] && [ "${architecture}" != "amd64" ]; then
             EXTRA_ARGS="-o source.url=http://mirror.math.princeton.edu/pub/centos-altarch/ -o source.skip_verification=true"
         fi
 
-        if [ ${CENTOS_VERSION} >= 8 ]; then
+        if [ "${CENTOS_VERSION}" -ge "8" ]; then
             EXTRA_ARGS="${EXTRA_ARGS} -o source.variant=boot"
         fi
 
-        if [ ${CENTOS_VERSION} >= 9 ]; then
+        if [ "${CENTOS_VERSION}" -ge "9" ]; then
             EXTRA_ARGS="${EXTRA_ARGS} -o source.url=https://mirror1.hs-esslingen.de/pub/Mirrors/centos-stream"
         fi
 
-        if [ ${CENTOS_VERSION} = 7 ]; then
+        if [ "${CENTOS_VERSION}" -eq "7" ]; then
             EXTRA_ARGS="${EXTRA_ARGS} -o packages.manager=yum"
         fi
 
