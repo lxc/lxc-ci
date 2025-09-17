@@ -25,6 +25,7 @@
         type: user-defined
         values:
         - default
+        - cloud
 
     builders:
     - shell: |-
@@ -38,10 +39,6 @@
         TYPE="container"
         if [ "${architecture}" = "amd64" ] || [ "${architecture}" = "arm64" ]; then
             TYPE="container,vm"
-        fi
-
-        if [ "${release}" = "Sisyphus" ]; then
-            TYPE="container"
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/alt.yaml \
