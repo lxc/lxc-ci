@@ -248,7 +248,8 @@ actions:
     set -eux
 
     # Enable the cloud-init systemd service
-    systemctl enable cloud-init.service cloud-config.service cloud-final.service
+    systemctl enable cloud-init-main.service cloud-init-network.service
+    systemctl enable cloud-init-local.service cloud-config.service cloud-final.service
 
     # Remove this file as it will override the network renderers to only include
     # NetworkManager although we use netplan.

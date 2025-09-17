@@ -25,6 +25,7 @@
         type: user-defined
         values:
         - default
+        - cloud
 
     builders:
     - shell: |-
