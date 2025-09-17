@@ -635,6 +635,7 @@ packages:
 
   - packages:
     - grub2-efi-x64
+    - grubby
     action: install
     types:
     - vm
