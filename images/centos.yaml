@@ -635,6 +635,7 @@ packages:
 
   - packages:
     - grub2-efi-x64
+    - grubby
     action: install
     types:
     - vm
@@ -926,6 +927,30 @@ actions:
     #!/bin/sh
     set -eux
 
+    mkdir -p /etc/NetworkManager/conf.d/
+    printf "[main]\ndhcp=internal\n" > /etc/NetworkManager/conf.d/dhcp-client.conf
+
+    systemctl enable NetworkManager.service
+  releases:
+  - 10-Stream
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    mkdir -p /etc/NetworkManager/conf.d/
+    printf "[main]\ndhcp=dhclient\n" > /etc/NetworkManager/conf.d/dhcp-client.conf
+
+    systemctl enable NetworkManager.service
+  releases:
+  - 9-Stream
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
     systemctl enable network
   types:
   - container
@@ -953,19 +978,6 @@ actions:
   - 8-Stream
   architectures:
   - armhfp
-
-- trigger: post-files
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    mkdir -p /etc/NetworkManager/conf.d/
-    printf "[main]\ndhcp=dhclient" > /etc/NetworkManager/conf.d/dhcp-client.conf
-
-    systemctl enable NetworkManager.service
-  releases:
-  - 9-Stream
-  - 10-Stream
 
 - trigger: post-files
   action: |-
