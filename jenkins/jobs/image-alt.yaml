@@ -41,10 +41,6 @@
             TYPE="container,vm"
         fi
 
-        if [ "${release}" = "Sisyphus" ]; then
-            TYPE="container"
-        fi
-
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/alt.yaml \
             ${INCUS_ARCHITECTURE} ${TYPE} 3600 ${WORKSPACE} \
             -o image.variant=${variant} \

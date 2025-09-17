@@ -271,10 +271,14 @@ actions:
 
     # Create initramfs
     dracut --kver "$kernel_version" -f
-    ln -sf /boot/vmlinuz-${kernel_version} /boot/vmlinuz
-    ln -sf /boot/initramfs-${kernel_version}.img /boot/initrd-${kernel_version}.img
-    ln -sf /boot/initramfs-${kernel_version}.img /boot/initrd.img
-
+    if grep -q initrdname /usr/lib/dracut/dracut.conf.d/01-dist.conf; then
+      echo "no need create links for initramfs, there is new version of dracut $(rpm -qa --qf "%{VERSION}" dracut)"
+    else
+      ln -sf /boot/vmlinuz-${kernel_version} /boot/vmlinuz
+      ln -sf /boot/initramfs-${kernel_version}.img /boot/initrd-${kernel_version}.img
+      ln -sf /boot/initramfs-${kernel_version}.img /boot/initrd.img
+    fi
+    
     TARGET="x86_64"
     [ "$(uname -m)" = "aarch64" ] && TARGET="arm64"
 
