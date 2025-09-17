@@ -36,8 +36,7 @@
         [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
         [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
 
-        IFS="-" read -ra result_arr <<< "${release}"
-        CENTOS_VERSION=${result_arr[0]}
+        CENTOS_VERSION="$(echo ${release} | cut -d- -f1)"
 
         EXTRA_ARGS=""
         if [ "${CENTOS_VERSION}" -eq "7" ] && [ "${architecture}" != "amd64" ]; then
