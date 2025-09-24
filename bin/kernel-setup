@@ -56,7 +56,7 @@ case "$i" in
         apt-get dist-upgrade --yes
         apt-get install --no-install-recommends --yes linux-generic
         apt-get remove --purge --yes linux.*hwe.* --yes
-        apt-get install --no-install-recommends --yes nvidia-utils-470 linux-modules-nvidia-470-generic libnvidia-compute-470
+        apt-get install --no-install-recommends --yes nvidia-utils-460 nvidia-headless-460 libnvidia-compute-460
 
         echo "blacklist nouveau" > /etc/modprobe.d/blacklist-nouveau.conf
         echo "options nouveau modeset=0" >> /etc/modprobe.d/blacklist-nouveau.conf
