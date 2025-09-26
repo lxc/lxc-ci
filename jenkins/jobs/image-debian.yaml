@@ -48,9 +48,7 @@
             -o source.url="http://ftp.us.debian.org/debian"
 
     execution-strategy:
-      combination-filter: '!(architecture == "armhf" && release == "trixie") &&
-        !(architecture == "armhf" && release == "forky") &&
-        !(architecture == "riscv64" && release == "bullseye") &&
+      combination-filter: '!(architecture == "riscv64" && release == "bullseye") &&
         !(architecture == "riscv64" && release == "bookworm")'
 
     properties:
