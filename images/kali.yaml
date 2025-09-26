@@ -243,5 +243,23 @@ actions:
   variants:
   - cloud
 
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+
+    # Workaround issue with getty on console.
+    mkdir -p /etc/systemd/system/console-getty.service.d/
+
+    (
+    cat << EOF
+    [Service]
+    ExecStart=-/sbin/agetty -o '-- \\u' --noreset --noclear --keep-baud 115200,57600,38400,9600 console
+    StandardInput=
+    StandardOutput=
+    EOF
+    ) > /etc/systemd/system/console-getty.service.d/override.conf
+  types:
+  - container
+
 mappings:
   architecture_map: debian
