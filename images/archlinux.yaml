@@ -679,18 +679,6 @@ actions:
   action: |-
     #!/bin/sh
     systemctl mask systemd-nsresourced.service systemd-nsresourced.socket
-
-    # Workaround issue with getty on console.
-    mkdir -p /etc/systemd/system/console-getty.service.d/
-
-    (
-    cat << EOF
-    [Service]
-    ExecStart=-/sbin/agetty --noreset --noclear --issue-file=/etc/issue:/etc/issue.d:/run/issue.d:/usr/lib/issue.d --keep-baud 115200,57600,38400,9600 console
-    StandardInput=
-    StandardOutput=
-    EOF
-    ) > /etc/systemd/system/console-getty.service.d/override.conf
   types:
   - container
 
