@@ -36,6 +36,11 @@ fi
 
 # Skip cgroup1 images on cgroup2
 if [ -e /sys/fs/cgroup/cgroup.controllers ]; then
+    if [ "${DIST}" = "amazonlinux" ] && [ "${RELEASE}" = "2" ] && [ "${TYPE}" = "container" ]; then
+        echo "==> SKIP: AmazonLinux 2 containers require cgroupv1 for testing"
+        exit
+    fi
+
     if [ "${DIST}" = "oracle" ] && [ "${RELEASE}" = "7" ] && [ "${TYPE}" = "container" ]; then
         echo "==> SKIP: Oracle 7 containers require cgroupv1 for testing"
         exit
