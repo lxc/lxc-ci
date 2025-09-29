@@ -511,6 +511,7 @@ packages:
     - glibc-langpack-en
     - hostname
     - initscripts
+    - iproute
     - openssh-clients
     - passwd
     - policycoreutils
