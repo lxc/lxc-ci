@@ -46,8 +46,8 @@ if [ -e /sys/fs/cgroup/cgroup.controllers ]; then
         exit
     fi
 
-    if [ "${DIST}" = "springdale" ] && [ "${RELEASE}" = "7" ] && [ "${TYPE}" = "container" ]; then
-        echo "==> SKIP: Springdale 7 containers require cgroupv1 for testing"
+    if [ "${DIST}" = "springdalelinux" ] && [ "${RELEASE}" = "7" ] && [ "${TYPE}" = "container" ]; then
+        echo "==> SKIP: Springdale Linux 7 containers require cgroupv1 for testing"
         exit
     fi
 fi
