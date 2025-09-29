@@ -34,6 +34,19 @@ if [ "${TYPE}" = "vm" ] && [ "$(uname -m)" = "aarch64" ]; then
     exit
 fi
 
+# Skip cgroup1 images on cgroup2
+if [ -e /sys/fs/cgroup/cgroup.controllers ]; then
+    if [ "${DIST}" = "oracle" ] && [ "${RELEASE}" = "7" ] && [ "${TYPE}" = "container" ]; then
+        echo "==> SKIP: Oracle 7 containers require cgroupv1 for testing"
+        exit
+    fi
+
+    if [ "${DIST}" = "springdale" ] && [ "${RELEASE}" = "7" ] && [ "${TYPE}" = "container" ]; then
+        echo "==> SKIP: Springdale 7 containers require cgroupv1 for testing"
+        exit
+    fi
+fi
+
 # Setup the test environment
 TEST_IMAGE="$(mktemp -u test-image-XXXXXX)"
 mkdir -p "/tmp/${TEST_IMAGE}"
