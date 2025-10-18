@@ -403,6 +403,7 @@ packages:
     - vm
     architectures:
     - x86_64
+    - x86_64_v2
 
   - packages:
     - grub2-efi-aarch64
