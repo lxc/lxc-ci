@@ -17,8 +17,8 @@
         name: release
         type: user-defined
         values:
-        - "15.5"
         - "15.6"
+        - "16.0"
         - "tumbleweed"
 
     - axis:
@@ -54,8 +54,7 @@
 
     execution-strategy:
       combination-filter: '
-      !(architecture != "amd64" && variant == "desktop-kde") &&
-      !(release == "15.5" && variant == "cloud")'
+      !(architecture != "amd64" && variant == "desktop-kde")'
 
     properties:
     - build-discarder:
