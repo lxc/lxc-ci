@@ -36,8 +36,8 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        if [ "${artifact}" = "distrobuilder-image" ]; then
-            exec sudo /lxc-ci/bin/build-image-distrobuilder ${architecture} ${WORKSPACE}
+        if [ "$artifact" = "distrobuilder-image" ]; then
+            exec sudo /lxc-ci/bin/build-image-distrobuilder $architecture $WORKSPACE
         else
             echo "Bad artifact"
             exit 1

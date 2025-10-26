@@ -29,24 +29,24 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        INCUS_ARCHITECTURE="${architecture}"
+        INCUS_ARCHITECTURE="$architecture"
 
-        ARCH=${architecture}
-        [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
-        [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
+        ARCH=$architecture
+        [ "$ARCH" = "amd64" ] && ARCH="x86_64"
+        [ "$ARCH" = "arm64" ] && ARCH="aarch64"
 
-        RELEASE=${release}
-        [ "${RELEASE}" = "unstable" ] && JOBSET="trunk-combined" || JOBSET="release-${RELEASE}"
+        RELEASE=$release
+        [ "$RELEASE" = "unstable" ] && JOBSET="trunk-combined" || JOBSET="release-$RELEASE"
 
         HYDRA_IMAGE="incusVirtualMachineImage"
 
         # download a pre-built VM image
-        curl --location --output ${WORKSPACE}/disk.qcow2 https://hydra.nixos.org/job/nixos/${JOBSET}/nixos.${HYDRA_IMAGE}.${ARCH}-linux/latest/download-by-type/file/qcow2-image
+        curl --location --output $WORKSPACE/disk.qcow2 https://hydra.nixos.org/job/nixos/$JOBSET/nixos.$HYDRA_IMAGE.$ARCH-linux/latest/download-by-type/file/qcow2-image
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/nixos.yaml \
-            ${INCUS_ARCHITECTURE} container 14400 ${WORKSPACE} \
-            -o image.architecture=${ARCH} \
-            -o image.release=${release}
+            $INCUS_ARCHITECTURE container 14400 $WORKSPACE \
+            -o image.architecture=$ARCH \
+            -o image.release=$release
 
     properties:
     - build-discarder:
@@ -67,8 +67,8 @@
       - project:
         - test-image
         predefined-parameters: |-
-          image=${JOB_NAME}
-          build=${BUILD_URL}
+          image=$JOB_NAME
+          build=$BUILD_URL
         condition: SUCCESS
 
     - naginator:

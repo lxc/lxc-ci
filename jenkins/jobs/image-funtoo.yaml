@@ -28,15 +28,15 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        INCUS_ARCHITECTURE="${architecture}"
+        INCUS_ARCHITECTURE="$architecture"
 
-        ARCH=${architecture}
-        [ "${ARCH}" = "aarch64" ] && ARCH="arm64_generic"
-        [ "${ARCH}" = "amd64" ] && ARCH="generic_64"
+        ARCH=$architecture
+        [ "$ARCH" = "aarch64" ] && ARCH="arm64_generic"
+        [ "$ARCH" = "amd64" ] && ARCH="generic_64"
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/funtoo.yaml \
-            ${INCUS_ARCHITECTURE} container 7200 ${WORKSPACE} \
-            -o image.release=${release} -o image.architecture=${ARCH}
+            $INCUS_ARCHITECTURE container 7200 $WORKSPACE \
+            -o image.release=$release -o image.architecture=$ARCH
 
     properties:
     - build-discarder:
@@ -57,8 +57,8 @@
       - project:
         - test-image
         predefined-parameters: |-
-          image=${JOB_NAME}
-          build=${BUILD_URL}
+          image=$JOB_NAME
+          build=$BUILD_URL
         condition: SUCCESS
 
     - naginator:

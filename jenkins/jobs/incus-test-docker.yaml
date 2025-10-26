@@ -28,7 +28,7 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        if [ "${mode}" = "privileged" ]; then
+        if [ "$mode" = "privileged" ]; then
         exec sudo /lxc-ci/bin/test-incus-docker -c security.privileged=true
         else
         exec sudo /lxc-ci/bin/test-incus-docker -c security.privileged=false

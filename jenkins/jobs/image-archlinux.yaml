@@ -31,34 +31,34 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        INCUS_ARCHITECTURE="${architecture}"
+        INCUS_ARCHITECTURE="$architecture"
 
-        ARCH=${architecture}
-        [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
-        [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
+        ARCH=$architecture
+        [ "$ARCH" = "amd64" ] && ARCH="x86_64"
+        [ "$ARCH" = "arm64" ] && ARCH="aarch64"
 
         TYPE="container"
-        if [ "${architecture}" = "amd64" ]; then
+        if [ "$architecture" = "amd64" ]; then
             TYPE="container,vm"
         fi
 
-        if [ "${variant}" = "desktop-gnome" ]; then
+        if [ "$variant" = "desktop-gnome" ]; then
             TYPE="vm"
         fi
 
-        if [ "${architecture}" = "amd64" ]; then
+        if [ "$architecture" = "amd64" ]; then
             exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/archlinux.yaml \
-                ${INCUS_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
-                -o image.architecture=${ARCH} -o image.variant=${variant}
-        elif [ "${architecture}" = "arm64" ]; then
+                $INCUS_ARCHITECTURE $TYPE 1800 $WORKSPACE \
+                -o image.architecture=$ARCH -o image.variant=$variant
+        elif [ "$architecture" = "arm64" ]; then
             exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/archlinux.yaml \
-                ${INCUS_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
-                -o image.architecture=${ARCH} \
+                $INCUS_ARCHITECTURE $TYPE 1800 $WORKSPACE \
+                -o image.architecture=$ARCH \
                 -o source.url=http://os.archlinuxarm.org
-        elif [ "${architecture}" = "riscv64" ]; then
+        elif [ "$architecture" = "riscv64" ]; then
             exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/archlinux.yaml \
-                ${INCUS_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
-                -o image.architecture=${ARCH} \
+                $INCUS_ARCHITECTURE $TYPE 1800 $WORKSPACE \
+                -o image.architecture=$ARCH \
                 -o source.url=https://archriscv.felixc.at
         fi
 
@@ -86,8 +86,8 @@
       - project:
         - test-image
         predefined-parameters: |-
-          image=${JOB_NAME}
-          build=${BUILD_URL}
+          image=$JOB_NAME
+          build=$BUILD_URL
         condition: SUCCESS
 
     - naginator:

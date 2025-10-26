@@ -30,23 +30,23 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        if [ "${platform}" = "nvidia" ] && [ "${target}" = "container" ]; then
+        if [ "$platform" = "nvidia" ] && [ "$target" = "container" ]; then
             exec /lxc-ci/bin/maas-run name=argos noble ga-24.04 nvidia bin/test-incus-gpu-container
         fi
 
-        if [ "${platform}" = "nvidia" ] && [ "${target}" = "mig" ]; then
+        if [ "$platform" = "nvidia" ] && [ "$target" = "mig" ]; then
             exec /lxc-ci/bin/maas-run name=argos noble ga-24.04 nvidia-mig bin/test-incus-gpu-mig
         fi
 
-        if [ "${platform}" = "nvidia" ] && [ "${target}" = "vm" ]; then
+        if [ "$platform" = "nvidia" ] && [ "$target" = "vm" ]; then
             exec /lxc-ci/bin/maas-run name=argos jammy ga-22.04 iommu,nvidia-vgpu bin/test-incus-gpu-vm nvidia
         fi
 
-        if [ "${platform}" = "amd" ] && [ "${target}" = "vm" ]; then
+        if [ "$platform" = "amd" ] && [ "$target" = "vm" ]; then
             exec /lxc-ci/bin/maas-run name=lantea noble ga-24.04 iommu,amd-vgpu bin/test-incus-gpu-vm amd
         fi
 
-        if [ "${platform}" = "intel" ] && [ "${target}" = "vm" ]; then
+        if [ "$platform" = "intel" ] && [ "$target" = "vm" ]; then
             exec /lxc-ci/bin/maas-run name=nuc03 noble ga-24.04 zabbly,intel-vgpu bin/test-incus-gpu-vm intel
         fi
 

@@ -36,27 +36,27 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        INCUS_ARCHITECTURE="${architecture}"
+        INCUS_ARCHITECTURE="$architecture"
 
-        ARCH=${architecture}
-        [ "${ARCH}" = "amd64" ] && ARCH="x86_64"
-        [ "${ARCH}" = "arm64" ] && ARCH="aarch64"
-        [ "${ARCH}" = "armhf" ] && ARCH="armv7"
+        ARCH=$architecture
+        [ "$ARCH" = "amd64" ] && ARCH="x86_64"
+        [ "$ARCH" = "arm64" ] && ARCH="aarch64"
+        [ "$ARCH" = "armhf" ] && ARCH="armv7"
 
         TYPE="container"
-        if [ "${architecture}" = "amd64" ] || [ "${architecture}" = "arm64" ]; then
+        if [ "$architecture" = "amd64" ] || [ "$architecture" = "arm64" ]; then
             TYPE="container,vm"
         fi
 
         EXTRA_ARGS=""
-        if [ "${release}" = "edge" ]; then
+        if [ "$release" = "edge" ]; then
             EXTRA_ARGS="-o source.same_as=3.22"
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/alpine.yaml \
-            ${INCUS_ARCHITECTURE} ${TYPE} 600 ${WORKSPACE} \
-            -o image.architecture=${ARCH} -o image.release=${release} \
-            -o image.variant=${variant} ${EXTRA_ARGS}
+            $INCUS_ARCHITECTURE $TYPE 600 $WORKSPACE \
+            -o image.architecture=$ARCH -o image.release=$release \
+            -o image.variant=$variant $EXTRA_ARGSE
 
     execution-strategy:
       combination-filter: '!((architecture == "riscv64" || variant == "tinycloud") && release == "3.19")'
@@ -80,8 +80,8 @@
       - project:
         - test-image
         predefined-parameters: |-
-          image=${JOB_NAME}
-          build=${BUILD_URL}
+          image=$JOB_NAME
+          build=$BUILD_URL
         condition: SUCCESS
 
     - naginator:

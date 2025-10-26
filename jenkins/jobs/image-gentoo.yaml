@@ -29,25 +29,25 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        INCUS_ARCHITECTURE="${architecture}"
+        INCUS_ARCHITECTURE="$architecture"
 
-        ARCH=${architecture}
+        ARCH=$architecture
 
         TYPE="container"
-        if [ "${architecture}" = "amd64" ]; then
+        if [ "$architecture" = "amd64" ]; then
             TYPE="container,vm"
         fi
 
         EXTRA_ARGS=""
-        if [ "${variant}" = "cloud" ]; then
+        if [ "$variant" = "cloud" ]; then
             EXTRA_ARGS="-o source.variant=openrc"
         else
-            EXTRA_ARGS="-o source.variant=${variant}"
+            EXTRA_ARGS="-o source.variant=$variant"
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/gentoo.yaml \
-            ${INCUS_ARCHITECTURE} ${TYPE} 14400 ${WORKSPACE} \
-            -o image.architecture=${ARCH} -o image.variant=${variant} ${EXTRA_ARGS}
+            $INCUS_ARCHITECTURE $TYPE 14400 $WORKSPACE \
+            -o image.architecture=$ARCH -o image.variant=$variant $EXTRA_ARGSE
 
     properties:
     - build-discarder:
@@ -68,8 +68,8 @@
       - project:
         - test-image
         predefined-parameters: |-
-          image=${JOB_NAME}
-          build=${BUILD_URL}
+          image=$JOB_NAME
+          build=$BUILD_URL
         condition: SUCCESS
 
     - naginator:

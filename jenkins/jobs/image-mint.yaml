@@ -38,15 +38,15 @@
         cd /lxc-ci
 
         suite=jammy
-        if [ "${release}" = "ulyana" ] || [ "${release}" = "ulyssa" ] || [ "${release}" = "uma" ] || [ "${release}" = "una" ]; then
+        if [ "$release" = "ulyana" ] || [ "$release" = "ulyssa" ] || [ "$release" = "uma" ] || [ "$release" = "una" ]; then
             suite=focal
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/mint.yaml \
-            ${architecture} container 3600 ${WORKSPACE} \
-            -o image.architecture=${architecture} \
-            -o image.release=${release} -o image.variant=${variant} \
-            -o source.suite=${suite}
+            $architecture container 3600 $WORKSPACE \
+            -o image.architecture=$architecture \
+            -o image.release=$release -o image.variant=$variant \
+            -o source.suite=$suite
 
     properties:
     - build-discarder:
@@ -67,8 +67,8 @@
       - project:
         - test-image
         predefined-parameters: |-
-          image=${JOB_NAME}
-          build=${BUILD_URL}
+          image=$JOB_NAME
+          build=$BUILD_URL
         condition: SUCCESS
 
     - naginator:

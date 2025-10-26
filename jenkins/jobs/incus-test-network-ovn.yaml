@@ -28,7 +28,7 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        exec /lxc-ci/bin/incus-run images:ubuntu/24.04/amd64 zabbly bin/test-incus-network-ovn "${test}"
+        exec /lxc-ci/bin/incus-run images:ubuntu/24.04/amd64 zabbly bin/test-incus-network-ovn "$test"
 
     properties:
     - build-discarder:

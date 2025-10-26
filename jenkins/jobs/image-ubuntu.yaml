@@ -36,23 +36,23 @@
     - shell: |-
         cd /lxc-ci
         ARCHIVE="http://archive.ubuntu.com/ubuntu"
-        if [ "${architecture}" != "amd64" ] && [ "${architecture}" != "i386" ]; then
+        if [ "$architecture" != "amd64" ] && [ "$architecture" != "i386" ]; then
             ARCHIVE="http://ports.ubuntu.com/ubuntu-ports"
         fi
 
         TYPE="container"
-        if [ "${architecture}" = "amd64" ] || [ "${architecture}" = "arm64" ]; then
+        if [ "$architecture" = "amd64" ] || [ "$architecture" = "arm64" ]; then
             TYPE="container,vm"
         fi
 
-        if [ "${variant}" = "desktop" ]; then
+        if [ "$variant" = "desktop" ]; then
             TYPE="vm"
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/ubuntu.yaml \
-            ${architecture} ${TYPE} 3600 ${WORKSPACE} \
-            -o image.architecture=${architecture} -o image.release=${release} \
-            -o image.variant=${variant} -o source.url=${ARCHIVE}
+            $architecture $TYPE 3600 $WORKSPACE \
+            -o image.architecture=$architecture -o image.release=$release \
+            -o image.variant=$variant -o source.url=$ARCHIVE
 
     execution-strategy:
       combination-filter: '!(architecture!="amd64" && variant == "desktop")'
@@ -76,8 +76,8 @@
       - project:
         - test-image
         predefined-parameters: |-
-          image=${JOB_NAME}
-          build=${BUILD_URL}
+          image=$JOB_NAME
+          build=$BUILD_URL
         condition: SUCCESS
 
     - naginator:

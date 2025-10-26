@@ -25,15 +25,15 @@
         set -e
         cd /lxc-ci
 
-        if [ "${kernel}" = "default" ]; then
+        if [ "$kernel" = "default" ]; then
             kernel="zabbly"
-        elif [ "${kernel}" = "swapaccount" ]; then
-            kernel="zabbly,cgroup1,${kernel}"
+        elif [ "$kernel" = "swapaccount" ]; then
+            kernel="zabbly,cgroup1,$kernel"
         else
-            kernel="zabbly,${kernel}"
+            kernel="zabbly,$kernel"
         fi
 
-        sudo -E /lxc-ci/bin/incus-run images:debian/12/amd64 ${kernel} bin/test-incus-cgroup
+        sudo -E /lxc-ci/bin/incus-run images:debian/12/amd64 $kernel bin/test-incus-cgroup
 
     properties:
     - build-discarder:

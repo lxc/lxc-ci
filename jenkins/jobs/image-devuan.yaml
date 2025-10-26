@@ -30,12 +30,12 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        INCUS_ARCHITECTURE="${architecture}"
+        INCUS_ARCHITECTURE="$architecture"
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/devuan.yaml \
-            ${INCUS_ARCHITECTURE} container 1800 ${WORKSPACE} \
-            -o image.architecture=${architecture} \
-            -o image.release=${release} -o image.variant=${variant}
+            $INCUS_ARCHITECTURE container 1800 $WORKSPACE \
+            -o image.architecture=$architecture \
+            -o image.release=$release -o image.variant=$variant
 
     properties:
     - build-discarder:
@@ -56,8 +56,8 @@
       - project:
         - test-image
         predefined-parameters: |-
-          image=${JOB_NAME}
-          build=${BUILD_URL}
+          image=$JOB_NAME
+          build=$BUILD_URL
         condition: SUCCESS
 
     - naginator:

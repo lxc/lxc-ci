@@ -34,17 +34,17 @@
     builders:
     - shell: |-
         cd /lxc-ci
-        INCUS_ARCHITECTURE="${architecture}"
+        INCUS_ARCHITECTURE="$architecture"
 
         TYPE="container"
-        if [ "${architecture}" = "amd64" ] || [ "${architecture}" = "arm64" ]; then
+        if [ "$architecture" = "amd64" ] || [ "$architecture" = "arm64" ]; then
             TYPE="container,vm"
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/debian.yaml \
-            ${INCUS_ARCHITECTURE} ${TYPE} 1800 ${WORKSPACE} \
-            -o image.architecture=${architecture} \
-            -o image.release=${release} -o image.variant=${variant} \
+            $INCUS_ARCHITECTURE $TYPE 1800 $WORKSPACE \
+            -o image.architecture=$architecture \
+            -o image.release=$release -o image.variant=$variant \
             -o source.url="http://ftp.us.debian.org/debian"
 
     execution-strategy:
@@ -70,8 +70,8 @@
       - project:
         - test-image
         predefined-parameters: |-
-          image=${JOB_NAME}
-          build=${BUILD_URL}
+          image=$JOB_NAME
+          build=$BUILD_URL
         condition: SUCCESS
 
     - naginator:
