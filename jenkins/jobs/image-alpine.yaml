@@ -56,7 +56,7 @@
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/alpine.yaml \
             $INCUS_ARCHITECTURE $TYPE 600 $WORKSPACE \
             -o image.architecture=$ARCH -o image.release=$release \
-            -o image.variant=$variant $EXTRA_ARGSE
+            -o image.variant=$variant $EXTRA_ARGS
 
     execution-strategy:
       combination-filter: '!((architecture == "riscv64" || variant == "tinycloud") && release == "3.19")'

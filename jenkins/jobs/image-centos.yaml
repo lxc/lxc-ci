@@ -44,15 +44,15 @@
         fi
 
         if [ "$CENTOS_VERSION" -ge "8" ]; then
-            EXTRA_ARGS="$EXTRA_ARGSE -o source.variant=boot"
+            EXTRA_ARGS="$EXTRA_ARGS -o source.variant=boot"
         fi
 
         if [ "$CENTOS_VERSION" -ge "9" ]; then
-            EXTRA_ARGS="$EXTRA_ARGSE -o source.url=https://mirror1.hs-esslingen.de/pub/Mirrors/centos-stream"
+            EXTRA_ARGS="$EXTRA_ARGS -o source.url=https://mirror1.hs-esslingen.de/pub/Mirrors/centos-stream"
         fi
 
         if [ "$CENTOS_VERSION" -eq "7" ]; then
-            EXTRA_ARGS="$EXTRA_ARGSE -o packages.manager=yum"
+            EXTRA_ARGS="$EXTRA_ARGS -o packages.manager=yum"
         fi
 
         TYPE="container"
@@ -63,7 +63,7 @@
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/centos.yaml \
             $INCUS_ARCHITECTURE $TYPE 7200 $WORKSPACE \
             -o image.architecture=$ARCH -o image.release=$release \
-            -o image.variant=$variant $EXTRA_ARGSE
+            -o image.variant=$variant $EXTRA_ARGS
 
     properties:
     - build-discarder:

@@ -47,7 +47,7 @@
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/gentoo.yaml \
             $INCUS_ARCHITECTURE $TYPE 14400 $WORKSPACE \
-            -o image.architecture=$ARCH -o image.variant=$variant $EXTRA_ARGSE
+            -o image.architecture=$ARCH -o image.variant=$variant $EXTRA_ARGS
 
     properties:
     - build-discarder:
