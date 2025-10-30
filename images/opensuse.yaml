@@ -144,6 +144,9 @@ files:
   - container
   releases:
   - 16.0
+  variants:
+  - default
+  - desktop
 
 - name: enp5s0.network
   path: /etc/systemd/network/enp5s0.network
@@ -165,6 +168,9 @@ files:
   - vm
   releases:
   - 16.0
+  variants:
+  - default
+  - desktop
 
 - name: meta-data
   generator: cloud-init
@@ -454,6 +460,15 @@ actions:
   releases:
   - 15.6
   - tumbleweed
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    umount -l /etc/resolv.conf || true
+    rm /etc/resolv.conf
+    ln -sf ../run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+  releases:
+  - 16.0
 
 - trigger: post-packages
   action: |-
