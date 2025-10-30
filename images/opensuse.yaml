@@ -441,6 +441,14 @@ actions:
 - trigger: post-files
   action: |-
     #!/bin/sh
+    rm /etc/resolv.conf
+    ln -s ../run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+  releases:
+  - 16.0
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
     set -eux
 
     # linuxefi and initrdefi don't seem to exist for aarch64.
