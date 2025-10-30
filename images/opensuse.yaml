@@ -98,6 +98,9 @@ files:
     BOOTPROTO='dhcp'
   types:
   - container
+  releases:
+  - 15.6
+  - tumbleweed
 
 - name: ifcfg-eth0
   path: /etc/sysconfig/network/ifcfg-eth0
@@ -120,6 +123,47 @@ files:
   - vm
   releases:
   - tumbleweed
+
+- name: eth0.network
+  path: /etc/systemd/network/eth0.network
+  generator: dump
+  content: |-
+    [Match]
+    Name=eth0
+
+    [Network]
+    DHCP=ipv4
+
+    [DHCPv4]
+    UseDomains=true
+    UseMTU=true
+
+    [DHCP]
+    ClientIdentifier=mac
+  types:
+  - container
+  releases:
+  - 16.0
+
+- name: enp5s0.network
+  path: /etc/systemd/network/enp5s0.network
+  generator: dump
+  content: |-
+    [Match]
+    Name=enp5s0
+
+    [Network]
+    DHCP=ipv4
+
+    [DHCPv4]
+    UseDomains=true
+    UseMTU=true
+
+    [DHCP]
+    ClientIdentifier=mac
+  types:
+  - vm
+  releases:
   - 16.0
 
 - name: meta-data
@@ -407,7 +451,13 @@ actions:
     umount -l /etc/resolv.conf || true
     rm /etc/resolv.conf
     ln -sf /var/run/netconfig/resolv.conf /etc/resolv.conf
+  releases:
+  - 15.6
+  - tumbleweed
 
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
     # Disable first boot wizard
     systemctl mask systemd-firstboot.service
 
@@ -415,10 +465,6 @@ actions:
   action: |-
     #!/bin/sh
     set -eux
-    umount -l /etc/resolv.conf || true
-    rm /etc/resolv.conf
-    ln -sf /var/run/netconfig/resolv.conf /etc/resolv.conf
-
     dracut --regenerate-all --force
     mount -t tmpfs tmpfs /sys/firmware
     mkdir /sys/firmware/efi
@@ -437,14 +483,6 @@ actions:
     sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_UUID}#g" /boot/grub2/grub.cfg
   types:
   - vm
-
-- trigger: post-files
-  action: |-
-    #!/bin/sh
-    rm /etc/resolv.conf
-    ln -s ../run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
-  releases:
-  - 16.0
 
 - trigger: post-files
   action: |-
