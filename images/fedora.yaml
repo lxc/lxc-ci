@@ -380,3 +380,6 @@ actions:
     for repo in $(ls /etc/yum.repos.d/*.bak); do
       mv "${repo}" ${repo%.*}
     done
+
+    # Disable first boot wizard
+    systemctl mask systemd-firstboot.service
