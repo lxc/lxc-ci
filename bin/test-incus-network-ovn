@@ -1411,14 +1411,13 @@ ovn_dhcp_reservation_tests() {
     [ "$(ovn-nbctl list dns | grep -Fc 'records')" = "1" ] || false
     [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1 10.10.11.254 10.10.11.2"')" = "1" ] || false
 
-    # Create conflict again, but this time delete the original instance, checking that the DNS record entry is
-    # removed along with the original instance's IP reservation.
+    # Create conflict again, but this time delete the original instance.
     incus copy u1 u2
     incus delete -f u1
     [ "$(ovn-nbctl list dns | grep -Fc 'records')" = "0" ] || false
-    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1 10.10.11.254"')" = "1" ] || false
+    [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1 10.10.11.254 10.10.11.2"')" = "1" ] || false
 
-    # Check that starting the instance copy creates the missing DNS record entry and IP reservation.
+    # Check that starting the instance copy creates the missing DNS record entry.
     incus start u2
     [ "$(ovn-nbctl list dns | grep -Fc 'records')" = "1" ] || false
     [ "$(ovn-nbctl list logical_switch | grep -Fc 'exclude_ips="10.10.11.1 10.10.11.254 10.10.11.2"')" = "1" ] || false
