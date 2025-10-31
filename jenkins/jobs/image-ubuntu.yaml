@@ -22,7 +22,7 @@
         - jammy
         - noble
         - plucky
-#        - questing
+        - questing
 
     - axis:
         name: variant
