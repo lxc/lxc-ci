@@ -54,7 +54,8 @@
 
     execution-strategy:
       combination-filter: '
-      !(architecture != "amd64" && variant == "desktop-kde")'
+      !(architecture != "amd64" && variant == "desktop-kde") &&
+      !(release == "16.0" && variant == "desktop-kde")'
 
     properties:
     - build-discarder:
