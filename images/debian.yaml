@@ -1204,6 +1204,14 @@ packages:
     types:
     - vm
 
+  - packages:
+    - netplan.io
+    action: install
+    variants:
+    - cloud
+    releases:
+    - forky
+
   repositories:
   - name: sources.list
     url: |-
