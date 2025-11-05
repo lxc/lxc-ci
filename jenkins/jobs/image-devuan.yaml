@@ -19,6 +19,7 @@
         values:
         - chimaera
         - daedalus
+        - excalibur
 
     - axis:
         name: variant
