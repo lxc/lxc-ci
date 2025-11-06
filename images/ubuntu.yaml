@@ -473,6 +473,12 @@ packages:
     - questing
 
   - packages:
+    - systemd-timesyncd
+    action: install
+    releases:
+    - questing
+
+  - packages:
     - grub-efi-amd64-signed
     - shim-signed
     action: install
