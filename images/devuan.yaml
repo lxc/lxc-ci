@@ -466,6 +466,19 @@ actions:
     locale-gen en_US.UTF-8 UTF-8
     update-locale LANG=en_US.UTF-8
 
+    # Fix cloud-init postinst configuration because /etc/init.d/cloud-init was renamed into /etc/init.d/cloud-init-main
+    # between daedalus and excalibur. This was probably forgotten during this patch:
+    # https://sources.debian.org/patches/cloud-init/25.3-2/fix-sysvinit-dependencies.patch/
+
+    if [ -f /etc/init.d/cloud-init-main ] ; then
+        if [ -f /etc/init.d/cloud-config ] ; then
+            sed -i "s/remote_fs cloud-init cloud-init-local/remote_fs cloud-init-main cloud-init-local/" /etc/init.d/cloud-config
+            # This failed during the installation, so we need to execute it again.
+            update-rc.d cloud-config defaults
+            update-rc.d cloud-final defaults
+        fi
+    fi
+
     # Cleanup underlying /run
     mount -o bind / /mnt
     rm -rf /mnt/run/*
