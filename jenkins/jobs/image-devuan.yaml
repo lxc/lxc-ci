@@ -19,7 +19,8 @@
         values:
         - chimaera
         - daedalus
-        - excalibur
+        # There is a bug with cloud-init
+        # - excalibur
 
     - axis:
         name: variant
