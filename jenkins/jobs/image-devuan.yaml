@@ -19,8 +19,7 @@
         values:
         - chimaera
         - daedalus
-        # There is a bug with cloud-init
-        # - excalibur
+        - excalibur
 
     - axis:
         name: variant
@@ -38,6 +37,9 @@
             $INCUS_ARCHITECTURE container 1800 $WORKSPACE \
             -o image.architecture=$architecture \
             -o image.release=$release -o image.variant=$variant
+
+    execution-strategy:
+      combination-filter: '!(release == "excalibur" && variant == "cloud")'
 
     properties:
     - build-discarder:
