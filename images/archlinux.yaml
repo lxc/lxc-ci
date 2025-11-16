@@ -575,7 +575,6 @@ packages:
     - man-pages
     - nano
     - netctl
-    - openresolv
     - procps-ng
     - psmisc
     - sed
