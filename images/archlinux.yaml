@@ -625,8 +625,6 @@ packages:
     - armv7
 
   - packages:
-    - dnssec-anchors
-    - ldns
     - libedit
     - net-tools
     - openssh
