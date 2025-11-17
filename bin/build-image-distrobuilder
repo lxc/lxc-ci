@@ -81,6 +81,7 @@ apt-get install --yes --no-install-recommends \
     ca-certificates \
     curl \
     dirmngr \
+    e2fsprogs \
     dosfstools \
     gcc \
     gdisk \
