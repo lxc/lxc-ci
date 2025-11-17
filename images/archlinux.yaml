@@ -799,7 +799,7 @@ actions:
     sed -i 's#^MODULES=.*#MODULES=(virtio_pci virtio_scsi virtio_console)#' /etc/mkinitcpio.conf
 
     sed -i 's#^PRESETS=.*#PRESETS=(default)#' /etc/mkinitcpio.d/*.preset
-    mkinitcpio -P
+    mkinitcpio -P || true
   types:
   - vm
 
