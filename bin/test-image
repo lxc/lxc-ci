@@ -22,6 +22,11 @@ cleanup() {
             exit 0
         fi
 
+        if [ "${DIST}" = "openwrt" ] && [ "${RELEASE}" = "snapshot" ]; then
+            echo "==> WARNING: Failure will be ignored as OpenWRT snapshots aren't stable"
+            exit 0
+        fi
+
         exit 1
     fi
 
