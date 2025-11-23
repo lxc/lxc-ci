@@ -5,7 +5,7 @@ xml: |
         <protocol>HTTP</protocol>
         <format>JSON</format>
         <urlInfo>
-          <urlOrId>https://linuxcontainers.org/webhook-lxcbot/</urlOrId>
+          <urlOrId>https://webhooks.linuxcontainers.org</urlOrId>
           <urlType>PUBLIC</urlType>
         </urlInfo>
         <event>completed</event>
