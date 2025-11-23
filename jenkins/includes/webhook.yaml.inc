@@ -8,10 +8,12 @@ xml: |
           <urlOrId>https://webhooks.linuxcontainers.org</urlOrId>
           <urlType>PUBLIC</urlType>
         </urlInfo>
-        <event>completed</event>
+        <event>all</event>
         <timeout>30000</timeout>
         <loglines>0</loglines>
+        <buildNotes></buildNotes>
         <retries>0</retries>
+        <branch>.*</branch>
       </com.tikal.hudson.plugins.notification.Endpoint>
     </endpoints>
   </com.tikal.hudson.plugins.notification.HudsonNotificationProperty>
