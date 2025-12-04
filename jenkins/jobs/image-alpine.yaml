@@ -19,10 +19,10 @@
         name: release
         type: user-defined
         values:
-        - "3.19"
         - "3.20"
         - "3.21"
         - "3.22"
+        - "3.23"
         - "edge"
 
     - axis:
@@ -50,7 +50,7 @@
 
         EXTRA_ARGS=""
         if [ "$release" = "edge" ]; then
-            EXTRA_ARGS="-o source.same_as=3.22"
+            EXTRA_ARGS="-o source.same_as=3.23"
         fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/alpine.yaml \
@@ -59,7 +59,7 @@
             -o image.variant=$variant $EXTRA_ARGS
 
     execution-strategy:
-      combination-filter: '!((architecture == "riscv64" || variant == "tinycloud") && release == "3.19")'
+      combination-filter: '!(architecture == "riscv64" || variant == "tinycloud")'
 
     properties:
     - build-discarder:
