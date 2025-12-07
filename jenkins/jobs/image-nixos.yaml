@@ -37,17 +37,23 @@
         [ "$ARCH" = "arm64" ] && ARCH="aarch64"
 
         RELEASE=$release
-        [ "$RELEASE" = "unstable" ] && JOBSET="trunk-combined" || JOBSET="release-$RELEASE"
-
-        HYDRA_IMAGE="incusVirtualMachineImage"
+        [ "$RELEASE" = "unstable" ] && JOBSET="unstable" || JOBSET="release-$RELEASE"
 
         # download a pre-built VM image
-        curl --location --output $WORKSPACE/disk.qcow2 https://hydra.nixos.org/job/nixos/$JOBSET/nixos.$HYDRA_IMAGE.$ARCH-linux/latest/download-by-type/file/qcow2-image
+        curl --location --output $WORKSPACE/disk.qcow2 https://hydra.nixos.org/job/nixos/$JOBSET/nixos.incusVirtualMachineImage.$ARCH-linux/latest/download-by-type/file/qcow2-image
 
-        exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/nixos.yaml \
-            $INCUS_ARCHITECTURE container 14400 $WORKSPACE \
-            -o image.architecture=$ARCH \
-            -o image.release=$release
+        if [ "$RELEASE" = "unstable" ]; then
+          # download a pre-built container rootfs
+          curl --location --output $WORKSPACE/rootfs.squashfs https://hydra.nixos.org/job/nixos/$JOBSET/nixos.incusContainerImage.x86_64-linux/latest/download-by-type/file/squashfs-image
+
+          # download a pre-built incus metadata
+          curl --location --output $WORKSPACE/incus.tar.xz https://hydra.nixos.org/job/nixos/$JOBSET/nixos.incusContainerMeta.$ARCH-linux/latest/download-by-type/file/system-tarball
+        else
+          exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/nixos.yaml \
+              $INCUS_ARCHITECTURE container 14400 $WORKSPACE \
+              -o image.architecture=$ARCH \
+              -o image.release=$release
+        fi
 
     properties:
     - build-discarder:
