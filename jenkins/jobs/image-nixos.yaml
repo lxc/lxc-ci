@@ -50,7 +50,7 @@
           curl --location --output $WORKSPACE/incus.tar.xz https://hydra.nixos.org/job/nixos/$JOBSET/nixos.incusContainerMeta.$ARCH-linux/latest/download-by-type/file/system-tarball
 
           # write a serial used by publishing
-          date -u +%Y%m%d_%H:%M > serial
+          date -u +%Y%m%d_%H:%M > $WORKSPACE/serial
         else
           exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/nixos.yaml \
               $INCUS_ARCHITECTURE container 14400 $WORKSPACE \
