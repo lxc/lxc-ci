@@ -44,7 +44,7 @@
 
         if [ "$RELEASE" = "unstable" ]; then
           # download a pre-built container rootfs
-          curl --location --output $WORKSPACE/rootfs.squashfs https://hydra.nixos.org/job/nixos/$JOBSET/nixos.incusContainerImage.x86_64-linux/latest/download-by-type/file/squashfs-image
+          curl --location --output $WORKSPACE/rootfs.squashfs https://hydra.nixos.org/job/nixos/$JOBSET/nixos.incusContainerImage.$ARCH-linux/latest/download-by-type/file/squashfs-image
 
           # download a pre-built incus metadata
           curl --location --output $WORKSPACE/incus.tar.xz https://hydra.nixos.org/job/nixos/$JOBSET/nixos.incusContainerMeta.$ARCH-linux/latest/download-by-type/file/system-tarball
