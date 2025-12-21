@@ -286,6 +286,6 @@ actions:
     rm -f /etc/rc.d/*sysntpd
   releases:
   - snapshot
-  - 22.03
   - 23.05
   - 24.10
+  - 25.12
