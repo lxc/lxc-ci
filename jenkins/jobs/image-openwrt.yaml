@@ -37,8 +37,10 @@
         [ "$ARCH" = "amd64" ] && ARCH="x86_64"
         [ "$ARCH" = "arm64" ] && ARCH="aarch64"
 
-        PKGMANAGER="opkg"
-        [ "$release" = "snapshot" ] && PKGMANAGER="apk"
+        PKGMANAGER="apk"
+        if [ "$release" = "23.05" ] || [ "$release" = "24.10" ]; then
+            PKGMANAGER="opkg"
+        fi
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/openwrt.yaml \
             $INCUS_ARCHITECTURE container 7200 $WORKSPACE \
