@@ -8,6 +8,7 @@ source:
   # RPM-GPG-KEY-rockylinux-8
   - |-
     -----BEGIN PGP PUBLIC KEY BLOCK-----
+
     mQINBGAofzYBEAC6yS1azw6f3wmaVd//3aSy6O2c9+jeetulRQvg2LvhRRS1eNqp
     /x9tbBhfohu/tlDkGpYHV7diePgMml9SZDy1sKlI3tDhx6GZ3xwF0fd1vWBZpmNk
     D9gRkUmYBeLotmcXQZ8ZpWLicosFtDpJEYpLUhuIgTKwt4gxJrHvkWsGQiBkJxKD
