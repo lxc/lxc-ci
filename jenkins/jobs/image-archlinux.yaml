@@ -54,7 +54,7 @@
             exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/archlinux.yaml \
                 $INCUS_ARCHITECTURE $TYPE 1800 $WORKSPACE \
                 -o image.architecture=$ARCH \
-                -o source.url=http://os.archlinuxarm.org
+                -o source.url=https://fl.us.mirror.archlinuxarm.org
         elif [ "$architecture" = "riscv64" ]; then
             exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/archlinux.yaml \
                 $INCUS_ARCHITECTURE $TYPE 1800 $WORKSPACE \
