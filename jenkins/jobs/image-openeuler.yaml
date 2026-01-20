@@ -51,7 +51,7 @@
 
     execution-strategy:
       combination-filter: '
-      !(release=="23.09" && variant == "cloud")'
+      !(release=="25.09" && variant == "cloud")'
 
     properties:
     - build-discarder:
