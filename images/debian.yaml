@@ -1094,7 +1094,6 @@ packages:
     - init
     - iproute2
     - iputils-ping
-    - isc-dhcp-client
     - locales
     - netbase
     - net-tools
