@@ -1094,18 +1094,22 @@ packages:
     - init
     - iproute2
     - iputils-ping
-    - isc-dhcp-client
     - locales
     - netbase
     - net-tools
     - openssh-client
     - procps
     - sudo
+    - udev
     - vim
     action: install
 
   - packages:
-    - udev
+    - isc-dhcp-client
+    releases:
+    - bullseye
+    - bookworm
+    - trixie
     action: install
 
   - packages:
@@ -1115,7 +1119,6 @@ packages:
     early: true
     releases:
     - bookworm
-    - sid
     - trixie
     - forky
 
@@ -1153,7 +1156,6 @@ packages:
     releases:
     - trixie
     - forky
-    - sid
 
   - packages:
     - pkexec
@@ -1165,7 +1167,6 @@ packages:
     - bookworm
     - trixie
     - forky
-    - sid
 
   - packages:
     - grub-efi
@@ -1216,8 +1217,8 @@ packages:
   - name: sources.list
     url: |-
       deb http://deb.debian.org/debian {{ image.release }} main contrib
-      {% if image.release != "sid" %}deb http://deb.debian.org/debian {{ image.release }}-updates main contrib{% endif %}
-      {% if image.release != "sid" %}deb http://deb.debian.org/debian-security/ {{ image.release }}-security main contrib{% endif %}
+      deb http://deb.debian.org/debian {{ image.release }}-updates main contrib
+      deb http://deb.debian.org/debian-security/ {{ image.release }}-security main contrib
 
 actions:
 - trigger: post-unpack
@@ -1264,7 +1265,6 @@ actions:
     systemctl enable systemd-resolved.service
   releases:
   - bookworm
-  - sid
   - trixie
   - forky
 
@@ -1372,7 +1372,6 @@ actions:
     ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
   releases:
   - bookworm
-  - sid
   - trixie
   - forky
 
