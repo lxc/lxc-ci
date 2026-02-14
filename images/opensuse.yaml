@@ -304,6 +304,7 @@ packages:
     - pigz
     - rsync
     - sudo
+    - terminfo
     - systemd-sysvinit
     - tar
     - which
