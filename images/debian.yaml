@@ -1055,6 +1055,15 @@ files:
   types:
   - vm
 
+- path: /etc/dracut.conf.d/incus.conf
+  generator: dump
+  content: |-
+    hostonly=no
+  types:
+  - vm
+  releases:
+  - forky
+
 - name: meta-data
   generator: cloud-init
   variants:
