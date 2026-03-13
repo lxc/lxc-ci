@@ -1333,6 +1333,17 @@ actions:
     #!/bin/sh
     set -eux
 
+    update-initramfs -u
+  types:
+  - vm
+  releases:
+  - forky
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
     TARGET="x86_64"
     [ "$(uname -m)" = "aarch64" ] && TARGET="arm64"
 
