@@ -308,6 +308,8 @@ actions:
   - 23.05
   - 24.10
   - 25.12
+  types:
+    - container
 
 mappings:
   architecture_map: openwrt
