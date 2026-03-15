@@ -263,10 +263,6 @@ packages:
   cleanup: true
   sets:
   - packages:
-    - sudo
-    action: install
-
-  - packages:
     - kmod-9pvirtio
     - kmod-fs-9p
     - kmod-vsock-virtio
