@@ -276,8 +276,8 @@ actions:
   action: |
     #!/bin/sh
     echo "console::askfirst:/usr/libexec/login.sh" >> /etc/inittab
-  architectures:
-  - x86_64
+  types:
+    - container
 
 - trigger: post-files
   action: |
