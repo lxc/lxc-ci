@@ -208,6 +208,9 @@ for url in $(incus query "/1.0/instances" | jq -r .[] | grep "${TEST_IMAGE}"); d
     if [ -z "${address}" ]; then
         address=$(incus query "${url}/state" | jq -r ".network.enp5s0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
     fi
+    if [ -z "${address}" ]; then
+        address=$(incus query "${url}/state" | jq -r ".network.vtnet0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
+    fi
 
     if [ -z "${address}" ]; then
         echo "===> FAIL: No network interface: ${name}"
