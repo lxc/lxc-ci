@@ -1,0 +1,69 @@
+- job:
+    name: "image-freebsd"
+    concurrent: false
+    description: FreeBSD images for Incus.
+    node: master
+    project-type: matrix
+
+    axes:
+    - axis:
+        name: architecture
+        type: slave
+        values:
+        - amd64
+        - arm64
+        - riscv64
+
+    - axis:
+        name: release
+        type: user-defined
+        values:
+        - 15.0
+
+    - axis:
+        name: variant
+        type: user-defined
+        values:
+        - default
+
+    builders:
+    - shell: |-
+        cd /lxc-ci
+        exec sudo /lxc-ci/bin/build-image-freebsd "$architecture" "$release" "$variant" "$WORKSPACE" https://download.freebsd.org
+
+    properties:
+    - build-discarder:
+        num-to-keep: 3
+
+    - raw:
+        !include: ../includes/webhook.yaml.inc
+
+    publishers:
+    - archive:
+        artifacts: "*.qcow2,*.tar.xz,*.squashfs,image.yaml,serial"
+        only-if-success: true
+
+    - workspace-cleanup:
+        fail-build: false
+
+    - trigger-parameterized-builds:
+      - project:
+        - test-image
+        predefined-parameters: |-
+          image=$JOB_NAME
+          build=$BUILD_URL
+        condition: SUCCESS
+
+    - naginator:
+        rerun-unstable-builds: true
+        rerun-matrix-part: true
+        max-failed-builds: 3
+        progressive-delay-increment: 300
+        progressive-delay-maximum: 900
+
+    triggers:
+    - timed: '@daily'
+
+    wrappers:
+    - ansicolor:
+        colormap: css
