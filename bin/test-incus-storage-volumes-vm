@@ -80,7 +80,7 @@ do
 
 	echo "==> Create custom volume and attach it to VM"
 	incus storage volume create "${poolName}" vol4 size=10MB
-	incus storage volume attach "${poolName}" vol4 v1 /foo
+	incus storage volume attach "${poolName}" vol4 v1 foo /foo
 
 	echo "==> Start VM and add content to custom block volume"
 	incus start v1
