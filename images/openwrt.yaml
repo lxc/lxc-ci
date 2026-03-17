@@ -258,7 +258,7 @@ files:
         option ula_prefix 'auto'
 
 packages:
-  manager: opkg
+  manager: apk
   update: false
   cleanup: true
   sets:
