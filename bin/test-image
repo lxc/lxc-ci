@@ -27,6 +27,11 @@ cleanup() {
             exit 0
         fi
 
+        if [ "${DIST}" = "freebsd" ]; then
+            echo "==> WARNING: Failure will be ignored as Incus 6.22 is lacking agent support"
+            exit 0
+        fi
+
         exit 1
     fi
 
