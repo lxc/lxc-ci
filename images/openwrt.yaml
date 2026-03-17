@@ -258,14 +258,10 @@ files:
         option ula_prefix 'auto'
 
 packages:
-  manager: opkg
+  manager: apk
   update: false
   cleanup: true
   sets:
-  - packages:
-    - sudo
-    action: install
-
   - packages:
     - kmod-9pvirtio
     - kmod-fs-9p
@@ -279,15 +275,9 @@ actions:
 - trigger: post-unpack
   action: |
     #!/bin/sh
-    mkdir -p /var/log
-
-- trigger: post-unpack
-  action: |
-    #!/bin/sh
-    mkdir -p /var/lock
     echo "console::askfirst:/usr/libexec/login.sh" >> /etc/inittab
-  architectures:
-  - x86_64
+  types:
+    - container
 
 - trigger: post-files
   action: |
@@ -318,6 +308,8 @@ actions:
   - 23.05
   - 24.10
   - 25.12
+  types:
+    - container
 
 mappings:
   architecture_map: openwrt
