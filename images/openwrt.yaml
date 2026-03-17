@@ -233,6 +233,10 @@ files:
 - path: /etc/hosts
   generator: hosts
 
+- generator: incus-agent
+  types:
+    - vm
+
 - path: /etc/config/network
   generator: dump
   content: |-
@@ -262,6 +266,15 @@ packages:
     - sudo
     action: install
 
+  - packages:
+    - kmod-9pvirtio
+    - kmod-fs-9p
+    - kmod-vsock-virtio
+    - virtio-console-helper
+    action: install
+    types:
+      - vm
+
 actions:
 - trigger: post-unpack
   action: |
@@ -279,6 +292,22 @@ actions:
 - trigger: post-files
   action: |
     #!/bin/sh
+    # we don't need grub in a container
+    rm -rf /boot/efi
+  types:
+    - container
+
+- trigger: post-files
+  action: |
+    #!/bin/sh
+    target=/boot/efi/boot/grub/grub.cfg
+    sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_PARTUUID}#g" "${target}"
+  types:
+    - vm
+
+- trigger: post-files
+  action: |
+    #!/bin/sh
 
     # Disable process isolation to make dnsmasq work
     sed -i 's/procd_add_jail/: \0/g' /etc/init.d/dnsmasq
@@ -289,3 +318,6 @@ actions:
   - 23.05
   - 24.10
   - 25.12
+
+mappings:
+  architecture_map: openwrt
