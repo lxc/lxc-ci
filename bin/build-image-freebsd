@@ -1,0 +1,173 @@
+#!/bin/sh
+
+set -eux
+
+INCUS_ARCHITECTURE="$1"
+RELEASE="$2"
+# The variant is not used yet
+VARIANT="$3"
+WORKSPACE="$4"
+MIRROR="$5"
+
+NOW="$(date +%s)"
+SERIAL="$(date -u +%Y%m%d_%H:%M)"
+echo "$SERIAL" > "$WORKSPACE/serial"
+
+ARCH="$INCUS_ARCHITECTURE"
+[ "$ARCH" = "arm64" ] && ARCH="aarch64"
+
+BASE_URL="$MIRROR/releases/VM-IMAGES/$RELEASE-RELEASE/$ARCH/Latest"
+IMAGE="FreeBSD-$RELEASE-RELEASE-$ARCH-zfs.raw.xz"
+
+# Download a pre-built VM image
+curl -Lo "$WORKSPACE/$IMAGE" "$BASE_URL/$IMAGE"
+curl -Lo "$WORKSPACE/CHECKSUM.SHA256" "$BASE_URL/CHECKSUM.SHA256"
+(cd "$WORKSPACE" && sha256sum -c CHECKSUM.SHA256 --ignore-missing)
+
+# Decompress the image
+unxz -c "$WORKSPACE/$IMAGE" > "$WORKSPACE/image.raw"
+
+# Mount the ZFS partition
+OFFSET="$(fdisk -lo Start "$WORKSPACE/image.raw" | tail -n1)"
+DEV="$(losetup -fPo "$((OFFSET*512))" --show "$WORKSPACE/image.raw")"
+zpool import -d "$DEV" -R "$WORKSPACE/rootfs" zroot
+zfs mount zroot/ROOT/default
+
+# Prepare templates
+mkdir -p "$WORKSPACE/incus/templates"
+echo 'hostname="{{ instance.name }}"' > "$WORKSPACE/incus/templates/hostname.tpl"
+cat > "$WORKSPACE/incus/templates/hosts.tpl" << 'EOF'
+127.0.1.1	{{ container.name }}
+127.0.0.1	localhost
+::1		localhost ip6-localhost ip6-loopback
+ff02::1		ip6-allnodes
+ff02::2		ip6-allrouters
+EOF
+
+# Generate metadata
+cat > "$WORKSPACE/incus/metadata.yaml" << EOF
+architecture: $INCUS_ARCHITECTURE
+creation_date: $NOW
+expiry_date: $((NOW+2592000))
+properties:
+  architecture: $INCUS_ARCHITECTURE
+  description: FreeBSD $RELEASE $INCUS_ARCHITECTURE ($SERIAL)
+  name: freebsd-$RELEASE-$INCUS_ARCHITECTURE-$VARIANT-$SERIAL
+  os: freebsd
+  release: $RELEASE
+  serial: "$SERIAL"
+  variant: $VARIANT
+templates:
+  /etc/rc.conf.d/hostname:
+    when:
+    - create
+    - copy
+    create_only: false
+    template: hostname.tpl
+    properties: {}
+  /etc/hosts:
+    when:
+    - create
+    - copy
+    create_only: false
+    template: hosts.tpl
+    properties: {}
+EOF
+
+# Build the Incus TAR
+tar -cJf "$WORKSPACE/incus.tar.xz" -C "$WORKSPACE/incus" .
+
+# Prepare the agent
+echo 'incus_agent_enable="YES"' >> "$WORKSPACE/rootfs/etc/rc.conf"
+mkdir -p "$WORKSPACE/rootfs/usr/local/etc/rc.d"
+cat > "$WORKSPACE/rootfs/usr/local/etc/rc.d/incus-agent" << 'EOF'
+#!/bin/sh
+#
+# PROVIDE: incus_agent
+# REQUIRE: FILESYSTEMS
+#
+
+. /etc/rc.subr
+
+name=incus_agent
+rcvar=incus_agent_enable
+pidfile="/var/run/${name}.pid"
+
+start_precmd="${name}_prestart"
+start_cmd="${name}_start"
+
+load_rc_config "$name"
+: ${incus_agent_enable:="NO"}
+
+incus_agent_prestart()
+{
+        /usr/local/libexec/incus-agent-setup
+}
+
+incus_agent_start()
+{
+        cd /var/run/incus_agent
+        /usr/sbin/daemon -p "${pidfile}" -r -f /var/run/incus_agent/incus-agent
+}
+
+run_rc_command "$1"
+EOF
+chmod 0500 "$WORKSPACE/rootfs/usr/local/etc/rc.d/incus-agent"
+mkdir "$WORKSPACE/rootfs/usr/local/libexec"
+cat > "$WORKSPACE/rootfs/usr/local/libexec/incus-agent-setup" << 'EOF'
+#!/bin/sh
+set -eu
+PREFIX="/var/run/incus_agent"
+
+# Functions.
+mount_9p() {
+    kldload virtio_p9fs >/dev/null 2>&1 || true
+    mount -t p9fs -o ro config "$PREFIX.mnt" >/dev/null 2>&1
+}
+
+fail() {
+    # Check if we already have an agent in place.
+    if [ -x "$PREFIX/incus-agent" ]; then
+        echo "$1, reusing existing agent"
+        exit 0
+    fi
+
+    # Cleanup and fail.
+    umount "$PREFIX" >/dev/null 2>&1 || true
+    rmdir "$PREFIX" >/dev/null 2>&1 || true
+    echo "$1, failing"
+
+    exit 1
+}
+
+# Try getting an agent drive.
+mkdir -p "$PREFIX.mnt"
+mount_9p || fail "Couldn't mount 9p"
+
+# Setup the mount target.
+umount "$PREFIX" >/dev/null 2>&1 || true
+mkdir -p "$PREFIX"
+mount -t tmpfs -o mode=0700,size=50M tmpfs "$PREFIX"
+
+# Copy the data.
+cp -Ra "$PREFIX.mnt/"* "$PREFIX"
+
+# Unmount the temporary mount.
+umount "$PREFIX.mnt"
+rmdir "$PREFIX.mnt"
+
+# Fix up permissions.
+chown -R root:wheel "$PREFIX"
+
+# Load pty
+kldload pty >/dev/null 2>&1 || true
+
+exit 0
+EOF
+chmod 0500 "$WORKSPACE/rootfs/usr/local/libexec/incus-agent-setup"
+
+# Unmount and cleanup
+zfs unmount zroot/ROOT/default
+zpool export zroot
+losetup -d "$DEV"
+qemu-img convert -f raw -O qcow2 "$WORKSPACE/image.raw" "$WORKSPACE/disk.qcow2"
