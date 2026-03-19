@@ -89,6 +89,11 @@ if [ "${TYPE}" = "vm" ]; then
 
     # Cloud-init testing
     if [ "${VARIANT}" = "cloud" ]; then
+        # Handle distros needing the cloud-init drive
+        if [ "${DIST}" = "freebsd" ]; then
+            incus config device add "${TEST_IMAGE}" cloud-init disk source=cloud-init:config
+        fi
+
         incus config set "${TEST_IMAGE}" user.user-data "$(cat << EOF
 #cloud-config
 write_files:
@@ -276,8 +281,12 @@ for url in $(incus query "/1.0/instances" | jq -r .[] | grep "${TEST_IMAGE}"); d
         if [ "$(incus file pull "${name}/vendor-data" - 2>/dev/null)" = "bar" ]; then
             echo "===> PASS: cloud-init vendor-data provisioning: ${name}"
         else
-            echo "===> FAIL: cloud-init vendor-data provisioning: ${name}"
-            FAIL=1
+            if [ "${DIST}" = "freebsd" ]; then
+                echo "===> SKIP: FreeBSD does not support cloud-init vendor-data provisioning"
+            else
+                echo "===> FAIL: cloud-init vendor-data provisioning: ${name}"
+                FAIL=1
+            fi
         fi
     fi
 done
