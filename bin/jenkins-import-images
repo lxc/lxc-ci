@@ -1,0 +1,1098 @@
+#!/usr/bin/python3
+import datetime
+import fcntl
+import glob
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+from urllib.request import urlopen, urlretrieve
+
+# Globals
+TARGET = "/data/images.linuxcontainers.org"
+GPG_KEYID = "0x22F6E216"
+BOUNDARY = "f012e447-25dd-4f6d-8a14-105c3b27a768"
+DEBUG = True
+DATA_RETENTION = 3
+MAX_IMAGES = 30
+
+COMPAT_CURRENT_LEVEL = 5
+COMPAT_VERSION = ["1.0", "1.0", "1.1", "2.0", "2.1", "3.0", "3.1"]
+
+JENKINS_URL = "https://jenkins.linuxcontainers.org"
+PREFIX = "image-"
+
+ALIASES = {
+    "debian/buster": ["debian/10"],
+    "debian/bullseye": ["debian/11"],
+    "debian/bookworm": ["debian/12"],
+    "debian/trixie": ["debian/13"],
+    "debian/forky": ["debian/14"],
+    "ubuntu/jammy": ["ubuntu/22.04"],
+    "ubuntu/noble": ["ubuntu/24.04"],
+    "ubuntu/plucky": ["ubuntu/25.04"],
+    "ubuntu/questing": ["ubuntu/25.10"],
+}
+
+REQUIRE_CGROUP1 = [
+    "centos/7",
+    "oracle/7",
+    "springdalelinux/7",
+]
+
+REQUIRE_CGROUP1_EXACT = [
+    "amazonlinux/2",
+]
+
+REQUIRE_CGROUP2 = [
+    "ubuntu/24.04",
+]
+
+REQUIRE_CDROM_AGENT = [
+    "almalinux",
+    "centos",
+    "openeuler",
+    "oracle",
+    "rockylinux",
+    "springdalelinux",
+]
+
+REQUIRE_NO_SECUREBOOT = [
+    "alpine",
+    "archlinux",
+    "debian/9",
+    "freebsd",
+    "gentoo",
+    "nixos",
+    "openeuler",
+]
+
+REQUIRE_NO_PRIVILEGED = []
+
+REQUIRE_INCUS = [
+    "nixos",
+]
+
+REQUIRE_VM = [
+    "freebsd",
+]
+
+LXD_RESTRICTED = [
+    "alpine",
+    "centos",
+    "debian",
+    "ubuntu",
+]
+
+if len(sys.argv) > 1:
+    if sys.argv[1] == "-d":
+        DEBUG = True
+
+
+def hash256(path):
+    sha256 = hashlib.sha256()
+    with open(path, "rb") as fd:
+        sha256.update(fd.read())
+
+    return sha256.hexdigest()
+
+
+def include_in_index(index, compat, dist, release, arch, variant):
+    # old-systemd distros
+    if index != "system":
+        if dist == "centos" and release != "6":
+            if compat < 2:
+                return False
+
+        if dist == "debian" and release != "wheezy":
+            if compat < 2:
+                return False
+
+        if dist == "ubuntu" and release not in ("precise", "trusty", "utopic"):
+            if compat < 2:
+                return False
+
+    # Distributions introduced in LXC 1.1
+    if compat < 2 and dist in ("archlinux", "opensuse"):
+        return False
+
+    # Distributions introduced in LXC 2.0
+    if compat < 3 and dist in ("alpine",):
+        return False
+
+    # Distributions introduced in LXC 2.1
+    if compat < 4 and dist in ("sabayon",):
+        return False
+
+    # If we made it there, we're good
+    return True
+
+
+def get_json(url, depth=0):
+    return json.loads(urlopen("%s/api/json?depth=%d" % (url, depth)).read().decode())
+
+
+def sign_file(path, target=None, clear=False):
+    if not target:
+        target = "%s.asc" % path
+
+    if os.path.exists(target):
+        os.remove(target)
+
+    mode = "-b"
+    if clear:
+        mode = "--clearsign"
+
+    with open(os.devnull, "w") as devnull:
+        subprocess.call(
+            ["gpg", "-u", GPG_KEYID, "-o", target, "-a", mode, path],
+            stderr=devnull,
+            stdout=devnull,
+        )
+
+
+def string_to_dict(string):
+    data = {}
+    for variable in string.split(","):
+        key, value = variable.split("=")
+        data[key] = value
+
+    return data
+
+
+def incus_arch(arch):
+    if arch == "i386":
+        return (1, "i686")
+    elif arch == "amd64":
+        return (2, "x86_64")
+    elif arch in ("armhf", "armel"):
+        return (3, "armv7l")
+    elif arch == "arm64":
+        return (4, "aarch64")
+    elif arch == "powerpc":
+        return (5, "ppc")
+    elif arch == "powerpc64":
+        return (6, "ppc64")
+    elif arch == "ppc64el":
+        return (7, "ppc64le")
+    elif arch == "s390x":
+        return (8, "s390x")
+
+
+def incus_tarball(dist, release, arch, variant, version, path):
+    meta_tar = os.path.join(path, "incus.tar.xz")
+
+    # Generate sha256
+    if os.path.exists(os.path.join(path, "rootfs.squashfs")):
+        sha256 = hashlib.sha256()
+        with open(meta_tar, "rb") as fd:
+            sha256.update(fd.read())
+
+        with open(os.path.join(path, "rootfs.squashfs"), "rb") as fd:
+            sha256.update(fd.read())
+
+        with open(os.path.join(path, ".combined_fingerprint_squashfs"), "w") as fd:
+            fd.write(sha256.hexdigest())
+            fd.write("\n")
+
+    if os.path.exists(os.path.join(path, "rootfs.tar.xz")):
+        sha256 = hashlib.sha256()
+        with open(meta_tar, "rb") as fd:
+            sha256.update(fd.read())
+
+        with open(os.path.join(path, "rootfs.tar.xz"), "rb") as fd:
+            sha256.update(fd.read())
+
+        with open(os.path.join(path, ".combined_fingerprint"), "w") as fd:
+            fd.write(sha256.hexdigest())
+            fd.write("\n")
+
+    if os.path.exists(os.path.join(path, "disk.qcow2")):
+        sha256 = hashlib.sha256()
+        with open(meta_tar, "rb") as fd:
+            sha256.update(fd.read())
+
+        with open(os.path.join(path, "disk.qcow2"), "rb") as fd:
+            sha256.update(fd.read())
+
+        with open(os.path.join(path, ".combined_fingerprint_qcow2"), "w") as fd:
+            fd.write(sha256.hexdigest())
+            fd.write("\n")
+
+
+def incus_squashfs_delta(src, dst):
+    if not os.path.exists("%s/rootfs.squashfs" % src):
+        return
+
+    if not os.path.exists("%s/rootfs.squashfs" % dst):
+        return
+
+    target = "delta-%s.vcdiff" % os.path.basename(src)
+
+    if (
+        subprocess.call(
+            [
+                "xdelta3",
+                "-e",
+                "-s",
+                "%s/rootfs.squashfs" % src,
+                "%s/rootfs.squashfs" % dst,
+                "%s/%s" % (dst, target),
+            ]
+        )
+        != 0
+    ):
+        raise Exception("Failed xdelta3 call")
+
+    return target
+
+
+def incus_qcow2_delta(src, dst):
+    if not os.path.exists("%s/disk.qcow2" % src):
+        return
+
+    if not os.path.exists("%s/disk.qcow2" % dst):
+        return
+
+    target = "delta-%s.qcow2.vcdiff" % os.path.basename(src)
+
+    if (
+        subprocess.call(
+            [
+                "xdelta3",
+                "-e",
+                "-s",
+                "%s/disk.qcow2" % src,
+                "%s/disk.qcow2" % dst,
+                "%s/%s" % (dst, target),
+            ]
+        )
+        != 0
+    ):
+        raise Exception("Failed xdelta3 call")
+
+    return target
+
+
+def artifacts_dict(data, base):
+    artifacts = {}
+    for artifact in data:
+        artifact_url = "%s/artifact/%s" % (base, artifact["relativePath"])
+        artifacts[artifact["fileName"]] = artifact_url
+
+    return artifacts
+
+
+# Lock file
+lock_file = "%s/.sync.lock" % TARGET
+lock_fd = open(lock_file, "w")
+try:
+    fcntl.lockf(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+except IOError:
+    sys.exit(0)
+
+# Publication paths
+TARGET_IMAGES = "%s/images" % TARGET
+TARGET_META = "%s/meta" % TARGET
+
+# Get test data
+tested_images = {}
+data = get_json("%s/job/test-image" % JENKINS_URL, 1)
+for build in data["builds"]:
+    if build["inProgress"]:
+        continue
+
+    if build["result"] != "SUCCESS":
+        continue
+
+    image_url = None
+    for action in build["actions"]:
+        if not "parameters" in action:
+            continue
+
+        image_url = action["parameters"][1]["value"]
+        break
+
+    if image_url:
+        fields = image_url.split("/")
+        image_build = int(fields[-2])
+        image_os = fields[-3].split("image-")[-1]
+        if image_os not in tested_images:
+            tested_images[image_os] = image_build
+
+# Download
+try:
+    data = get_json("%s/view/All" % JENKINS_URL)
+except Exception:
+    data = {"jobs": []}
+
+count = 0
+for job in data["jobs"]:
+    # Check that we're interested in the image
+    if job["name"].startswith(PREFIX):
+        IMG_DIST = job["name"].split(PREFIX)[-1]
+    else:
+        continue
+
+    # Load the Jenkins data
+    data = get_json(job["url"])
+
+    # Look at all the combinations
+    for config in data["activeConfigurations"]:
+        # Publish every 30 images
+        if count > MAX_IMAGES:
+            break
+
+        # Skip images without a succesful build
+        data = get_json(config["url"])
+        if not data["lastSuccessfulBuild"]:
+            continue
+
+        # Parse the matrix variables
+        variables = string_to_dict(config["name"])
+
+        # Load the last succesful build
+        build_url = data["lastSuccessfulBuild"]["url"].rstrip("/")
+        data = get_json(build_url)
+        console = data["url"] + "/consoleText"
+
+        # Parse the artifacts
+        artifacts = artifacts_dict(data["artifacts"], build_url)
+
+        # Parse the image information
+        try:
+            IMG_BUILD = urlopen(artifacts["serial"]).read().decode().strip()
+        except:
+            print("Missing serial: %s" % IMG_BUILD)
+            continue
+
+        if ":" not in IMG_BUILD:
+            print("Bad image build format, skipping: %s" % IMG_BUILD)
+            continue
+        IMG_ARCH = variables["architecture"]
+        IMG_RELEASE = variables["release"]
+        IMG_VARIANT = variables["variant"]
+        IMG_URL = "/images/%s/%s/%s/%s/%s" % (
+            IMG_DIST,
+            IMG_RELEASE,
+            IMG_ARCH,
+            IMG_VARIANT,
+            IMG_BUILD,
+        )
+        FS_PATH = "%s/%s/%s/%s/%s/%s" % (
+            TARGET_IMAGES,
+            IMG_DIST,
+            IMG_RELEASE,
+            IMG_ARCH,
+            IMG_VARIANT,
+            IMG_BUILD,
+        )
+
+        # Get the current builds
+        current_builds = set()
+        if os.path.exists(os.path.dirname(FS_PATH)):
+            current_builds = set(os.listdir(os.path.dirname(FS_PATH)))
+
+        # Check if we already processed this one
+        if IMG_BUILD in current_builds:
+            continue
+
+        current_builds.add(IMG_BUILD)
+
+        # Check if we have newer builds locally
+        if IMG_BUILD not in sorted(current_builds)[-3:]:
+            continue
+
+        if IMG_DIST not in tested_images or tested_images[IMG_DIST] < int(data["id"]):
+            print(
+                "Skipping: %s/%s/%s/%s at %s"
+                % (IMG_DIST, IMG_RELEASE, IMG_ARCH, IMG_VARIANT, IMG_BUILD)
+            )
+            continue
+
+        # Look at the artifacts
+        DL_YAML = artifacts.get("image.yaml", None)
+        DL_ROOTFS_TAR = artifacts.get("rootfs.tar.xz", None)
+        DL_META = artifacts.get("meta.tar.xz", None)
+        DL_ROOTFS_SQUASH = artifacts.get("rootfs.squashfs", None)
+        DL_DISK = artifacts.get("disk.qcow2", None)
+        DL_INCUS = artifacts.get(
+            "incus.tar.xz", artifacts.get("lxd.tar.xz", None)
+        )  # legacy
+        DL_LOG = "%s/consoleText" % data["url"]
+
+        # Skip partial images
+        if (
+            not (DL_ROOTFS_TAR and DL_META)
+            and not (DL_ROOTFS_SQUASH and DL_INCUS)
+            and not (DL_DISK and DL_INCUS)
+        ):
+            continue
+
+        # Download the artifacts
+        try:
+            if DEBUG:
+                print(
+                    "Downloading: %s/%s/%s/%s at %s"
+                    % (IMG_DIST, IMG_RELEASE, IMG_ARCH, IMG_VARIANT, IMG_BUILD)
+                )
+            TEMP_DIR = tempfile.mkdtemp()
+
+            # Download from the builder
+            if DL_ROOTFS_TAR:
+                urlretrieve(DL_ROOTFS_TAR, "%s/rootfs.tar.xz" % TEMP_DIR)
+
+            if DL_META:
+                urlretrieve(DL_META, "%s/meta.tar.xz" % TEMP_DIR)
+
+            if DL_ROOTFS_SQUASH:
+                urlretrieve(DL_ROOTFS_SQUASH, "%s/rootfs.squashfs" % TEMP_DIR)
+
+            if DL_INCUS:
+                urlretrieve(DL_INCUS, "%s/incus.tar.xz" % TEMP_DIR)
+
+            if DL_DISK:
+                urlretrieve(DL_DISK, "%s/disk.qcow2" % TEMP_DIR)
+
+            if DL_YAML:
+                urlretrieve(DL_YAML, "%s/image.yaml" % TEMP_DIR)
+
+            if DL_LOG:
+                urlretrieve(DL_LOG, "%s/build.log" % TEMP_DIR)
+
+            # File list
+            files = [
+                "rootfs.tar.xz",
+                "rootfs.tar.xz.asc",
+                "rootfs.squashfs",
+                "rootfs.squashfs.asc",
+                "disk.qcow2",
+                "disk.qcow2.asc",
+                "meta.tar.xz",
+                "meta.tar.xz.asc",
+                "incus.tar.xz",
+                "incus.tar.xz.asc",
+                "image.yaml",
+                "image.yaml.asc",
+                "build.log",
+                "build.log.asc",
+                "SHA256SUMS",
+                "SHA256SUMS.asc",
+                ".combined_fingerprint",
+                ".combined_fingerprint_squashfs",
+                ".combined_fingerprint_qcow2",
+            ]
+
+            # Generate the missing artifacts
+            incus_tarball(
+                IMG_DIST, IMG_RELEASE, IMG_ARCH, IMG_VARIANT, IMG_BUILD, TEMP_DIR
+            )
+
+            # Generate deltas
+            previous_index = sorted(current_builds).index(IMG_BUILD) - 1
+            if previous_index >= 0:
+                src_id = sorted(current_builds)[previous_index]
+
+                # squashfs
+                tgt = incus_squashfs_delta(
+                    os.path.join(os.path.dirname(FS_PATH), src_id), TEMP_DIR
+                )
+
+                if tgt:
+                    files.append(tgt)
+                    files.append("%s.asc" % tgt)
+
+                # qcow2
+                tgt = incus_qcow2_delta(
+                    os.path.join(os.path.dirname(FS_PATH), src_id), TEMP_DIR
+                )
+
+                if tgt:
+                    files.append(tgt)
+                    files.append("%s.asc" % tgt)
+
+            # Hash everything
+            with open("%s/SHA256SUMS" % TEMP_DIR, "w+") as fd:
+                for entry in files:
+                    if (
+                        not entry.endswith(".tar.xz")
+                        and not entry.endswith(".squashfs")
+                        and not entry.endswith(".qcow2")
+                        and not entry.endswith(".yaml")
+                        and not entry.endswith(".log")
+                        and not entry.endswith(".vcdiff")
+                    ):
+                        continue
+
+                    if os.path.exists("%s/%s" % (TEMP_DIR, entry)):
+                        fd.write(
+                            "%s  %s\n" % (hash256("%s/%s" % (TEMP_DIR, entry)), entry)
+                        )
+
+            # Sign everything
+            for entry in files:
+                if entry.startswith(".combined_fingerprint"):
+                    continue
+
+                if entry.endswith(".asc"):
+                    continue
+
+                if os.path.exists("%s/%s" % (TEMP_DIR, entry)):
+                    sign_file("%s/%s" % (TEMP_DIR, entry))
+
+            # Move to final location
+            os.makedirs(FS_PATH)
+            for entry in files:
+                if os.path.lexists("%s/%s" % (TEMP_DIR, entry)):
+                    shutil.move("%s/%s" % (TEMP_DIR, entry), "%s/%s" % (FS_PATH, entry))
+
+            shutil.rmtree(TEMP_DIR)
+
+            count += 1
+        except Exception:
+            shutil.rmtree(TEMP_DIR)
+            if DEBUG:
+                print(
+                    "Failed to download: %s/%s/%s/%s"
+                    % (IMG_DIST, IMG_RELEASE, IMG_ARCH, IMG_VARIANT)
+                )
+            raise
+            continue
+
+# Cleanup expired images
+for entry in sorted(glob.glob("%s/*/*/*/*" % TARGET_IMAGES)):
+    images = sorted(
+        [
+            image
+            for image in os.listdir(entry)
+            if "SHA256SUMS" in os.listdir("%s/%s" % (entry, image))
+        ]
+    )
+
+    for image in images[:-DATA_RETENTION]:
+        shutil.rmtree("%s/%s" % (entry, image))
+
+# Generate the index
+index = {}
+html_index = []
+for entry in sorted(glob.glob("%s/*/*/*/*" % TARGET_IMAGES)):
+    distro, release, arch, variant = entry.split("/")[-4:]
+
+    images = sorted(
+        [
+            image
+            for image in os.listdir(entry)
+            if "SHA256SUMS" in os.listdir("%s/%s" % (entry, image))
+        ]
+    )
+    if not images:
+        continue
+
+    latest_image = images[-1]
+    url = "/images/%s/%s/%s/%s/%s/" % (distro, release, arch, variant, latest_image)
+    latest_image_link = '<a href="%s">%s</a>' % (url, latest_image)
+
+    # VM-only images
+    if "desktop" in variant or distro in REQUIRE_VM:
+        fields = [
+            distro,
+            release,
+            arch,
+            variant,
+            latest_image_link,
+            "NO",
+            "NO",
+            "NO",
+            "YES",
+        ]
+
+        html_index.append(fields)
+        continue
+
+    # Main index
+    if "index-system" not in index:
+        index["index-system"] = []
+
+    if "index-user" not in index:
+        index["index-user"] = []
+
+    incus = "NO"
+    incus_vm = "NO"
+    lxc_unpriv = "NO"
+    lxc_unpriv_compat = 100
+    lxc_priv = "NO"
+    lxc_priv_compat = 100
+
+    if include_in_index("system", COMPAT_CURRENT_LEVEL, distro, release, arch, variant):
+        index["index-system"].append(
+            "%s;%s;%s;%s;%s;%s" % (distro, release, arch, variant, latest_image, url)
+        )
+
+        lxc_priv = "YES (%s and up)" % (COMPAT_VERSION[COMPAT_CURRENT_LEVEL])
+        lxc_priv_compat = COMPAT_CURRENT_LEVEL
+
+    if include_in_index("user", COMPAT_CURRENT_LEVEL, distro, release, arch, variant):
+        index["index-user"].append(
+            "%s;%s;%s;%s;%s;%s" % (distro, release, arch, variant, latest_image, url)
+        )
+        incus = "YES"
+        lxc_unpriv = "YES (%s and up)" % (COMPAT_VERSION[COMPAT_CURRENT_LEVEL])
+        lxc_unpriv_compat = COMPAT_CURRENT_LEVEL
+
+    if os.path.exists(os.path.join(entry, latest_image, "disk.qcow2")):
+        incus_vm = "YES"
+
+    # Compat index
+    for compat in range(1, COMPAT_CURRENT_LEVEL):
+        if include_in_index("system", compat, distro, release, arch, variant):
+            if not "index-system.%s" % compat in index:
+                index["index-system.%s" % compat] = []
+
+            index["index-system.%s" % compat].append(
+                "%s;%s;%s;%s;%s;%s"
+                % (distro, release, arch, variant, latest_image, url)
+            )
+
+            if compat < lxc_priv_compat:
+                lxc_priv = "YES (%s and up)" % (COMPAT_VERSION[compat])
+                lxc_priv_compat = compat
+
+        if include_in_index("user", compat, distro, release, arch, variant):
+            if not "index-user.%s" % compat in index:
+                index["index-user.%s" % compat] = []
+
+            index["index-user.%s" % compat].append(
+                "%s;%s;%s;%s;%s;%s"
+                % (distro, release, arch, variant, latest_image, url)
+            )
+
+            if compat < lxc_unpriv_compat:
+                lxc_unpriv = "YES (%s and up)" % (COMPAT_VERSION[compat])
+                lxc_unpriv_compat = compat
+
+    # HTML index
+    html_index.append(
+        [
+            distro,
+            release,
+            arch,
+            variant,
+            latest_image_link,
+            lxc_priv,
+            lxc_unpriv,
+            incus,
+            incus_vm,
+        ]
+    )
+
+# Generate the index
+INDEX_PATH = "%s/1.0/" % TARGET_META
+if not os.path.exists(INDEX_PATH):
+    os.makedirs(INDEX_PATH)
+
+for filename, content in index.items():
+    with open("%s/%s" % (INDEX_PATH, filename), "w+") as fd:
+        fd.write("%s\n" % "\n".join(content))
+
+    sign_file("%s/%s" % (INDEX_PATH, filename))
+
+# Generate the html index
+html = ""
+for entry in html_index:
+    html += "<tr>"
+    for field in entry:
+        html += "<td>%s</td>" % field
+    html += "</tr>\n"
+
+with open("%s/index.html" % TARGET, "w+") as fd:
+    with open("%s/.index.tpl" % TARGET, "r") as tpl:
+        fd.write(
+            tpl.read().replace("@DATA@", html).replace("@TIMESTAMP@", time.asctime())
+        )
+
+# Generate the image tree
+SS_PATH = "%s/simplestreams/v1/" % TARGET_META
+ss_products = set()
+ss_entries = {}
+ss_lxd_entries = {}
+ss_lxd_restricted_entries = {}
+published = set()
+for entry in sorted(glob.glob("%s/*/*/*/*" % TARGET_IMAGES)):
+    distro, release, arch, variant = entry.split("/")[-4:]
+
+    images = sorted(
+        [
+            image
+            for image in os.listdir(entry)
+            if "SHA256SUMS" in os.listdir("%s/%s" % (entry, image))
+        ]
+    )
+    if not images:
+        continue
+
+    latest_image = images[-1]
+
+    for image in images:
+        if not include_in_index(
+            "user", COMPAT_CURRENT_LEVEL, distro, release, arch, variant
+        ):
+            continue
+
+        image_dir = "%s/%s/%s/%s/%s/%s" % (
+            TARGET_IMAGES,
+            distro,
+            release,
+            arch,
+            variant,
+            image,
+        )
+
+        fingerprint = None
+        if os.path.exists("%s/.combined_fingerprint" % image_dir):
+            with open("%s/.combined_fingerprint" % image_dir, "r") as fd:
+                fingerprint_tar = fd.read().strip()
+                fingerprint = fingerprint_tar
+
+            if fingerprint_tar in published:
+                print("found duplicate: %s" % image_dir)
+                continue
+
+            published.add(fingerprint_tar)
+
+        if os.path.exists("%s/.combined_fingerprint_squashfs" % image_dir):
+            with open("%s/.combined_fingerprint_squashfs" % image_dir, "r") as fd:
+                fingerprint_squashfs = fd.read().strip()
+                fingerprint = fingerprint_squashfs
+
+            if fingerprint_squashfs in published:
+                print("found duplicate: %s" % image_dir)
+                continue
+
+            published.add(fingerprint_squashfs)
+
+        if os.path.exists("%s/.combined_fingerprint_qcow2" % image_dir):
+            with open("%s/.combined_fingerprint_qcow2" % image_dir, "r") as fd:
+                fingerprint_disk = fd.read().strip()
+
+            if fingerprint_disk in published:
+                print("found duplicate: %s" % image_dir)
+                continue
+
+            published.add(fingerprint_disk)
+
+        ss_product = "%s:%s:%s:%s" % (distro, release, arch, variant)
+        ss_products.add(ss_product)
+
+        publish_lxd = distro not in REQUIRE_INCUS
+        publish_lxd_restricted = distro in LXD_RESTRICTED
+
+        # Simplestream entries
+        if ss_product not in ss_entries:
+            aliases = ["%s/%s/%s" % (distro, release, variant)]
+            if "%s/%s" % (distro, release) in ALIASES:
+                for alias in ALIASES["%s/%s" % (distro, release)]:
+                    aliases.append("%s/%s" % (alias, variant))
+
+            if variant == "default":
+                aliases.append("%s/%s" % (distro, release))
+
+                if "%s/%s" % (distro, release) in ALIASES:
+                    for alias in ALIASES["%s/%s" % (distro, release)]:
+                        aliases.append(alias)
+
+            if release == "current":
+                if variant == "default":
+                    aliases.append(distro)
+                else:
+                    aliases.append("%s/%s" % (distro, variant))
+
+            requirements = {}
+            for alias in aliases:
+                # Check for CGroupV1
+                for entry in REQUIRE_CGROUP1:
+                    if alias.startswith(entry):
+                        requirements["cgroup"] = "v1"
+                        break
+
+                for entry in REQUIRE_CGROUP1_EXACT:
+                    if alias == entry or alias.startswith(entry + "/"):
+                        requirements["cgroup"] = "v1"
+                        break
+
+                # Check for CGroupV2
+                for entry in REQUIRE_CGROUP2:
+                    if alias.startswith(entry):
+                        requirements["cgroup"] = "v2"
+                        break
+
+                # Check for secureboot
+                for entry in REQUIRE_NO_SECUREBOOT:
+                    if alias.startswith(entry):
+                        requirements["secureboot"] = "false"
+                        break
+
+                # Check for privileged
+                for entry in REQUIRE_NO_PRIVILEGED:
+                    if alias.startswith(entry):
+                        requirements["privileged"] = "false"
+                        break
+
+                # Check for cdrom agent
+                for entry in REQUIRE_CDROM_AGENT:
+                    if alias.startswith(entry):
+                        requirements["cdrom_agent"] = "true"
+                        break
+
+            ss_entries[ss_product] = {
+                "aliases": ",".join(aliases),
+                "arch": arch,
+                "os": distro.title(),
+                "release": release,
+                "release_title": release,
+                "requirements": requirements,
+                "variant": variant,
+                "versions": {},
+            }
+
+            if publish_lxd:
+                ss_lxd_entries[ss_product] = {
+                    "aliases": ",".join(aliases),
+                    "arch": arch,
+                    "os": distro.title(),
+                    "release": release,
+                    "release_title": release,
+                    "requirements": requirements,
+                    "variant": variant,
+                    "versions": {},
+                }
+
+            if publish_lxd_restricted:
+                ss_lxd_restricted_entries[ss_product] = {
+                    "aliases": ",".join(aliases),
+                    "arch": arch,
+                    "os": distro.title(),
+                    "release": release,
+                    "release_title": release,
+                    "requirements": requirements,
+                    "variant": variant,
+                    "versions": {},
+                }
+
+        files = {}
+        checksums_path = "%s/SHA256SUMS" % image_dir
+        if os.path.exists(checksums_path):
+            with open(checksums_path, "r") as fd:
+                for line in fd:
+                    fields = line.split()
+                    if len(fields) < 2:
+                        continue
+
+                    # legacy
+                    if fields[1] == "lxd.tar.xz":
+                        fields[1] = "incus.tar.xz"
+
+                    stat = os.stat("%s/%s" % (image_dir, fields[1]))
+                    files[fields[1]] = (fields[0], int(stat.st_size))
+
+            items = {}
+            if os.path.exists("%s/incus.tar.xz" % image_dir):
+                items["incus.tar.xz"] = {
+                    "ftype": "incus.tar.xz",
+                    "sha256": files["incus.tar.xz"][0],
+                    "size": files["incus.tar.xz"][1],
+                    "path": "images/%s/%s/%s/%s/%s/incus.tar.xz"
+                    % (distro, release, arch, variant, image),
+                }
+
+                if os.path.exists("%s/rootfs.tar.xz" % image_dir):
+                    items["incus.tar.xz"]["combined_sha256"] = fingerprint_tar
+                    items["incus.tar.xz"]["combined_rootxz_sha256"] = fingerprint_tar
+
+                if os.path.exists("%s/rootfs.squashfs" % image_dir):
+                    items["incus.tar.xz"][
+                        "combined_squashfs_sha256"
+                    ] = fingerprint_squashfs
+
+                if os.path.exists("%s/disk.qcow2" % image_dir):
+                    items["incus.tar.xz"][
+                        "combined_disk-kvm-img_sha256"
+                    ] = fingerprint_disk
+
+                # legacy
+                items["lxd.tar.xz"] = dict(items["incus.tar.xz"])
+                items["lxd.tar.xz"]["ftype"] = "lxd.tar.xz"
+
+            if os.path.exists("%s/rootfs.tar.xz" % image_dir):
+                items["root.tar.xz"] = {
+                    "ftype": "root.tar.xz",
+                    "sha256": files["rootfs.tar.xz"][0],
+                    "size": files["rootfs.tar.xz"][1],
+                    "path": "images/%s/%s/%s/%s/%s/rootfs.tar.xz"
+                    % (distro, release, arch, variant, image),
+                }
+
+            if os.path.exists("%s/rootfs.squashfs" % image_dir):
+                items["root.squashfs"] = {
+                    "ftype": "squashfs",
+                    "sha256": files["rootfs.squashfs"][0],
+                    "size": files["rootfs.squashfs"][1],
+                    "path": "images/%s/%s/%s/%s/%s/rootfs.squashfs"
+                    % (distro, release, arch, variant, image),
+                }
+
+            if os.path.exists("%s/disk.qcow2" % image_dir):
+                items["disk.qcow2"] = {
+                    "ftype": "disk-kvm.img",
+                    "sha256": files["disk.qcow2"][0],
+                    "size": files["disk.qcow2"][1],
+                    "path": "images/%s/%s/%s/%s/%s/disk.qcow2"
+                    % (distro, release, arch, variant, image),
+                }
+
+            for delta in glob.glob("%s/delta-*.vcdiff" % image_dir):
+                filename = os.path.basename(delta)
+                if "qcow2" in delta:
+                    continue
+                    items["root.%s" % filename.replace("delta-", "")] = {
+                        "ftype": "disk-kvm.img.vcdiff",
+                        "sha256": files[filename][0],
+                        "size": files[filename][1],
+                        "path": "images/%s/%s/%s/%s/%s/%s"
+                        % (distro, release, arch, variant, image, filename),
+                        "delta_base": filename.replace("delta-", "").replace(
+                            ".qcow2.vcdiff", ""
+                        ),
+                    }
+                else:
+                    items["root.%s" % filename.replace("delta-", "")] = {
+                        "ftype": "squashfs.vcdiff",
+                        "sha256": files[filename][0],
+                        "size": files[filename][1],
+                        "path": "images/%s/%s/%s/%s/%s/%s"
+                        % (distro, release, arch, variant, image, filename),
+                        "delta_base": filename.replace("delta-", "").replace(
+                            ".vcdiff", ""
+                        ),
+                    }
+
+            ss_entries[ss_product]["versions"][image] = {"items": items}
+
+            if publish_lxd:
+                ss_lxd_entries[ss_product]["versions"][image] = {"items": items}
+
+            if publish_lxd_restricted:
+                ss_lxd_restricted_entries[ss_product]["versions"][image] = {
+                    "items": items
+                }
+
+# Main index
+with open("%s/index.json" % SS_PATH, "w+") as fd:
+    meta = {
+        "index": {
+            "images": {
+                "datatype": "image-downloads",
+                "path": "streams/v1/images.json",
+                "format": "products:1.0",
+            }
+        },
+        "format": "index:1.0",
+    }
+
+    meta["index"]["images"]["products"] = sorted(ss_products)
+
+    fd.write(json.dumps(meta))
+    fd.write("\n")
+sign_file("%s/index.json" % SS_PATH, "%s/index.json.gpg" % SS_PATH)
+sign_file("%s/index.json" % SS_PATH, "%s/index.sjson" % SS_PATH, True)
+
+
+# Main image list
+with open("%s/images.json" % SS_PATH, "w+") as fd:
+    meta = {
+        "content_id": "images",
+        "datatype": "image-downloads",
+        "format": "products:1.0",
+        "products": ss_entries,
+    }
+
+    fd.write(json.dumps(meta))
+    fd.write("\n")
+sign_file("%s/images.json" % SS_PATH, "%s/images.json.gpg" % SS_PATH)
+sign_file("%s/images.json" % SS_PATH, "%s/images.sjson" % SS_PATH, True)
+
+
+# LXD image list
+with open("%s/.images.json.lxd" % SS_PATH, "w+") as fd:
+    meta = {
+        "content_id": "images",
+        "datatype": "image-downloads",
+        "format": "products:1.0",
+        "products": ss_lxd_entries,
+    }
+
+    fd.write(json.dumps(meta))
+    fd.write("\n")
+sign_file("%s/.images.json.lxd" % SS_PATH, "%s/.images.json.gpg.lxd" % SS_PATH)
+sign_file("%s/.images.json.lxd" % SS_PATH, "%s/.images.sjson.lxd" % SS_PATH, True)
+
+# LXD image list (restricted)
+with open("%s/.images.json.lxd_restricted" % SS_PATH, "w+") as fd:
+    meta = {
+        "content_id": "images",
+        "datatype": "image-downloads",
+        "format": "products:1.0",
+        "products": ss_lxd_restricted_entries,
+    }
+
+    fd.write(json.dumps(meta))
+    fd.write("\n")
+sign_file(
+    "%s/.images.json.lxd_restricted" % SS_PATH,
+    "%s/.images.json.gpg.lxd_restricted" % SS_PATH,
+)
+sign_file(
+    "%s/.images.json.lxd_restricted" % SS_PATH,
+    "%s/.images.sjson.lxd_restricted" % SS_PATH,
+    True,
+)
+
+# LXD image list (restricted)
+with open("%s/.images.json.lxd_empty" % SS_PATH, "w+") as fd:
+    meta = {
+        "content_id": "images",
+        "datatype": "image-downloads",
+        "format": "products:1.0",
+        "products": {},
+    }
+
+    fd.write(json.dumps(meta))
+    fd.write("\n")
+sign_file(
+    "%s/.images.json.lxd_empty" % SS_PATH, "%s/.images.json.gpg.lxd_empty" % SS_PATH
+)
+sign_file(
+    "%s/.images.json.lxd_empty" % SS_PATH, "%s/.images.sjson.lxd_empty" % SS_PATH, True
+)
+
+# Update the serial
+timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M")
+with open("%s/.serial" % TARGET, "w+") as wfd:
+    wfd.write("%s\n" % timestamp)
+
+# Atomic publication
+os.mkdir("%s/.snap/%s" % (TARGET, timestamp))
+if os.path.exists("%s/.latest" % TARGET):
+    os.remove("%s/.latest" % TARGET)
+os.symlink("%s/.snap/%s" % (TARGET, timestamp), "%s/.latest" % TARGET)
+
+snaps = sorted(os.listdir("%s/.snap/" % TARGET))
+for snap in snaps[:-DATA_RETENTION]:
+    os.rmdir("%s/.snap/%s" % (TARGET, snap))
+
+# Unlock
+if os.path.exists(lock_file):
+    os.remove(lock_file)
