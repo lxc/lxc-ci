@@ -102,6 +102,7 @@ cat > "$WORKSPACE/rootfs/usr/local/etc/rc.d/incus-agent" << 'EOF'
 name=incus_agent
 rcvar=incus_agent_enable
 pidfile="/var/run/${name}.pid"
+procname=/usr/sbin/daemon
 
 start_precmd="${name}_prestart"
 start_cmd="${name}_start"
@@ -117,7 +118,7 @@ incus_agent_prestart()
 incus_agent_start()
 {
         cd /var/run/incus_agent
-        /usr/sbin/daemon -p "${pidfile}" -r -f /var/run/incus_agent/incus-agent
+        /usr/sbin/daemon -P "${pidfile}" -r -f /var/run/incus_agent/incus-agent
 }
 
 run_rc_command "$1"
