@@ -4,7 +4,6 @@ set -eux
 
 INCUS_ARCHITECTURE="$1"
 RELEASE="$2"
-# The variant is not used yet
 VARIANT="$3"
 WORKSPACE="$4"
 MIRROR="$5"
@@ -23,7 +22,12 @@ elif [ "$SHORT_ARCHITECTURE" = "riscv64" ]; then
 fi
 
 BASE_URL="$MIRROR/releases/VM-IMAGES/$RELEASE-RELEASE/$SHORT_ARCHITECTURE/Latest"
-IMAGE="FreeBSD-$RELEASE-RELEASE-$EXPANDED_ARCHITECTURE-zfs.raw.xz"
+
+if [ "$VARIANT" = "cloud" ]; then
+    IMAGE="FreeBSD-$RELEASE-RELEASE-$EXPANDED_ARCHITECTURE-BASIC-CLOUDINIT-zfs.raw.xz"
+else
+    IMAGE="FreeBSD-$RELEASE-RELEASE-$EXPANDED_ARCHITECTURE-zfs.raw.xz"
+fi
 
 # Download a pre-built VM image
 curl -Lo "$WORKSPACE/$IMAGE" "$BASE_URL/$IMAGE"

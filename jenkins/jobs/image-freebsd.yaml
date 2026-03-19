@@ -17,6 +17,7 @@
         name: release
         type: user-defined
         values:
+        - 14.4
         - 15.0
 
     - axis:
@@ -24,6 +25,7 @@
         type: user-defined
         values:
         - default
+        - cloud
 
     builders:
     - shell: |-
