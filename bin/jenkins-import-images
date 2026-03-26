@@ -81,6 +81,10 @@ REQUIRE_VM = [
     "freebsd",
 ]
 
+REQUIRE_CDROM_CLOUD_INIT = [
+    "freebsd",
+]
+
 LXD_RESTRICTED = [
     "alpine",
     "centos",
@@ -846,6 +850,13 @@ for entry in sorted(glob.glob("%s/*/*/*/*" % TARGET_IMAGES)):
                     if alias.startswith(entry):
                         requirements["cdrom_agent"] = "true"
                         break
+
+                # Check for cdrom cloud-init
+                if variant.endswith("cloud"):
+                    for entry in REQUIRE_CDROM_CLOUD_INIT:
+                        if alias.startswith(entry):
+                            requirements["cdrom_cloud_init"] = "true"
+                            break
 
             ss_entries[ss_product] = {
                 "aliases": ",".join(aliases),
