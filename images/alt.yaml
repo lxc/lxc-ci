@@ -283,7 +283,7 @@ actions:
     [ "$(uname -m)" = "aarch64" ] && TARGET="arm64"
 
     # Install GRUB
-    grub-install --uefi-secure-boot --efi-directory=/boot/efi --target="${TARGET}-efi" --bootloader-id=BOOT --removable
+    grub-install --efi-directory=/boot/efi --target="${TARGET}-efi" --bootloader-id=BOOT --removable
     grub-mkconfig -o /boot/grub/grub.cfg
 
     # Change UUID of root to GRUB config
