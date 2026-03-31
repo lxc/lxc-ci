@@ -83,6 +83,7 @@ apt-get install --yes --no-install-recommends \
     dirmngr \
     e2fsprogs \
     dosfstools \
+    fdisk \
     gcc \
     gdisk \
     git \
