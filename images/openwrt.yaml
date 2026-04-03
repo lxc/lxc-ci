@@ -305,7 +305,6 @@ actions:
     rm -f /etc/rc.d/*sysntpd
   releases:
   - snapshot
-  - 23.05
   - 24.10
   - 25.12
   types:
