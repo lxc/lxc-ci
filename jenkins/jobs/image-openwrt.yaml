@@ -18,7 +18,6 @@
         type: user-defined
         values:
         - snapshot
-        - "23.05"
         - "24.10"
         - "25.12"
 
@@ -38,7 +37,7 @@
         [ "$ARCH" = "arm64" ] && ARCH="aarch64"
 
         PKGMANAGER="apk"
-        if [ "$release" = "23.05" ] || [ "$release" = "24.10" ]; then
+        if [ "$release" = "24.10" ]; then
             PKGMANAGER="opkg"
         fi
 
