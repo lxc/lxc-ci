@@ -148,6 +148,18 @@ actions:
     sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_PARTUUID}#g" "${target}"
   types:
     - vm
+  architectures:
+    - x86_64
+
+- trigger: post-files
+  action: |
+    #!/bin/sh
+    target=/boot/efi/efi/openwrt/grub.cfg
+    sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_PARTUUID}#g" "${target}"
+  types:
+    - vm
+  architectures:
+    - aarch64
 
 - trigger: post-files
   action: |
