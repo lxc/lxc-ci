@@ -21,7 +21,6 @@
         values:
         - jammy
         - noble
-        - plucky
         - questing
 
     - axis:
