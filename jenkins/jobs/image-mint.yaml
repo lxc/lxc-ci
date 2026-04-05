@@ -16,15 +16,14 @@
         name: release
         type: user-defined
         values:
-        - ulyana
-        - ulyssa
-        - uma
-        - una
         - vanessa
         - vera
         - victoria
         - virginia
         - wilma
+        - xia
+        - zara
+        - zena
 
     - axis:
         name: variant
