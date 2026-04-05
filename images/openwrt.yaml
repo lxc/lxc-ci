@@ -149,7 +149,7 @@ actions:
   types:
     - vm
   architectures:
-    - x86_64
+    - x86-64
 
 - trigger: post-files
   action: |
@@ -159,7 +159,7 @@ actions:
   types:
     - vm
   architectures:
-    - aarch64
+    - armsr-armv8
 
 - trigger: post-files
   action: |
