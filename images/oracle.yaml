@@ -52,43 +52,9 @@ files:
     BOOTPROTO=dhcp
     ONBOOT=yes
     HOSTNAME=LXC_NAME
-    NM_CONTROLLED=no
-    TYPE=Ethernet
-    MTU=
-    DHCP_HOSTNAME=`hostname`
-  releases:
-  - 7
-
-- name: ifcfg-eth0.incus
-  path: /etc/sysconfig/network-scripts/ifcfg-eth0
-  generator: template
-  content: |-
-    DEVICE=eth0
-    BOOTPROTO=dhcp
-    ONBOOT=yes
-    HOSTNAME={{ container.name }}
-    NM_CONTROLLED=no
-    TYPE=Ethernet
-    MTU=
-    DHCP_HOSTNAME=`hostname`
-  releases:
-  - 7
-
-- name: ifcfg-eth0
-  path: /etc/sysconfig/network-scripts/ifcfg-eth0
-  generator: dump
-  templated: true
-  content: |-
-    DEVICE=eth0
-    BOOTPROTO=dhcp
-    ONBOOT=yes
-    HOSTNAME=LXC_NAME
     TYPE=Ethernet
     MTU=
     DHCP_HOSTNAME=`cat /proc/sys/kernel/hostname`
-  releases:
-  - 8
-  - 9
 
 - name: ifcfg-eth0.incus
   path: /etc/sysconfig/network-scripts/ifcfg-eth0
@@ -102,9 +68,6 @@ files:
     MTU=
     DHCP_HOSTNAME=`cat /proc/sys/kernel/hostname`
     IPV6INIT=yes
-  releases:
-  - 8
-  - 9
 
 - name: network
   path: /etc/sysconfig/network
@@ -140,9 +103,6 @@ files:
             control: auto{% else %}{{ config_get("user.network-config", "") }}{% endif %}
   variants:
   - cloud
-  releases:
-  - 8
-  - 9
 
 - name: user-data
   generator: cloud-init
@@ -168,22 +128,12 @@ files:
         distro: fedora
   variants:
   - cloud
-  releases:
-  - 8
-  - 9
 
 packages:
   manager: yum
   update: true
   cleanup: true
   sets:
-  - packages:
-    - rsyslog
-    - tcp_wrappers-libs
-    action: install
-    releases:
-    - 7
-
   - packages:
     - attr
     - curl
@@ -201,9 +151,6 @@ packages:
   - packages:
     - NetworkManager
     action: install
-    releases:
-    - 8
-    - 9
 
   - packages:
     - cloud-init
@@ -211,14 +158,6 @@ packages:
     action: install
     variants:
     - cloud
-
-  - packages:
-    - openssh-server
-    action: install
-    variants:
-    - cloud
-    releases:
-    - 7
 
   repositories:
   - name: AppStream
@@ -229,9 +168,6 @@ packages:
       enabled=1
       gpgcheck=1
       gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
-    releases:
-    - 8
-    - 9
     variants:
     - cloud
 
