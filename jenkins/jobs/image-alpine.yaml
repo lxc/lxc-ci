@@ -32,6 +32,9 @@
         - cloud
         - tinycloud
 
+    execution-strategy:
+      combination-filter: '!(architecture=="riscv64" && variant == "cloud" && release == "edge")'
+
     builders:
     - shell: |-
         cd /lxc-ci
