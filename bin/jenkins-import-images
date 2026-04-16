@@ -36,6 +36,7 @@ ALIASES = {
     "ubuntu/noble": ["ubuntu/24.04"],
     "ubuntu/plucky": ["ubuntu/25.04"],
     "ubuntu/questing": ["ubuntu/25.10"],
+    "ubuntu/resolute": ["ubuntu/26.04"],
 }
 
 REQUIRE_CGROUP1 = [

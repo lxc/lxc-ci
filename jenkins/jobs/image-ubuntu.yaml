@@ -22,6 +22,7 @@
         - jammy
         - noble
         - questing
+        - resolute
 
     - axis:
         name: variant
