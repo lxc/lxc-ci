@@ -1099,6 +1099,7 @@ packages:
   cleanup: true
   sets:
   - packages:
+    - curl
     - dialog
     - init
     - iproute2

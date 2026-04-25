@@ -436,6 +436,7 @@ packages:
     action: install
 
   - packages:
+    - curl
     - openssh-client
     - sudo
     - vim
