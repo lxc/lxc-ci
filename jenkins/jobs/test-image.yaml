@@ -49,3 +49,5 @@
     wrappers:
     - ansicolor:
         colormap: css
+    - build-name:
+        name: '#${BUILD_NUMBER} ${image}'
