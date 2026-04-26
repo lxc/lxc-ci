@@ -241,6 +241,15 @@ actions:
     #!/bin/sh
     set -eux
 
+    echo 'Server = https://mirror.csclub.uwaterloo.ca/archlinux/$repo/os/$arch' > /etc/pacman.d/mirrorlist
+  architectures:
+  - x86_64
+
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
+    set -eux
+
     # The [community] repo has moved into [extra]
     sed -ri '/^\[community\]$/,+2d' /etc/pacman.conf
 
