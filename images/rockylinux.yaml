@@ -437,6 +437,14 @@ actions:
     grub2-mkconfig -o "${target}"
     sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_UUID}#g" "${target}"
 
+    # Update the default kernel command line, loop0p2 is still present there,
+    # which will be added by postinst scriptlets when installing or reinstalling
+    # a kernel. This fixes the rootfs mount on subsequent boots after upgrading
+    # the kernel.
+    if [ -f /etc/kernel/cmdline ]; then
+      sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_UUID}#g" /etc/kernel/cmdline
+    fi
+
     # Update files in /boot/loader/entries/. `grubby` needs to be run after
     # `grub2-mkconfig` as the latter overwrites files in /boot/loader/entries/.
     grubby --update-kernel=/boot/vmlinuz-${kver} --args="root=${DISTROBUILDER_ROOT_UUID} ro"
