@@ -36,9 +36,9 @@
         [ "$ARCH" = "amd64" ] && ARCH="x86_64"
         [ "$ARCH" = "arm64" ] && ARCH="aarch64"
 
-        TYPE="container"
-        if [ "$release" = "snapshot" ]; then
-          TYPE="container,vm"
+        TYPE="container,vm"
+        if [ "$release" = "24.10" ]; then
+          TYPE="container"
         fi
 
         PKGMANAGER="apk"
