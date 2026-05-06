@@ -19,6 +19,7 @@
           values:
             - 42
             - 43
+            - 44
 
       - axis:
           name: variant
