@@ -99,19 +99,7 @@ files:
   types:
   - container
   releases:
-  - 15.6
   - tumbleweed
-
-- name: ifcfg-eth0
-  path: /etc/sysconfig/network/ifcfg-eth0
-  generator: dump
-  content: |-
-    STARTMODE='auto'
-    BOOTPROTO='dhcp'
-  types:
-  - vm
-  releases:
-  - 15.6
 
 - name: ifcfg-enp5s0
   path: /etc/sysconfig/network/ifcfg-enp5s0
@@ -233,20 +221,6 @@ files:
   - vm
   variants:
   - desktop-kde
-
-- path: /etc/sddm.conf.d/autologin.conf
-  generator: dump
-  content: |-
-    [Autologin]
-    User=opensuse
-    Session=default
-    Relogin=true
-  types:
-  - vm
-  variants:
-  - desktop-kde
-  releases:
-  - 15.6
 
 - path: /etc/sddm.conf.d/autologin.conf
   generator: dump
@@ -459,7 +433,6 @@ actions:
     rm /etc/resolv.conf
     ln -sf /var/run/netconfig/resolv.conf /etc/resolv.conf
   releases:
-  - 15.6
   - tumbleweed
 
 - trigger: post-packages
