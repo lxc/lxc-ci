@@ -11,8 +11,6 @@
         type: user-defined
         values:
         - default
-        - cgroup1
-        - swapaccount
 
     - axis:
         name: restrict
