@@ -279,7 +279,6 @@ packages:
     - rsync
     - sudo
     - terminfo
-    - systemd-sysvinit
     - tar
     - which
     action: install
@@ -304,13 +303,6 @@ packages:
     - aarch64
     - x86_64
     - i686
-
-  - packages:
-    - net-tools
-    releases:
-    - tumbleweed
-    - 16.0
-    action: install
 
   - packages:
     - cloud-init
