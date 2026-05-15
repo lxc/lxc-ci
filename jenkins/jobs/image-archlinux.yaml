@@ -26,7 +26,6 @@
         values:
         - default
         - cloud
-        - desktop-gnome
 
     builders:
     - shell: |-
