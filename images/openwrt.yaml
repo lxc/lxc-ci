@@ -81,15 +81,20 @@ targets:
         lxc.arch = {{ image.architecture_kernel }}
 
 files:
-- path: /etc/hostname
-  generator: hostname
-
-- path: /etc/hosts
-  generator: hosts
-
 - generator: incus-agent
   types:
     - vm
+
+- name: uci-defaults-hostname.incus
+  path: /etc/uci-defaults/00-incus-set-hostname
+  generator: template
+  template:
+    when:
+      - create
+      - rename
+  content: |
+    uci -q set system.@system[0].hostname='{{ container.name }}'
+    exit 0
 
 - path: /etc/config/network
   generator: dump
@@ -169,10 +174,6 @@ actions:
     sed -i 's/procd_add_jail/: \0/g' /etc/init.d/dnsmasq
     # Disable conflicting sysntpd service to avoid crash loop
     rm -f /etc/rc.d/*sysntpd
-  releases:
-  - snapshot
-  - 24.10
-  - 25.12
   types:
     - container
 
