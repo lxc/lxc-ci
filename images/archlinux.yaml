@@ -268,6 +268,27 @@ actions:
     # Fix ping
     setcap cap_net_raw=ep /usr/bin/ping || chmod +s /usr/bin/ping
 
+    # Delete the keyring with its private key (see GHSA-4h59-f67g-5qxp)
+    rm -rf /etc/pacman.d/gnupg
+
+    # Initialize the keyring at boot time to get pacman working
+    cat << EOF > /etc/systemd/system/pacman-init.service
+    [Unit]
+    Description=Incus - initializes Pacman keyring
+    Before=archlinux-keyring-wkd-sync.service
+    After=time-sync.target
+    ConditionPathIsDirectory=!/etc/pacman.d/gnupg
+
+    [Service]
+    Type=oneshot
+    ExecStart=/usr/bin/pacman-key --init
+    ExecStart=/usr/bin/pacman-key --populate
+
+    [Install]
+    WantedBy=multi-user.target
+    EOF
+    systemctl enable pacman-init.service
+
 - trigger: post-packages
   action: |-
     #!/bin/sh
