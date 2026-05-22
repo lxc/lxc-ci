@@ -2,7 +2,7 @@
     name: "image-freebsd"
     concurrent: false
     description: FreeBSD images for Incus.
-    node: master
+    node: amd64
     project-type: matrix
 
     axes:
@@ -24,8 +24,10 @@
         name: variant
         type: user-defined
         values:
-        - default
-        - cloud
+        - default+zfs
+        - default+ufs
+        - cloud+zfs
+        - cloud+ufs
 
     builders:
     - shell: |-
