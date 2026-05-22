@@ -39,6 +39,14 @@ ALIASES = {
     "ubuntu/resolute": ["ubuntu/26.04"],
 }
 
+VARIANT_ALIASES = {
+    "freebsd": {
+        "default+zfs": ["default", "zfs"],
+        "default+ufs": ["ufs"],
+        "cloud+zfs": ["cloud"],
+    },
+}
+
 REQUIRE_CGROUP1 = [
     "centos/7",
     "oracle/7",
@@ -798,11 +806,18 @@ for entry in sorted(glob.glob("%s/*/*/*/*" % TARGET_IMAGES)):
         # Simplestream entries
         if ss_product not in ss_entries:
             aliases = ["%s/%s/%s" % (distro, release, variant)]
+
+            variant_aliases = VARIANT_ALIASES.get(distro, {}).get(variant, [])
+            for variant_alias in variant_aliases:
+                aliases.append("%s/%s/%s" % (distro, release, variant_alias))
+
             if "%s/%s" % (distro, release) in ALIASES:
                 for alias in ALIASES["%s/%s" % (distro, release)]:
                     aliases.append("%s/%s" % (alias, variant))
+                    for variant_alias in variant_aliases:
+                        aliases.append("%s/%s" % (alias, variant_alias))
 
-            if variant == "default":
+            if variant == "default" or "default" in variant_aliases:
                 aliases.append("%s/%s" % (distro, release))
 
                 if "%s/%s" % (distro, release) in ALIASES:
