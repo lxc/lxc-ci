@@ -4,7 +4,9 @@ set -eux
 
 INCUS_ARCHITECTURE="$1"
 RELEASE="$2"
-VARIANT="$3"
+IFS=+ read -r VARIANT FS <<EOF
+$3
+EOF
 WORKSPACE="$4"
 MIRROR="$5"
 
@@ -24,9 +26,9 @@ fi
 BASE_URL="$MIRROR/releases/VM-IMAGES/$RELEASE-RELEASE/$SHORT_ARCHITECTURE/Latest"
 
 if [ "$VARIANT" = "cloud" ]; then
-    IMAGE="FreeBSD-$RELEASE-RELEASE-$EXPANDED_ARCHITECTURE-BASIC-CLOUDINIT-zfs.raw.xz"
+    IMAGE="FreeBSD-$RELEASE-RELEASE-$EXPANDED_ARCHITECTURE-BASIC-CLOUDINIT-$FS.raw.xz"
 else
-    IMAGE="FreeBSD-$RELEASE-RELEASE-$EXPANDED_ARCHITECTURE-zfs.raw.xz"
+    IMAGE="FreeBSD-$RELEASE-RELEASE-$EXPANDED_ARCHITECTURE-$FS.raw.xz"
 fi
 
 # Download a pre-built VM image
@@ -36,12 +38,29 @@ curl -Lo "$WORKSPACE/CHECKSUM.SHA256" "$BASE_URL/CHECKSUM.SHA256"
 
 # Decompress the image
 unxz -c "$WORKSPACE/$IMAGE" > "$WORKSPACE/image.raw"
-
-# Mount the ZFS partition
 OFFSET="$(fdisk -lo Start "$WORKSPACE/image.raw" | tail -n1)"
-DEV="$(losetup -fPo "$((OFFSET*512))" --show "$WORKSPACE/image.raw")"
-zpool import -d "$DEV" -R "$WORKSPACE/rootfs" zroot
-zfs mount zroot/ROOT/default
+
+if [ "$FS" = "zfs" ]; then
+    # Mount the ZFS partition
+    DEV="$(losetup -fPo "$((OFFSET*512))" --show "$WORKSPACE/image.raw")"
+    ROOTFS="$WORKSPACE/rootfs"
+    zpool import -d "$DEV" -R "$ROOTFS" zroot
+    zfs mount zroot/ROOT/default
+    RUN=""
+else
+    # Mount the UFS partition from within FreeBSD
+    FREEBSD="$(mktemp -u freebsd-build-XXXXXX)"
+    incus launch images:freebsd/15.0 "$FREEBSD" --vm --config security.secureboot=false --device root,size=16GiB
+    incus wait "$FREEBSD" agent
+    incus file push "$WORKSPACE/image.raw" "$FREEBSD/root"
+    RUN="incus exec $FREEBSD -T --"
+    DEV=$($RUN mdconfig -at vnode -f image.raw)
+    $RUN gnop create -o "$((OFFSET*512))" "$DEV"
+    ROOTFS=/mnt
+    $RUN mount "/dev/$DEV.nop" "$ROOTFS"
+fi
+
+RUNSH="$RUN sh -c"
 
 # Prepare templates
 mkdir -p "$WORKSPACE/incus/templates"
@@ -88,9 +107,9 @@ EOF
 tar -cJf "$WORKSPACE/incus.tar.xz" -C "$WORKSPACE/incus" .
 
 # Prepare the agent
-echo 'incus_agent_enable="YES"' >> "$WORKSPACE/rootfs/etc/rc.conf"
-mkdir -p "$WORKSPACE/rootfs/usr/local/etc/rc.d"
-cat > "$WORKSPACE/rootfs/usr/local/etc/rc.d/incus-agent" << 'EOF'
+$RUNSH "echo 'incus_agent_enable=\"YES\"' >> $ROOTFS/etc/rc.conf"
+$RUN mkdir -p "$ROOTFS/usr/local/etc/rc.d"
+$RUNSH "cat > $ROOTFS/usr/local/etc/rc.d/incus-agent" << 'EOF'
 #!/bin/sh
 #
 # PROVIDE: incus_agent
@@ -123,9 +142,9 @@ incus_agent_start()
 
 run_rc_command "$1"
 EOF
-chmod 0500 "$WORKSPACE/rootfs/usr/local/etc/rc.d/incus-agent"
-mkdir "$WORKSPACE/rootfs/usr/local/libexec"
-cat > "$WORKSPACE/rootfs/usr/local/libexec/incus-agent-setup" << 'EOF'
+$RUN chmod 0500 "$ROOTFS/usr/local/etc/rc.d/incus-agent"
+$RUN mkdir "$ROOTFS/usr/local/libexec"
+$RUNSH "cat > $ROOTFS/usr/local/libexec/incus-agent-setup" << 'EOF'
 #!/bin/sh
 set -eu
 PREFIX="/var/run/incus_agent"
@@ -175,10 +194,18 @@ kldload pty >/dev/null 2>&1 || true
 
 exit 0
 EOF
-chmod 0500 "$WORKSPACE/rootfs/usr/local/libexec/incus-agent-setup"
+$RUN chmod 0500 "$ROOTFS/usr/local/libexec/incus-agent-setup"
 
 # Unmount and cleanup
-zfs unmount zroot/ROOT/default
-zpool export zroot
-losetup -d "$DEV"
+if [ "$FS" = "zfs" ]; then
+    zfs unmount zroot/ROOT/default
+    zpool export zroot
+    losetup -d "$DEV"
+else
+    $RUN umount /mnt
+    $RUN gnop destroy "$DEV.nop"
+    $RUN mdconfig -du "$DEV"
+    incus file pull "$FREEBSD/root/image.raw" "$WORKSPACE/image.raw"
+    incus rm -f "$FREEBSD"
+fi
 qemu-img convert -f raw -O qcow2 "$WORKSPACE/image.raw" "$WORKSPACE/disk.qcow2"
