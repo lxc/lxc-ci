@@ -83,7 +83,7 @@ if [ "${TYPE}" = "vm" ]; then
     fi
 
     # Cloud-init testing
-    if [ "${VARIANT}" = "cloud" ]; then
+    case "${VARIANT}" in cloud*)
         # Handle distros needing the cloud-init drive
         if [ "${DIST}" = "freebsd" ]; then
             incus config device add "${TEST_IMAGE}" cloud-init disk source=cloud-init:config
@@ -103,7 +103,7 @@ bootcmd:
   - "echo bar > /vendor-data"
 EOF
 )"
-    fi
+    esac
 else
     for PRIV in "priv" "unpriv"; do
         if [ "${PRIV}" = "priv" ] && [ "${DIST}" = "nixos" ] && [ "${RELEASE}" = "23.11" ]; then
@@ -132,7 +132,7 @@ else
         fi
 
         # Cloud-init testing
-        if [ "${VARIANT}" = "cloud" ]; then
+        case "${VARIANT}" in cloud*)
             incus config set "${TEST_IMAGE}-${PRIV}" user.user-data "$(cat << EOF
 #cloud-config
 write_files:
@@ -147,7 +147,7 @@ bootcmd:
   - "echo bar > /vendor-data"
 EOF
 )"
-        fi
+        esac
     done
 fi
 
@@ -265,7 +265,7 @@ for url in $(incus query "/1.0/instances" | jq -r .[] | grep "${TEST_IMAGE}"); d
     fi
 
     # Cloud-init testing
-    if [ "${VARIANT}" = "cloud" ]; then
+    case "${VARIANT}" in cloud*)
         if [ "$(incus file pull "${name}/user-data" - 2>/dev/null)" = "foo" ]; then
             echo "===> PASS: cloud-init user-data provisioning: ${name}"
         else
@@ -283,7 +283,7 @@ for url in $(incus query "/1.0/instances" | jq -r .[] | grep "${TEST_IMAGE}"); d
                 FAIL=1
             fi
         fi
-    fi
+    esac
 done
 
 # Check that all instances can be stopped
