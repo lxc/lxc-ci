@@ -3,7 +3,7 @@ image:
 
 source:
   downloader: oraclelinux-http
-  url: https://mirrors.kernel.org/oracle/
+  url: https://ftp.icm.edu.pl/pub/Linux/dist/oracle-linux/
 
 targets:
   lxc:
