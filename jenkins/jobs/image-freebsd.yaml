@@ -8,7 +8,7 @@
     axes:
     - axis:
         name: architecture
-        type: slave
+        type: user-defined
         values:
         - amd64
         - arm64
