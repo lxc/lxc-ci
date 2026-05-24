@@ -137,7 +137,6 @@ packages:
   - packages:
     - attr
     - curl
-    - dhclient
     - initscripts
     - openssh-clients
     - passwd
@@ -147,6 +146,13 @@ packages:
     - systemd-udev
     - vim-minimal
     action: install
+
+  - packages:
+    - dhclient
+    action: install
+    releases: # dhclient is deprecated. Use NetworkManager instead.
+    - 8
+    - 9
 
   - packages:
     - NetworkManager
