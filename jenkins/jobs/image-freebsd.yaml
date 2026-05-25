@@ -2,10 +2,16 @@
     name: "image-freebsd"
     concurrent: false
     description: FreeBSD images for Incus.
-    node: amd64
+    node: master
     project-type: matrix
 
     axes:
+    - axis:
+        name: build_architecture
+        type: slave
+        values:
+        - amd64
+
     - axis:
         name: architecture
         type: user-defined
