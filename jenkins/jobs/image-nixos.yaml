@@ -42,7 +42,7 @@
         # download a pre-built VM image
         curl --location --output $WORKSPACE/disk.qcow2 https://hydra.nixos.org/job/nixos/$JOBSET/nixos.incusVirtualMachineImage.$ARCH-linux/latest/download-by-type/file/qcow2-image
 
-        if [ "$RELEASE" = "unstable" ]; then
+        if [ "$RELEASE" != "25.11" ]; then
           # download a pre-built container rootfs
           curl --location --output $WORKSPACE/rootfs.squashfs https://hydra.nixos.org/job/nixos/$JOBSET/nixos.incusContainerImage.$ARCH-linux/latest/download-by-type/file/squashfs-image
 
