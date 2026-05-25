@@ -18,6 +18,7 @@
         type: user-defined
         values:
         - unstable
+        - 26.05
         - 25.11
 
     - axis:
