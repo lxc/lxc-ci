@@ -19,6 +19,7 @@
         values:
         - 8
         - 9
+        - 10
 
     - axis:
         name: variant
@@ -37,7 +38,7 @@
         [ "$ARCH" = "arm64" ] && ARCH="aarch64"
 
         EXTRA_ARGS=""
-        if [ "$release" = "9" ]; then
+        if [ "$release" != "8" ]; then
             EXTRA_ARGS="-o source.url=https://yum.oracle.com/ISOS/OracleLinux"
         fi
 
