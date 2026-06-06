@@ -15,7 +15,7 @@ DISTRO="bookworm"
 # Create the container
 incus init "images:debian/${DISTRO}/${ARCH}" build-distrobuilder-cache \
     -c security.privileged=true -c security.nesting=true
-printf "lxc.cgroup2.devices.allow = b 259:* rw\nlxc.cgroup.devices.allow = b 259:* rw" | incus config set build-distrobuilder-cache raw.lxc -
+printf "lxc.cgroup2.devices.allow = b 259:* rw" | incus config set build-distrobuilder-cache raw.lxc=-
 
 # Setup loop devices
 (
