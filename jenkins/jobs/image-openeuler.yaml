@@ -17,9 +17,7 @@
         name: release
         type: user-defined
         values:
-        - 22.03
         - 24.03
-        - 25.09
 
     - axis:
         name: variant
