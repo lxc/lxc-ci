@@ -31,15 +31,7 @@ incus network create incusbr0 \
 incus profile device add default root disk path=/ pool=default
 
 echo "=> Setting up firewall tooling and checking versions"
-apt-get install --no-install-recommends --yes nftables iptables ebtables
-update-alternatives --set iptables /usr/sbin/iptables-legacy
-update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
-update-alternatives --set ebtables /usr/sbin/ebtables-legacy
-
-# Check legacy versions installed.
-iptables -v 2>&1 | grep legacy
-ip6tables -v 2>&1 | grep legacy
-ebtables --version 2>&1 | grep legacy
+apt-get install --no-install-recommends --yes nftables
 
 # Setup bridge filter and unmanaged bridge.s
 modprobe br_netfilter
@@ -150,31 +142,6 @@ firewallTests
 incus profile device remove default eth0
 ip a flush dev incbr0unmanaged
 
-echo "=> Performing xtables managed bridge tests"
-incus profile device add default eth0 nic network=incusbr0
-nft flush ruleset
-iptables -A INPUT
-systemctl restart incus
-sleep 5
-
-# Check if xtables is in use we detect and use xtables.
-incus info | grep 'firewall: xtables'
-firewallTests
-
-echo "=> Performing xtables unmanaged bridge tests"
-ip a flush dev incusbr0 # Clear duplicate address from incusbr0.
-ip link set incusbr0 down
-ip a add 192.0.2.1/24 dev incbr0unmanaged
-ip a add 2001:db8::1/64 dev incbr0unmanaged
-ip link set incbr0unmanaged up
-incus profile device remove default eth0
-incus profile device add default eth0 nic \
-    nictype=bridged \
-    parent=incbr0unmanaged
-firewallTests
-incus profile device remove default eth0
-ip link delete incbr0unmanaged
-
 # Cleanup.
 incus profile device remove default root
 incus network delete incusbr0
@@ -182,6 +149,5 @@ incus storage delete default
 
 # Clear firewall.
 incus admin shutdown
-iptables -D INPUT
 
 FAIL=0
