@@ -451,6 +451,7 @@ packages:
     - armhf
     - powerpc
     - powerpc64
+    - s390x
 
   - packages:
     - language-pack-en
@@ -553,6 +554,7 @@ packages:
     - powerpc64
     - ppc64el
     - riscv64
+    - s390x
 
 actions:
 - trigger: post-unpack
