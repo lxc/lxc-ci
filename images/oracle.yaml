@@ -138,6 +138,7 @@ packages:
     - attr
     - curl
     - initscripts
+    - iproute
     - openssh-clients
     - passwd
     - policycoreutils
