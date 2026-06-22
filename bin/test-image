@@ -89,7 +89,7 @@ if [ "${TYPE}" = "vm" ]; then
             incus config device add "${TEST_IMAGE}" cloud-init disk source=cloud-init:config
         fi
 
-        incus config set "${TEST_IMAGE}" user.user-data "$(cat << EOF
+        incus config set "${TEST_IMAGE}" user.user-data="$(cat << EOF
 #cloud-config
 write_files:
   - content: "foo\n"
@@ -97,7 +97,7 @@ write_files:
 EOF
 )"
 
-        incus config set "${TEST_IMAGE}" user.vendor-data "$(cat << EOF
+        incus config set "${TEST_IMAGE}" user.vendor-data="$(cat << EOF
 #cloud-config
 bootcmd:
   - "echo bar > /vendor-data"
@@ -115,7 +115,7 @@ else
         INSTANCES="${INSTANCES} ${TEST_IMAGE}-${PRIV}"
 
         # FIXME: workaround for Linux 6.6.3 apparmor regression.
-        printf "2\ndenylist\nreject_force_umount\n[all]\nfsconfig errno 38\nfsopen errno 38\n" | incus config set "${TEST_IMAGE}-${PRIV}" raw.seccomp -
+        printf "2\ndenylist\nreject_force_umount\n[all]\nfsconfig errno 38\nfsopen errno 38\n" | incus config set "${TEST_IMAGE}-${PRIV}" raw.seccomp=-
 
         if [ "${PRIV}" = "priv" ]; then
             incus config set "${TEST_IMAGE}-${PRIV}" security.privileged=true
@@ -133,7 +133,7 @@ else
 
         # Cloud-init testing
         case "${VARIANT}" in cloud*)
-            incus config set "${TEST_IMAGE}-${PRIV}" user.user-data "$(cat << EOF
+            incus config set "${TEST_IMAGE}-${PRIV}" user.user-data="$(cat << EOF
 #cloud-config
 write_files:
   - content: "foo\n"
@@ -141,7 +141,7 @@ write_files:
 EOF
 )"
 
-            incus config set "${TEST_IMAGE}-${PRIV}" user.vendor-data "$(cat << EOF
+            incus config set "${TEST_IMAGE}-${PRIV}" user.vendor-data="$(cat << EOF
 #cloud-config
 bootcmd:
   - "echo bar > /vendor-data"
