@@ -383,3 +383,6 @@ actions:
 
     # Disable first boot wizard
     systemctl mask systemd-firstboot.service
+
+    # Disable xfs_healer
+    systemctl mask xfs_healer@-.service
