@@ -35,6 +35,13 @@ targets:
         lxc.arch = {{ image.architecture_kernel }}
 
 files:
+- path: /etc/systemd/system-preset/00-lxc-fedora.preset
+  generator: dump
+  content: |-
+    # Preserve image-selected network services across systemd first boot.
+    ignore systemd-resolved.service
+    ignore systemd-networkd.service
+
 - path: /etc/default/grub
   generator: dump
   content: |-
@@ -306,14 +313,6 @@ actions:
 
     systemctl enable systemd-resolved
     systemctl enable systemd-networkd
-
-    # Avoid being reset on reboot
-    rm -Rf /etc/systemd/system-preset
-    mkdir -p /etc/systemd/system-preset
-    for file in /usr/lib/systemd/system-preset/*; do
-        NAME=$(basename ${file})
-        ln -s /dev/null /etc/systemd/system-preset/${NAME}
-    done
 
     systemctl mask systemd-homed-firstboot.service || true
 
