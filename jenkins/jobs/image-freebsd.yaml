@@ -25,6 +25,7 @@
         values:
         - 14.4
         - 15.0
+        - 15.1
 
     - axis:
         name: variant
