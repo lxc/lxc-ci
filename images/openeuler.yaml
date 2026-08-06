@@ -232,6 +232,7 @@ packages:
     - rootfiles
     - sudo
     - rsyslog
+    - systemd-udev
     - vim-minimal
     action: install
 
