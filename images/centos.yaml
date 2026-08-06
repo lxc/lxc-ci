@@ -539,6 +539,7 @@ packages:
   - packages:
     - cronie-anacron
     - NetworkManager
+    - systemd-udev
     action: install
     releases:
     - 9-Stream
