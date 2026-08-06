@@ -21,7 +21,6 @@
         values:
         - jammy
         - noble
-        - questing
         - resolute
 
     - axis:
@@ -55,7 +54,7 @@
             -o image.variant=$variant -o source.url=$ARCHIVE
 
     execution-strategy:
-      combination-filter: '!(architecture!="amd64" && variant == "desktop") && !(architecture=="riscv64" && release=="questing") && !(architecture=="riscv64" && release=="resolute")'
+      combination-filter: '!(architecture!="amd64" && variant == "desktop") && !(architecture=="riscv64" && release=="resolute")'
 
     properties:
     - build-discarder:
