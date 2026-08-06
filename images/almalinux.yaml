@@ -302,6 +302,7 @@ packages:
     - rootfiles
     - rsyslog
     - sudo
+    - systemd-udev
     - vim-minimal
     action: install
 
