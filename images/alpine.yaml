@@ -332,6 +332,8 @@ packages:
     - grub-efi
     - linux-virt
     - dhcpcd
+    - cloud-utils-growpart
+    - e2fsprogs-extra
     action: install
     types:
     - vm
@@ -438,6 +440,32 @@ actions:
     tiny-cloud --enable
   variants:
   - tinycloud
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Automatic disk resize
+    cat << 'EOF' > /etc/init.d/incus-growpart
+    #!/sbin/openrc-run
+
+    description="Incus - grow root partition"
+
+    start() {
+        ebegin "Growing the root filesystem"
+        growpart /dev/sda 2 || true
+        resize2fs /dev/sda2
+        eend $?
+    }
+    EOF
+    chmod +x /etc/init.d/incus-growpart
+
+    ln -fs /etc/init.d/incus-growpart /etc/runlevels/default/incus-growpart
+  types:
+  - vm
+  variants:
+  - default
 
 mappings:
   architecture_map: alpinelinux
