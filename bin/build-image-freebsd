@@ -10,6 +10,34 @@ EOF
 WORKSPACE="$4"
 MIRROR="$5"
 
+FAIL=1
+FREEBSD=""
+DEV=""
+
+cleanup() {
+    set +e
+
+    if [ -n "$FREEBSD" ]; then
+        incus rm -f "$FREEBSD" >/dev/null 2>&1
+    fi
+
+    if [ "$FS" = "zfs" ]; then
+        zfs unmount zroot/ROOT/default >/dev/null 2>&1
+        zpool export zroot >/dev/null 2>&1
+
+        if [ -n "$DEV" ]; then
+            losetup -d "$DEV" >/dev/null 2>&1
+        fi
+    fi
+
+    if [ "$FAIL" = "1" ]; then
+        exit 1
+    fi
+
+    exit 0
+}
+trap cleanup EXIT HUP INT TERM
+
 NOW="$(date +%s)"
 SERIAL="$(date -u +%Y%m%d_%H:%M)"
 echo "$SERIAL" > "$WORKSPACE/serial"
@@ -207,3 +235,5 @@ else
     incus rm -f "$FREEBSD"
 fi
 qemu-img convert -f raw -O qcow2 "$WORKSPACE/image.raw" "$WORKSPACE/disk.qcow2"
+
+FAIL=0
