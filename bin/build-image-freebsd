@@ -68,6 +68,9 @@ curl -sSfL --retry 5 --retry-connrefused -o "$WORKSPACE/CHECKSUM.SHA256" "$BASE_
 unxz -c "$WORKSPACE/$IMAGE" > "$WORKSPACE/image.raw"
 rm -f "$WORKSPACE/$IMAGE" "$WORKSPACE/CHECKSUM.SHA256"
 
+# Pad the image to 4KiB alignment (needed for QEMU block attachment)
+truncate -s %4096 "$WORKSPACE/image.raw"
+
 if [ "$FS" = "zfs" ]; then
     # Mount the ZFS partition
     OFFSET="$(fdisk -lo Start "$WORKSPACE/image.raw" | tail -n1)"
@@ -93,6 +96,10 @@ else
     done
 
     RUN="incus exec $FREEBSD -T --"
+
+    # Padding moved the backup GPT away from the end of the disk
+    $RUN gpart recover da1 || true
+
     PART="$($RUN gpart show -p da1 | awk '$4 == "freebsd-ufs" {print $3}')"
     ROOTFS=/mnt
     $RUN mount "/dev/$PART" "$ROOTFS"
