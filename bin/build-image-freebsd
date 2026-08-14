@@ -38,6 +38,7 @@ curl -sSfL --retry 5 --retry-connrefused -o "$WORKSPACE/CHECKSUM.SHA256" "$BASE_
 
 # Decompress the image
 unxz -c "$WORKSPACE/$IMAGE" > "$WORKSPACE/image.raw"
+rm -f "$WORKSPACE/$IMAGE" "$WORKSPACE/CHECKSUM.SHA256"
 OFFSET="$(fdisk -lo Start "$WORKSPACE/image.raw" | tail -n1)"
 
 if [ "$FS" = "zfs" ]; then
