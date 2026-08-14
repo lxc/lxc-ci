@@ -32,8 +32,8 @@ else
 fi
 
 # Download a pre-built VM image
-curl -Lo "$WORKSPACE/$IMAGE" "$BASE_URL/$IMAGE"
-curl -Lo "$WORKSPACE/CHECKSUM.SHA256" "$BASE_URL/CHECKSUM.SHA256"
+curl -sSfL --retry 5 --retry-connrefused -o "$WORKSPACE/$IMAGE" "$BASE_URL/$IMAGE"
+curl -sSfL --retry 5 --retry-connrefused -o "$WORKSPACE/CHECKSUM.SHA256" "$BASE_URL/CHECKSUM.SHA256"
 (cd "$WORKSPACE" && sha256sum -c CHECKSUM.SHA256 --ignore-missing)
 
 # Decompress the image
