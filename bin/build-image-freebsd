@@ -83,6 +83,15 @@ else
     incus config device add "$FREEBSD" image disk source="$WORKSPACE/image.raw"
     incus start "$FREEBSD"
     incus wait "$FREEBSD" agent
+
+    # The agent may restart shortly after first coming up
+    for _ in 1 2 3 4 5; do
+        sleep 5
+        if incus exec "$FREEBSD" -T -- true; then
+            break
+        fi
+    done
+
     RUN="incus exec $FREEBSD -T --"
     PART="$($RUN gpart show -p da1 | awk '$4 == "freebsd-ufs" {print $3}')"
     ROOTFS=/mnt
