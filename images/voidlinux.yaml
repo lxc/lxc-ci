@@ -3,7 +3,7 @@ image:
 
 source:
   downloader: voidlinux-http
-  url: https://mirrors.servercentral.com/voidlinux/live/current/
+  url: https://repo-default.voidlinux.org/live/current/
   keys:
   # 0xCF24B9C038097D8A44958E2C8DEBDA68B48282A4
   - |-
@@ -117,7 +117,7 @@ actions:
     #!/bin/sh
     set -eux
 
-    echo repository=https://mirrors.servercentral.com/voidlinux/current/ > /usr/share/xbps.d/00-repository-main.conf
+    echo repository=https://repo-default.voidlinux.org/current/ > /usr/share/xbps.d/00-repository-main.conf
   architectures:
   - x86_64
   - i686
@@ -130,7 +130,7 @@ actions:
     #!/bin/sh
     set -eux
 
-    echo repository=https://mirrors.servercentral.com/voidlinux/current/musl/ > /usr/share/xbps.d/00-repository-main.conf
+    echo repository=https://repo-default.voidlinux.org/current/musl/ > /usr/share/xbps.d/00-repository-main.conf
   architectures:
   - x86_64
   - i686
@@ -143,7 +143,7 @@ actions:
     #!/bin/sh
     set -eux
 
-    echo repository=https://mirrors.servercentral.com/voidlinux/current/aarch64/ > /usr/share/xbps.d/00-repository-main.conf
+    echo repository=https://repo-default.voidlinux.org/current/aarch64/ > /usr/share/xbps.d/00-repository-main.conf
   architectures:
   - aarch64
 
@@ -175,7 +175,7 @@ actions:
     #!/bin/sh
     set -eux
 
-    echo repository=https://mirrors.servercentral.com/voidlinux/current/ > /usr/share/xbps.d/00-repository-main.conf
+    echo repository=https://repo-default.voidlinux.org/current/ > /usr/share/xbps.d/00-repository-main.conf
   architectures:
   - x86_64
   - i686
@@ -188,7 +188,7 @@ actions:
     #!/bin/sh
     set -eux
 
-    echo repository=https://mirrors.servercentral.com/voidlinux/current/musl/ > /usr/share/xbps.d/00-repository-main.conf
+    echo repository=https://repo-default.voidlinux.org/current/musl/ > /usr/share/xbps.d/00-repository-main.conf
   architectures:
   - x86_64
   - i686
@@ -201,7 +201,7 @@ actions:
     #!/bin/sh
     set -eux
 
-    echo repository=https://mirrors.servercentral.com/voidlinux/current/aarch64/ > /usr/share/xbps.d/00-repository-main.conf
+    echo repository=https://repo-default.voidlinux.org/current/aarch64/ > /usr/share/xbps.d/00-repository-main.conf
   architectures:
   - aarch64
 
