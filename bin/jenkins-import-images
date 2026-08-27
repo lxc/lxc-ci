@@ -29,15 +29,12 @@ JENKINS_URL = "https://jenkins.linuxcontainers.org"
 PREFIX = "image-"
 
 ALIASES = {
-    "debian/buster": ["debian/10"],
     "debian/bullseye": ["debian/11"],
     "debian/bookworm": ["debian/12"],
     "debian/trixie": ["debian/13"],
     "debian/forky": ["debian/14"],
     "ubuntu/jammy": ["ubuntu/22.04"],
     "ubuntu/noble": ["ubuntu/24.04"],
-    "ubuntu/plucky": ["ubuntu/25.04"],
-    "ubuntu/questing": ["ubuntu/25.10"],
     "ubuntu/resolute": ["ubuntu/26.04"],
 }
 
@@ -49,16 +46,6 @@ VARIANT_ALIASES = {
     },
 }
 
-REQUIRE_CGROUP1 = [
-    "centos/7",
-    "oracle/7",
-    "springdalelinux/7",
-]
-
-REQUIRE_CGROUP1_EXACT = [
-    "amazonlinux/2",
-]
-
 REQUIRE_CGROUP2 = [
     "ubuntu/24.04",
 ]
@@ -69,20 +56,16 @@ REQUIRE_CDROM_AGENT = [
     "openeuler",
     "oracle",
     "rockylinux",
-    "springdalelinux",
 ]
 
 REQUIRE_NO_SECUREBOOT = [
     "alpine",
     "archlinux",
-    "debian/9",
     "freebsd",
     "gentoo",
     "nixos",
     "openeuler",
 ]
-
-REQUIRE_NO_PRIVILEGED = []
 
 REQUIRE_VM = [
     "freebsd",
@@ -918,17 +901,6 @@ for entry in sorted(glob.glob("%s/*/*/*/*" % TARGET_IMAGES)):
 
             requirements = {}
             for alias in aliases:
-                # Check for CGroupV1
-                for entry in REQUIRE_CGROUP1:
-                    if alias.startswith(entry):
-                        requirements["cgroup"] = "v1"
-                        break
-
-                for entry in REQUIRE_CGROUP1_EXACT:
-                    if alias == entry or alias.startswith(entry + "/"):
-                        requirements["cgroup"] = "v1"
-                        break
-
                 # Check for CGroupV2
                 for entry in REQUIRE_CGROUP2:
                     if alias.startswith(entry):
@@ -939,12 +911,6 @@ for entry in sorted(glob.glob("%s/*/*/*/*" % TARGET_IMAGES)):
                 for entry in REQUIRE_NO_SECUREBOOT:
                     if alias.startswith(entry):
                         requirements["secureboot"] = "false"
-                        break
-
-                # Check for privileged
-                for entry in REQUIRE_NO_PRIVILEGED:
-                    if alias.startswith(entry):
-                        requirements["privileged"] = "false"
                         break
 
                 # Check for cdrom agent
