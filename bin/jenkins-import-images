@@ -20,6 +20,7 @@ DEBUG = True
 DATA_RETENTION = 3
 MAX_IMAGES = 30
 IMAGE_EXPIRY_DAYS = 15
+TEST_WARNING_HOURS = 24
 
 COMPAT_CURRENT_LEVEL = 5
 COMPAT_VERSION = ["1.0", "1.0", "1.1", "2.0", "2.1", "3.0", "3.1"]
@@ -152,6 +153,20 @@ def get_json(url, depth=0, tree=None):
         query = "tree=%s" % tree
 
     return json.loads(urlopen("%s/api/json?%s" % (url, query)).read().decode())
+
+
+def format_timestamp(ms):
+    return datetime.datetime.fromtimestamp(ms / 1000, datetime.timezone.utc).strftime(
+        "%Y-%m-%d %H:%M UTC"
+    )
+
+
+def format_duration(ms):
+    seconds = int(ms / 1000)
+    if seconds >= 3600:
+        return "%dh %02dm" % (seconds // 3600, (seconds % 3600) // 60)
+
+    return "%dm %02ds" % (seconds // 60, seconds % 60)
 
 
 def sign_file(path, target=None, clear=False):
@@ -746,6 +761,73 @@ for filename, content in index.items():
 
     sign_file("%s/%s" % (INDEX_PATH, filename))
 
+# Generate the build overview
+try:
+    data = get_json(
+        "%s/view/All" % JENKINS_URL,
+        tree="jobs[name,url,disabled,lastSuccessfulBuild[url,timestamp,duration]]",
+    )
+except Exception:
+    data = {"jobs": []}
+
+html_builds = []
+for job in sorted(data["jobs"], key=lambda job: job["name"]):
+    if not job["name"].startswith(PREFIX) or job["disabled"]:
+        continue
+
+    distro = job["name"].split(PREFIX)[-1]
+    name = '<a href="%s">%s</a>' % (job["url"], distro)
+
+    build = job["lastSuccessfulBuild"]
+    if build:
+        last_build = '<a href="%s">%s</a>' % (
+            build["url"],
+            format_timestamp(build["timestamp"]),
+        )
+        duration = format_duration(build["duration"])
+        status, test_url = test_results.get(build["url"], ("UNKNOWN", None))
+    else:
+        last_build = "-"
+        duration = "-"
+        status, test_url = "UNKNOWN", None
+
+    badge = {
+        "SUCCESS": "success",
+        "FAILURE": "danger",
+        "RUNNING": "warning",
+    }.get(status, "secondary")
+    test = '<span class="badge text-bg-%s">%s</span>' % (badge, status)
+    if test_url and status != "SUCCESS":
+        test = '<a href="%s">%s</a>' % (test_url, test)
+
+    # Warn when the published image is getting stale
+    if (
+        distro not in last_tested
+        or now - last_tested[distro] / 1000 > TEST_WARNING_HOURS * 3600
+    ):
+        mtimes = [
+            os.path.getmtime(path)
+            for path in glob.glob("%s/%s/*/*/*/*" % (TARGET_IMAGES, distro))
+            if os.path.exists(os.path.join(path, "SHA256SUMS"))
+        ]
+
+        if mtimes:
+            # The cleanup uses find -mtime +N which only matches after N+1 full days
+            expiry = datetime.datetime.fromtimestamp(
+                max(mtimes), datetime.timezone.utc
+            ) + datetime.timedelta(days=IMAGE_EXPIRY_DAYS + 1)
+            warning = (
+                "No successful test in over %d hours, "
+                "this image will disappear from the image server on %s"
+                % (TEST_WARNING_HOURS, expiry.strftime("%Y-%m-%d"))
+            )
+        else:
+            warning = "No successful test in over %d hours" % TEST_WARNING_HOURS
+
+        test += ' <span class="text-warning" title="%s">&#9888;</span>' % warning
+
+    html_builds.append([name, last_build, duration, test])
+
 # Generate the html index
 html = ""
 for entry in html_index:
@@ -754,10 +836,20 @@ for entry in html_index:
         html += "<td>%s</td>" % field
     html += "</tr>\n"
 
+builds = ""
+for entry in html_builds:
+    builds += "<tr>"
+    for field in entry:
+        builds += "<td>%s</td>" % field
+    builds += "</tr>\n"
+
 with open("%s/index.html" % TARGET, "w+") as fd:
     with open("%s/.index.tpl" % TARGET, "r") as tpl:
         fd.write(
-            tpl.read().replace("@DATA@", html).replace("@TIMESTAMP@", time.asctime())
+            tpl.read()
+            .replace("@DATA@", html)
+            .replace("@BUILDS@", builds)
+            .replace("@TIMESTAMP@", time.asctime())
         )
 
 # Generate the image tree
