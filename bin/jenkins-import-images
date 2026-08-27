@@ -186,26 +186,7 @@ def string_to_dict(string):
     return data
 
 
-def incus_arch(arch):
-    if arch == "i386":
-        return (1, "i686")
-    elif arch == "amd64":
-        return (2, "x86_64")
-    elif arch in ("armhf", "armel"):
-        return (3, "armv7l")
-    elif arch == "arm64":
-        return (4, "aarch64")
-    elif arch == "powerpc":
-        return (5, "ppc")
-    elif arch == "powerpc64":
-        return (6, "ppc64")
-    elif arch == "ppc64el":
-        return (7, "ppc64le")
-    elif arch == "s390x":
-        return (8, "s390x")
-
-
-def incus_tarball(dist, release, arch, variant, version, path):
+def incus_fingerprints(path):
     meta_tar = os.path.join(path, "incus.tar.xz")
 
     # Generate sha256
@@ -519,9 +500,7 @@ for job in data["jobs"]:
             ]
 
             # Generate the missing artifacts
-            incus_tarball(
-                IMG_DIST, IMG_RELEASE, IMG_ARCH, IMG_VARIANT, IMG_BUILD, TEMP_DIR
-            )
+            incus_fingerprints(TEMP_DIR)
 
             # Generate deltas
             previous_index = sorted(current_builds).index(IMG_BUILD) - 1
