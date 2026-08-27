@@ -84,23 +84,12 @@ REQUIRE_NO_SECUREBOOT = [
 
 REQUIRE_NO_PRIVILEGED = []
 
-REQUIRE_INCUS = [
-    "nixos",
-]
-
 REQUIRE_VM = [
     "freebsd",
 ]
 
 REQUIRE_CDROM_CLOUD_INIT = [
     "freebsd",
-]
-
-LXD_RESTRICTED = [
-    "alpine",
-    "centos",
-    "debian",
-    "ubuntu",
 ]
 
 if len(sys.argv) > 1:
@@ -856,8 +845,6 @@ with open("%s/index.html" % TARGET, "w+") as fd:
 SS_PATH = "%s/simplestreams/v1/" % TARGET_META
 ss_products = set()
 ss_entries = {}
-ss_lxd_entries = {}
-ss_lxd_restricted_entries = {}
 published = set()
 for entry in sorted(glob.glob("%s/*/*/*/*" % TARGET_IMAGES)):
     distro, release, arch, variant = entry.split("/")[-4:]
@@ -924,9 +911,6 @@ for entry in sorted(glob.glob("%s/*/*/*/*" % TARGET_IMAGES)):
 
         ss_product = "%s:%s:%s:%s" % (distro, release, arch, variant)
         ss_products.add(ss_product)
-
-        publish_lxd = distro not in REQUIRE_INCUS
-        publish_lxd_restricted = distro in LXD_RESTRICTED
 
         # Simplestream entries
         if ss_product not in ss_entries:
@@ -1010,30 +994,6 @@ for entry in sorted(glob.glob("%s/*/*/*/*" % TARGET_IMAGES)):
                 "versions": {},
             }
 
-            if publish_lxd:
-                ss_lxd_entries[ss_product] = {
-                    "aliases": ",".join(aliases),
-                    "arch": arch,
-                    "os": distro.title(),
-                    "release": release,
-                    "release_title": release,
-                    "requirements": requirements,
-                    "variant": variant,
-                    "versions": {},
-                }
-
-            if publish_lxd_restricted:
-                ss_lxd_restricted_entries[ss_product] = {
-                    "aliases": ",".join(aliases),
-                    "arch": arch,
-                    "os": distro.title(),
-                    "release": release,
-                    "release_title": release,
-                    "requirements": requirements,
-                    "variant": variant,
-                    "versions": {},
-                }
-
         files = {}
         checksums_path = "%s/SHA256SUMS" % image_dir
         if os.path.exists(checksums_path):
@@ -1073,10 +1033,6 @@ for entry in sorted(glob.glob("%s/*/*/*/*" % TARGET_IMAGES)):
                     items["incus.tar.xz"][
                         "combined_disk-kvm-img_sha256"
                     ] = fingerprint_disk
-
-                # legacy
-                items["lxd.tar.xz"] = dict(items["incus.tar.xz"])
-                items["lxd.tar.xz"]["ftype"] = "lxd.tar.xz"
 
             if os.path.exists("%s/rootfs.tar.xz" % image_dir):
                 items["root.tar.xz"] = {
@@ -1133,14 +1089,6 @@ for entry in sorted(glob.glob("%s/*/*/*/*" % TARGET_IMAGES)):
 
             ss_entries[ss_product]["versions"][image] = {"items": items}
 
-            if publish_lxd:
-                ss_lxd_entries[ss_product]["versions"][image] = {"items": items}
-
-            if publish_lxd_restricted:
-                ss_lxd_restricted_entries[ss_product]["versions"][image] = {
-                    "items": items
-                }
-
 # Main index
 with open("%s/index.json" % SS_PATH, "w+") as fd:
     meta = {
@@ -1176,43 +1124,7 @@ with open("%s/images.json" % SS_PATH, "w+") as fd:
 sign_file("%s/images.json" % SS_PATH, "%s/images.json.gpg" % SS_PATH)
 sign_file("%s/images.json" % SS_PATH, "%s/images.sjson" % SS_PATH, True)
 
-
-# LXD image list
-with open("%s/.images.json.lxd" % SS_PATH, "w+") as fd:
-    meta = {
-        "content_id": "images",
-        "datatype": "image-downloads",
-        "format": "products:1.0",
-        "products": ss_lxd_entries,
-    }
-
-    fd.write(json.dumps(meta))
-    fd.write("\n")
-sign_file("%s/.images.json.lxd" % SS_PATH, "%s/.images.json.gpg.lxd" % SS_PATH)
-sign_file("%s/.images.json.lxd" % SS_PATH, "%s/.images.sjson.lxd" % SS_PATH, True)
-
-# LXD image list (restricted)
-with open("%s/.images.json.lxd_restricted" % SS_PATH, "w+") as fd:
-    meta = {
-        "content_id": "images",
-        "datatype": "image-downloads",
-        "format": "products:1.0",
-        "products": ss_lxd_restricted_entries,
-    }
-
-    fd.write(json.dumps(meta))
-    fd.write("\n")
-sign_file(
-    "%s/.images.json.lxd_restricted" % SS_PATH,
-    "%s/.images.json.gpg.lxd_restricted" % SS_PATH,
-)
-sign_file(
-    "%s/.images.json.lxd_restricted" % SS_PATH,
-    "%s/.images.sjson.lxd_restricted" % SS_PATH,
-    True,
-)
-
-# LXD image list (restricted)
+# Empty image list (served to LXD)
 with open("%s/.images.json.lxd_empty" % SS_PATH, "w+") as fd:
     meta = {
         "content_id": "images",
