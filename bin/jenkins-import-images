@@ -16,7 +16,7 @@ from urllib.request import urlopen, urlretrieve
 TARGET = "/data/images.linuxcontainers.org"
 GPG_KEYID = "0x22F6E216"
 BOUNDARY = "f012e447-25dd-4f6d-8a14-105c3b27a768"
-DEBUG = True
+DEBUG = False
 DATA_RETENTION = 3
 MAX_IMAGES = 30
 IMAGE_EXPIRY_DAYS = 15
