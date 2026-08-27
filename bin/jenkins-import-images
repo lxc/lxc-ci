@@ -146,8 +146,12 @@ def include_in_index(index, compat, dist, release, arch, variant):
     return True
 
 
-def get_json(url, depth=0):
-    return json.loads(urlopen("%s/api/json?depth=%d" % (url, depth)).read().decode())
+def get_json(url, depth=0, tree=None):
+    query = "depth=%d" % depth
+    if tree:
+        query = "tree=%s" % tree
+
+    return json.loads(urlopen("%s/api/json?%s" % (url, query)).read().decode())
 
 
 def sign_file(path, target=None, clear=False):
