@@ -22,9 +22,6 @@ MAX_IMAGES = 30
 IMAGE_EXPIRY_DAYS = 15
 TEST_WARNING_HOURS = 24
 
-COMPAT_CURRENT_LEVEL = 5
-COMPAT_VERSION = ["1.0", "1.0", "1.1", "2.0", "2.1", "3.0", "3.1"]
-
 JENKINS_URL = "https://jenkins.linuxcontainers.org"
 PREFIX = "image-"
 
@@ -86,37 +83,6 @@ def hash256(path):
         sha256.update(fd.read())
 
     return sha256.hexdigest()
-
-
-def include_in_index(index, compat, dist, release, arch, variant):
-    # old-systemd distros
-    if index != "system":
-        if dist == "centos" and release != "6":
-            if compat < 2:
-                return False
-
-        if dist == "debian" and release != "wheezy":
-            if compat < 2:
-                return False
-
-        if dist == "ubuntu" and release not in ("precise", "trusty", "utopic"):
-            if compat < 2:
-                return False
-
-    # Distributions introduced in LXC 1.1
-    if compat < 2 and dist in ("archlinux", "opensuse"):
-        return False
-
-    # Distributions introduced in LXC 2.0
-    if compat < 3 and dist in ("alpine",):
-        return False
-
-    # Distributions introduced in LXC 2.1
-    if compat < 4 and dist in ("sabayon",):
-        return False
-
-    # If we made it there, we're good
-    return True
 
 
 def get_json(url, depth=0, tree=None):
@@ -587,7 +553,7 @@ for root, dirs, files in os.walk(TARGET_IMAGES, topdown=False):
         os.rmdir(root)
 
 # Generate the index
-index = {}
+index = {"index-system": [], "index-user": []}
 html_index = []
 for entry in sorted(glob.glob("%s/*/*/*/*" % TARGET_IMAGES)):
     distro, release, arch, variant = entry.split("/")[-4:]
@@ -624,65 +590,13 @@ for entry in sorted(glob.glob("%s/*/*/*/*" % TARGET_IMAGES)):
         continue
 
     # Main index
-    if "index-system" not in index:
-        index["index-system"] = []
+    line = "%s;%s;%s;%s;%s;%s" % (distro, release, arch, variant, latest_image, url)
+    index["index-system"].append(line)
+    index["index-user"].append(line)
 
-    if "index-user" not in index:
-        index["index-user"] = []
-
-    incus = "NO"
     incus_vm = "NO"
-    lxc_unpriv = "NO"
-    lxc_unpriv_compat = 100
-    lxc_priv = "NO"
-    lxc_priv_compat = 100
-
-    if include_in_index("system", COMPAT_CURRENT_LEVEL, distro, release, arch, variant):
-        index["index-system"].append(
-            "%s;%s;%s;%s;%s;%s" % (distro, release, arch, variant, latest_image, url)
-        )
-
-        lxc_priv = "YES (%s and up)" % (COMPAT_VERSION[COMPAT_CURRENT_LEVEL])
-        lxc_priv_compat = COMPAT_CURRENT_LEVEL
-
-    if include_in_index("user", COMPAT_CURRENT_LEVEL, distro, release, arch, variant):
-        index["index-user"].append(
-            "%s;%s;%s;%s;%s;%s" % (distro, release, arch, variant, latest_image, url)
-        )
-        incus = "YES"
-        lxc_unpriv = "YES (%s and up)" % (COMPAT_VERSION[COMPAT_CURRENT_LEVEL])
-        lxc_unpriv_compat = COMPAT_CURRENT_LEVEL
-
     if os.path.exists(os.path.join(entry, latest_image, "disk.qcow2")):
         incus_vm = "YES"
-
-    # Compat index
-    for compat in range(1, COMPAT_CURRENT_LEVEL):
-        if include_in_index("system", compat, distro, release, arch, variant):
-            if not "index-system.%s" % compat in index:
-                index["index-system.%s" % compat] = []
-
-            index["index-system.%s" % compat].append(
-                "%s;%s;%s;%s;%s;%s"
-                % (distro, release, arch, variant, latest_image, url)
-            )
-
-            if compat < lxc_priv_compat:
-                lxc_priv = "YES (%s and up)" % (COMPAT_VERSION[compat])
-                lxc_priv_compat = compat
-
-        if include_in_index("user", compat, distro, release, arch, variant):
-            if not "index-user.%s" % compat in index:
-                index["index-user.%s" % compat] = []
-
-            index["index-user.%s" % compat].append(
-                "%s;%s;%s;%s;%s;%s"
-                % (distro, release, arch, variant, latest_image, url)
-            )
-
-            if compat < lxc_unpriv_compat:
-                lxc_unpriv = "YES (%s and up)" % (COMPAT_VERSION[compat])
-                lxc_unpriv_compat = compat
 
     # HTML index
     html_index.append(
@@ -692,9 +606,9 @@ for entry in sorted(glob.glob("%s/*/*/*/*" % TARGET_IMAGES)):
             arch,
             variant,
             latest_image_link,
-            lxc_priv,
-            lxc_unpriv,
-            incus,
+            "YES",
+            "YES",
+            "YES",
             incus_vm,
         ]
     )
@@ -709,6 +623,10 @@ for filename, content in index.items():
         fd.write("%s\n" % "\n".join(content))
 
     sign_file("%s/%s" % (INDEX_PATH, filename))
+
+# Remove the old LXC compat indexes
+for path in glob.glob("%s/index-*.[0-9]*" % INDEX_PATH):
+    os.remove(path)
 
 # Generate the build overview
 try:
@@ -822,11 +740,6 @@ for entry in sorted(glob.glob("%s/*/*/*/*" % TARGET_IMAGES)):
     latest_image = images[-1]
 
     for image in images:
-        if not include_in_index(
-            "user", COMPAT_CURRENT_LEVEL, distro, release, arch, variant
-        ):
-            continue
-
         image_dir = "%s/%s/%s/%s/%s/%s" % (
             TARGET_IMAGES,
             distro,
