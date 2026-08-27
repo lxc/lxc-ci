@@ -319,14 +319,10 @@ TARGET_META = "%s/meta" % TARGET
 
 # Get test data
 tested_images = {}
+test_results = {}
+last_tested = {}
 data = get_json("%s/job/test-image" % JENKINS_URL, 1)
 for build in data["builds"]:
-    if build["inProgress"]:
-        continue
-
-    if build["result"] != "SUCCESS":
-        continue
-
     image_url = None
     for action in build["actions"]:
         if not "parameters" in action:
@@ -335,12 +331,27 @@ for build in data["builds"]:
         image_url = action["parameters"][1]["value"]
         break
 
-    if image_url:
-        fields = image_url.split("/")
-        image_build = int(fields[-2])
-        image_os = fields[-3].split("image-")[-1]
-        if image_os not in tested_images:
-            tested_images[image_os] = image_build
+    if not image_url:
+        continue
+
+    if build["inProgress"]:
+        status = "RUNNING"
+    else:
+        status = build["result"]
+
+    # Record the most recent test of every image build
+    if image_url not in test_results:
+        test_results[image_url] = (status, build["url"])
+
+    if status != "SUCCESS":
+        continue
+
+    fields = image_url.split("/")
+    image_build = int(fields[-2])
+    image_os = fields[-3].split("image-")[-1]
+    if image_os not in tested_images:
+        tested_images[image_os] = image_build
+        last_tested[image_os] = build["timestamp"]
 
 # Download
 try:
