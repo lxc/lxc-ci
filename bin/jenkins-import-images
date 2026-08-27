@@ -453,9 +453,7 @@ for job in data["jobs"]:
         DL_META = artifacts.get("meta.tar.xz", None)
         DL_ROOTFS_SQUASH = artifacts.get("rootfs.squashfs", None)
         DL_DISK = artifacts.get("disk.qcow2", None)
-        DL_INCUS = artifacts.get(
-            "incus.tar.xz", artifacts.get("lxd.tar.xz", None)
-        )  # legacy
+        DL_INCUS = artifacts.get("incus.tar.xz", None)
         DL_LOG = "%s/consoleText" % data["url"]
 
         # Skip partial images
@@ -1002,10 +1000,6 @@ for entry in sorted(glob.glob("%s/*/*/*/*" % TARGET_IMAGES)):
                     fields = line.split()
                     if len(fields) < 2:
                         continue
-
-                    # legacy
-                    if fields[1] == "lxd.tar.xz":
-                        fields[1] = "incus.tar.xz"
 
                     stat = os.stat("%s/%s" % (image_dir, fields[1]))
                     files[fields[1]] = (fields[0], int(stat.st_size))
