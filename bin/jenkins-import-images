@@ -19,6 +19,7 @@ BOUNDARY = "f012e447-25dd-4f6d-8a14-105c3b27a768"
 DEBUG = True
 DATA_RETENTION = 3
 MAX_IMAGES = 30
+IMAGE_EXPIRY_DAYS = 15
 
 COMPAT_CURRENT_LEVEL = 5
 COMPAT_VERSION = ["1.0", "1.0", "1.1", "2.0", "2.1", "3.0", "3.1"]
@@ -588,6 +589,23 @@ for entry in sorted(glob.glob("%s/*/*/*/*" % TARGET_IMAGES)):
 
     for image in images[:-DATA_RETENTION]:
         shutil.rmtree("%s/%s" % (entry, image))
+
+# Cleanup stale images (equivalent to find -mtime +N)
+now = time.time()
+for entry in sorted(glob.glob("%s/*/*/*/*/*" % TARGET_IMAGES)):
+    if not os.path.isdir(entry) or os.path.islink(entry):
+        continue
+
+    if int((now - os.lstat(entry).st_mtime) / 86400) > IMAGE_EXPIRY_DAYS:
+        shutil.rmtree(entry)
+
+# Cleanup empty directories
+for root, dirs, files in os.walk(TARGET_IMAGES, topdown=False):
+    if root == TARGET_IMAGES:
+        continue
+
+    if not os.listdir(root):
+        os.rmdir(root)
 
 # Generate the index
 index = {}
