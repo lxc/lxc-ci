@@ -944,6 +944,19 @@ source:
     =swbo
     -----END PGP PUBLIC KEY BLOCK-----
 
+  # loong64
+  - |-
+    -----BEGIN PGP PUBLIC KEY BLOCK-----
+
+    xjMEaULb+RYJKwYBBAHaRw8BAQdAvuJgxoTDZMhKQRZWy8nsuGOLcFCw9an51E4M
+    hD+AoCfNJURlYmlhbiBUcml4aWUgRm9yIExvb25nNjQgU2lnbmluZyBLZXnClgQT
+    FgoAPhYhBHNPq4rcY2kJxmJYg9ge1RSge52oBQJpQtv5AhsDBQkJZgGABQsJCAcC
+    BhUKCQgLAgQWAgMBAh4BAheAAAoJENge1RSge52okNYA/03lT7LUV6D20ovK7/oT
+    cxqYAllFPTMq8HF3nOa1hJnnAQDp+8p5igx/WhedFuhqpifeQsRUitQcbW4q2A5j
+    9/pnDQ==
+    =EKk4
+    -----END PGP PUBLIC KEY BLOCK-----
+
   variant: minbase
 
 targets:
@@ -1123,6 +1136,15 @@ packages:
     action: install
 
   - packages:
+    - debian-loong64-non-official-archive-keyring
+    action: install
+    early: true
+    architectures:
+    - loong64
+    releases:
+    - trixie
+
+  - packages:
     - dbus
     - systemd-resolved
     action: install
@@ -1229,6 +1251,19 @@ packages:
       deb http://deb.debian.org/debian {{ image.release }} main contrib
       deb http://deb.debian.org/debian {{ image.release }}-updates main contrib
       deb http://deb.debian.org/debian-security/ {{ image.release }}-security main contrib
+    architectures:
+    - amd64
+    - arm64
+    - armhf
+    - riscv64
+
+  - name: sources.list
+    url: |-
+      deb https://loong13.debian.net/debian-loong64/ {{ image.release }} main contrib
+      deb https://loong13.debian.net/debian-loong64/ {{ image.release }}-updates main contrib
+      deb https://loong13.debian.net/debian-loong64-security/ {{ image.release }}-security main contrib
+    architectures:
+    - loong64
 
 actions:
 - trigger: post-unpack

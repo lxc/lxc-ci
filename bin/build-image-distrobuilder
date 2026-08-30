@@ -9,8 +9,7 @@ trap cleanup EXIT HUP INT TERM
 
 ARCH="$1"
 TARGET="$2"
-DISTRO="bookworm"
-[ "$(uname -m)" = "riscv64" ] && DISTRO="trixie"
+DISTRO="trixie"
 
 # Create the container
 incus init "images:debian/${DISTRO}/${ARCH}" build-distrobuilder-cache \
@@ -55,8 +54,6 @@ while :; do
     sleep 1
 done
 
-ARCHIVE="http://deb.debian.org/debian/"
-
 # Workaround apparmor issues on older distributions.
 umount -l /sys/devices/system/cpu || true
 
@@ -66,12 +63,21 @@ cat > /etc/apt/apt.conf.d/60lxc-ci << EOL
 APT::Get::Show-Versions "true";
 Acquire::Languages "none";
 EOL
+
+if [ "$(uname -m)" = "loongarch64" ]; then
+cat > /etc/apt/sources.list << EOL
+deb https://loong13.debian.net/debian-loong64/ ${DISTRO} main
+deb https://loong13.debian.net/debian-loong64/ ${DISTRO}-updates main
+deb https://loong13.debian.net/debian-loong64-security/ ${DISTRO}-security main
+EOL
+else
 cat > /etc/apt/sources.list << EOL
 deb http://deb.debian.org/debian ${DISTRO} main
 deb http://deb.debian.org/debian ${DISTRO}-backports main
 deb http://deb.debian.org/debian ${DISTRO}-updates main
 deb http://security.debian.org/debian-security ${DISTRO}-security main
 EOL
+fi
 apt-get update --yes
 
 # Install dependencies
