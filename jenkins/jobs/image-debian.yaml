@@ -42,11 +42,16 @@
             TYPE="container,vm"
         fi
 
+        URL="http://ftp.us.debian.org/debian"
+        if [ "$architecture" = "loong64" ]; then
+            URL="https://loong13.debian.net/debian-loong64/"
+        fi
+
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/debian.yaml \
             $INCUS_ARCHITECTURE $TYPE 1800 $WORKSPACE \
             -o image.architecture=$architecture \
             -o image.release=$release -o image.variant=$variant \
-            -o source.url="http://ftp.us.debian.org/debian"
+            -o source.url="$URL"
 
     execution-strategy:
       combination-filter: '!(architecture == "riscv64" && release == "bullseye") &&
