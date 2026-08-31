@@ -95,6 +95,7 @@ apt-get install --yes --no-install-recommends \
     git \
     gpg \
     gpg-agent \
+    gpgv \
     kpartx \
     libc6-dev \
     libncurses-dev \
