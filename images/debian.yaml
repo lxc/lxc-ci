@@ -1264,6 +1264,18 @@ packages:
       deb https://loong13.debian.net/debian-loong64-security/ {{ image.release }}-security main contrib
     architectures:
     - loong64
+    releases:
+    - trixie
+
+  - name: sources.list
+    url: |-
+      deb http://deb.debian.org/debian {{ image.release }} main contrib
+      deb http://deb.debian.org/debian {{ image.release }}-updates main contrib
+      deb http://deb.debian.org/debian-security/ {{ image.release }}-security main contrib
+    architectures:
+    - loong64
+    releases:
+    - forky
 
 actions:
 - trigger: post-unpack

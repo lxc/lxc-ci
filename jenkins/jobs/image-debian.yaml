@@ -43,7 +43,7 @@
         fi
 
         URL="http://ftp.us.debian.org/debian"
-        if [ "$architecture" = "loong64" ]; then
+        if [ "$architecture" = "loong64" ] && [ "$release" = "trixie" ]; then
             URL="https://loong13.debian.net/debian-loong64/"
         fi
 
@@ -56,7 +56,8 @@
     execution-strategy:
       combination-filter: '!(architecture == "riscv64" && release == "bullseye") &&
         !(architecture == "riscv64" && release == "bookworm") &&
-        !(architecture == "loong64" && release != "trixie")'
+        !(architecture == "loong64" && release == "bullseye") &&
+        !(architecture == "loong64" && release == "bookworm")'
 
     properties:
     - build-discarder:
