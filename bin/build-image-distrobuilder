@@ -120,6 +120,9 @@ apt-get clean
 # Disable ext4 features unsupported by grub older than 2.12.
 sed -i "s/,metadata_csum_seed//; s/,orphan_file//" /etc/mke2fs.conf
 
+# Keep /tmp on disk as large source downloads don't fit in the tmpfs.
+systemctl mask tmp.mount
+
 # Install distrobuilder
 GOARCH=\$(dpkg --print-architecture)
 [ "\${GOARCH}" = "armhf" ] && GOARCH=armv6l
