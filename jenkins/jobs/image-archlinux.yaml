@@ -12,6 +12,7 @@
         values:
         - amd64
         - arm64
+        - loong64
         - riscv64
 
     - axis:
@@ -54,6 +55,11 @@
                 $INCUS_ARCHITECTURE $TYPE 1800 $WORKSPACE \
                 -o image.architecture=$ARCH \
                 -o source.url=https://fl.us.mirror.archlinuxarm.org
+        elif [ "$architecture" = "loong64" ]; then
+            exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/archlinux.yaml \
+                $INCUS_ARCHITECTURE $TYPE 1800 $WORKSPACE \
+                -o image.architecture=$ARCH \
+                -o source.url=https://loongarchlinux.lcpu.dev/loongarch/archlinux
         elif [ "$architecture" = "riscv64" ]; then
             exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/archlinux.yaml \
                 $INCUS_ARCHITECTURE $TYPE 1800 $WORKSPACE \
