@@ -246,6 +246,7 @@ packages:
     architectures:
     - x86_64
     - aarch64
+    - loongarch64
 
   - packages:
     - NetworkManager

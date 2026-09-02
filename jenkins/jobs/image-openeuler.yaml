@@ -12,6 +12,7 @@
         values:
         - amd64
         - arm64
+        - loong64
 
     - axis:
         name: release
@@ -34,6 +35,7 @@
         ARCH=$architecture
         [ "$ARCH" = "amd64" ] && ARCH="x86_64"
         [ "$ARCH" = "arm64" ] && ARCH="aarch64"
+        [ "$ARCH" = "loong64" ] && ARCH="loongarch64"
 
         TYPE="container"
         if [ "$architecture" = "amd64" ]; then
