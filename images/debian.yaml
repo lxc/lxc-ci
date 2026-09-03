@@ -1430,6 +1430,8 @@ actions:
     systemctl enable incus-growpart
   types:
   - vm
+  variants:
+  - default
 
 - trigger: post-files
   action: |-
