@@ -27,6 +27,11 @@ cleanup() {
             exit 0
         fi
 
+        if [ "${DIST}" = "netbsd" ]; then
+            echo "==> WARNING: Failure will be ignored as Incus 7.4 is lacking agent support"
+            exit 0
+        fi
+
         exit 1
     fi
 
