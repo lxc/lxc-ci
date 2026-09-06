@@ -176,13 +176,13 @@ load_rc_config "$name"
 
 incus_agent_prestart()
 {
-        /usr/local/libexec/incus-agent-setup
+	/usr/local/libexec/incus-agent-setup
 }
 
 incus_agent_start()
 {
-        cd /var/run/incus_agent
-        /usr/sbin/daemon -P "${pidfile}" -r -f /var/run/incus_agent/incus-agent
+	cd /var/run/incus_agent
+	/usr/sbin/daemon -P "$pidfile" -S -T "$name" -r -f /var/run/incus_agent/incus-agent
 }
 
 run_rc_command "$1"

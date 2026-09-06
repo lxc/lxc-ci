@@ -60,12 +60,14 @@ REQUIRE_NO_SECUREBOOT = [
     "archlinux",
     "freebsd",
     "gentoo",
+    "netbsd",
     "nixos",
     "openeuler",
 ]
 
 REQUIRE_VM = [
     "freebsd",
+    "netbsd",
 ]
 
 REQUIRE_CDROM_CLOUD_INIT = [

@@ -1,0 +1,280 @@
+#!/bin/sh
+
+set -eux
+
+INCUS_ARCHITECTURE="$1"
+RELEASE="$2"
+# The variant is not used but kept for consistency
+VARIANT="$3"
+WORKSPACE="$4"
+MIRROR="$5"
+
+FAIL=1
+BASE_URL=""
+IMAGE=""
+
+cleanup() {
+    set +e
+
+    pkill rump_server
+    if [ "$FAIL" = "1" ]; then
+        exit 1
+    fi
+
+    exit 0
+}
+trap cleanup EXIT HUP INT TERM
+
+# Install dependencies
+apt-get update --yes
+apt-get install --yes --no-install-recommends \
+    build-essential \
+    git \
+    ca-certificates \
+    zlib1g-dev \
+    autoconf \
+    automake \
+    libtool \
+    pkg-config \
+    flex \
+    bison
+
+NOW="$(date +%s)"
+SERIAL="$(date -u +%Y%m%d_%H:%M)"
+echo "$SERIAL" > "$WORKSPACE/serial"
+
+SHORT_ARCHITECTURE="$INCUS_ARCHITECTURE"
+EXPANDED_ARCHITECTURE="$INCUS_ARCHITECTURE"
+if [ "$SHORT_ARCHITECTURE" = "amd64" ]; then
+    BASE_URL="$MIRROR/pub/NetBSD/images/$RELEASE"
+    IMAGE="NetBSD-$RELEASE-$SHORT_ARCHITECTURE-live.img.gz"
+else
+    if [ "$SHORT_ARCHITECTURE" = "arm64" ]; then
+        EXPANDED_ARCHITECTURE="evbarm-aarch64"
+    elif [ "$SHORT_ARCHITECTURE" = "riscv64" ]; then
+        EXPANDED_ARCHITECTURE="riscv-riscv64"
+    fi
+
+    BASE_URL="$MIRROR/pub/NetBSD/NetBSD-$RELEASE/$EXPANDED_ARCHITECTURE/binary/gzimg"
+    IMAGE="$SHORT_ARCHITECTURE.img.gz"
+fi
+
+# Download a pre-built VM image
+curl -sSfL --retry 5 --retry-connrefused -o "$WORKSPACE/$IMAGE" "$BASE_URL/$IMAGE"
+curl -sSfL --retry 5 --retry-connrefused -o "$WORKSPACE/SHA512" "$BASE_URL/SHA512"
+# Checksums are currently broken on arm64
+if [ "$SHORT_ARCHITECTURE" != "arm64" ]; then
+    (cd "$WORKSPACE" && sha512sum -c SHA512 --ignore-missing)
+fi
+
+# Decompress the image
+gunzip -c "$WORKSPACE/$IMAGE" > "$WORKSPACE/image.raw"
+rm -f "$WORKSPACE/$IMAGE" "$WORKSPACE/SHA512"
+
+OFFSET=$(($(fdisk -lo Start "$WORKSPACE/image.raw" | tail -n1)*512))
+SIZE="$(($(stat -c%s "$WORKSPACE/image.raw")-OFFSET))"
+
+# Fetch and build Rump
+(
+    cd "$WORKSPACE"
+    git clone --recursive https://github.com/bensmrs/rumpctrl.git
+    cd rumpctrl
+    buildrump.sh/buildrump.sh -s src-netbsd -j "$(nproc)" -V _GCC_CRTBEGIN= -V _GCC_CRTBEGINS= -V _GCC_CRTEND= -V _GCC_CRTENDS= -V _GCC_CRTI= -V _GCC_CRTN= -F CPPFLAGS="-DLINUX_RUMP=1 -Wno-error=stringop-truncation" -V LINUX_RUMP=yes fullbuild
+    ./buildnb.sh
+    rm -rf src-netbsd
+)
+export RUMP_SERVER=unix:///run/rump.sock
+BIN="$WORKSPACE/rumpctrl/bin"
+
+# Mount the FFS partition from within Rump
+"$WORKSPACE/rumpctrl/rump/bin/rump_server" -lrumpdev -lrumpdev_disk -lrumpvfs -lrumpfs_ffs -d "key=/dk,hostpath=$WORKSPACE/image.raw,offset=$OFFSET,size=$SIZE" "$RUMP_SERVER"
+RUN="env LD_LIBRARY_PATH=$WORKSPACE/rumpctrl/rump/lib LD_PRELOAD=librumphijack.so"
+$RUN "$BIN/mkdir" /mnt
+$RUN "$BIN/mount_ffs" /dk /mnt
+
+# Prepare templates
+mkdir -p "$WORKSPACE/incus/templates"
+echo 'hostname="{{ instance.name }}"' > "$WORKSPACE/incus/templates/hostname.tpl"
+cat > "$WORKSPACE/incus/templates/hosts.tpl" << 'EOF'
+127.0.1.1	{{ container.name }}
+127.0.0.1	localhost
+::1		localhost ip6-localhost ip6-loopback
+ff02::1		ip6-allnodes
+ff02::2		ip6-allrouters
+EOF
+
+# Generate metadata
+cat > "$WORKSPACE/incus/metadata.yaml" << EOF
+architecture: $INCUS_ARCHITECTURE
+creation_date: $NOW
+expiry_date: $((NOW+2592000))
+properties:
+  architecture: $INCUS_ARCHITECTURE
+  description: NetBSD $RELEASE $INCUS_ARCHITECTURE ($SERIAL)
+  name: netbsd-$RELEASE-$INCUS_ARCHITECTURE-$VARIANT-$SERIAL
+  os: netbsd
+  release: $RELEASE
+  serial: "$SERIAL"
+  variant: $VARIANT
+templates:
+  /etc/rc.conf.d/network:
+    when:
+    - create
+    - copy
+    create_only: false
+    template: hostname.tpl
+    properties: {}
+  /etc/hosts:
+    when:
+    - create
+    - copy
+    create_only: false
+    template: hosts.tpl
+    properties: {}
+EOF
+
+# Build the Incus TAR
+tar -cJf "$WORKSPACE/incus.tar.xz" -C "$WORKSPACE/incus" .
+
+# Some operation juggling file descriptors must be run partly outside of the rump kernel
+$RUN "$BIN/cat" /mnt/etc/ttys | sed -E '/^tty00\s/s/\s+\S+\s+(on|off).*$/ vt100 on secure/' > "$WORKSPACE/ttys"
+$RUN cp "$WORKSPACE/ttys" /rump/mnt/etc/ttys
+$RUN "$BIN/cat" /mnt/etc/rc.conf | sed '$a incus_agent=YES' > "$WORKSPACE/rc.conf"
+$RUN cp "$WORKSPACE/rc.conf" /rump/mnt/etc/rc.conf
+
+# Prepare the agent
+cat > "$WORKSPACE/incus-agent" << 'EOF'
+#!/bin/sh
+#
+# PROVIDE: incus_agent
+# REQUIRE: mountall
+# KEYWORD: shutdown
+#
+
+. /etc/rc.subr
+
+name=incus_agent
+rcvar=incus_agent
+pidfile="/var/run/$name.pid"
+start_cmd="${name}_start"
+stop_cmd="${name}_stop"
+status_cmd="${name}_status"
+extra_commands=status
+
+check_pid()
+{
+	if [ -f "$pidfile" ]; then
+		pid="$(cat "$pidfile")"
+		if [ -n "${pid}" ] && kill -0 "${pid}" 2>/dev/null; then
+			echo "$pid"
+			return 0
+		fi
+
+		return 1
+	fi
+
+	return 1
+}
+
+incus_agent_start()
+{
+	if pid="$(check_pid)"; then
+		echo "$name is already running (PID $pid)"
+		return 1
+	fi
+
+	/usr/libexec/incus-agent-setup || return 1
+	cd /var/run/incus_agent || return 1
+
+	(
+		child_pid=
+		stop()
+		{
+			[ -n "$child_pid" ] && kill "$child_pid"
+			exit 0
+		}
+
+		trap stop TERM INT
+		while :; do
+			/var/run/incus_agent/incus-agent 2>&1 | /usr/bin/logger -t "$name" -p daemon.info &
+			child_pid="$!"
+			wait "$child_pid"
+			child_pid=
+			sleep 5
+		done
+	)&
+
+	echo $! > "${pidfile}"
+}
+
+incus_agent_stop()
+{
+	if pid="$(check_pid)"; then
+		kill "$pid"
+		rm -f "$pidfile"
+	else
+		echo "$name is not running"
+		return 1
+	fi
+}
+
+incus_agent_status()
+{
+	if pid="$(check_pid)"; then
+		echo "$name is running (PID $pid)"
+	else
+		echo "$name is not running"
+	fi
+}
+
+load_rc_config "$name"
+run_rc_command "$1"
+EOF
+$RUN cp "$WORKSPACE/incus-agent" /rump/mnt/etc/rc.d/incus-agent
+$RUN "$BIN/chmod" 0500 /mnt/etc/rc.d/incus-agent
+cat > "$WORKSPACE/incus-agent-setup" << 'EOF'
+#!/bin/sh
+set -eu
+PREFIX="/var/run/incus_agent"
+
+fail() {
+    # Check if we already have an agent in place.
+    if [ -x "$PREFIX/incus-agent" ]; then
+        echo "$1, reusing existing agent"
+        exit 0
+    fi
+
+    # Cleanup and fail.
+    umount "$PREFIX" >/dev/null 2>&1 || true
+    rmdir "$PREFIX" >/dev/null 2>&1 || true
+    echo "$1, failing"
+
+    exit 1
+}
+
+# Try getting an agent drive.
+mkdir -p "$PREFIX.mnt"
+mount_9p -o ro -cu "/dev/$(dmesg | grep -o 'vio9p.*: tagged as config' | cut -d: -f1 | head -n1)" "$PREFIX.mnt" >/dev/null 2>&1 || fail "Couldn't mount 9p"
+
+# Setup the mount target.
+umount "$PREFIX" >/dev/null 2>&1 || true
+mkdir -p "$PREFIX"
+mount_tmpfs -m 0700 -u root -g wheel -s 50M tmpfs "$PREFIX"
+
+# Copy the data.
+cp -Ra "$PREFIX.mnt/"* "$PREFIX"
+
+# Unmount the temporary mount.
+umount "$PREFIX.mnt"
+rmdir "$PREFIX.mnt"
+
+exit 0
+EOF
+$RUN cp "$WORKSPACE/incus-agent-setup" /rump/mnt/usr/libexec/incus-agent-setup
+$RUN "$BIN/chmod" 0500 /mnt/usr/libexec/incus-agent-setup
+
+# Unmount and cleanup
+$RUN "$BIN/umount" /mnt
+qemu-img convert -f raw -O qcow2 "$WORKSPACE/image.raw" "$WORKSPACE/disk.qcow2"
+
+FAIL=0
