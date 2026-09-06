@@ -20,7 +20,6 @@
         name: release
         type: user-defined
         values:
-        - bullseye
         - bookworm
         - trixie
         - forky
@@ -54,9 +53,7 @@
             -o source.url="$URL"
 
     execution-strategy:
-      combination-filter: '!(architecture == "riscv64" && release == "bullseye") &&
-        !(architecture == "riscv64" && release == "bookworm") &&
-        !(architecture == "loong64" && release == "bullseye") &&
+      combination-filter: '!(architecture == "riscv64" && release == "bookworm") &&
         !(architecture == "loong64" && release == "bookworm")'
 
     properties:
