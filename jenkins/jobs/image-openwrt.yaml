@@ -18,7 +18,6 @@
         type: user-defined
         values:
         - snapshot
-        - "24.10"
         - "25.12"
 
     - axis:
@@ -36,20 +35,9 @@
         [ "$ARCH" = "amd64" ] && ARCH="x86_64"
         [ "$ARCH" = "arm64" ] && ARCH="aarch64"
 
-        TYPE="container,vm"
-        if [ "$release" = "24.10" ]; then
-          TYPE="container"
-        fi
-
-        PKGMANAGER="apk"
-        if [ "$release" = "24.10" ]; then
-            PKGMANAGER="opkg"
-        fi
-
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/openwrt.yaml \
-            $INCUS_ARCHITECTURE $TYPE 7200 $WORKSPACE \
-            -o image.architecture=$ARCH -o image.release=$release \
-            -o packages.manager=$PKGMANAGER
+            $INCUS_ARCHITECTURE container,vm 7200 $WORKSPACE \
+            -o image.architecture=$ARCH -o image.release=$release
 
     properties:
     - build-discarder:
