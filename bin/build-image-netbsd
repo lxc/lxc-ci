@@ -74,6 +74,9 @@ rm -f "$WORKSPACE/$IMAGE" "$WORKSPACE/SHA512"
 OFFSET=$(($(fdisk -lo Start "$WORKSPACE/image.raw" | tail -n1)*512))
 SIZE="$(($(stat -c%s "$WORKSPACE/image.raw")-OFFSET))"
 
+# Patch headers
+sed -i 's/#define OPEN_TREE_CLONE\s*1/\/\/ #define OPEN_TREE_CLONE 1/' /usr/include/x86_64-linux-gnu/sys/mount.h
+
 # Fetch and build Rump
 (
     cd "$WORKSPACE"
