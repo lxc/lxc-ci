@@ -17,6 +17,7 @@
         type: user-defined
         values:
         - 8.x
+        - 9.x
 
     - axis:
         name: variant
