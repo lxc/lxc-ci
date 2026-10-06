@@ -21,6 +21,7 @@
         type: user-defined
         values:
         - distrobuilder-image
+        - netbsd-bootstrap-image
 
     - axis:
         name: variant
@@ -34,11 +35,16 @@
         values:
         - vm
 
+    execution-strategy:
+      combination-filter: '!(artifact == "netbsd-bootstrap-image" && architecture != "amd64")'
+
     builders:
     - shell: |-
         cd /lxc-ci
         if [ "$artifact" = "distrobuilder-image" ]; then
             exec sudo /lxc-ci/bin/build-image-distrobuilder $architecture $WORKSPACE
+        elif [ "$artifact" = "netbsd-bootstrap-image" ]; then
+            exec sudo /lxc-ci/bin/build-image-netbsd-bootstrap $WORKSPACE
         else
             echo "Bad artifact"
             exit 1
@@ -53,7 +59,7 @@
 
     publishers:
     - archive:
-        artifacts: "*.tar.xz"
+        artifacts: "*.qcow2,*.tar.xz"
         only-if-success: true
 
     - workspace-cleanup:
