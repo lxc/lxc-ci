@@ -47,6 +47,17 @@ build_distrobuilder() {
     done
 }
 
+build_netbsd_bootstrap() {
+    rm -rf /tmp/build-netbsd-bootstrap
+    mkdir /tmp/build-netbsd-bootstrap
+    curl -s "${HOST}/job/lxc-ci-artifacts/architecture=amd64,artifact=netbsd-bootstrap-image,restrict=vm,variant=default/lastSuccessfulBuild/artifact/disk.qcow2" -o /tmp/build-netbsd-bootstrap/disk.qcow2
+    curl -s "${HOST}/job/lxc-ci-artifacts/architecture=amd64,artifact=netbsd-bootstrap-image,restrict=vm,variant=default/lastSuccessfulBuild/artifact/incus.tar.xz" -o /tmp/build-netbsd-bootstrap/incus.tar.xz
+    incus image delete netbsd-bootstrap >/dev/null 2>&1 || true
+    incus image import --alias netbsd-bootstrap --quiet /tmp/build-netbsd-bootstrap/incus.tar.xz /tmp/build-netbsd-bootstrap/disk.qcow2
+    rm -rf /tmp/build-netbsd-bootstrap
+}
+
 build_distrobuilder
+build_netbsd_bootstrap
 
 exit 0
