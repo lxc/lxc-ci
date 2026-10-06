@@ -7,7 +7,6 @@ export PATH="/snap/bin/:${PATH}"
 cleanup() {
     set +e
     incus delete build-distrobuilder-cache -f >/dev/null 2>&1
-    incus delete build-lxc-cache -f >/dev/null 2>&1
 
     exit 0
 }
@@ -48,23 +47,6 @@ build_distrobuilder() {
     done
 }
 
-build_lxc() {
-    if [ "${LXC_ARCHES:-}" = "" ]; then
-        return
-    fi
-
-    for arch in ${LXC_ARCHES}; do
-        incus delete -f build-lxc-cache >/dev/null 2>&1 || true
-        rm -f /tmp/build-lxc-cache
-        curl -s "${HOST}/job/lxc-ci-artifacts/architecture=${arch},artifact=lxc-image,restrict=vm,variant=default/lastSuccessfulBuild/artifact/build-lxc-cache.tar.xz" -o /tmp/build-lxc-cache
-        incus import --quiet /tmp/build-lxc-cache
-        rm -f /tmp/build-lxc-cache
-        incus delete -f "cache-lxc-${arch}" >/dev/null 2>&1 || true
-        incus move build-lxc-cache "cache-lxc-${arch}"
-    done
-}
-
 build_distrobuilder
-build_lxc
 
 exit 0
