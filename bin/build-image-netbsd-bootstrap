@@ -1,0 +1,212 @@
+#!/bin/sh
+
+set -eux
+
+TARGET="$1"
+
+cleanup() {
+    set +e
+    pkill rump_server
+    exit 0
+}
+trap cleanup EXIT HUP INT TERM
+
+# Install dependencies
+apt-get update --yes
+apt-get install --yes --no-install-recommends \
+    build-essential \
+    git \
+    ca-certificates \
+    zlib1g-dev \
+    autoconf \
+    automake \
+    libtool \
+    pkg-config \
+    flex \
+    bison
+
+BASE_URL="https://cdn.netbsd.org/pub/NetBSD/images/11.0"
+IMAGE="NetBSD-11.0-amd64-live.img.gz"
+
+# Download a pre-built VM image
+curl -sSfL --retry 5 --retry-connrefused -o "$TARGET/$IMAGE" "$BASE_URL/$IMAGE"
+curl -sSfL --retry 5 --retry-connrefused -o "$TARGET/SHA512" "$BASE_URL/SHA512"
+(cd "$TARGET" && sha512sum -c SHA512 --ignore-missing)
+
+# Decompress the image
+gunzip -c "$TARGET/$IMAGE" > "$TARGET/image.raw"
+rm -f "$TARGET/$IMAGE" "$TARGET/SHA512"
+
+OFFSET=$(($(fdisk -lo Start "$TARGET/image.raw" | tail -n1)*512))
+SIZE="$(($(stat -c%s "$TARGET/image.raw")-OFFSET))"
+
+# Fetch and build Rump
+(
+    cd "$TARGET"
+    git clone --recursive https://github.com/bensmrs/rumpctrl.git
+    cd rumpctrl
+    buildrump.sh/buildrump.sh -s src-netbsd -j "$(nproc)" -V _GCC_CRTBEGIN= -V _GCC_CRTBEGINS= -V _GCC_CRTEND= -V _GCC_CRTENDS= -V _GCC_CRTI= -V _GCC_CRTN= -F CPPFLAGS="-DLINUX_RUMP=1 -Wno-error=stringop-truncation" -V LINUX_RUMP=yes fullbuild
+    ./buildnb.sh
+    rm -rf src-netbsd
+)
+export RUMP_SERVER=unix:///run/rump.sock
+BIN="$TARGET/rumpctrl/bin"
+
+# Mount the FFS partition from within Rump
+"$TARGET/rumpctrl/rump/bin/rump_server" -lrumpdev -lrumpdev_disk -lrumpvfs -lrumpfs_ffs -d "key=/dk,hostpath=$TARGET/image.raw,offset=$OFFSET,size=$SIZE" "$RUMP_SERVER"
+RUN="env LD_LIBRARY_PATH=$TARGET/rumpctrl/rump/lib LD_PRELOAD=librumphijack.so"
+$RUN "$BIN/mkdir" /mnt
+$RUN "$BIN/mount_ffs" /dk /mnt
+
+# Generate metadata
+mkdir "$TARGET/incus"
+cat > "$TARGET/incus/metadata.yaml" << EOF
+architecture: amd64
+creation_date: $(date +%s)
+properties:
+  os: netbsd
+EOF
+
+# Build the Incus TAR
+tar -cJf "$TARGET/incus.tar.xz" -C "$TARGET/incus" .
+
+# Some operation juggling file descriptors must be run partly outside of the rump kernel
+$RUN "$BIN/cat" /mnt/etc/ttys | sed -E '/^tty00\s/s/\s+\S+\s+(on|off).*$/ vt100 on secure/' > "$TARGET/ttys"
+$RUN cp "$TARGET/ttys" /rump/mnt/etc/ttys
+$RUN "$BIN/cat" /mnt/etc/rc.conf | sed '$a incus_agent=YES' > "$TARGET/rc.conf"
+$RUN cp "$TARGET/rc.conf" /rump/mnt/etc/rc.conf
+
+# Prepare the agent
+cat > "$TARGET/incus-agent" << 'EOF'
+#!/bin/sh
+#
+# PROVIDE: incus_agent
+# REQUIRE: mountall
+# KEYWORD: shutdown
+#
+
+. /etc/rc.subr
+
+name=incus_agent
+rcvar=incus_agent
+pidfile="/var/run/$name.pid"
+start_cmd="${name}_start"
+stop_cmd="${name}_stop"
+status_cmd="${name}_status"
+extra_commands=status
+
+check_pid()
+{
+	if [ -f "$pidfile" ]; then
+		pid="$(cat "$pidfile")"
+		if [ -n "${pid}" ] && kill -0 "${pid}" 2>/dev/null; then
+			echo "$pid"
+			return 0
+		fi
+
+		return 1
+	fi
+
+	return 1
+}
+
+incus_agent_start()
+{
+	if pid="$(check_pid)"; then
+		echo "$name is already running (PID $pid)"
+		return 1
+	fi
+
+	/usr/libexec/incus-agent-setup || return 1
+	cd /var/run/incus_agent || return 1
+
+	(
+		child_pid=
+		stop()
+		{
+			[ -n "$child_pid" ] && kill "$child_pid"
+			exit 0
+		}
+
+		trap stop TERM INT
+		while :; do
+			/var/run/incus_agent/incus-agent 2>&1 | /usr/bin/logger -t "$name" -p daemon.info &
+			child_pid="$!"
+			wait "$child_pid"
+			child_pid=
+			sleep 5
+		done
+	)&
+
+	echo $! > "${pidfile}"
+}
+
+incus_agent_stop()
+{
+	if pid="$(check_pid)"; then
+		kill "$pid"
+		rm -f "$pidfile"
+	else
+		echo "$name is not running"
+		return 1
+	fi
+}
+
+incus_agent_status()
+{
+	if pid="$(check_pid)"; then
+		echo "$name is running (PID $pid)"
+	else
+		echo "$name is not running"
+	fi
+}
+
+load_rc_config "$name"
+run_rc_command "$1"
+EOF
+$RUN cp "$TARGET/incus-agent" /rump/mnt/etc/rc.d/incus-agent
+$RUN "$BIN/chmod" 0500 /mnt/etc/rc.d/incus-agent
+cat > "$TARGET/incus-agent-setup" << 'EOF'
+#!/bin/sh
+set -eu
+PREFIX="/var/run/incus_agent"
+
+fail() {
+    # Check if we already have an agent in place.
+    if [ -x "$PREFIX/incus-agent" ]; then
+        echo "$1, reusing existing agent"
+        exit 0
+    fi
+
+    # Cleanup and fail.
+    umount "$PREFIX" >/dev/null 2>&1 || true
+    rmdir "$PREFIX" >/dev/null 2>&1 || true
+    echo "$1, failing"
+
+    exit 1
+}
+
+# Try getting an agent drive.
+mkdir -p "$PREFIX.mnt"
+mount_9p -o ro -cu "/dev/$(dmesg | grep -o 'vio9p.*: tagged as config' | cut -d: -f1 | head -n1)" "$PREFIX.mnt" >/dev/null 2>&1 || fail "Couldn't mount 9p"
+
+# Setup the mount target.
+umount "$PREFIX" >/dev/null 2>&1 || true
+mkdir -p "$PREFIX"
+mount_tmpfs -m 0700 -u root -g wheel -s 50M tmpfs "$PREFIX"
+
+# Copy the data.
+cp -Ra "$PREFIX.mnt/"* "$PREFIX"
+
+# Unmount the temporary mount.
+umount "$PREFIX.mnt"
+rmdir "$PREFIX.mnt"
+
+exit 0
+EOF
+$RUN cp "$TARGET/incus-agent-setup" /rump/mnt/usr/libexec/incus-agent-setup
+$RUN "$BIN/chmod" 0500 /mnt/usr/libexec/incus-agent-setup
+
+# Unmount and cleanup
+$RUN "$BIN/umount" /mnt
+qemu-img convert -f raw -O qcow2 "$TARGET/image.raw" "$TARGET/disk.qcow2"
