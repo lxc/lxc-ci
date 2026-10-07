@@ -27,11 +27,6 @@ cleanup() {
             exit 0
         fi
 
-        if [ "${DIST}" = "netbsd" ]; then
-            echo "==> WARNING: Failure will be ignored as Incus 7.4 is lacking agent support"
-            exit 0
-        fi
-
         exit 1
     fi
 
@@ -214,14 +209,7 @@ for url in $(incus query "/1.0/instances" | jq -r .[] | grep "${TEST_IMAGE}"); d
     fi
 
     # Get the addresses
-    address=$(incus query "${url}/state" | jq -r ".network.eth0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
-    if [ -z "${address}" ]; then
-        address=$(incus query "${url}/state" | jq -r ".network.enp5s0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
-    fi
-    if [ -z "${address}" ]; then
-        address=$(incus query "${url}/state" | jq -r ".network.vtnet0.addresses | .[] | select(.scope | contains(\"global\")) | .address" 2>/dev/null || true)
-    fi
-
+    address=$(incus query "${url}/state" | jq -r '.network | .eth0 // .enp5s0 // .vtnet0 // .vioif0 | .addresses.[] | select(.scope | contains("global")).address' 2>/dev/null || true)
     if [ -z "${address}" ]; then
         echo "===> FAIL: No network interface: ${name}"
 
