@@ -1,0 +1,197 @@
+image:
+  distribution: cachyos
+
+source:
+  downloader: archbootstrap
+  url: https://geo.mirror.pkgbuild.com/$repo/os/$arch
+  variant: https://mirror.cachyos.org/repo
+
+targets:
+  lxc:
+    create_message: |
+      You just created an {{ image.description }} container.
+    config:
+    - type: all
+      before: 5
+      content: |-
+        lxc.include = LXC_TEMPLATE_CONFIG/archlinux.common.conf
+
+    - type: user
+      before: 5
+      content: |-
+        lxc.include = LXC_TEMPLATE_CONFIG/archlinux.userns.conf
+
+    - type: all
+      after: 4
+      content: |-
+        lxc.include = LXC_TEMPLATE_CONFIG/common.conf
+
+    - type: user
+      after: 4
+      content: |-
+        lxc.include = LXC_TEMPLATE_CONFIG/userns.conf
+
+    - type: all
+      content: |-
+        lxc.arch = {{ image.architecture_kernel }}
+
+files:
+- name: hostname
+  path: /etc/hostname
+  generator: hostname
+
+- name: hosts
+  path: /etc/hosts
+  generator: hosts
+
+- path: /etc/systemd/network/eth0.network
+  generator: dump
+  content: |-
+    [Match]
+    Name=eth0
+
+    [Network]
+    DHCP=ipv4
+
+    [DHCPv4]
+    UseDomains=true
+    UseMTU=true
+
+    [DHCP]
+    ClientIdentifier=mac
+  types:
+  - container
+
+- name: incus-agent
+  generator: incus-agent
+  types:
+  - vm
+
+- generator: fstab
+  types:
+  - vm
+
+packages:
+  manager: pacman
+  update: true
+  cleanup: true
+  sets:
+  - packages:
+    - base
+    - dhcpcd
+    - diffutils
+    - file
+    - gettext
+    - grep
+    - groff
+    - gzip
+    - inetutils
+    - iproute2
+    - iputils
+    - less
+    - licenses
+    - logrotate
+    - man-db
+    - man-pages
+    - nano
+    - netctl
+    - procps-ng
+    - psmisc
+    - sed
+    - sudo
+    - sysfsutils
+    - systemd-sysvcompat
+    - tar
+    - texinfo
+    - vi
+    - which
+    action: install
+
+  - packages:
+    - cachyos-keyring
+    - cachyos-hooks
+    action: install
+    architectures:
+    - x86_64
+
+actions:
+- trigger: post-unpack
+  pongo: true
+  # CachyOS is x86_64-only: its repositories and the x86_64_v3 ISA
+  # level do not exist for other architectures.
+  architectures:
+  - x86_64
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Arch mirror. Default is the international mirror; override with
+    # -o source.url=... for a faster regional mirror.
+    echo 'Server = {{ source.url }}' > /etc/pacman.d/mirrorlist
+
+    # The CachyOS v3 repositories ship packages tagged x86_64_v3. Stock
+    # pacman only accepts them when the ISA levels are listed explicitly;
+    # Architecture = auto works only with CachyOS's own patched pacman.
+    sed -i 's/^Architecture = .*/Architecture = x86_64 x86_64_v3/' /etc/pacman.conf
+
+    # Trust the CachyOS signing key.
+    pacman-key --recv-keys F3B607488DB35A47 --keyserver keyserver.ubuntu.com
+    pacman-key --lsign-key F3B607488DB35A47
+
+    # CachyOS mirrors. Default is the international mirror; override with
+    # -o source.variant=... for a faster regional mirror. The v3
+    # repositories carry the optimised builds.
+    echo 'Server = {{ source.variant }}/$arch/$repo' > /etc/pacman.d/cachyos-mirrorlist
+    echo 'Server = {{ source.variant }}/$arch_v3/$repo' > /etc/pacman.d/cachyos-v3-mirrorlist
+
+    # Put the CachyOS repositories ahead of core/extra so that the
+    # CachyOS builds take priority for identically named packages.
+    gawk -i inplace '
+      /^\[options\]$/ { print; next }
+      /^\[[^][ ]+\]$/ {
+        if (!set) {
+          print "[cachyos-v3]"; print "Include = /etc/pacman.d/cachyos-v3-mirrorlist"; print "";
+          print "[cachyos-core-v3]"; print "Include = /etc/pacman.d/cachyos-v3-mirrorlist"; print "";
+          print "[cachyos-extra-v3]"; print "Include = /etc/pacman.d/cachyos-v3-mirrorlist"; print "";
+          print "[cachyos]"; print "Include = /etc/pacman.d/cachyos-mirrorlist"; print "";
+          set = 1;
+        }
+      }
+      { print }
+    ' /etc/pacman.conf
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    umount -l /etc/resolv.conf || true
+    rm -f /etc/resolv.conf
+    ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+    systemctl enable systemd-networkd
+    systemctl enable systemd-resolved
+    setcap cap_net_raw=ep /usr/bin/ping || chmod +s /usr/bin/ping
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+    rm -rf /etc/pacman.d/gnupg
+    cat << 'EOF' > /etc/systemd/system/pacman-init.service
+    [Unit]
+    Description=Incus - initializes Pacman keyring
+    Before=archlinux-keyring-wkd-sync.service
+    After=time-sync.target
+    ConditionPathIsDirectory=!/etc/pacman.d/gnupg
+
+    [Service]
+    Type=oneshot
+    ExecStart=/usr/bin/pacman-key --init
+    ExecStart=/usr/bin/pacman-key --populate
+    ExecStart=/usr/bin/pacman-key --populate cachyos
+
+    [Install]
+    WantedBy=multi-user.target
+    EOF
+    systemctl enable pacman-init.service
+
+mappings:
+  architecture_map: archlinux
