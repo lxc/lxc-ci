@@ -67,6 +67,16 @@ files:
   types:
   - vm
 
+- path: /etc/default/grub
+  generator: dump
+  content: |-
+    GRUB_RECORDFAIL_TIMEOUT=0
+    GRUB_TIMEOUT=0
+    GRUB_CMDLINE_LINUX_DEFAULT="${GRUB_CMDLINE_LINUX_DEFAULT} console=tty1 console=ttyS0"
+    GRUB_TERMINAL=console
+  types:
+  - vm
+
 - generator: fstab
   types:
   - vm
@@ -143,6 +153,22 @@ packages:
     action: install
     variants:
     - cloud
+
+  - packages:
+    - cloud-guest-utils
+    - grub
+    action: install
+    types:
+    - vm
+
+  # CachyOS's optimised kernel; lives in the cachyos-v3 repo.
+  - packages:
+    - linux-cachyos
+    action: install
+    architectures:
+    - x86_64
+    types:
+    - vm
 
 actions:
 - trigger: post-unpack
@@ -222,6 +248,23 @@ actions:
     WantedBy=multi-user.target
     EOF
     systemctl enable pacman-init.service
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    grub-install --target=x86_64-efi --efi-directory=/boot/efi --no-nvram --removable
+    grub-install --target=x86_64-efi --efi-directory=/boot/efi --no-nvram
+    grub-mkconfig -o /boot/grub/grub.cfg
+    sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_UUID}#g" /boot/grub/grub.cfg
+
+    # Virtio only; the image runs as an Incus VM.
+    sed -i 's#^MODULES=.*#MODULES=(virtio_pci virtio_scsi virtio_console)#' /etc/mkinitcpio.conf
+    sed -i 's#^PRESETS=.*#PRESETS=(default)#' /etc/mkinitcpio.d/*.preset
+    mkinitcpio -P || true
+  types:
+  - vm
 
 - trigger: post-files
   action: |-
