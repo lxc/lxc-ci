@@ -71,6 +71,29 @@ files:
   types:
   - vm
 
+# cloud-init seed templates. Rendered by Incus at container/VM creation
+# time from the cloud-init.* config keys. Only present in the "cloud"
+# variant, matching the other distrobuilder images.
+- name: meta-data
+  generator: cloud-init
+  variants:
+  - cloud
+
+- name: network-config
+  generator: cloud-init
+  variants:
+  - cloud
+
+- name: user-data
+  generator: cloud-init
+  variants:
+  - cloud
+
+- name: vendor-data
+  generator: cloud-init
+  variants:
+  - cloud
+
 packages:
   manager: pacman
   update: true
@@ -113,6 +136,13 @@ packages:
     action: install
     architectures:
     - x86_64
+
+  - packages:
+    - cloud-init
+    - openbsd-netcat
+    action: install
+    variants:
+    - cloud
 
 actions:
 - trigger: post-unpack
@@ -192,6 +222,15 @@ actions:
     WantedBy=multi-user.target
     EOF
     systemctl enable pacman-init.service
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    systemctl enable cloud-init-main.service cloud-init-local.service cloud-config.service cloud-final.service
+  variants:
+  - cloud
 
 mappings:
   architecture_map: archlinux
