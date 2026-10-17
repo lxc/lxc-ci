@@ -12,6 +12,13 @@
         values:
         - amd64
 
+    - axis:
+        name: variant
+        type: user-defined
+        values:
+        - default
+        - cloud
+
     builders:
     - shell: |-
         cd /lxc-ci
@@ -24,7 +31,7 @@
 
         exec sudo /lxc-ci/bin/build-distro /lxc-ci/images/cachyos.yaml \
             $INCUS_ARCHITECTURE $TYPE 1800 $WORKSPACE \
-            -o image.architecture=$ARCH
+            -o image.architecture=$ARCH -o image.variant=$variant
 
     properties:
     - build-discarder:
