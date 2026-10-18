@@ -44,11 +44,12 @@ files:
   path: /etc/hosts
   generator: hosts
 
-- path: /etc/systemd/network/eth0.network
+# eth0 in containers, en* (enp5s0, ...) in VMs.
+- path: /etc/systemd/network/10-lan.network
   generator: dump
   content: |-
     [Match]
-    Name=eth0
+    Name=eth0 en*
 
     [Network]
     DHCP=ipv4
@@ -59,8 +60,6 @@ files:
 
     [DHCP]
     ClientIdentifier=mac
-  types:
-  - container
 
 - name: incus-agent
   generator: incus-agent
@@ -143,6 +142,10 @@ packages:
   - packages:
     - cachyos-keyring
     - cachyos-hooks
+    # Mirror ranking, update helper and AUR helper.
+    - cachyos-rate-mirrors
+    - cachy-update
+    - yay
     action: install
     architectures:
     - x86_64
