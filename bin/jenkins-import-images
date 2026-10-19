@@ -33,6 +33,7 @@ ALIASES = {
     "ubuntu/jammy": ["ubuntu/22.04"],
     "ubuntu/noble": ["ubuntu/24.04"],
     "ubuntu/resolute": ["ubuntu/26.04"],
+    "ubuntu/stonking": ["ubuntu/26.10"],
 }
 
 VARIANT_ALIASES = {
