@@ -1208,6 +1208,15 @@ packages:
     - arm64
 
   - packages:
+    - grub-efi-loong64
+    - linux-image-loong64
+    action: install
+    types:
+    - vm
+    architectures:
+    - loong64
+
+  - packages:
     - cloud-guest-utils
     action: install
     types:
@@ -1218,6 +1227,9 @@ packages:
     action: install
     types:
     - vm
+    architectures:
+    - amd64
+    - arm64
 
   - packages:
     - netplan.io
@@ -1336,16 +1348,18 @@ actions:
     #!/bin/sh
     set -eux
 
-    TARGET="x86_64"
-    [ "$(uname -m)" = "aarch64" ] && TARGET="arm64"
+    TARGET="$(uname -m)"
+    SECURE_BOOT="--uefi-secure-boot"
+    [ "$TARGET" = "aarch64" ] && TARGET="arm64"
+    [ "$TARGET" = "loongarch64" ] && SECURE_BOOT="--no-uefi-secure-boot"
 
     update-grub
 
     # This will create EFI/BOOT
-    grub-install --uefi-secure-boot --target="${TARGET}-efi" --no-nvram --removable
+    grub-install "$SECURE_BOOT" --target="${TARGET}-efi" --no-nvram --removable
 
     # This will create EFI/debian
-    grub-install --uefi-secure-boot --target="${TARGET}-efi" --no-nvram
+    grub-install "$SECURE_BOOT" --target="${TARGET}-efi" --no-nvram
 
     update-grub
     sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_UUID}#g" /boot/grub/grub.cfg

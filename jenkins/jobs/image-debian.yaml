@@ -37,7 +37,7 @@
         INCUS_ARCHITECTURE="$architecture"
 
         TYPE="container"
-        if [ "$architecture" = "amd64" ] || [ "$architecture" = "arm64" ]; then
+        if [ "$architecture" = "amd64" ] || [ "$architecture" = "arm64" ] || [ "$architecture" = "loong64" ]; then
             TYPE="container,vm"
         fi
 

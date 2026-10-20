@@ -379,9 +379,25 @@ packages:
     - cloud
 
   - packages:
+    - linux-virt
+    action: install
+    architectures:
+    - aarch64
+    - x86_64
+    types:
+    - vm
+
+  - packages:
+    - linux-lts
+    action: install
+    architectures:
+    - loongarch64
+    types:
+    - vm
+
+  - packages:
     - acpi
     - grub-efi
-    - linux-virt
     - dhcpcd
     - cloud-utils-growpart
     - e2fsprogs-extra
@@ -452,8 +468,8 @@ actions:
     grub-mkconfig -o "${target}"
     sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_UUID}#g" "${target}"
 
-    TARGET="x86_64"
-    [ "$(uname -m)" = "aarch64" ] && TARGET="arm64"
+    TARGET="$(uname -m)"
+    [ "$TARGET" = "aarch64" ] && TARGET="arm64"
     grub-install --target=${TARGET}-efi --no-nvram --removable
     grub-install --target=${TARGET}-efi --no-nvram
 

@@ -191,9 +191,6 @@ packages:
   - packages:
     - linux
     action: install
-    architectures:
-    - riscv64
-    - x86_64
     types:
     - vm
 
@@ -389,9 +386,8 @@ actions:
     #!/bin/sh
     set -eux
 
-    TARGET="x86_64"
-    [ "$(uname -m)" = "aarch64" ] && TARGET="arm64"
-    [ "$(uname -m)" = "riscv64" ] && TARGET="riscv64"
+    TARGET="$(uname -m)"
+    [ "$TARGET" = "aarch64" ] && TARGET="arm64"
 
     grub-install --target="${TARGET}-efi" --efi-directory=/boot/efi --no-nvram --removable
     grub-install --target="${TARGET}-efi" --efi-directory=/boot/efi --no-nvram
