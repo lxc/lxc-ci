@@ -828,6 +828,9 @@ for entry in sorted(glob.glob("%s/*/*/*/*" % TARGET_IMAGES)):
                         requirements["secureboot"] = "false"
                         break
 
+                if arch == "loong64":
+                    requirements["secureboot"] = "false"
+
                 # Check for cdrom agent
                 for entry in REQUIRE_CDROM_AGENT:
                     if alias.startswith(entry):
