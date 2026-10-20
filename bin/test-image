@@ -34,9 +34,12 @@ cleanup() {
 }
 
 # Skip VM tests on arm64
-if [ "${TYPE}" = "vm" ] && [ "$(uname -m)" = "aarch64" ]; then
-    echo "==> SKIP: Can't test VM image on arm64 (lack nested support)"
-    exit
+if [ "${TYPE}" = "vm" ]; then
+    arch="$(uname -m)"
+    if [ "${arch}" = "aarch64" ] || [ "${arch}" = "loongarch64" ]; then
+        echo "==> SKIP: Can't test VM image on ${arch} (lack nested support)"
+        exit
+    fi
 fi
 
 # Skip cgroup1 images on cgroup2
