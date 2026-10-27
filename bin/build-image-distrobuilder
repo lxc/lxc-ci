@@ -101,6 +101,7 @@ apt-get install --yes --no-install-recommends \
     libncurses-dev \
     make \
     mawk \
+    pacman-package-manager \
     patch \
     python3 \
     qemu-utils \
