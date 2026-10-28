@@ -44,12 +44,12 @@ files:
   path: /etc/hosts
   generator: hosts
 
-# eth0 in containers, en* (enp5s0, ...) in VMs.
+# eth* covers every container interface, en* (enp5s0, ...) every VM one.
 - path: /etc/systemd/network/10-lan.network
   generator: dump
   content: |-
     [Match]
-    Name=eth0 en*
+    Name=eth* en*
 
     [Network]
     DHCP=ipv4
