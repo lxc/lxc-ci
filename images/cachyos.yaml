@@ -44,12 +44,12 @@ files:
   path: /etc/hosts
   generator: hosts
 
-# eth0 in containers, en* (enp5s0, ...) in VMs.
-- path: /etc/systemd/network/10-lan.network
+- name: eth0.network
+  path: /etc/systemd/network/eth0.network
   generator: dump
   content: |-
     [Match]
-    Name=eth0 en*
+    Name=eth0
 
     [Network]
     DHCP=ipv4
@@ -60,6 +60,27 @@ files:
 
     [DHCP]
     ClientIdentifier=mac
+  types:
+  - container
+
+- name: enp5s0.network
+  path: /etc/systemd/network/enp5s0.network
+  generator: dump
+  content: |-
+    [Match]
+    Name=enp5s0
+
+    [Network]
+    DHCP=ipv4
+
+    [DHCPv4]
+    UseDomains=true
+    UseMTU=true
+
+    [DHCP]
+    ClientIdentifier=mac
+  types:
+  - vm
 
 - name: incus-agent
   generator: incus-agent
