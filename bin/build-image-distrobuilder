@@ -76,6 +76,14 @@ deb http://deb.debian.org/debian ${DISTRO} main
 deb http://deb.debian.org/debian ${DISTRO}-backports main
 deb http://deb.debian.org/debian ${DISTRO}-updates main
 deb http://security.debian.org/debian-security ${DISTRO}-security main
+deb http://deb.debian.org/debian unstable main
+EOL
+
+# Only pull individual packages from unstable when explicitly requested.
+cat > /etc/apt/preferences.d/unstable << EOL
+Package: *
+Pin: release a=unstable
+Pin-Priority: 100
 EOL
 fi
 apt-get update --yes
@@ -115,6 +123,9 @@ apt-get install --yes --no-install-recommends \
 if [ "${DISTRO}" = "bookworm" ]; then
     apt-get install --yes --no-install-recommends -t ${DISTRO}-backports \
         debootstrap
+elif [ "$(uname -m)" != "loongarch64" ]; then
+    # Ubuntu 26.10 only publishes SHA512 checksums, needs debootstrap >= 1.0.145.
+    apt-get install --yes --no-install-recommends debootstrap/unstable
 else
     apt-get install --yes --no-install-recommends debootstrap
 fi
