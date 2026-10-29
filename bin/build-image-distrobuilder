@@ -82,6 +82,7 @@ apt-get update --yes
 
 # Install dependencies
 apt-get install --yes --no-install-recommends \
+    archlinux-keyring \
     btrfs-progs \
     build-essential \
     ca-certificates \
@@ -100,6 +101,7 @@ apt-get install --yes --no-install-recommends \
     libc6-dev \
     libncurses-dev \
     make \
+    makepkg \
     mawk \
     pacman-package-manager \
     patch \
