@@ -38,9 +38,9 @@ ALIASES = {
 
 VARIANT_ALIASES = {
     "freebsd": {
-        "default+zfs": ["default", "zfs"],
-        "default+ufs": ["ufs"],
-        "cloud+zfs": ["cloud"],
+        "default+zfs": ["zfs"],
+        "default+ufs": ["default", "ufs"],
+        "cloud+ufs": ["cloud"],
     },
 }
 
