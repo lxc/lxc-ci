@@ -3,7 +3,8 @@
 if [ "${1:-}" = "force" ]; then
     if incus info >/dev/null 2>&1; then
         incus list -cn -f csv | grep -v ^cache- | xargs -r incus delete -f
-        incus image list -cF -fcsv | xargs -r  incus image delete
+        # Keep the NetBSD bootstrap image, update-images only refreshes it every 6h
+        incus image list -cFl -fcsv | grep -v netbsd-bootstrap | cut -d, -f1 | xargs -r incus image delete
         incus admin sql global "DELETE FROM storage_volumes WHERE name NOT LIKE 'cache-%' AND name NOT IN ('images', 'backups')"
         rm -Rf /var/log/incus/*
 
