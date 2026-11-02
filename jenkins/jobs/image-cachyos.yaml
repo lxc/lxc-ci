@@ -19,6 +19,12 @@
         - default
         - cloud
 
+    - axis:
+        name: release
+        type: user-defined
+        values:
+        - current
+
     builders:
     - shell: |-
         cd /lxc-ci
