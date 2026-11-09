@@ -82,7 +82,7 @@ if [ "$FS" = "zfs" ]; then
 else
     # Mount the UFS partition from within FreeBSD
     FREEBSD="$(mktemp -u freebsd-build-XXXXXX)"
-    incus create images:freebsd/15.0 "$FREEBSD" --vm --config security.secureboot=false
+    incus create images:freebsd/15.1 "$FREEBSD" --vm --config security.secureboot=false
     incus config device add "$FREEBSD" image disk source="$WORKSPACE/image.raw"
     incus start "$FREEBSD"
     incus wait "$FREEBSD" agent
