@@ -41,9 +41,6 @@
     - build-discarder:
         num-to-keep: 3
 
-    - raw:
-        !include: ../includes/webhook.yaml.inc
-
     publishers:
     - archive:
         artifacts: "*.tar.xz,*.squashfs,image.yaml,serial"

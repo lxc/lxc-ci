@@ -24,9 +24,6 @@
     - build-discarder:
         num-to-keep: 100
 
-    - raw:
-        !include: ../includes/webhook.yaml.inc
-
     parameters:
     - string:
         name: image
