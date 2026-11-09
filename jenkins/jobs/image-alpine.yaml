@@ -20,7 +20,6 @@
         name: release
         type: user-defined
         values:
-        - "3.21"
         - "3.22"
         - "3.23"
         - "3.24"
