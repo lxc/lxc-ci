@@ -132,6 +132,7 @@ files:
   - container
   releases:
   - 16.0
+  - 16.1
   variants:
   - default
   - desktop
@@ -156,6 +157,7 @@ files:
   - vm
   releases:
   - 16.0
+  - 16.1
   variants:
   - default
   - desktop
@@ -236,6 +238,7 @@ files:
   releases:
   - tumbleweed
   - 16.0
+  - 16.1
 
 - path: /home/opensuse/.config/kscreenlockerrc
   generator: dump
@@ -289,6 +292,7 @@ packages:
     releases:
     - tumbleweed
     - 16.0
+    - 16.1
 
   - packages:
     - libdevmapper1_03
@@ -435,6 +439,7 @@ actions:
     ln -sf ../run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
   releases:
   - 16.0
+  - 16.1
 
 - trigger: post-packages
   action: |-

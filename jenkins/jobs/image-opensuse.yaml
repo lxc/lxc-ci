@@ -18,6 +18,7 @@
         type: user-defined
         values:
         - "16.0"
+        - "16.1"
         - "tumbleweed"
 
     - axis:
@@ -54,7 +55,8 @@
     execution-strategy:
       combination-filter: '
       !(architecture != "amd64" && variant == "desktop-kde") &&
-      !(release == "16.0" && variant == "desktop-kde")'
+      !(release == "16.0" && variant == "desktop-kde") &&
+      !(release == "16.1" && variant == "desktop-kde")'
 
     properties:
     - build-discarder:
