@@ -25,8 +25,8 @@ apt-get install --yes --no-install-recommends \
     flex \
     bison
 
-BASE_URL="https://cdn.netbsd.org/pub/NetBSD/images/11.0"
-IMAGE="NetBSD-11.0-amd64-live.img.gz"
+BASE_URL="https://cdn.netbsd.org/pub/NetBSD/images/11.1"
+IMAGE="NetBSD-11.1-amd64-live.img.gz"
 
 # Download a pre-built VM image
 curl -sSfL --retry 5 --retry-connrefused -o "$TARGET/$IMAGE" "$BASE_URL/$IMAGE"
